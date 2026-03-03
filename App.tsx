@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Image as ImageIcon, RefreshCw, Leaf, AlertTriangle, CheckCircle, Info, ChevronRight, Sprout, Bug, FlaskConical, BookOpen, X, Zap, ShieldCheck, Target, Eye, Microscope, Ruler, ClipboardCheck, Scissors, Search, GraduationCap, ChevronLeft, HelpCircle, Layers, Lightbulb } from 'lucide-react';
+import { Camera, Image as ImageIcon, RefreshCw, Leaf, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, Info, ChevronRight, Sprout, Bug, FlaskConical, BookOpen, X, Zap, ShieldCheck, Target, Eye, Microscope, Ruler, ClipboardCheck, Scissors, Search, GraduationCap, ChevronLeft, Circle as HelpCircle, Layers, Lightbulb } from 'lucide-react';
 import { AppStep, DiagnosisResult, TrainingModule } from './types';
 import { analyzeCropImage } from './services/geminiService';
 import { trainingModules } from './services/trainingData';
