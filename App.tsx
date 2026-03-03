@@ -5,7 +5,8 @@ import { AppStep, DiagnosisResult, TrainingModule } from './types';
 import { analyzeCropImage } from './services/geminiService';
 import { trainingModules } from './services/trainingData';
 
-const BACKEND_URL = "http://localhost:8000";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 const ANALYSIS_STAGES = [
   "নমুনা লোড করা হচ্ছে...",
@@ -89,10 +90,25 @@ const App: React.FC = () => {
   const syncToBackend = async (diag: DiagnosisResult, img: string) => {
     setSyncStatus('syncing');
     try {
-      const response = await fetch(`${BACKEND_URL}/record`, {
+      const apiUrl = `${SUPABASE_URL}/functions/v1/save-diagnosis`;
+      const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...diag, imageData: img })
+        headers: {
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cropName: diag.cropName,
+          diseaseName: diag.diseaseName,
+          category: diag.category,
+          confidence: diag.confidence,
+          isBiotic: diag.isBiotic,
+          symptoms: diag.symptoms,
+          signs: diag.signs,
+          deductionLogic: diag.deductionLogic,
+          management: diag.management,
+          imageData: img
+        })
       });
       setSyncStatus(response.ok ? 'success' : 'error');
     } catch (err) {
