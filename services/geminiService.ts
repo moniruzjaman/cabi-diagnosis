@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { DiagnosisResult } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
 
 const SYSTEM_PROMPT = `আপনি একজন বিশেষজ্ঞ কৃষিবিদ এবং CABI Plantwise প্রোটোকল বিশেষজ্ঞ। 
 আপনার ডায়াগনোসিস প্রক্রিয়া অবশ্যই নিচের টেকনিক্যাল পয়েন্টগুলো অনুসরণ করবে (সূত্র: Diagnostic Field Guide Data ID 1-120):
