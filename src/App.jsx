@@ -222,6 +222,7 @@ export default function CABIDiagnosis() {
   const [image, setImage] = useState(null);
   const [imageBase64, setImageBase64] = useState(null);
   const [result, setResult] = useState(null);
+  const [provider, setProvider] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [expandedGroup, setExpandedGroup] = useState(null);
@@ -295,6 +296,7 @@ Please diagnose this crop problem and provide IPM recommendations following the 
       const data = await response.json();
       const text = data.content?.map((b) => b.text || "").join("\n") || "No response.";
       setResult(text);
+      setProvider(data.provider || null);
     } catch (err) {
       setError(`রোগ নির্ণয়ে সমস্যা হয়েছে: ${err.message}\nDiagnosis failed: ${err.message}`);
     } finally {
@@ -304,7 +306,7 @@ Please diagnose this crop problem and provide IPM recommendations following the 
 
   const reset = () => {
     setForm({ crop:"", district:"", season:"", growthStage:"", symptoms:"", duration:"", affectedArea:"" });
-    setImage(null); setImageBase64(null); setResult(null); setError(null);
+    setImage(null); setImageBase64(null); setResult(null); setError(null); setProvider(null);
   };
 
   // ── UI ──────────────────────────────────────────────────────────────────────
@@ -472,6 +474,11 @@ Please diagnose this crop problem and provide IPM recommendations following the 
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
               <span style={{ fontSize: 24 }}>📋</span>
               <h2 style={{ color: "#7fff7f", margin: 0, fontSize: 18 }}>রোগ নির্ণয় প্রতিবেদন / Diagnostic Report</h2>
+              {provider && (
+                <span style={{ marginLeft: "auto", background: "rgba(100,200,255,0.15)", border: "1px solid rgba(100,200,255,0.35)", borderRadius: 20, padding: "3px 12px", color: "#a0d8ff", fontSize: 11, fontWeight: 600 }}>
+                  {provider}
+                </span>
+              )}
             </div>
             <div style={{ color: "#d0f0d8", lineHeight: 1.9, fontSize: 14, whiteSpace: "pre-wrap", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 16 }}>
               {result}
