@@ -1,71 +1,76 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 🌾 CABI Smart Crop Diagnosis — Bangladesh
 
-# শস্য সমাধান (Crop Shomadhan)
+> AI-powered pest, disease and nutrient deficiency identification tool for Bangladesh farmers and extension workers.
 
-A comprehensive crop disease diagnosis application using CABI Plantwise protocols and AI-powered image analysis.
+![Smart Agri EcoSystem](https://img.shields.io/badge/Bangladesh-Extension%20Tool-green)
+![Version](https://img.shields.io/badge/version-3.0.0-brightgreen)
+![React](https://img.shields.io/badge/React-18-blue)
+![Vite](https://img.shields.io/badge/Vite-5-purple)
 
 ## Features
 
-- AI-powered crop disease diagnosis using Gemini Vision API
-- CABI Plantwise protocol-based analysis (IDs 1-120)
-- Integrated Plant Doctor Academy with training modules
-- Supabase database integration for diagnosis records
-- Edge function deployment for serverless data storage
-- Bengali language interface
-- Reference library for field diagnosis
+- 🔬 **AI Diagnosis** — Identifies crop pests, diseases, deficiencies and abiotic disorders
+- 🇧🇩 **Bangladesh Context** — DAE, BRRI, BARI recommendations; local pesticide brands
+- 🌿 **24 BD Crops** — Rice (Boro/Aman/Aus), Jute, Potato, Tomato, Mango and more
+- 📍 **District-aware** — Context from 25 Bangladesh districts
+- 🗓️ **Season-aware** — Boro, Aman, Rabi, Kharif-1/2 seasonal context
+- 📷 **Photo Upload** — Field photo analysis support
+- 🔤 **Bilingual** — Full বাংলা and English interface
+- ♻️ **Auto-retry** — Handles server busy errors automatically
 
-## Architecture
+## Tech Stack
 
-- **Frontend**: React + TypeScript + Vite
-- **AI Analysis**: Google Gemini 3 Flash Preview
-- **Database**: Supabase PostgreSQL
-- **Backend**: Supabase Edge Functions
-- **Styling**: Tailwind CSS
+- **Frontend:** React 18 + Vite 5
+- **AI:** Anthropic Claude API (`claude-sonnet-4-20250514`)
+- **Styling:** Inline React styles (no CSS framework needed)
+- **Fonts:** Noto Sans Bengali (Google Fonts)
 
 ## Run Locally
 
 **Prerequisites:** Node.js 18+
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
+```bash
+# Clone the repo
+git clone https://github.com/moniruzjaman/cabi-diagnosis.git
+cd cabi-diagnosis
 
-2. Configure environment variables in `.env`:
-   ```env
-   GEMINI_API_KEY=your_gemini_api_key_here
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
+# Install dependencies
+npm install
 
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
+# Run dev server
+npm run dev
+```
 
-4. Build for production:
-   ```bash
-   npm run build
-   ```
+Open [http://localhost:3000](http://localhost:3000)
 
-## Database Setup
+> **Note:** This version uses the Anthropic Claude API via browser-direct access.  
+> When running inside [claude.ai](https://claude.ai) as an artifact, no API key is needed.  
+> For standalone deployment, you will need to set up a backend proxy with your `ANTHROPIC_API_KEY`.
 
-The application automatically creates the necessary database tables:
+## Deploy to Vercel
 
-- `diagnoses` - Stores all crop disease diagnosis records with RLS enabled
+```bash
+npm run build
+# Then drag the dist/ folder to vercel.com, or connect your GitHub repo
+```
 
-## Edge Functions
+## Project Structure
 
-- `save-diagnosis` - Handles diagnosis record storage to Supabase
+```
+cabi-diagnosis/
+├── src/
+│   ├── App.jsx        # Main application component
+│   └── main.jsx       # React entry point
+├── public/
+│   └── favicon.svg
+├── index.html
+├── package.json
+└── vite.config.js
+```
 
-## Training Modules
+## About
 
-The Plant Doctor Academy includes:
-- Rice disease identification
-- Potato late blight protocols
-- Mango disease management
-- Interactive flashcards and quizzes
+Built for Bangladesh's Department of Agricultural Extension (DAE) ecosystem.  
+Integrates CABI Plantwise knowledge base with local Bangladesh agricultural context.
 
-View your app in AI Studio: https://ai.studio/apps/drive/11K5l6PcnZlosKB5NL1JaWTCa2V1lcfj2
+**Supported by:** DAE · BRRI · BARI · CABI Plantwise
