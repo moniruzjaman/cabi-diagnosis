@@ -288,12 +288,15 @@ Please diagnose this crop problem and provide IPM recommendations following the 
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData?.error?.message || `HTTP ${response.status}`);
+        const attemptsDetail = data?.attempts?.length
+          ? "\n\nProvider attempts:\n" + data.attempts.join("\n")
+          : "";
+        throw new Error((data?.error || `HTTP ${response.status}`) + attemptsDetail);
       }
 
-      const data = await response.json();
       const text = data.content?.map((b) => b.text || "").join("\n") || "No response.";
       setResult(text);
       setProvider(data.provider || null);
