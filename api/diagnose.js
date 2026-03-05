@@ -127,7 +127,7 @@ async function tryGroq(messages) {
   if (!apiKey) throw new Error("GROQ_API_KEY not set");
 
   const body = {
-    model: "llama-3.2-90b-vision-preview",
+    model: "meta-llama/llama-4-scout-17b-16e-instruct",
     max_tokens: 2048,
     temperature: 0.4,
     messages: [{ role: "system", content: SYSTEM_PROMPT }, ...toOpenAIMessages(messages)],
@@ -211,7 +211,7 @@ export default async function handler(req, res) {
 
   // 4. OpenRouter Llama 3.2 11B Vision ───────────────────────────────────────
   try {
-    const r = await tryOpenRouter(messages, "meta-llama/llama-3.2-11b-vision-instruct:free");
+    const r = await tryOpenRouter(messages, "meta-llama/llama-3.2-11b-vision-instruct");
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
   } catch (e) { attempts.push(`OpenRouter Llama3.2-11B: ${e.message}`); }
 
