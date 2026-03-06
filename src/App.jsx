@@ -40,6 +40,19 @@ const AREA_CHIPS = [
   { label: "সমস্ত মাঠ", value: "সমস্ত মাঠ সমানভাবে আক্রান্ত / Entire field uniformly affected" },
 ];
 
+const DURATION_CHIPS = [
+  { label: "আজই শুরু", value: "আজই শুরু হয়েছে / Started today" },
+  { label: "১-২ দিন", value: "১-২ দিন আগে শুরু হয়েছে / Started 1-2 days ago" },
+  { label: "৩-৫ দিন", value: "৩-৫ দিন ধরে সমস্যা চলছে / Problem present for 3-5 days" },
+  { label: "১ সপ্তাহ", value: "প্রায় ১ সপ্তাহ ধরে চলছে / Going on for about 1 week" },
+  { label: "২ সপ্তাহ", value: "প্রায় ২ সপ্তাহ ধরে চলছে / Going on for about 2 weeks" },
+  { label: "১ মাস", value: "প্রায় ১ মাস ধরে চলছে / Going on for about 1 month" },
+  { label: "১ মাসের বেশি", value: "১ মাসেরও বেশি সময় ধরে চলছে / Ongoing for more than 1 month" },
+  { label: "দ্রুত ছড়াচ্ছে", value: "খুব দ্রুত ছড়িয়ে পড়ছে, প্রতিদিন বাড়ছে / Spreading very rapidly, increasing daily" },
+  { label: "ধীরে ছড়াচ্ছে", value: "ধীরে ধীরে ছড়িয়ে পড়ছে / Spreading slowly and gradually" },
+  { label: "একই আছে", value: "কয়েকদিন ধরে একই অবস্থায় আছে, বাড়ছে না / Stable for several days, not spreading" },
+];
+
 const SYMPTOM_CHIPS = {
   "🍃 পাতা / Leaf": [
     { label: "পাতা হলুদ", value: "পাতা হলুদ হয়ে যাচ্ছে (নিচের পাতা থেকে শুরু) / Leaves turning yellow starting from lower leaves" },
@@ -578,20 +591,38 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
             </div>
           </div>
 
-          {/* Growth Stage + Duration */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
-            <div>
-              <label style={labelStyle}>🌿 বৃদ্ধির পর্যায় / Growth Stage</label>
-              <select value={form.growthStage} onChange={e => setForm(f => ({ ...f, growthStage: e.target.value }))} style={selectStyle}>
-                <option value="">-- পর্যায় বেছে নিন --</option>
-                {GROWTH_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+          {/* Growth Stage */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>🌿 বৃদ্ধির পর্যায় / Growth Stage</label>
+            <select value={form.growthStage} onChange={e => setForm(f => ({ ...f, growthStage: e.target.value }))} style={selectStyle}>
+              <option value="">-- পর্যায় বেছে নিন --</option>
+              {GROWTH_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          {/* Duration with chips */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>⏱️ সমস্যার সময়কাল / Problem Duration</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+              {DURATION_CHIPS.map(chip => {
+                const active = form.duration === chip.value;
+                return (
+                  <button key={chip.label}
+                    onClick={() => setForm(f => ({ ...f, duration: active ? "" : chip.value }))}
+                    style={{
+                      padding: "5px 12px", borderRadius: 20, fontSize: 12, cursor: "pointer",
+                      border: active ? "1px solid #5de05d" : "1px solid rgba(100,200,100,0.25)",
+                      background: active ? "rgba(100,220,100,0.25)" : "rgba(255,255,255,0.05)",
+                      color: active ? "#7fff7f" : "#b0e8b8", fontWeight: active ? 700 : 400,
+                      transition: "all 0.15s",
+                    }}
+                  >{chip.label}</button>
+                );
+              })}
             </div>
-            <div>
-              <label style={labelStyle}>⏱️ সমস্যার সময়কাল / Duration</label>
-              <input value={form.duration} onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}
-                placeholder="e.g. ৩ দিন / 3 days" style={inputStyle} />
-            </div>
+            <input value={form.duration} onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}
+              placeholder="অথবা এখানে লিখুন... / Or type here..."
+              style={inputStyle} />
           </div>
 
           {/* Affected Area */}
