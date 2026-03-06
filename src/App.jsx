@@ -26,6 +26,68 @@ const GROWTH_STAGES = [
   "বীজ অঙ্কুরোদগম / Germination","চারা / Seedling","কুশি / Tillering","শাখা-প্রশাখা / Vegetative","ফুল ফোটা / Flowering","ফল ধারণ / Fruit Set","পরিপক্বতা / Maturity","ফসল কাটা / Harvesting",
 ];
 
+// ─── Quick-select chips ───────────────────────────────────────────────────────
+const AREA_CHIPS = [
+  { label: "৫% এর কম", value: "৫% এর কম জমি আক্রান্ত / Less than 5% of field affected" },
+  { label: "১০%", value: "প্রায় ১০% জমি আক্রান্ত / About 10% of field affected" },
+  { label: "২৫%", value: "প্রায় ২৫% জমি আক্রান্ত / About 25% of field affected" },
+  { label: "৫০%", value: "প্রায় ৫০% জমি আক্রান্ত / About 50% of field affected" },
+  { label: "৭৫%+", value: "৭৫% এরও বেশি জমি আক্রান্ত / More than 75% of field affected" },
+  { label: "বিক্ষিপ্ত", value: "বিক্ষিপ্তভাবে ছড়িয়ে আছে / Scattered patches across field" },
+  { label: "এক কোণে", value: "জমির এক কোণে সীমাবদ্ধ / Confined to one corner of field" },
+  { label: "মাঠের কিনারায়", value: "মাঠের কিনারায় বেশি / Mostly along field edges" },
+  { label: "সারি ধরে", value: "নির্দিষ্ট সারি ধরে আক্রান্ত / Affected along specific rows" },
+  { label: "সমস্ত মাঠ", value: "সমস্ত মাঠ সমানভাবে আক্রান্ত / Entire field uniformly affected" },
+];
+
+const SYMPTOM_CHIPS = {
+  "🍃 পাতা / Leaf": [
+    { label: "পাতা হলুদ", value: "পাতা হলুদ হয়ে যাচ্ছে (নিচের পাতা থেকে শুরু) / Leaves turning yellow starting from lower leaves" },
+    { label: "পাতার ডগা হলুদ", value: "পাতার ডগা হলুদ ও শুকিয়ে যাচ্ছে / Leaf tips turning yellow and drying" },
+    { label: "পাতায় বাদামি দাগ", value: "পাতায় বাদামি গোলাকার বা ডিম্বাকৃতি দাগ / Brown circular or oval spots on leaves" },
+    { label: "পাতায় ধূসর দাগ", value: "পাতায় ধূসর কেন্দ্র ও বাদামি কিনারাযুক্ত তীক্ষ্ণ দাগ (মাকু আকৃতি) / Gray-centered spindle-shaped spots with brown border on leaves" },
+    { label: "পাতা পুড়ে যাওয়া", value: "পাতার কিনারা ও ডগা পুড়ে যাওয়ার মতো বাদামি ও শুকনো / Leaf tips and margins brown and dried as if scorched" },
+    { label: "পাতায় সাদা দাগ", value: "পাতায় সাদা বা ফ্যাকাশে ডোরা দেখা যাচ্ছে / White or pale streaks visible on leaves" },
+    { label: "পাতা কুঁকড়ানো", value: "পাতা কুঁকড়িয়ে ও বাঁকিয়ে যাচ্ছে / Leaves curling and twisting" },
+    { label: "পাতা মোড়ানো", value: "পাতা লম্বালম্বিভাবে মোড়ানো, ভেতরে সাদা দাগ / Leaf rolled lengthwise with white streaks inside" },
+    { label: "পাতায় রুপালি দাগ", value: "পাতায় রুপালি বা সাদাটে আঁচড়ের মতো দাগ / Silver or whitish scratch-like streaks on leaf surface" },
+    { label: "পাতা ঝরে পড়া", value: "পাতা অকালে ঝরে পড়ছে / Leaves dropping prematurely" },
+    { label: "পাতায় জালের মতো", value: "পাতার নিচে সূক্ষ্ম জালের মতো আবরণ দেখা যাচ্ছে / Fine webbing visible on underside of leaves" },
+  ],
+  "🌿 কান্ড ও শিকড় / Stem & Root": [
+    { label: "কান্ড পচা", value: "কান্ডের গোড়া পচে যাচ্ছে, কালো বা বাদামি রং / Stem base rotting, turning black or brown" },
+    { label: "কান্ড ফাঁপা", value: "কান্ড টানলে সহজে উঠে আসে, ভেতর ফাঁকা / Stem pulls out easily, hollow inside (dead heart / white ear)" },
+    { label: "কান্ড ভেঙে পড়া", value: "কান্ড গিঁটের কাছে কালো হয়ে ভেঙে পড়ছে / Stem blackening and breaking at node" },
+    { label: "শিকড় পচা", value: "শিকড় কালো ও পচা, গাছ সহজে উপড়ে আসে / Roots black and rotten, plant uproots easily" },
+    { label: "গোড়া পচা", value: "গাছের গোড়া পানির কাছে পচে গেছে / Plant base rotting near waterline" },
+  ],
+  "🌸 ফুল ও ফল / Flower & Fruit": [
+    { label: "ফুল ঝরা", value: "ফুল অকালে ঝরে পড়ছে / Flowers dropping prematurely" },
+    { label: "ফল পচা", value: "ফল পচে যাচ্ছে, কালো বা বাদামি দাগ / Fruits rotting with black or brown spots" },
+    { label: "ফল ছোট থাকা", value: "ফল স্বাভাবিকের চেয়ে ছোট ও বিকৃত / Fruits smaller and deformed than normal" },
+    { label: "শীষ চিটা", value: "ধানের শীষ চিটা, দানা পূর্ণ হচ্ছে না / Rice panicle sterile, grains not filling" },
+    { label: "শীষ সাদা", value: "ধানের শীষ সাদা হয়ে গেছে (হোয়াইট ইয়ার) / Rice panicle turned white (white ear)" },
+  ],
+  "🐛 পোকামাকড় / Pest Signs": [
+    { label: "পোকা দেখা যাচ্ছে", value: "গাছে পোকা দেখা যাচ্ছে (রং/আকার বলুন) / Insects visible on plant" },
+    { label: "পোকার ডিম", value: "পাতায় বা কান্ডে পোকার ডিম দেখা যাচ্ছে / Insect eggs visible on leaves or stem" },
+    { label: "মল/বর্জ্য দেখা", value: "পাতায় কালো বা বাদামি মলের মতো দানা / Black or brown frass (insect droppings) on leaves" },
+    { label: "পোকার ক্ষত", value: "পাতায় ছিদ্র বা চিবানোর দাগ / Holes or chewing marks on leaves" },
+    { label: "পোকার আবরণ", value: "পাতার নিচে সাদা আঁশের মতো আবরণ / White scale-like covering on leaf underside" },
+    { label: "পিঁপড়া দেখা", value: "গাছে পিঁপড়া দেখা যাচ্ছে (মিলিবাগ বা জাব পোকার লক্ষণ) / Ants present on plant (indicates mealybug or aphid)" },
+    { label: "মাকড়সার জাল", value: "পাতার নিচে মাকড়সার মতো সূক্ষ্ম জাল / Fine spider-like webbing on leaf underside (mite indicator)" },
+  ],
+  "💧 অন্যান্য / Other": [
+    { label: "গাছ নেতিয়ে পড়া", value: "গাছ দিনে নেতিয়ে পড়ে, রাতে কিছুটা সতেজ হয় / Plant wilts during day, partially recovers at night" },
+    { label: "গাছ হঠাৎ মরা", value: "গাছ হঠাৎ শুকিয়ে মারা যাচ্ছে / Plant suddenly wilting and dying" },
+    { label: "গাছ খাটো", value: "গাছ স্বাভাবিকের চেয়ে অনেক খাটো ও দুর্বল / Plant much shorter and weaker than normal" },
+    { label: "আঠালো পদার্থ", value: "পাতায় আঠালো চকচকে পদার্থ (মধুরস) / Sticky shiny substance on leaves (honeydew)" },
+    { label: "ছাতার মতো আবরণ", value: "পাতায় সাদা গুঁড়া বা ছাতার মতো আবরণ / White powdery or mold-like coating on leaves" },
+    { label: "দুর্গন্ধ", value: "গাছ বা মাটি থেকে দুর্গন্ধ আসছে / Foul smell from plant or soil" },
+    { label: "কষ ঝরা", value: "কান্ড বা ফল কাটলে কষ বা তরল পদার্থ বের হচ্ছে / Sap or liquid oozing when stem or fruit is cut" },
+  ],
+};
+
 // ─── Weather risk engine (Bangladesh-specific) ────────────────────────────────
 function assessWeatherRisks(w) {
   const risks = [];
@@ -535,8 +597,27 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
           {/* Affected Area */}
           <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>🗺️ আক্রান্ত এলাকা / Affected Area</label>
+            {/* Quick chips */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+              {AREA_CHIPS.map(chip => {
+                const active = form.affectedArea === chip.value;
+                return (
+                  <button key={chip.label}
+                    onClick={() => setForm(f => ({ ...f, affectedArea: active ? "" : chip.value }))}
+                    style={{
+                      padding: "5px 12px", borderRadius: 20, fontSize: 12, cursor: "pointer",
+                      border: active ? "1px solid #5de05d" : "1px solid rgba(100,200,100,0.25)",
+                      background: active ? "rgba(100,220,100,0.25)" : "rgba(255,255,255,0.05)",
+                      color: active ? "#7fff7f" : "#b0e8b8", fontWeight: active ? 700 : 400,
+                      transition: "all 0.15s",
+                    }}
+                  >{chip.label}</button>
+                );
+              })}
+            </div>
             <input value={form.affectedArea} onChange={e => setForm(f => ({ ...f, affectedArea: e.target.value }))}
-              placeholder="e.g. ২০% জমি / 20% of field, বিক্ষিপ্ত / scattered patches" style={inputStyle} />
+              placeholder="অথবা এখানে নিজে লিখুন / Or type here..."
+              style={inputStyle} />
           </div>
 
           {/* Symptoms + Voice Input */}
@@ -572,11 +653,42 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
                 </div>
               )}
             </div>
+            {/* Symptom chip groups */}
+            <div style={{ marginBottom: 10 }}>
+              {Object.entries(SYMPTOM_CHIPS).map(([group, chips]) => (
+                <div key={group} style={{ marginBottom: 8 }}>
+                  <div style={{ color: "#7abfe8", fontSize: 11, fontWeight: 700, marginBottom: 5, letterSpacing: 0.3 }}>{group}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                    {chips.map(chip => {
+                      const active = form.symptoms.includes(chip.value);
+                      return (
+                        <button key={chip.label}
+                          onClick={() => {
+                            if (active) {
+                              setForm(f => ({ ...f, symptoms: f.symptoms.replace(chip.value, "").replace(/\n\n+/g, "\n").trim() }));
+                            } else {
+                              setForm(f => ({ ...f, symptoms: f.symptoms ? f.symptoms.trimEnd() + "\n" + chip.value : chip.value }));
+                            }
+                          }}
+                          style={{
+                            padding: "4px 11px", borderRadius: 16, fontSize: 11.5, cursor: "pointer",
+                            border: active ? "1px solid #5de05d" : "1px solid rgba(100,200,100,0.2)",
+                            background: active ? "rgba(100,220,100,0.22)" : "rgba(255,255,255,0.04)",
+                            color: active ? "#7fff7f" : "#b0e8b8", fontWeight: active ? 700 : 400,
+                            transition: "all 0.15s",
+                          }}
+                        >{active ? "✓ " : ""}{chip.label}</button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
             <textarea value={form.symptoms} onChange={e => setForm(f => ({ ...f, symptoms: e.target.value }))}
               placeholder={voiceSupported
-                ? "🎙️ মাইক বাটন চাপুন এবং কথা বলুন, অথবা এখানে লিখুন... / Tap mic and speak, or type here..."
-                : "পাতায় হলুদ দাগ, কান্ড পচা, পোকার উপস্থিতি... / Yellow spots on leaves, stem rot, insect presence..."}
-              rows={4} style={{ ...inputStyle, resize: "vertical",
+                ? "🎙️ উপরের বাটন ট্যাপ করুন অথবা মাইক দিয়ে বলুন... / Tap chips above or use mic..."
+                : "উপরের বাটন ট্যাপ করুন, অথবা এখানে লিখুন... / Tap chips above or type here..."}
+              rows={3} style={{ ...inputStyle, resize: "vertical",
                 border: isListening ? "1px solid rgba(255,100,100,0.6)" : "1px solid rgba(100,200,100,0.3)" }} />
             {!voiceSupported && (
               <div style={{ color: "#888", fontSize: 11, marginTop: 4 }}>
