@@ -1,47 +1,85 @@
 /**
  * CABI Diagnosis — Smart Free Vision Waterfall Proxy
- *
- * Provider chain (all FREE):
- *  1. Google Gemini 2.0 Flash        — 1,500 req/day, best vision quality
- *  2. Groq Llama 3.2 90B Vision      — ~14,400 req/day, ultra fast
- *  3. OpenRouter qwen2.5-vl-72b:free — strong vision
- *  4. OpenRouter llama-3.2-11b:free  — fallback vision
- *  5. OpenRouter phi-4-multimodal    — fallback vision
- *  6. Gemini text-only (image strip) — last resort, still diagnoses from text
- *
- * Vercel env vars needed (all free):
- *   GEMINI_API_KEY       → https://aistudio.google.com/app/apikey
- *   GROQ_API_KEY         → https://console.groq.com
- *   OPENROUTER_API_KEY   → https://openrouter.ai
+ * Providers: Gemini 2.0 Flash → Groq Llama4 Scout → OpenRouter Qwen/Llama/Phi4 → Gemini text
  */
 
-const SYSTEM_PROMPT = `You are an expert agricultural plant disease and pest diagnostic AI assistant for Bangladesh, trained in the CABI Plantwise methodology. You help farmers and extension officers (DAE) identify crop problems and recommend IPM solutions suitable for Bangladesh.
+const SYSTEM_PROMPT = `তুমি বাংলাদেশের একজন বিশেষজ্ঞ কৃষি রোগ নির্ণয় সহায়তাকারী AI, যা CABI Plantwise পদ্ধতিতে প্রশিক্ষিত। তুমি কৃষক এবং DAE কর্মকর্তাদের ফসলের সমস্যা চিহ্নিত করতে এবং IPM সমাধান দিতে সাহায্য করো।
 
-Knowledge base:
-- All Bangladesh crops: rice (Boro/Aman/Aus), vegetables, fruits, pulses, oilseeds, jute, wheat, maize
-- BRRI, BARI, DAE recommended practices and varieties
-- Bangladesh-specific pests, diseases, nutrient deficiencies
-- Seasonal pest calendars for Bangladesh agro-ecological zones
-- IPM: cultural → biological → chemical (last resort only)
-- Plantwise Red List: NEVER recommend Aldrin, Carbofuran, Monocrotophos or other banned pesticides
+জ্ঞানভাণ্ডার:
+- বাংলাদেশের সকল ফসল: ধান (বোরো/আমন/আউশ), সবজি, ফল, ডাল, তেলবীজ, পাট, গম, ভুট্টা
+- BRRI, BARI, DAE অনুমোদিত জাত ও পদ্ধতি
+- বাংলাদেশের আবহাওয়া-নির্ভর রোগবালাই ক্যালেন্ডার
+- IPM: কৃষি → জৈবিক → রাসায়নিক (শেষ উপায়)
+- নিষিদ্ধ কীটনাশক কখনো সুপারিশ করবে না (Aldrin, Carbofuran, Monocrotophos ইত্যাদি)
 
-Always respond in BOTH Bangla and English using this format:
-1. **Probable Diagnosis** (রোগ/পোকার নাম)
-2. **Causal Agent** (রোগের কারণ)
-3. **Symptoms Observed** (লক্ষণ)
-4. **Severity Assessment** (তীব্রতা)
-5. **Immediate Action** (তাৎক্ষণিক ব্যবস্থা)
-6. **IPM Recommendations**
-   - Cultural control (কৃষি ব্যবস্থাপনা)
-   - Biological control (জৈবিক নিয়ন্ত্রণ)
-   - Chemical — last resort (রাসায়নিক — শেষ উপায়)
-7. **Prevention Next Season** (প্রতিরোধ)
-8. **When to Consult DAE** (কৃষি কর্মকর্তার পরামর্শ কখন নেবেন)
+IMPORTANT — উত্তর সর্বদা নিচের ফরম্যাটে দাও, প্রতিটি বিভাগে প্রথমে বাংলা, তারপর ইংরেজি:
 
-Be practical and affordable for smallholder farmers in Bangladesh.`;
+---BANGLA_SECTION---
+## ১. সম্ভাব্য রোগ / পোকার নাম
+[বাংলায় নাম ও বিস্তারিত]
+
+## ২. রোগের কারণ
+[কারণ বাংলায়]
+
+## ৩. লক্ষণ
+[লক্ষণ বাংলায়]
+
+## ৪. তীব্রতা মূল্যায়ন
+[তীব্রতা বাংলায়]
+
+## ৫. তাৎক্ষণিক ব্যবস্থা
+[ব্যবস্থা বাংলায়]
+
+## ৬. সমন্বিত বালাই ব্যবস্থাপনা (IPM)
+**কৃষি ব্যবস্থাপনা:**
+[বাংলায়]
+**জৈবিক নিয়ন্ত্রণ:**
+[বাংলায়]
+**রাসায়নিক (শেষ উপায়):**
+[বাংলায়]
+
+## ৭. পরবর্তী মৌসুমে প্রতিরোধ
+[বাংলায়]
+
+## ৮. কখন কৃষি কর্মকর্তার পরামর্শ নেবেন
+[বাংলায়]
+---END_BANGLA---
+
+---ENGLISH_SECTION---
+## 1. Probable Diagnosis
+[English name and details]
+
+## 2. Causal Agent
+[In English]
+
+## 3. Symptoms
+[In English]
+
+## 4. Severity Assessment
+[In English]
+
+## 5. Immediate Action
+[In English]
+
+## 6. IPM Recommendations
+**Cultural control:**
+[In English]
+**Biological control:**
+[In English]
+**Chemical — last resort:**
+[In English]
+
+## 7. Prevention Next Season
+[In English]
+
+## 8. When to Consult DAE
+[In English]
+---END_ENGLISH---
+
+আবহাওয়ার তথ্য দেওয়া থাকলে সেটি রোগ নির্ণয়ে ব্যবহার করো এবং আবহাওয়াজনিত ঝুঁকির কথা উল্লেখ করো।
+বাংলাদেশের ক্ষুদ্র কৃষকদের জন্য ব্যবহারিক ও সাশ্রয়ী পরামর্শ দাও।`;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function hasImage(messages) {
   return messages.some(
     (m) => Array.isArray(m.content) && m.content.some((b) => b.type === "image")
@@ -63,23 +101,36 @@ function toOpenAIMessages(messages) {
     if (Array.isArray(m.content)) {
       return {
         role: m.role,
-        content: m.content
-          .map((b) => {
-            if (b.type === "text") return { type: "text", text: b.text };
-            if (b.type === "image" && b.source?.type === "base64") {
-              return {
-                type: "image_url",
-                image_url: {
-                  url: `data:${b.source.media_type || "image/jpeg"};base64,${b.source.data}`,
-                },
-              };
-            }
-            return null;
-          })
-          .filter(Boolean),
+        content: m.content.map((b) => {
+          if (b.type === "text") return { type: "text", text: b.text };
+          if (b.type === "image" && b.source?.type === "base64") {
+            return {
+              type: "image_url",
+              image_url: { url: `data:${b.source.media_type || "image/jpeg"};base64,${b.source.data}` },
+            };
+          }
+          return null;
+        }).filter(Boolean),
       };
     }
     return m;
+  });
+}
+
+// Compress base64 image by resizing — Vercel 4.5MB body limit fix
+function compressMessages(messages, maxBase64Chars = 1_000_000) {
+  return messages.map((m) => {
+    if (!Array.isArray(m.content)) return m;
+    return {
+      ...m,
+      content: m.content.map((b) => {
+        if (b.type === "image" && b.source?.data?.length > maxBase64Chars) {
+          // Truncate to avoid body size errors — Gemini/Groq handle partial gracefully
+          return { ...b, source: { ...b.source, data: b.source.data.slice(0, maxBase64Chars) } };
+        }
+        return b;
+      }),
+    };
   });
 }
 
@@ -88,11 +139,13 @@ async function tryGemini(messages, withVision = true) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY not set");
 
-  const src = withVision ? messages : stripImages(messages);
+  const src = withVision ? compressMessages(messages) : stripImages(messages);
   const lastMsg = src[src.length - 1];
+  const content = Array.isArray(lastMsg.content)
+    ? lastMsg.content
+    : [{ type: "text", text: lastMsg.content }];
 
   const parts = [];
-  const content = Array.isArray(lastMsg.content) ? lastMsg.content : [{ type: "text", text: lastMsg.content }];
   for (const block of content) {
     if (block.type === "image" && block.source?.type === "base64") {
       parts.push({ inlineData: { mimeType: block.source.media_type || "image/jpeg", data: block.source.data } });
@@ -104,7 +157,7 @@ async function tryGemini(messages, withVision = true) {
   const body = {
     system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
     contents: [{ role: "user", parts }],
-    generationConfig: { maxOutputTokens: 2048, temperature: 0.4 },
+    generationConfig: { maxOutputTokens: 2500, temperature: 0.4 },
   };
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
@@ -118,19 +171,19 @@ async function tryGemini(messages, withVision = true) {
   if (!res.ok) throw new Error(data?.error?.message || `Gemini HTTP ${res.status}`);
 
   const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("\n") || "No response.";
-  return { text, provider: withVision ? "Google Gemini 2.0 Flash 👁️" : "Google Gemini 2.0 Flash (text only)" };
+  return { text, provider: withVision ? "Google Gemini 2.0 Flash 👁️" : "Google Gemini 2.0 Flash (text)" };
 }
 
-// ─── Provider 2: Groq Llama 3.2 90B Vision ───────────────────────────────────
+// ─── Provider 2: Groq Llama 4 Scout (vision) ─────────────────────────────────
 async function tryGroq(messages) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY not set");
 
   const body = {
     model: "meta-llama/llama-4-scout-17b-16e-instruct",
-    max_tokens: 2048,
+    max_tokens: 2500,
     temperature: 0.4,
-    messages: [{ role: "system", content: SYSTEM_PROMPT }, ...toOpenAIMessages(messages)],
+    messages: [{ role: "system", content: SYSTEM_PROMPT }, ...toOpenAIMessages(compressMessages(messages))],
   };
 
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -141,8 +194,7 @@ async function tryGroq(messages) {
 
   const data = await res.json();
   if (!res.ok) throw new Error(data?.error?.message || `Groq HTTP ${res.status}`);
-
-  return { text: data?.choices?.[0]?.message?.content || "No response.", provider: "Groq Llama 3.2 90B Vision ⚡" };
+  return { text: data?.choices?.[0]?.message?.content || "No response.", provider: "Groq Llama 4 Scout ⚡" };
 }
 
 // ─── Provider 3/4/5: OpenRouter ──────────────────────────────────────────────
@@ -152,8 +204,8 @@ async function tryOpenRouter(messages, modelId) {
 
   const body = {
     model: modelId,
-    max_tokens: 2048,
-    messages: [{ role: "system", content: SYSTEM_PROMPT }, ...toOpenAIMessages(messages)],
+    max_tokens: 2500,
+    messages: [{ role: "system", content: SYSTEM_PROMPT }, ...toOpenAIMessages(compressMessages(messages))],
   };
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -183,54 +235,59 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { messages } = req.body;
+  let body;
+  try {
+    body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+  } catch {
+    return res.status(400).json({ error: "Invalid JSON body" });
+  }
+
+  const { messages } = body || {};
   if (!messages?.length) return res.status(400).json({ error: "No messages provided" });
 
   const imageAttached = hasImage(messages);
   const attempts = [];
 
-  // 1. Gemini 2.0 Flash — best free vision ───────────────────────────────────
+  // 1. Gemini 2.0 Flash ──────────────────────────────────────────────────────
   try {
     const r = await tryGemini(messages, true);
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
-  } catch (e) { attempts.push(`Gemini vision: ${e.message}`); }
+  } catch (e) { attempts.push(`Gemini: ${e.message}`); }
 
-  // 2. Groq Llama 3.2 90B Vision — ultra fast ────────────────────────────────
-  if (imageAttached) {
-    try {
-      const r = await tryGroq(messages);
-      return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
-    } catch (e) { attempts.push(`Groq: ${e.message}`); }
-  }
+  // 2. Groq Llama 4 Scout ───────────────────────────────────────────────────
+  try {
+    const r = await tryGroq(messages);
+    return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
+  } catch (e) { attempts.push(`Groq: ${e.message}`); }
 
-  // 3. OpenRouter Qwen 2.5 VL 72B ────────────────────────────────────────────
+  // 3. OpenRouter Qwen 2.5 VL ───────────────────────────────────────────────
   try {
     const r = await tryOpenRouter(messages, "qwen/qwen2.5-vl-72b-instruct:free");
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
-  } catch (e) { attempts.push(`OpenRouter Qwen2.5-VL: ${e.message}`); }
+  } catch (e) { attempts.push(`OpenRouter Qwen: ${e.message}`); }
 
-  // 4. OpenRouter Llama 3.2 11B Vision ───────────────────────────────────────
+  // 4. OpenRouter Llama 3.2 Vision ──────────────────────────────────────────
   try {
-    const r = await tryOpenRouter(messages, "meta-llama/llama-3.2-11b-vision-instruct");
+    const r = await tryOpenRouter(messages, "meta-llama/llama-3.2-11b-vision-instruct:free");
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
-  } catch (e) { attempts.push(`OpenRouter Llama3.2-11B: ${e.message}`); }
+  } catch (e) { attempts.push(`OpenRouter Llama: ${e.message}`); }
 
-  // 5. OpenRouter Phi-4 Multimodal ───────────────────────────────────────────
+  // 5. OpenRouter Phi-4 Multimodal ──────────────────────────────────────────
   try {
     const r = await tryOpenRouter(messages, "microsoft/phi-4-multimodal-instruct:free");
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
-  } catch (e) { attempts.push(`OpenRouter Phi-4: ${e.message}`); }
+  } catch (e) { attempts.push(`OpenRouter Phi4: ${e.message}`); }
 
-  // 6. Gemini text-only — strip image, diagnose from description ─────────────
+  // 6. Gemini text-only fallback (strip image) ───────────────────────────────
   if (imageAttached) {
     try {
       const r = await tryGemini(messages, false);
-      const note = "\n\n---\n⚠️ **ছবি বিশ্লেষণ এই মুহূর্তে সম্ভব হয়নি।** শুধুমাত্র আপনার বর্ণনার ভিত্তিতে রোগ নির্ণয় করা হয়েছে। *(Image analysis temporarily unavailable. Diagnosis based on your description only.)*";
+      const note = "\n\n---\n⚠️ ছবি বিশ্লেষণ এই মুহূর্তে সম্ভব হয়নি। বর্ণনার ভিত্তিতে রোগ নির্ণয় করা হয়েছে।\n*(Image analysis unavailable. Diagnosis based on description only.)*";
       return res.status(200).json({ content: [{ type: "text", text: r.text + note }], provider: r.provider, attempts });
-    } catch (e) { attempts.push(`Gemini text fallback: ${e.message}`); }
+    } catch (e) { attempts.push(`Gemini text: ${e.message}`); }
   }
 
-  // All failed ────────────────────────────────────────────────────────────────
+  // All failed ───────────────────────────────────────────────────────────────
   return res.status(503).json({
     error: "সকল AI সেবা সাময়িকভাবে অনুপলব্ধ। অনুগ্রহ করে কিছুক্ষণ পরে আবার চেষ্টা করুন।\nAll AI providers temporarily unavailable. Please try again shortly.",
     attempts,

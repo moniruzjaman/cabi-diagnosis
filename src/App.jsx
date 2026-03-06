@@ -75,7 +75,8 @@ export default function CABIDiagnosis() {
   });
   const [image, setImage] = useState(null);
   const [imageBase64, setImageBase64] = useState(null);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState(null); // {bn, en}
+  const [showEnglish, setShowEnglish] = useState(false);
   const [provider, setProvider] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -205,14 +206,26 @@ export default function CABIDiagnosis() {
 
   const weatherRisks = assessWeatherRisks(weather);
 
-  // ── Image handler ─────────────────────────────────────────────────────────
+  // ── Image handler — compress to max 800px / 0.7 quality before upload ─────
   const handleImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setImage(URL.createObjectURL(file));
-    const reader = new FileReader();
-    reader.onload = () => setImageBase64(reader.result.split(",")[1]);
-    reader.readAsDataURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+        else { width = Math.round(width * MAX / height); height = MAX; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      const base64 = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
+      setImageBase64(base64);
+    };
+    img.src = URL.createObjectURL(file);
   };
 
   // ── Submit ────────────────────────────────────────────────────────────────
@@ -270,8 +283,15 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
         throw new Error((data?.error || `HTTP ${response.status}`) + detail);
       }
 
-      const text = data.content?.map((b) => b.text || "").join("\n") || "No response.";
-      setResult(text);
+      const raw = data.content?.map((b) => b.text || "").join("\n") || "";
+
+      // Split into Bangla and English sections
+      const bnMatch = raw.match(/---BANGLA_SECTION---([\s\S]*?)---END_BANGLA---/);
+      const enMatch = raw.match(/---ENGLISH_SECTION---([\s\S]*?)---END_ENGLISH---/);
+      const bn = bnMatch ? bnMatch[1].trim() : raw;
+      const en = enMatch ? enMatch[1].trim() : "";
+
+      setResult({ bn, en });
       setProvider(data.provider || null);
     } catch (err) {
       setError(`রোগ নির্ণয়ে সমস্যা হয়েছে: ${err.message}\nDiagnosis failed: ${err.message}`);
@@ -282,7 +302,7 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
 
   const reset = () => {
     setForm({ crop: "", district: "", season: "", growthStage: "", symptoms: "", duration: "", affectedArea: "" });
-    setImage(null); setImageBase64(null); setResult(null); setError(null); setProvider(null);
+    setImage(null); setImageBase64(null); setResult(null); setError(null); setProvider(null); setShowEnglish(false);
   };
 
   // ── Weather widget ────────────────────────────────────────────────────────
@@ -499,9 +519,28 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
         {/* Result */}
         {result && (
           <div style={{ marginTop: 20, background: "rgba(255,255,255,0.06)", backdropFilter: "blur(12px)", borderRadius: 20, border: "1px solid rgba(100,220,100,0.3)", padding: 28 }}>
+
+            {/* Result header */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
               <span style={{ fontSize: 24 }}>📋</span>
-              <h2 style={{ color: "#7fff7f", margin: 0, fontSize: 18 }}>রোগ নির্ণয় প্রতিবেদন / Diagnostic Report</h2>
+              <h2 style={{ color: "#7fff7f", margin: 0, fontSize: 18 }}>রোগ নির্ণয় প্রতিবেদন</h2>
+
+              {/* Lang toggle */}
+              <div style={{ display: "flex", background: "rgba(0,0,0,0.3)", borderRadius: 20, padding: 3, gap: 2 }}>
+                <button onClick={() => setShowEnglish(false)}
+                  style={{ borderRadius: 16, padding: "4px 14px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700,
+                    background: !showEnglish ? "rgba(100,220,100,0.35)" : "transparent",
+                    color: !showEnglish ? "#7fff7f" : "#888" }}>
+                  বাংলা
+                </button>
+                <button onClick={() => setShowEnglish(true)}
+                  style={{ borderRadius: 16, padding: "4px 14px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700,
+                    background: showEnglish ? "rgba(100,180,255,0.35)" : "transparent",
+                    color: showEnglish ? "#a0d8ff" : "#888" }}>
+                  English
+                </button>
+              </div>
+
               {weather && (
                 <span style={{ background: "rgba(20,80,150,0.3)", border: "1px solid rgba(100,180,255,0.3)", borderRadius: 20, padding: "3px 10px", color: "#90c8f8", fontSize: 11 }}>
                   🌡️ {weather.temp}°C · 💧 {weather.humidity}% · 🌧️ {weather.rain24h}mm
@@ -513,12 +552,19 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
                 </span>
               )}
             </div>
+
+            {/* Report content */}
             <div style={{ color: "#d0f0d8", lineHeight: 1.9, fontSize: 14, whiteSpace: "pre-wrap", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 16 }}>
-              {result}
+              {showEnglish
+                ? (result.en || "English translation not available.")
+                : (result.bn || result.en || "No response.")}
             </div>
+
+            {/* Disclaimer */}
             <div style={{ marginTop: 16, padding: "10px 14px", background: "rgba(255,200,50,0.1)", border: "1px solid rgba(255,200,50,0.3)", borderRadius: 10, color: "#ffe08a", fontSize: 12 }}>
-              ⚠️ এই রিপোর্টটি প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তের জন্য স্থানীয় কৃষি কর্মকর্তার (DAE) পরামর্শ নিন।<br />
-              This report is for preliminary guidance only. Consult your local DAE officer for final decisions.
+              {showEnglish
+                ? "⚠️ This report is for preliminary guidance only. Consult your local DAE officer for final decisions."
+                : "⚠️ এই রিপোর্টটি প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তের জন্য স্থানীয় কৃষি কর্মকর্তার (DAE) পরামর্শ নিন।"}
             </div>
           </div>
         )}
