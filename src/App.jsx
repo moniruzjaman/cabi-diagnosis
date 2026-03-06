@@ -82,6 +82,13 @@ export default function CABIDiagnosis() {
   const [error, setError] = useState(null);
   const [expandedGroup, setExpandedGroup] = useState(null);
   const fileRef = useRef();
+  const recognitionRef = useRef(null);
+
+  // Voice state
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  const [ttsSupported, setTtsSupported] = useState(false);
 
   // Weather state
   const [weather, setWeather] = useState(null);
@@ -300,9 +307,71 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
     }
   };
 
+  const stopSpeaking = () => {
+    window.speechSynthesis?.cancel();
+    setIsSpeaking(false);
+  };
+
   const reset = () => {
     setForm({ crop: "", district: "", season: "", growthStage: "", symptoms: "", duration: "", affectedArea: "" });
     setImage(null); setImageBase64(null); setResult(null); setError(null); setProvider(null); setShowEnglish(false);
+    stopSpeaking();
+  };
+
+  // ── Check browser support on mount ────────────────────────────────────────
+  useEffect(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    setVoiceSupported(!!SR);
+    setTtsSupported(!!(window.speechSynthesis));
+  }, []);
+
+  // ── Start voice input ─────────────────────────────────────────────────────
+  const startListening = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+    stopSpeaking();
+    const recognition = new SR();
+    recognitionRef.current = recognition;
+    recognition.lang = "bn-BD";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (e) => {
+      const transcript = Array.from(e.results).map(r => r[0].transcript).join("");
+      setForm(f => ({ ...f, symptoms: f.symptoms ? f.symptoms.trimEnd() + " " + transcript : transcript }));
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    // Audible "বলুন" cue
+    if (window.speechSynthesis) {
+      const cue = new SpeechSynthesisUtterance("বলুন");
+      cue.lang = "bn-BD"; cue.volume = 0.5;
+      window.speechSynthesis.speak(cue);
+    }
+    recognition.start();
+  };
+
+  const stopListening = () => { recognitionRef.current?.stop(); setIsListening(false); };
+
+  // ── Read diagnosis aloud ──────────────────────────────────────────────────
+  const speakResult = (text, lang) => {
+    if (!window.speechSynthesis) return;
+    stopSpeaking();
+    const clean = text
+      .replace(/#{1,6}\s/g, "").replace(/\*\*/g, "").replace(/---[\w_]+---/g, "")
+      .replace(/\*/g, "").replace(/`/g, "").replace(/\n{3,}/g, "\n\n").trim();
+    const utterance = new SpeechSynthesisUtterance(clean);
+    utterance.lang = lang || (showEnglish ? "en-US" : "bn-BD");
+    utterance.rate = 0.88; utterance.pitch = 1.0; utterance.volume = 1.0;
+    if (!showEnglish) {
+      const voices = window.speechSynthesis.getVoices();
+      const bnVoice = voices.find(v => v.lang.startsWith("bn") || v.name.toLowerCase().includes("bangla") || v.name.toLowerCase().includes("bengali"));
+      if (bnVoice) utterance.voice = bnVoice;
+    }
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
   };
 
   // ── Weather widget ────────────────────────────────────────────────────────
@@ -470,12 +539,50 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
               placeholder="e.g. ২০% জমি / 20% of field, বিক্ষিপ্ত / scattered patches" style={inputStyle} />
           </div>
 
-          {/* Symptoms */}
+          {/* Symptoms + Voice Input */}
           <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>🩺 লক্ষণ বর্ণনা / Describe Symptoms *</label>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+              <label style={{ ...labelStyle, marginBottom: 0 }}>🩺 লক্ষণ বর্ণনা / Describe Symptoms *</label>
+              {voiceSupported && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {isListening && (
+                    <span style={{ color: "#ff6b6b", fontSize: 11, animation: "pulse 1s infinite" }}>
+                      ● শুনছি...
+                    </span>
+                  )}
+                  <button
+                    onClick={isListening ? stopListening : startListening}
+                    title={isListening ? "থামুন" : "কথা বলে লক্ষণ বলুন"}
+                    style={{
+                      background: isListening
+                        ? "rgba(255,80,80,0.25)"
+                        : "rgba(100,220,100,0.15)",
+                      border: isListening
+                        ? "2px solid rgba(255,80,80,0.6)"
+                        : "2px solid rgba(100,220,100,0.4)",
+                      borderRadius: "50%", width: 44, height: 44,
+                      cursor: "pointer", fontSize: 20,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      boxShadow: isListening ? "0 0 0 4px rgba(255,80,80,0.2)" : "none",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    {isListening ? "⏹" : "🎙️"}
+                  </button>
+                </div>
+              )}
+            </div>
             <textarea value={form.symptoms} onChange={e => setForm(f => ({ ...f, symptoms: e.target.value }))}
-              placeholder="পাতায় হলুদ দাগ, কান্ড পচা, পোকার উপস্থিতি... / Yellow spots on leaves, stem rot, insect presence..."
-              rows={4} style={{ ...inputStyle, resize: "vertical" }} />
+              placeholder={voiceSupported
+                ? "🎙️ মাইক বাটন চাপুন এবং কথা বলুন, অথবা এখানে লিখুন... / Tap mic and speak, or type here..."
+                : "পাতায় হলুদ দাগ, কান্ড পচা, পোকার উপস্থিতি... / Yellow spots on leaves, stem rot, insect presence..."}
+              rows={4} style={{ ...inputStyle, resize: "vertical",
+                border: isListening ? "1px solid rgba(255,100,100,0.6)" : "1px solid rgba(100,200,100,0.3)" }} />
+            {!voiceSupported && (
+              <div style={{ color: "#888", fontSize: 11, marginTop: 4 }}>
+                ⚠️ এই ব্রাউজারে ভয়েস সাপোর্ট নেই। Chrome/Android ব্যবহার করুন।
+              </div>
+            )}
           </div>
 
           {/* Image Upload */}
@@ -527,13 +634,13 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
 
               {/* Lang toggle */}
               <div style={{ display: "flex", background: "rgba(0,0,0,0.3)", borderRadius: 20, padding: 3, gap: 2 }}>
-                <button onClick={() => setShowEnglish(false)}
+                <button onClick={() => { setShowEnglish(false); stopSpeaking(); }}
                   style={{ borderRadius: 16, padding: "4px 14px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700,
                     background: !showEnglish ? "rgba(100,220,100,0.35)" : "transparent",
                     color: !showEnglish ? "#7fff7f" : "#888" }}>
                   বাংলা
                 </button>
-                <button onClick={() => setShowEnglish(true)}
+                <button onClick={() => { setShowEnglish(true); stopSpeaking(); }}
                   style={{ borderRadius: 16, padding: "4px 14px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700,
                     background: showEnglish ? "rgba(100,180,255,0.35)" : "transparent",
                     color: showEnglish ? "#a0d8ff" : "#888" }}>
@@ -547,9 +654,27 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
                 </span>
               )}
               {provider && (
-                <span style={{ marginLeft: "auto", background: "rgba(100,200,255,0.15)", border: "1px solid rgba(100,200,255,0.35)", borderRadius: 20, padding: "3px 12px", color: "#a0d8ff", fontSize: 11, fontWeight: 600 }}>
+                <span style={{ background: "rgba(100,200,255,0.15)", border: "1px solid rgba(100,200,255,0.35)", borderRadius: 20, padding: "3px 12px", color: "#a0d8ff", fontSize: 11, fontWeight: 600 }}>
                   {provider}
                 </span>
+              )}
+              {/* Read aloud button */}
+              {ttsSupported && (
+                <button
+                  onClick={() => isSpeaking ? stopSpeaking() : speakResult(showEnglish ? result.en : result.bn)}
+                  title={isSpeaking ? "থামুন / Stop" : "পড়ে শোনাও / Read Aloud"}
+                  style={{
+                    marginLeft: "auto",
+                    background: isSpeaking ? "rgba(255,180,50,0.25)" : "rgba(100,220,100,0.15)",
+                    border: isSpeaking ? "2px solid rgba(255,180,50,0.6)" : "2px solid rgba(100,220,100,0.4)",
+                    borderRadius: "50%", width: 40, height: 40, cursor: "pointer", fontSize: 18,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: isSpeaking ? "0 0 0 4px rgba(255,180,50,0.2)" : "none",
+                    transition: "all 0.2s", flexShrink: 0,
+                  }}
+                >
+                  {isSpeaking ? "⏹" : "🔊"}
+                </button>
               )}
             </div>
 
@@ -575,6 +700,20 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
       </div>
     </div>
   );
+}
+
+// ─── Pulse animation injected into DOM ───────────────────────────────────────
+const PULSE_STYLE = `
+@keyframes pulse {
+  0%,100% { opacity:1; }
+  50% { opacity:0.3; }
+}
+`;
+if (typeof document !== "undefined" && !document.getElementById("cabi-voice-style")) {
+  const s = document.createElement("style");
+  s.id = "cabi-voice-style";
+  s.textContent = PULSE_STYLE;
+  document.head.appendChild(s);
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
