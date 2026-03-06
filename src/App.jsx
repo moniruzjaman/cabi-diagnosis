@@ -142,6 +142,119 @@ IMPORTANT: Factor the above real-time weather data into your diagnosis. Mention 
 `.trim();
 }
 
+// ─── Result section parser ───────────────────────────────────────────────────
+const SECTION_META = {
+  // Bangla keys
+  "CABI বর্জন":   { icon: "🔬", color: "#a0d8ff", bg: "rgba(30,80,160,0.18)", border: "rgba(100,180,255,0.25)" },
+  "সম্ভাব্য রোগ": { icon: "🦠", color: "#ffb3b3", bg: "rgba(180,40,40,0.18)",  border: "rgba(255,120,120,0.35)" },
+  "রোগ ত্রিভুজ":  { icon: "🔺", color: "#ffd580", bg: "rgba(160,100,0,0.18)",  border: "rgba(255,200,80,0.3)"  },
+  "মাঠে নিশ্চিত": { icon: "🧪", color: "#c8f0a0", bg: "rgba(60,130,30,0.18)",  border: "rgba(140,220,80,0.3)"  },
+  "তীব্রতা":       { icon: "📊", color: "#ffcc80", bg: "rgba(160,80,0,0.15)",   border: "rgba(255,160,60,0.3)"  },
+  "সমন্বিত বালাই": { icon: "🌿", color: "#7fff7f", bg: "rgba(20,100,20,0.22)",  border: "rgba(100,220,100,0.3)" },
+  "প্রতিরোধ":      { icon: "🛡️", color: "#b0f0e0", bg: "rgba(20,100,80,0.18)",  border: "rgba(80,200,160,0.3)"  },
+  "DAE":           { icon: "📞", color: "#e0b8ff", bg: "rgba(80,20,140,0.18)",  border: "rgba(180,100,255,0.3)" },
+  // English keys
+  "Exclusion":     { icon: "🔬", color: "#a0d8ff", bg: "rgba(30,80,160,0.18)", border: "rgba(100,180,255,0.25)" },
+  "Diagnosis":     { icon: "🦠", color: "#ffb3b3", bg: "rgba(180,40,40,0.18)", border: "rgba(255,120,120,0.35)" },
+  "Disease Tri":   { icon: "🔺", color: "#ffd580", bg: "rgba(160,100,0,0.18)", border: "rgba(255,200,80,0.3)"  },
+  "Field Confirm": { icon: "🧪", color: "#c8f0a0", bg: "rgba(60,130,30,0.18)", border: "rgba(140,220,80,0.3)"  },
+  "Severity":      { icon: "📊", color: "#ffcc80", bg: "rgba(160,80,0,0.15)",  border: "rgba(255,160,60,0.3)"  },
+  "IPM":           { icon: "🌿", color: "#7fff7f", bg: "rgba(20,100,20,0.22)", border: "rgba(100,220,100,0.3)" },
+  "Prevention":    { icon: "🛡️", color: "#b0f0e0", bg: "rgba(20,100,80,0.18)", border: "rgba(80,200,160,0.3)"  },
+  "Consult":       { icon: "📞", color: "#e0b8ff", bg: "rgba(80,20,140,0.18)", border: "rgba(180,100,255,0.3)" },
+};
+
+function getMeta(title) {
+  const t = title || "";
+  for (const [key, val] of Object.entries(SECTION_META)) {
+    if (t.includes(key)) return val;
+  }
+  return { icon: "📄", color: "#d0f0d8", bg: "rgba(255,255,255,0.04)", border: "rgba(255,255,255,0.1)" };
+}
+
+// Render inline markdown: **bold**, *italic*, `code`, bullet lines
+function renderInline(text) {
+  const lines = text.split("\n");
+  return lines.map((line, li) => {
+    // Sub-heading lines (####)
+    if (/^#{1,4}\s/.test(line)) {
+      const t = line.replace(/^#{1,4}\s/, "");
+      return <div key={li} style={{ fontWeight: 700, color: "#a8f0b8", fontSize: 13, marginTop: 8, marginBottom: 2 }}>{renderTokens(t)}</div>;
+    }
+    // Bullet lines
+    if (/^[-•*]\s/.test(line)) {
+      return <div key={li} style={{ display: "flex", gap: 6, marginTop: 3 }}>
+        <span style={{ color: "#5de05d", flexShrink: 0, marginTop: 1 }}>▸</span>
+        <span>{renderTokens(line.replace(/^[-•*]\s/, ""))}</span>
+      </div>;
+    }
+    // Empty line = spacer
+    if (line.trim() === "") return <div key={li} style={{ height: 6 }} />;
+    return <div key={li} style={{ marginTop: 2 }}>{renderTokens(line)}</div>;
+  });
+}
+
+function renderTokens(text) {
+  // Split on **bold** and *italic* and `code`
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+  return parts.map((p, i) => {
+    if (p.startsWith("**") && p.endsWith("**"))
+      return <strong key={i} style={{ color: "#c8ffd0" }}>{p.slice(2,-2)}</strong>;
+    if (p.startsWith("*") && p.endsWith("*"))
+      return <em key={i} style={{ color: "#ffe08a" }}>{p.slice(1,-1)}</em>;
+    if (p.startsWith("`") && p.endsWith("`"))
+      return <code key={i} style={{ background: "rgba(0,0,0,0.3)", borderRadius: 4, padding: "1px 5px", fontSize: 12, color: "#a0f0c0" }}>{p.slice(1,-1)}</code>;
+    return p;
+  });
+}
+
+function parseIntoSections(text) {
+  if (!text) return [];
+  const lines = text.split("\n");
+  const sections = [];
+  let current = null;
+  for (const line of lines) {
+    const h2 = line.match(/^#{1,2}\s+(.+)/);
+    if (h2) {
+      if (current) sections.push(current);
+      current = { title: h2[1].replace(/^\d+\.\s*/, ""), body: [] };
+    } else if (current) {
+      current.body.push(line);
+    }
+  }
+  if (current) sections.push(current);
+  // If no ## headings found, return single block
+  if (sections.length === 0) return [{ title: null, body: text.split("\n") }];
+  return sections;
+}
+
+// ─── Collapsible section card ─────────────────────────────────────────────────
+function SectionCard({ title, bodyLines, defaultOpen }) {
+  const [open, setOpen] = useState(defaultOpen !== false);
+  const meta = getMeta(title);
+  const bodyText = bodyLines.join("\n").trim();
+  if (!bodyText && !title) return null;
+  return (
+    <div style={{ borderRadius: 12, border: `1px solid ${meta.border}`, marginBottom: 10, overflow: "hidden" }}>
+      {title && (
+        <button onClick={() => setOpen(o => !o)}
+          style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
+            background: meta.bg, border: "none", cursor: "pointer", textAlign: "left" }}>
+          <span style={{ fontSize: 18, flexShrink: 0 }}>{meta.icon}</span>
+          <span style={{ color: meta.color, fontWeight: 700, fontSize: 14, flex: 1 }}>{title}</span>
+          <span style={{ color: meta.color, fontSize: 16, opacity: 0.7 }}>{open ? "▲" : "▼"}</span>
+        </button>
+      )}
+      {open && (
+        <div style={{ padding: "12px 16px", background: "rgba(0,10,0,0.3)",
+          color: "#d0f0d8", fontSize: 13.5, lineHeight: 1.8 }}>
+          {renderInline(bodyText)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function CABIDiagnosis() {
   const [form, setForm] = useState({
@@ -821,11 +934,22 @@ Please diagnose this crop problem using CABI Plantwise methodology. Factor in th
               )}
             </div>
 
-            {/* Report content */}
-            <div style={{ color: "#d0f0d8", lineHeight: 1.9, fontSize: 14, whiteSpace: "pre-wrap", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 16 }}>
-              {showEnglish
-                ? (result.en || "English translation not available.")
-                : (result.bn || result.en || "No response.")}
+            {/* Report content — structured sections */}
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 16 }}>
+              {(() => {
+                const text = showEnglish ? (result.en || "") : (result.bn || result.en || "");
+                if (!text) return <div style={{ color: "#888", fontSize: 13 }}>কোনো ফলাফল পাওয়া যায়নি।</div>;
+                const sections = parseIntoSections(text);
+                if (sections.length <= 1 && !sections[0]?.title) {
+                  // Fallback: no headings parsed — render inline formatted
+                  return <div style={{ color: "#d0f0d8", fontSize: 13.5, lineHeight: 1.8 }}>
+                    {renderInline(text)}
+                  </div>;
+                }
+                return sections.map((sec, i) => (
+                  <SectionCard key={i} title={sec.title} bodyLines={sec.body} defaultOpen={i < 3} />
+                ));
+              })()}
             </div>
 
             {/* Disclaimer */}
