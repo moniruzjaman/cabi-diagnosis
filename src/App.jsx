@@ -431,6 +431,118 @@ function LibrarySection() {
   );
 }
 
+function ProductRecommendations({ products, crop }) {
+  const [selected, setSelected] = useState(null);
+  const typeColor = (t) => ({
+    insecticide: { bg: "#fef3c7", border: "#fcd34d", color: "#92400e", label: "কীটনাশক" },
+    fungicide: { bg: "#eff6ff", border: "#bfdbfe", color: "#1e40af", label: "ছত্রাকনাশক" },
+    herbicide: { bg: "#fdf4ff", border: "#e9d5ff", color: "#6b21a8", label: "আগাছানাশক" },
+    acaricide: { bg: "#fff7ed", border: "#fed7aa", color: "#9a3412", label: "মাকড়নাশক" },
+    bactericide: { bg: "#ecfdf5", border: "#a7f3d0", color: "#065f46", label: "ব্যাকটেরিয়ানাশক" },
+    trap: { bg: "#f0f9ff", border: "#bae6fd", color: "#0c4a6e", label: "ফাঁদ" },
+    biocontrol: { bg: "#f0fdf4", border: "#bbf7d0", color: "#14532d", label: "জৈব নিয়ন্ত্রণ" },
+    biofungicide: { bg: "#f0fdf4", border: "#bbf7d0", color: "#14532d", label: "জৈব ছত্রাকনাশক" },
+    bioinsecticide: { bg: "#f0fdf4", border: "#bbf7d0", color: "#14532d", label: "জৈব কীটনাশক" },
+    botanical: { bg: "#fefce8", border: "#fef08a", color: "#713f12", label: "উদ্ভিজ্জ" },
+    fertilizer: { bg: "#ecfdf5", border: "#a7f3d0", color: "#065f46", label: "সার" },
+    soil_amendment: { bg: "#fafaf9", border: "#d6d3d1", color: "#292524", label: "মাটি সংশোধন" },
+    pgr: { bg: "#fdf2f8", border: "#f5d0fe", color: "#701a75", label: "বৃদ্ধি নিয়ন্ত্রক" },
+  }[t] || { bg: C.bgMuted, border: C.border, color: C.text, label: t });
+
+  if (selected) {
+    const tc = typeColor(selected.type);
+    return (
+      <div style={{ background: "#fff", borderRadius: 16, padding: 20, marginTop: 12, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
+        <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: C.primary, cursor: "pointer", fontSize: 13, marginBottom: 14, display: "flex", alignItems: "center", gap: 4 }}>← পণ্য তালিকায় ফিরুন</button>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark }}>{selected.trade_name}</div>
+            <div style={{ color: C.textMuted, fontSize: 12, marginTop: 2 }}>{selected.company}</div>
+            <span style={{ display: "inline-block", background: tc.bg, border: `1px solid ${tc.border}`, color: tc.color, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 700, marginTop: 6 }}>{tc.label}</span>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <InfoRow icon="🧪" label="সক্রিয় উপাদান" val={selected.active_ingredient} />
+          <InfoRow icon="🎯" label="কার্যকর পোকা/রোগ" val={selected.target_bn?.join(", ") || selected.targets?.join(", ")} />
+          <InfoRow icon="🌾" label="ফসল" val={selected.crops_bn?.join(", ") || selected.crops?.join(", ")} />
+          <InfoRow icon="⚗️" label="প্রতি লিটারে মাত্রা" val={selected.dosage_per_litre} />
+          <InfoRow icon="🌿" label="প্রতি বিঘায় মাত্রা" val={selected.dosage_per_bigha} />
+          <InfoRow icon="📅" label="ফসল কাটার আগে বন্ধ (PHI)" val={`${selected.phi_days} দিন`} />
+          <InfoRow icon="🔬" label="ব্যবহারের পদ্ধতি" val={selected.method} />
+        </div>
+        {selected.ipm_note && (
+          <div style={{ marginTop: 12, background: "#f0fdf4", borderRadius: 10, padding: 12 }}>
+            <div style={{ fontWeight: 700, fontSize: 12, color: C.success, marginBottom: 4 }}>🌿 IPM পরামর্শ</div>
+            <div style={{ fontSize: 12, color: C.text, lineHeight: 1.6 }}>{selected.ipm_note}</div>
+          </div>
+        )}
+        <div style={{ marginTop: 10, background: "#fffbeb", borderRadius: 10, padding: 12 }}>
+          <div style={{ fontWeight: 700, fontSize: 12, color: C.warning, marginBottom: 4 }}>⚠️ সতর্কতা</div>
+          <div style={{ fontSize: 12, color: C.text, lineHeight: 1.6 }}>{selected.caution_bn || selected.caution}</div>
+        </div>
+        <div style={{ marginTop: 12, padding: "10px 12px", background: "#fef2f2", borderRadius: 8, fontSize: 11, color: C.danger }}>
+          ⚠️ শুধুমাত্র একটি পণ্য ব্যবহার করুন। চূড়ান্ত সিদ্ধান্তের জন্য DAE কর্মকর্তার পরামর্শ নিন।
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ background: "#fff", borderRadius: 16, padding: 16, marginTop: 12, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <div style={{ fontSize: 20 }}>💊</div>
+        <div>
+          <div style={{ fontWeight: 800, fontSize: 14, color: C.primaryDark }}>সুপারিশকৃত পণ্যসমূহ</div>
+          <div style={{ fontSize: 11, color: C.textMuted }}>{crop?.split("/")[0]?.trim()} · DAE নিবন্ধিত</div>
+        </div>
+      </div>
+      <div style={{ background: "#fffbeb", border: "1px solid #fed7aa", borderRadius: 8, padding: "8px 12px", marginBottom: 12, fontSize: 11, color: C.warning, fontWeight: 600 }}>
+        ⚠️ নিচের পণ্যগুলো থেকে শুধুমাত্র একটি বেছে নিন। সব একসাথে ব্যবহার করবেন না।
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {products.map((p, i) => {
+          const tc = typeColor(p.type);
+          return (
+            <button key={p.id} onClick={() => setSelected(p)}
+              style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: C.bgMuted, border: `1px solid ${C.border}`, borderRadius: 12, cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
+              onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", background: tc.bg, border: `1.5px solid ${tc.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: tc.color, flexShrink: 0 }}>
+                {i + 1}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: C.text }}>{p.trade_name}</div>
+                <div style={{ color: C.textMuted, fontSize: 11, marginTop: 1 }}>{p.active_ingredient?.split(" ").slice(0, 4).join(" ")}</div>
+                <div style={{ display: "flex", gap: 6, marginTop: 4, flexWrap: "wrap" }}>
+                  <span style={{ background: tc.bg, border: `1px solid ${tc.border}`, color: tc.color, borderRadius: 10, padding: "1px 8px", fontSize: 10, fontWeight: 700 }}>{tc.label}</span>
+                  <span style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#065f46", borderRadius: 10, padding: "1px 8px", fontSize: 10 }}>PHI: {p.phi_days}d</span>
+                  {(p.type === "trap" || p.type === "biocontrol" || p.type === "bioinsecticide" || p.type === "biofungicide" || p.type === "botanical") && (
+                    <span style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", color: "#065f46", borderRadius: 10, padding: "1px 8px", fontSize: 10 }}>🌿 IPM</span>
+                  )}
+                </div>
+              </div>
+              <span style={{ color: C.textLight, fontSize: 18 }}>›</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({ icon, label, val }) {
+  if (!val) return null;
+  return (
+    <div style={{ display: "flex", gap: 10 }}>
+      <span style={{ fontSize: 16, flexShrink: 0 }}>{icon}</span>
+      <div>
+        <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600 }}>{label}</div>
+        <div style={{ fontSize: 13, color: C.text, lineHeight: 1.5 }}>{val}</div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function CABIDiagnosis() {
   const [activeTab, setActiveTab] = useState("diagnose");
@@ -447,6 +559,38 @@ export default function CABIDiagnosis() {
   const [error, setError] = useState(null);
   const [severity, setSeverity] = useState(null);
   const [history, setHistory] = useState(() => { try { return JSON.parse(localStorage.getItem("cabi-history") || "[]"); } catch { return []; } });
+  const [pesticideDb, setPesticideDb] = useState(null);
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+
+  // Load pesticide DB once
+  useEffect(() => {
+    fetch("/pesticides.json").then(r => r.json()).then(d => setPesticideDb(d)).catch(() => {});
+  }, []);
+
+  // Match products when result + db available
+  useEffect(() => {
+    if (!pesticideDb || !result || !form.crop) return;
+    const text = (result.bn + " " + result.en).toLowerCase();
+    const cropKey = Object.keys(pesticideDb.crop_to_product_map).find(k =>
+      form.crop.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(form.crop.split("/")[0].trim().toLowerCase())
+    );
+    const cropIds = cropKey ? pesticideDb.crop_to_product_map[cropKey] || [] : [];
+    const pestIds = [];
+    for (const [pest, ids] of Object.entries(pesticideDb.pest_to_product_map)) {
+      if (text.includes(pest.toLowerCase())) ids.forEach(id => pestIds.push(id));
+    }
+    const allIds = [...new Set([...pestIds, ...cropIds])];
+    const matched = allIds.map(id => pesticideDb.products.find(p => p.id === id)).filter(Boolean);
+    // Sort: pest matches first, then by rating desc, limit 4
+    const pestSet = new Set(pestIds);
+    matched.sort((a, b) => {
+      const aP = pestSet.has(a.id) ? 1 : 0;
+      const bP = pestSet.has(b.id) ? 1 : 0;
+      if (bP !== aP) return bP - aP;
+      return (b.rating || 0) - (a.rating || 0);
+    });
+    setRecommendedProducts(matched.slice(0, 5));
+  }, [pesticideDb, result, form.crop]);
 
   const fileRef = useRef();
   const recognitionRef = useRef(null);
@@ -557,7 +701,7 @@ export default function CABIDiagnosis() {
 
   const reset = () => {
     setForm({ crop: "", district: "", season: "", growthStage: "", symptoms: "", duration: "", affectedArea: "" });
-    setImage(null); setImageBase64(null); setResult(null); setError(null); setProvider(null); setShowEnglish(false); setStep(1); setSeverity(null); setShowMoreCrops(false); stopSpeaking();
+    setImage(null); setImageBase64(null); setResult(null); setError(null); setProvider(null); setShowEnglish(false); setStep(1); setSeverity(null); setShowMoreCrops(false); setRecommendedProducts([]); stopSpeaking();
   };
 
   const startListening = () => {
@@ -770,6 +914,11 @@ export default function CABIDiagnosis() {
                     return sections.map((sec, i) => <SectionCard key={i} title={sec.title} bodyLines={sec.body} defaultOpen={i < 3} />);
                   })()}
                 </div>
+
+                {/* Product Recommendations */}
+                {recommendedProducts.length > 0 && (
+                  <ProductRecommendations products={recommendedProducts} crop={form.crop} />
+                )}
 
                 {!severity ? (
                   <div style={{ background: "#fff", borderRadius: 16, padding: 20, marginTop: 12, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
