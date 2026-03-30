@@ -2,37 +2,49 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 // ─── Global styles ────────────────────────────────────────────────────────────
 const GLOBAL_STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap');
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Inter','Noto Sans Bengali',sans-serif;background:#f0f6f1;overflow-x:hidden}
+  html{scroll-behavior:smooth}
+  body{font-family:'Sora','Noto Sans Bengali',sans-serif;background:#f0f6f1;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#2d7a3a;border-radius:4px}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+  @keyframes popIn{0%{transform:scale(.85);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+  @keyframes glow{0%,100%{box-shadow:0 0 8px rgba(26,122,58,0.3)}50%{box-shadow:0 0 20px rgba(26,122,58,0.6)}}
+  ::-webkit-scrollbar{width:3px;height:3px}
+  ::-webkit-scrollbar-thumb{background:#2d9d52;border-radius:4px}
   input,select,textarea,button{font-family:inherit}
-  @media(max-width:480px){.desktop-only{display:none!important}}
-  @media(min-width:481px){.mobile-only{display:none!important}}
+  button:active{transform:scale(0.97)}
 `;
-if(typeof document!=="undefined"&&!document.getElementById("cabi-gs")){
-  const s=document.createElement("style");s.id="cabi-gs";s.textContent=GLOBAL_STYLE;document.head.appendChild(s);
+if(typeof document!=="undefined"&&!document.getElementById("ud-gs")){
+  const s=document.createElement("style");s.id="ud-gs";s.textContent=GLOBAL_STYLE;document.head.appendChild(s);
 }
 
+// ─── Design tokens ────────────────────────────────────────────────────────────
 const C={
-  primary:"#1a7a3a",primaryLight:"#2d9d52",primaryDark:"#0f5a28",
-  accent:"#f59e0b",bg:"#f0f6f1",bgCard:"#ffffff",bgMuted:"#f8faf8",
-  text:"#1a2e1a",textMuted:"#6b7c6b",textLight:"#9aac9a",
-  border:"#d4e8d4",success:"#16a34a",warning:"#d97706",danger:"#dc2626",
-  blue:"#2563eb",shadow:"0 2px 8px rgba(0,80,30,0.10)",shadowMd:"0 4px 16px rgba(0,80,30,0.13)",
+  primary:"#1a7a3a", primaryLight:"#2d9d52", primaryDark:"#0f5a28", primaryXDark:"#093d1b",
+  accent:"#f59e0b", accentLight:"#fbbf24", accentDark:"#d97706",
+  bg:"#f0f6f1", bgCard:"#ffffff", bgMuted:"#f5faf6",
+  text:"#132213", textMuted:"#5a6e5a", textLight:"#8fa88f",
+  border:"#c8e0c8", borderFocus:"#2d9d52",
+  success:"#16a34a", warning:"#d97706", danger:"#dc2626", blue:"#2563eb",
+  shadow:"0 1px 4px rgba(0,60,20,0.08)",
+  shadowMd:"0 4px 16px rgba(0,60,20,0.12)",
+  shadowLg:"0 8px 32px rgba(0,60,20,0.16)",
+  // game colors
+  game1:"#7c3aed", game2:"#0891b2", game3:"#ea580c",
 };
 
-// ─── Crop data ────────────────────────────────────────────────────────────────
+// ─── Data ─────────────────────────────────────────────────────────────────────
 const QUICK_CROPS=[
-  {id:"rice",label:"ধান",en:"Rice",emoji:"🌾",color:"#fbbf24"},
+  {id:"rice",label:"ধান",en:"Rice",emoji:"🌾",color:"#f59e0b"},
   {id:"potato",label:"আলু",en:"Potato",emoji:"🥔",color:"#92400e"},
   {id:"tomato",label:"টমেটো",en:"Tomato",emoji:"🍅",color:"#dc2626"},
   {id:"brinjal",label:"বেগুন",en:"Brinjal",emoji:"🍆",color:"#7c3aed"},
-  {id:"mustard",label:"সরিষা",en:"Mustard",emoji:"🌼",color:"#f59e0b"},
+  {id:"mustard",label:"সরিষা",en:"Mustard",emoji:"🌼",color:"#d97706"},
   {id:"jute",label:"পাট",en:"Jute",emoji:"🌿",color:"#16a34a"},
   {id:"mango",label:"আম",en:"Mango",emoji:"🥭",color:"#ea580c"},
   {id:"banana",label:"কলা",en:"Banana",emoji:"🍌",color:"#ca8a04"},
@@ -45,12 +57,11 @@ const CROPS={
   "সবজি / Vegetables":["আলু / Potato","টমেটো / Tomato","বেগুন / Brinjal","মরিচ / Chilli","শিমলা মরিচ / Capsicum","লাউ / Bottle Gourd","কুমড়া / Pumpkin","তিত করলা / Bitter Gourd","ঢেঁড়স / Okra","পালং শাক / Spinach","মুলা / Radish","গাজর / Carrot","বাঁধাকপি / Cabbage","ফুলকপি / Cauliflower","পেঁয়াজ / Onion","রসুন / Garlic","আদা / Ginger","হলুদ / Turmeric"],
   "ফল / Fruits":["আম / Mango","কাঁঠাল / Jackfruit","কলা / Banana","পেঁপে / Papaya","আনারস / Pineapple","পেয়ারা / Guava","লিচু / Lychee","নারিকেল / Coconut","লেবু / Lemon","কমলা / Orange","ড্রাগন ফ্রুট / Dragon Fruit"],
   "আঁশ / Fiber":["পাট / Jute","তুলা / Cotton"],
-  "চিনি ও মসলা":["আখ / Sugarcane","ধনিয়া / Coriander","কালোজিরা / Nigella","পান / Betel Leaf"],
+  "মসলা / Spice":["আখ / Sugarcane","ধনিয়া / Coriander","কালোজিরা / Nigella","পান / Betel Leaf"],
 };
 const DISTRICTS=["ঢাকা / Dhaka","চট্টগ্রাম / Chattogram","রাজশাহী / Rajshahi","খুলনা / Khulna","বরিশাল / Barisal","সিলেট / Sylhet","রংপুর / Rangpur","ময়মনসিংহ / Mymensingh","কুমিল্লা / Cumilla","গাজীপুর / Gazipur","নারায়ণগঞ্জ / Narayanganj","টাঙ্গাইল / Tangail","কিশোরগঞ্জ / Kishoreganj","নেত্রকোণা / Netrokona","জামালপুর / Jamalpur","মৌলভীবাজার / Moulvibazar","হবিগঞ্জ / Habiganj","সুনামগঞ্জ / Sunamganj","চাঁপাইনবাবগঞ্জ / Chapainawabganj","নাটোর / Natore","নওগাঁ / Naogaon","বগুড়া / Bogura","পাবনা / Pabna","সিরাজগঞ্জ / Sirajganj","দিনাজপুর / Dinajpur","কুড়িগ্রাম / Kurigram","গাইবান্ধা / Gaibandha","নীলফামারী / Nilphamari","পঞ্চগড় / Panchagarh","বাগেরহাট / Bagerhat","সাতক্ষীরা / Satkhira","যশোর / Jashore","ঝিনাইদহ / Jhenaidah","কুষ্টিয়া / Kushtia","পটুয়াখালী / Patuakhali","বরগুনা / Barguna","ভোলা / Bhola","কক্সবাজার / Cox's Bazar","ফেনী / Feni","নোয়াখালী / Noakhali","ব্রাহ্মণবাড়িয়া / Brahmanbaria","বান্দরবান / Bandarban","রাঙামাটি / Rangamati","খাগড়াছড়ি / Khagrachhari"];
 const SEASONS=["বোরো মৌসুম / Boro Season (Nov–May)","আমন মৌসুম / Aman Season (Jun–Nov)","আউশ মৌসুম / Aus Season (Mar–Aug)","রবি মৌসুম / Rabi Season (Oct–Mar)","খরিপ মৌসুম / Kharif Season (Apr–Sep)","সারা বছর / Year-round"];
 const GROWTH_STAGES=["বীজ অঙ্কুরোদগম / Germination","চারা / Seedling","কুশি / Tillering","শাখা-প্রশাখা / Vegetative","ফুল ফোটা / Flowering","ফল ধারণ / Fruit Set","পরিপক্বতা / Maturity","ফসল কাটা / Harvesting"];
-
 const SYMPTOM_CHIPS={
   "🍃 পাতা":[
     {label:"পাতা হলুদ",value:"পাতা হলুদ হয়ে যাচ্ছে"},
@@ -63,20 +74,19 @@ const SYMPTOM_CHIPS={
   ],
   "🌿 কান্ড":[
     {label:"কান্ড পচা",value:"কান্ডের গোড়া পচে কালো বা বাদামি"},
-    {label:"কান্ড ফাঁপা",value:"কান্ড টানলে সহজে উঠে আসে, ভেতর ফাঁকা (মরা ডিল)"},
+    {label:"কান্ড ফাঁপা",value:"কান্ড টানলে সহজে উঠে আসে, ভেতর ফাঁকা"},
     {label:"শিকড় পচা",value:"শিকড় কালো ও পচা"},
   ],
-  "🌸 ফুল ও ফল":[
+  "🌸 ফল":[
     {label:"ফুল ঝরা",value:"ফুল অকালে ঝরে পড়ছে"},
     {label:"ফল পচা",value:"ফল পচে যাচ্ছে, কালো বা বাদামি দাগ"},
     {label:"শীষ চিটা",value:"ধানের শীষ চিটা, দানা পূর্ণ হচ্ছে না"},
     {label:"শীষ সাদা",value:"ধানের শীষ সম্পূর্ণ সাদা হয়ে গেছে"},
   ],
-  "🐛 পোকামাকড়":[
+  "🐛 পোকা":[
     {label:"পোকা দেখা",value:"গাছে পোকা দেখা যাচ্ছে"},
     {label:"পাতায় ছিদ্র",value:"পাতায় ছিদ্র বা চিবানোর দাগ"},
-    {label:"পিঁপড়া দেখা",value:"গাছে পিঁপড়া দেখা যাচ্ছে (জাব পোকার লক্ষণ)"},
-    {label:"মধুরস",value:"পাতায় আঠালো চকচকে পদার্থ (মধুরস)"},
+    {label:"পিঁপড়া/মধুরস",value:"গাছে পিঁপড়া বা আঠালো মধুরস"},
   ],
   "💧 অন্যান্য":[
     {label:"গাছ নেতিয়ে",value:"গাছ দিনে নেতিয়ে পড়ে, রাতে সতেজ হয়"},
@@ -84,176 +94,45 @@ const SYMPTOM_CHIPS={
     {label:"সাদা গুঁড়া",value:"পাতায় সাদা গুঁড়া বা ছাতার মতো আবরণ"},
   ],
 };
-const AREA_CHIPS=[
-  {label:"৫% এর কম",value:"৫% এর কম"},{label:"১০%",value:"প্রায় ১০%"},
-  {label:"২৫%",value:"প্রায় ২৫%"},{label:"৫০%",value:"প্রায় ৫০%"},
-  {label:"৭৫%+",value:"৭৫% এরও বেশি"},{label:"বিক্ষিপ্ত",value:"বিক্ষিপ্তভাবে ছড়িয়ে"},
-  {label:"সমস্ত মাঠ",value:"সমস্ত মাঠ"},
-];
-const DURATION_CHIPS=[
-  {label:"আজই",value:"আজই শুরু"},{label:"১-২ দিন",value:"১-২ দিন আগে"},
-  {label:"৩-৫ দিন",value:"৩-৫ দিন ধরে"},{label:"১ সপ্তাহ",value:"প্রায় ১ সপ্তাহ"},
-  {label:"২ সপ্তাহ",value:"প্রায় ২ সপ্তাহ"},{label:"১ মাস+",value:"১ মাসেরও বেশি"},
-];
-// ─── CABI Plantwise Guide Data ────────────────────────────────────────────────
-const CABI_GUIDE = {
-  protocol: {
-    title: "CABI Plantwise রোগ নির্ণয় প্রোটোকল",
-    subtitle: "5-Step Diagnostic Framework",
-    steps: [
-      {
-        num: "১", icon: "👁️", title: "লক্ষণ পর্যবেক্ষণ", en: "Step 1: Observe Symptoms",
-        color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe",
-        desc: "ফসলের পাতা, কান্ড, ফুল ও ফলে বাহ্যিক লক্ষণ পর্যবেক্ষণ করুন। কোন অংশ আক্রান্ত, আক্রমণের ধরন ও রং লক্ষ্য করুন।",
-        points: [
-          "পাতার উপরে ও নিচে পরীক্ষা করুন",
-          "দাগের আকার, রং ও সীমানা লক্ষ্য করুন",
-          "পোকার উপস্থিতি বা মলের চিহ্ন খুঁজুন",
-          "আক্রান্ত গাছের বয়স নির্ধারণ করুন",
-          "প্রতিবেশী সুস্থ গাছের সাথে তুলনা করুন",
-        ]
-      },
-      {
-        num: "২", icon: "🔬", title: "CABI বর্জন পদ্ধতি", en: "Step 2: CABI Exclusion",
-        color: "#7c3aed", bg: "#faf5ff", border: "#e9d5ff",
-        desc: "সম্ভাব্য কারণগুলো একে একে বাদ দিন। পরিবেশগত, পুষ্টিগত, কীটজনিত ও রোগজনিত কারণ আলাদাভাবে মূল্যায়ন করুন।",
-        points: [
-          "অপুষ্টি লক্ষণ: নাইট্রোজেন হলে পুরনো পাতা, আয়রন হলে নতুন পাতা হলুদ",
-          "পোকার ক্ষতি: ছিদ্র, কামড়ের দাগ, পোকা বা ডিম দেখুন",
-          "ছত্রাকরোগ: দাগের গঠন, স্পোর বা মাইসেলিয়াম লক্ষ্য করুন",
-          "ব্যাকটেরিয়া রোগ: পানিভেজা দাগ, দুর্গন্ধ পরীক্ষা করুন",
-          "ভাইরাস: মোজেইক প্যাটার্ন, বিকৃতি ও বামনতা লক্ষ্য করুন",
-        ]
-      },
-      {
-        num: "৩", icon: "🔺", title: "রোগ ত্রিভুজ বিশ্লেষণ", en: "Step 3: Disease Triangle",
-        color: "#d97706", bg: "#fffbeb", border: "#fcd34d",
-        desc: "রোগ সংঘটনের জন্য তিনটি উপাদান একসাথে থাকতে হয়: সংবেদনশীল পোষক, ভাইরুলেন্ট রোগজীবাণু এবং অনুকূল পরিবেশ।",
-        points: [
-          "পোষক: ফসলের প্রতিরোধ ক্ষমতা কম কিনা",
-          "রোগজীবাণু: ছত্রাক/ব্যাকটেরিয়া/ভাইরাসের উপস্থিতি",
-          "পরিবেশ: তাপমাত্রা, আর্দ্রতা, বৃষ্টিপাত",
-          "সময়: তিনটি একসাথে থাকলেই রোগ হয়",
-          "যেকোনো একটি বদলালে রোগ নিয়ন্ত্রণ সম্ভব",
-        ]
-      },
-      {
-        num: "৪", icon: "🧪", title: "মাঠ পর্যায়ে নিশ্চিতকরণ", en: "Step 4: Field Confirmation",
-        color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0",
-        desc: "মাঠে পর্যবেক্ষণ ও নমুনা সংগ্রহের মাধ্যমে প্রাথমিক রোগ নির্ণয় নিশ্চিত করুন।",
-        points: [
-          "কমপক্ষে ১০টি স্থান থেকে নমুনা নিন (W-pattern)",
-          "আক্রান্তের হার (%) গণনা করুন",
-          "Economic Threshold Level (ETL) তুলনা করুন",
-          "রোগের অগ্রগতি পর্যবেক্ষণ করুন (৩-৫ দিন)",
-          "প্রয়োজনে DAE ল্যাবে নমুনা পাঠান",
-        ]
-      },
-      {
-        num: "৫", icon: "🌿", title: "সমন্বিত বালাই ব্যবস্থাপনা", en: "Step 5: IPM Decision",
-        color: "#0891b2", bg: "#ecfeff", border: "#a5f3fc",
-        desc: "IPM পিরামিড অনুসরণ করুন: প্রতিরোধ → সাংস্কৃতিক → জৈব → রাসায়নিক।",
-        points: [
-          "প্রতিরোধী জাত ব্যবহার করুন",
-          "সাংস্কৃতিক পদ্ধতি: সুষম সার, সেচ, পরিষ্কার মাঠ",
-          "জৈব নিয়ন্ত্রণ: ট্রাইকোকার্ড, বিউভেরিয়া, নিম তেল",
-          "ETL অতিক্রম করলে সঠিক কীটনাশক ব্যবহার করুন",
-          "FRAC/IRAC গ্রুপ রোটেশন মেনে চলুন",
-        ]
-      },
+const AREA_CHIPS=[{label:"৫% এর কম",value:"৫% এর কম"},{label:"১০%",value:"প্রায় ১০%"},{label:"২৫%",value:"প্রায় ২৫%"},{label:"৫০%",value:"প্রায় ৫০%"},{label:"৭৫%+",value:"৭৫% এরও বেশি"},{label:"বিক্ষিপ্ত",value:"বিক্ষিপ্তভাবে ছড়িয়ে"},{label:"সমস্ত মাঠ",value:"সমস্ত মাঠ"}];
+const DURATION_CHIPS=[{label:"আজই",value:"আজই শুরু"},{label:"১-২ দিন",value:"১-২ দিন আগে"},{label:"৩-৫ দিন",value:"৩-৫ দিন ধরে"},{label:"১ সপ্তাহ",value:"প্রায় ১ সপ্তাহ"},{label:"২ সপ্তাহ",value:"প্রায় ২ সপ্তাহ"},{label:"১ মাস+",value:"১ মাসেরও বেশি"}];
+
+// ─── CABI Guide data ──────────────────────────────────────────────────────────
+const CABI_GUIDE={
+  protocol:{
+    title:"CABI Plantwise রোগ নির্ণয় প্রোটোকল",subtitle:"5-Step Diagnostic Framework",
+    steps:[
+      {num:"১",icon:"👁️",title:"লক্ষণ পর্যবেক্ষণ",en:"Observe Symptoms",color:"#2563eb",bg:"#eff6ff",border:"#bfdbfe",desc:"ফসলের পাতা, কান্ড, ফুল ও ফলে বাহ্যিক লক্ষণ পর্যবেক্ষণ করুন।",points:["পাতার উপরে ও নিচে পরীক্ষা করুন","দাগের আকার, রং ও সীমানা লক্ষ্য করুন","পোকার উপস্থিতি বা মলের চিহ্ন খুঁজুন","আক্রান্ত গাছের বয়স নির্ধারণ করুন","সুস্থ গাছের সাথে তুলনা করুন"]},
+      {num:"২",icon:"🔬",title:"CABI বর্জন পদ্ধতি",en:"CABI Exclusion",color:"#7c3aed",bg:"#faf5ff",border:"#e9d5ff",desc:"সম্ভাব্য কারণগুলো একে একে বাদ দিন।",points:["অপুষ্টি: N হলে পুরনো পাতা, Fe হলে নতুন পাতা হলুদ","পোকা: ছিদ্র, কামড়ের দাগ, পোকা বা ডিম দেখুন","ছত্রাক: দাগের গঠন, স্পোর লক্ষ্য করুন","ব্যাকটেরিয়া: পানিভেজা দাগ, দুর্গন্ধ","ভাইরাস: মোজেইক, বিকৃতি, বামনতা"]},
+      {num:"৩",icon:"🔺",title:"রোগ ত্রিভুজ",en:"Disease Triangle",color:"#d97706",bg:"#fffbeb",border:"#fcd34d",desc:"রোগের জন্য তিনটি উপাদান একসাথে থাকতে হয়।",points:["পোষক: ফসলের প্রতিরোধ ক্ষমতা কম","রোগজীবাণু: ছত্রাক/ব্যাকটেরিয়া/ভাইরাস","পরিবেশ: তাপমাত্রা, আর্দ্রতা, বৃষ্টি","সময়: তিনটি একসাথে থাকলেই রোগ","যেকোনো একটি বদলালে নিয়ন্ত্রণ সম্ভব"]},
+      {num:"৪",icon:"🧪",title:"মাঠ নিশ্চিতকরণ",en:"Field Confirmation",color:"#16a34a",bg:"#f0fdf4",border:"#bbf7d0",desc:"নমুনা সংগ্রহের মাধ্যমে প্রাথমিক নির্ণয় নিশ্চিত করুন।",points:["W-pattern-এ ১০টি স্থান থেকে নমুনা নিন","আক্রান্তের হার (%) গণনা করুন","ETL-এর সাথে তুলনা করুন","৩-৫ দিন রোগের অগ্রগতি দেখুন","DAE ল্যাবে নমুনা পাঠান প্রয়োজনে"]},
+      {num:"৫",icon:"🌿",title:"IPM সিদ্ধান্ত",en:"IPM Decision",color:"#0891b2",bg:"#ecfeff",border:"#a5f3fc",desc:"IPM পিরামিড: প্রতিরোধ → সাংস্কৃতিক → জৈব → রাসায়নিক।",points:["প্রতিরোধী জাত ব্যবহার করুন","সুষম সার, সেচ, পরিষ্কার মাঠ","জৈব: ট্রাইকোকার্ড, নিম তেল","ETL অতিক্রমে সঠিক কীটনাশক","FRAC/IRAC রোটেশন মেনে চলুন"]},
     ]
   },
-  etl: [
-    {pest:"ধানের মাজরা পোকা",en:"Rice Stem Borer",etl:"২০% ডেড হার্ট বা ১০% হোয়াইট ইয়ার",stage:"কুশি থেকে গর্ভাবস্থা",monitor:"১০টি স্থান × ১০ গাছ = ১০০ গাছ"},
-    {pest:"বাদামি গাছফড়িং",en:"Brown Planthopper",etl:"প্রতি গাছে ১০-১৫টি পোকা",stage:"সব পর্যায়",monitor:"২০ গাছ/বিঘা পরীক্ষা"},
-    {pest:"পাতামোড়া পোকা",en:"Rice Leaf Folder",etl:"পূর্ণ বৃদ্ধিতে ৫০% মোড়ানো পাতা",stage:"শাখা-প্রশাখা পর্যায়",monitor:"ক্ষেতের মাঝে ও কিনারে নমুনা"},
-    {pest:"জাব পোকা",en:"Aphid (Mustard)",etl:"প্রতি গাছে ৫০টির বেশি পোকা",stage:"ফুল থেকে শুঁটি গঠন",monitor:"১০ গাছের উপরের ৩টি পাতা"},
-    {pest:"ডায়মন্ড ব্যাক মথ",en:"Diamond Back Moth (Cabbage)",etl:"প্রতি গাছে ৫টি লার্ভা",stage:"সব পর্যায়",monitor:"১০টি গাছ পরীক্ষা"},
-    {pest:"ধানের ব্লাস্ট",en:"Rice Blast",etl:"পাতা ব্লাস্ট: ২% আক্রমণ; ঘাড় ব্লাস্ট: যেকোনো দেখা গেলে",stage:"কুশি ও ফুল পর্যায়",monitor:"আবহাওয়া পূর্বাভাস + মাঠ পরিদর্শন"},
-    {pest:"টমেটো আর্লি ব্লাইট",en:"Early Blight",etl:"নিচের পাতায় ১ম দাগ দেখলেই ব্যবস্থা",stage:"সব পর্যায়",monitor:"সাপ্তাহিক মাঠ পরিদর্শন"},
-    {pest:"আলু লেট ব্লাইট",en:"Late Blight",etl:"যেকোনো লক্ষণ দেখলেই ব্যবস্থা",stage:"সব পর্যায়",monitor:"আবহাওয়া + ৩ দিনে একবার"},
+  etl:[
+    {pest:"ধানের মাজরা পোকা",en:"Rice Stem Borer",etl:"২০% মরা ডিল বা ১০% সাদা শীষ",stage:"কুশি থেকে গর্ভাবস্থা",monitor:"১০ স্থান × ১০ গাছ"},
+    {pest:"বাদামি গাছফড়িং",en:"Brown Planthopper",etl:"প্রতি গাছে ১০-১৫টি পোকা",stage:"সব পর্যায়",monitor:"২০ গাছ/বিঘা"},
+    {pest:"পাতামোড়া পোকা",en:"Rice Leaf Folder",etl:"৫০% মোড়ানো পাতা",stage:"শাখা-প্রশাখা",monitor:"ক্ষেতের মাঝে ও কিনারে"},
+    {pest:"জাব পোকা",en:"Aphid (Mustard)",etl:"৫০টির বেশি পোকা/গাছ",stage:"ফুল থেকে শুঁটি",monitor:"১০ গাছের উপরের ৩ পাতা"},
+    {pest:"ধানের ব্লাস্ট",en:"Rice Blast",etl:"পাতা: ২%; ঘাড়: যেকোনো দাগ",stage:"কুশি ও ফুল",monitor:"আবহাওয়া + মাঠ পরিদর্শন"},
+    {pest:"টমেটো আর্লি ব্লাইট",en:"Early Blight",etl:"১ম দাগ দেখলেই ব্যবস্থা",stage:"সব পর্যায়",monitor:"সাপ্তাহিক পরিদর্শন"},
+    {pest:"আলু লেট ব্লাইট",en:"Late Blight",etl:"যেকোনো দাগ দেখলেই ব্যবস্থা",stage:"সব পর্যায়",monitor:"৩ দিনে একবার"},
+    {pest:"ডায়মন্ড ব্যাক মথ",en:"Diamond Back Moth",etl:"৫টি লার্ভা/গাছ",stage:"সব পর্যায়",monitor:"১০ গাছ, সপ্তাহে ২বার"},
   ],
-  nutrients: [
-    {
-      name:"নাইট্রোজেন (N)",en:"Nitrogen",color:"#f59e0b",
-      deficiency:"নিচের পাতা থেকে হলুদ শুরু, সমগ্র পাতা হলুদ-সবুজ, বৃদ্ধি কমে যায়",
-      excess:"গাঢ় সবুজ পাতা, দেরিতে পাকা, রোগের প্রতি সংবেদনশীলতা বাড়ে, পড়ে যাওয়ার ঝুঁকি",
-      fix:"ইউরিয়া ১০-১৫ কেজি/বিঘা ভাগে ভাগে প্রয়োগ। LCC ব্যবহার করে প্রয়োজন মতো দিন।",
-      crops:["ধান","গম","ভুট্টা","সব সবজি"]
-    },
-    {
-      name:"ফসফরাস (P)",en:"Phosphorus",color:"#8b5cf6",
-      deficiency:"পুরনো পাতায় বেগুনি-লাল রং, শিকড় কম বিকশিত, দেরিতে পরিপক্ব",
-      excess:"জিংক ও আয়রনের অভাব ঘটায়, মাটিতে জমে পানি দূষণ",
-      fix:"ট্রিপল সুপারফসফেট (TSP) বা DAP সার বীজ বোনার সময়ে মাটিতে মিশিয়ে দিন।",
-      crops:["ধান","আলু","ডাল জাতীয় ফসল"]
-    },
-    {
-      name:"পটাশিয়াম (K)",en:"Potassium",color:"#ef4444",
-      deficiency:"পুরনো পাতার কিনারা পুড়ে যাওয়ার মতো বাদামি, ফল ছোট, রোগে আক্রান্ত হওয়ার প্রবণতা",
-      excess:"ম্যাগনেসিয়াম ও ক্যালসিয়ামের শোষণ বাধাগ্রস্ত হয়",
-      fix:"মিউরেট অফ পটাশ (MoP) বা পটাশিয়াম সালফেট সার প্রয়োগ করুন।",
-      crops:["আলু","কলা","টমেটো","ধান"]
-    },
-    {
-      name:"জিংক (Zn)",en:"Zinc",color:"#0891b2",
-      deficiency:"নতুন পাতায় বাদামি মরচে দাগ, 'খইরা রোগ' (ধানে), বৃদ্ধি থমকে যায়",
-      excess:"বিরল, অতিরিক্ত হলে আয়রন ও ম্যাঙ্গানিজ শোষণ কমে",
-      fix:"জিংক সালফেট ৪-৫ কেজি/বিঘা মাটিতে বা ০.৫% দ্রবণ পাতায় স্প্রে করুন।",
-      crops:["ধান","গম","সবজি"]
-    },
-    {
-      name:"আয়রন (Fe)",en:"Iron",color:"#f97316",
-      deficiency:"নতুন পাতায় আন্তঃশিরা হলুদ (শিরা সবুজ থাকে), ক্ষারীয় মাটিতে বেশি",
-      excess:"বিষাক্ততা — পুরনো পাতায় বাদামি দাগ, টক্সিসিটি",
-      fix:"ফেরাস সালফেট ০.৫% দ্রবণ পাতায় স্প্রে বা মাটিতে ২-৩ কেজি/বিঘা।",
-      crops:["ধান","সবজি","চিনাবাদাম"]
-    },
-    {
-      name:"ম্যাঙ্গানিজ (Mn)",en:"Manganese",color:"#84cc16",
-      deficiency:"নতুন পাতায় আন্তঃশিরা হলুদ (আয়রনের মতো), ধূসর দাগ, বৃদ্ধি কমে",
-      excess:"পুরনো পাতায় বাদামি দাগ, বিষাক্ততার লক্ষণ",
-      fix:"ম্যাঙ্গানিজ সালফেট ০.৫% দ্রবণ পাতায় স্প্রে করুন।",
-      crops:["ধান","গম","সয়াবিন"]
-    },
-    {
-      name:"ক্যালসিয়াম (Ca)",en:"Calcium",color:"#6366f1",
-      deficiency:"নতুন পাতা কুঁকড়ানো, মূল ও কান্ডের মাথা পচে যায়, টমেটোর বটম এন্ড রট",
-      excess:"মাটিতে অন্য পুষ্টির শোষণ কমায়, pH বাড়ে",
-      fix:"জিপসাম বা চুন প্রয়োগ। টমেটো: নিয়মিত সেচ + ক্যালসিয়াম নাইট্রেট স্প্রে।",
-      crops:["টমেটো","মরিচ","আপেল","বাঁধাকপি"]
-    },
-    {
-      name:"বোরন (B)",en:"Boron",color:"#ec4899",
-      deficiency:"ফুল ঝরা, ফল বিকৃত, নতুন পাতা পুরু ও ভঙ্গুর, কাণ্ডের মাথা মরে",
-      excess:"পাতার ডগা ও কিনারা পুড়ে যায়",
-      fix:"বোরেক্স ০.২% দ্রবণ ফুল আসার আগে পাতায় স্প্রে বা মাটিতে ১ কেজি/বিঘা।",
-      crops:["সরিষা","সূর্যমুখী","শাকসবজি","ফল ফসল"]
-    },
+  nutrients:[
+    {name:"নাইট্রোজেন (N)",en:"Nitrogen",color:"#f59e0b",deficiency:"নিচের পাতা হলুদ, বৃদ্ধি কম",excess:"গাঢ় সবুজ, দেরিতে পাকা, রোগে সংবেদনশীল",fix:"ইউরিয়া ১০-১৫ কেজি/বিঘা ভাগে ভাগে",crops:["ধান","গম","ভুট্টা","সব সবজি"]},
+    {name:"ফসফরাস (P)",en:"Phosphorus",color:"#8b5cf6",deficiency:"পুরনো পাতায় বেগুনি-লাল, শিকড় কম",excess:"Zn ও Fe অভাব ঘটায়",fix:"TSP বা DAP বীজ বোনার সময়ে",crops:["ধান","আলু","ডাল ফসল"]},
+    {name:"পটাশিয়াম (K)",en:"Potassium",color:"#ef4444",deficiency:"পুরনো পাতার কিনারা পোড়া, ফল ছোট",excess:"Mg ও Ca শোষণ বাধা",fix:"MoP বা পটাশিয়াম সালফেট",crops:["আলু","কলা","টমেটো","ধান"]},
+    {name:"জিংক (Zn)",en:"Zinc",color:"#0891b2",deficiency:"বাদামি মরচে দাগ, খইরা রোগ, বৃদ্ধি থমকে",excess:"বিরল",fix:"জিংক সালফেট ৪-৫ কেজি/বিঘা",crops:["ধান","গম","সবজি"]},
+    {name:"আয়রন (Fe)",en:"Iron",color:"#f97316",deficiency:"নতুন পাতা হলুদ, শিরা সবুজ",excess:"পুরনো পাতায় বাদামি দাগ",fix:"ফেরাস সালফেট ০.৫% স্প্রে",crops:["ধান","সবজি","চিনাবাদাম"]},
+    {name:"বোরন (B)",en:"Boron",color:"#ec4899",deficiency:"ফুল ঝরা, ফল বিকৃত, কাণ্ডমাথা মরে",excess:"পাতার কিনারা পোড়া",fix:"বোরেক্স ০.২% ফুলের আগে স্প্রে",crops:["সরিষা","সূর্যমুখী","সবজি"]},
   ],
-  ipm_pyramid: [
-    {level:1,label:"প্রতিরোধ (Prevention)",color:"#16a34a",items:["প্রতিরোধী জাত নির্বাচন","সুস্থ/প্রত্যয়িত বীজ ব্যবহার","ফসল আবর্তন মেনে চলুন","সুষম সার ব্যবস্থাপনা","রোগমুক্ত চারা ব্যবহার"]},
-    {level:2,label:"সাংস্কৃতিক (Cultural)",color:"#2563eb",items:["সঠিক সময়ে বপন/রোপণ","সঠিক দূরত্ব বজায় রাখুন","পরিষ্কার মাঠ ও আলপথ","সুষম সেচ ব্যবস্থাপনা","আক্রান্ত গাছ সরিয়ে ফেলুন"]},
-    {level:3,label:"জৈব/ভৌত (Biological/Physical)",color:"#7c3aed",items:["ট্রাইকোগ্রামা কার্ড","হলুদ/আলোক ফাঁদ","বিউভেরিয়া ও ট্রাইকোডার্মা","নিম তেল ও রসুন-মরিচ স্প্রে","প্রাকৃতিক শত্রু সংরক্ষণ"]},
-    {level:4,label:"রাসায়নিক (Chemical — শেষ উপায়)",color:"#dc2626",items:["ETL অতিক্রম করলেই ব্যবহার","সঠিক মাত্রায় প্রয়োগ করুন","FRAC/IRAC গ্রুপ রোটেশন","PPE পরিধান করুন","PHI মেনে চলুন"]},
+  ipm_pyramid:[
+    {level:1,label:"প্রতিরোধ",color:"#16a34a",items:["প্রতিরোধী জাত","সুস্থ বীজ","ফসল আবর্তন","সুষম সার","রোগমুক্ত চারা"]},
+    {level:2,label:"সাংস্কৃতিক",color:"#2563eb",items:["সঠিক সময়ে বপন","সঠিক দূরত্ব","পরিষ্কার মাঠ","সুষম সেচ","আক্রান্ত গাছ সরানো"]},
+    {level:3,label:"জৈব/ভৌত",color:"#7c3aed",items:["ট্রাইকোগ্রামা কার্ড","হলুদ/আলোক ফাঁদ","বিউভেরিয়া","নিম তেল স্প্রে","প্রাকৃতিক শত্রু"]},
+    {level:4,label:"রাসায়নিক (শেষ উপায়)",color:"#dc2626",items:["ETL অতিক্রমে","সঠিক মাত্রা","FRAC/IRAC রোটেশন","PPE পরিধান","PHI মেনে চলুন"]},
   ],
-  resistance: {
-    title: "FRAC/IRAC প্রতিরোধ ব্যবস্থাপনা",
-    frac: [
-      {group:"FRAC 1 (MBC)",ai:"কার্বেন্ডাজিম, থিওফানেট মিথাইল",risk:"উচ্চ ঝুঁকি",rotate:"FRAC 3 বা 11 এর সাথে"},
-      {group:"FRAC 3 (DMI/Triazole)",ai:"ট্রাইসাইক্লাজোল, হেক্সাকোনাজোল, প্রপিকোনাজোল",risk:"মাঝারি ঝুঁকি",rotate:"FRAC 11 বা 7 এর সাথে"},
-      {group:"FRAC 4 (PA)",ai:"মেটালাক্সিল-এম",risk:"উচ্চ ঝুঁকি",rotate:"FRAC M3 (মানকোজেব) সাথে মিশিয়ে"},
-      {group:"FRAC 11 (QoI/Strobilurin)",ai:"আজোক্সিস্ট্রোবিন, ট্রাইফ্লোক্সিস্ট্রোবিন",risk:"উচ্চ ঝুঁকি",rotate:"FRAC 3 এর সাথে, মৌসুমে ২ বারের বেশি নয়"},
-      {group:"FRAC M3 (Dithiocarbamate)",ai:"মানকোজেব",risk:"কম ঝুঁকি",rotate:"যেকোনো সিস্টেমিকের সাথে মিশিয়ে ব্যবহার"},
-    ],
-    irac: [
-      {group:"IRAC 1A (Organophosphate)",ai:"ক্লোরপাইরিফস, ডাইমিথোয়েট",risk:"মাঝারি ঝুঁকি",rotate:"IRAC 3 বা 4 এর সাথে"},
-      {group:"IRAC 3 (Pyrethroid)",ai:"সাইপারমেথ্রিন, ল্যাম্বডা-সাইহ্যালোথ্রিন",risk:"উচ্চ ঝুঁকি",rotate:"IRAC 1 বা 4 এর সাথে"},
-      {group:"IRAC 4A (Neonicotinoid)",ai:"ইমিডাক্লোপ্রিড, থিয়ামেথোক্সাম",risk:"উচ্চ ঝুঁকি",rotate:"IRAC 22 বা 28 এর সাথে; মৌমাছির বিষয়ে সতর্ক"},
-      {group:"IRAC 22 (Pymetrozine)",ai:"পাইমেট্রোজিন",risk:"কম ঝুঁকি",rotate:"BPH প্রতিরোধের জন্য নিওনিকোটিনয়েডের বিকল্প"},
-      {group:"IRAC 28 (Diamide)",ai:"ক্লোরান্ট্রানিলিপ্রোল, ফ্লুবেন্ডিয়ামাইড",risk:"মাঝারি ঝুঁকি",rotate:"IRAC 1 বা 3 এর সাথে; মৌসুমে ২ বারের বেশি নয়"},
-    ]
-  }
 };
 
 // ─── Library data ─────────────────────────────────────────────────────────────
@@ -261,51 +140,49 @@ const LIBRARY={
   pests:[
     {name:"ধানের মাজরা পোকা",en:"Rice Stem Borer",icon:"🐛",crops:["ধান"],symptoms:"মরা ডিল, সাদা শীষ, কান্ড কাটা",ipm:"ট্রাইকোকার্ড, আলোক ফাঁদ, পরজীবী পোকা",etl:"২০% মরা ডিল"},
     {name:"বাদামি গাছফড়িং",en:"Brown Planthopper",icon:"🟤",crops:["ধান"],symptoms:"হপার বার্ন, গাছের গোড়ায় বাদামি পোকা",ipm:"ইমিডাক্লোপ্রিড, পাইমেট্রোজিন, প্রাকৃতিক শত্রু",etl:"প্রতি গাছে ১০-১৫টি"},
-    {name:"ধানের পাতামোড়া পোকা",en:"Rice Leaf Folder",icon:"🌿",crops:["ধান"],symptoms:"পাতা লম্বালম্বিভাবে মোড়ানো, সাদা দাগ",ipm:"প্রাকৃতিক শত্রু, ক্লোরপাইরিফস শেষ উপায়",etl:"৫০% মোড়ানো পাতা"},
     {name:"জাব পোকা / এফিড",en:"Aphid",icon:"🟢",crops:["সরিষা","সবজি"],symptoms:"পাতা কুঁকড়ানো, মধুরস, পিঁপড়া",ipm:"হলুদ ট্র্যাপ, নিম তেল, প্রাকৃতিক শত্রু",etl:"৫০টি পোকা/গাছ"},
     {name:"সবজির থ্রিপস",en:"Thrips",icon:"🔸",crops:["বেগুন","মরিচ"],symptoms:"পাতায় রুপালি দাগ, পাতা কুঁকড়ানো",ipm:"নীল ট্র্যাপ, স্পিনোসাড, নিম তেল",etl:"প্রতি পাতায় ১০টি"},
-    {name:"ডায়মন্ড ব্যাক মথ",en:"Diamond Back Moth",icon:"🦋",crops:["বাঁধাকপি","ফুলকপি"],symptoms:"পাতায় অনিয়মিত ছিদ্র, লার্ভা",ipm:"Bt স্প্রে, ইমামেকটিন বেনজোয়েট, ফেরোমন ট্র্যাপ",etl:"৫টি লার্ভা/গাছ"},
+    {name:"ডায়মন্ড ব্যাক মথ",en:"Diamond Back Moth",icon:"🦋",crops:["বাঁধাকপি","ফুলকপি"],symptoms:"পাতায় অনিয়মিত ছিদ্র, লার্ভা",ipm:"Bt স্প্রে, ইমামেকটিন, ফেরোমন ট্র্যাপ",etl:"৫টি লার্ভা/গাছ"},
     {name:"লাল মাকড়সা মাইট",en:"Red Spider Mite",icon:"🔴",crops:["বেগুন","মরিচ"],symptoms:"পাতায় সূক্ষ্ম জাল, হলুদ ও ঝরা",ipm:"আবামেকটিন, সালফার, পানি স্প্রে",etl:"১০টি মাইট/পাতা"},
   ],
   diseases:[
-    {name:"ধানের ব্লাস্ট",en:"Rice Blast",icon:"💥",crops:["ধান"],symptoms:"মাকু আকৃতির ধূসর দাগ, ঘাড় ব্লাস্ট",ipm:"ট্রাইসাইক্লাজোল, প্রতিরোধী জাত, সুষম সার",etl:"২% পাতা আক্রান্ত"},
-    {name:"শিথ ব্লাইট",en:"Sheath Blight",icon:"🍂",crops:["ধান"],symptoms:"কান্ডে ডিম্বাকৃতি ধূসর দাগ",ipm:"হেক্সাকোনাজোল, কম ঘনত্বে রোপণ",etl:"৫% আক্রমণ"},
-    {name:"ব্যাকটেরিয়াল লিফ ব্লাইট",en:"Bacterial Leaf Blight",icon:"🌊",crops:["ধান"],symptoms:"পাতার কিনারা হলুদ-বাদামি, পানিভেজা দাগ",ipm:"কপার অক্সিক্লোরাইড, BLB-প্রতিরোধী জাত",etl:"১০% পাতা আক্রান্ত"},
-    {name:"টমেটো আর্লি ব্লাইট",en:"Early Blight",icon:"🍅",crops:["টমেটো","আলু"],symptoms:"কালো বৃত্তাকার দাগ, হলুদ বলয়",ipm:"ম্যানকোজেব, ক্লোরোথ্যালোনিল, পরিষ্কার মাঠ",etl:"১ম দাগ দেখলেই"},
-    {name:"আলু লেট ব্লাইট",en:"Late Blight",icon:"🥔",crops:["আলু","টমেটো"],symptoms:"পানিভেজা দাগ দ্রুত কালো হয়",ipm:"মেটালাক্সিল+মানকোজেব, নিষ্কাশন",etl:"যেকোনো দাগ দেখলেই"},
-    {name:"সরিষার অল্টারনেরিয়া",en:"Alternaria Blight",icon:"🌼",crops:["সরিষা"],symptoms:"পাতায় কালো বৃত্তাকার দাগ, শুঁটি কালো",ipm:"ইপ্রোডিওন, বীজ শোধন",etl:"৫% পাতা আক্রান্ত"},
-    {name:"পাউডারি মিলডিউ",en:"Powdery Mildew",icon:"⚪",crops:["শসা","টমেটো"],symptoms:"পাতায় সাদা গুঁড়া আবরণ",ipm:"সালফার, পটাশিয়াম বাইকার্বোনেট, পেনকোনাজোল",etl:"১% পাতা আক্রান্ত"},
+    {name:"ধানের ব্লাস্ট",en:"Rice Blast",icon:"💥",crops:["ধান"],symptoms:"মাকু আকৃতির ধূসর দাগ, ঘাড় ব্লাস্ট",ipm:"ট্রাইসাইক্লাজোল, প্রতিরোধী জাত",etl:"২% পাতা আক্রান্ত"},
+    {name:"শিথ ব্লাইট",en:"Sheath Blight",icon:"🍂",crops:["ধান"],symptoms:"কান্ডে ডিম্বাকৃতি ধূসর দাগ",ipm:"হেক্সাকোনাজোল, ভ্যালিডামাইসিন",etl:"৫% আক্রমণ"},
+    {name:"ব্যাকটেরিয়াল লিফ ব্লাইট",en:"Bacterial Leaf Blight",icon:"🌊",crops:["ধান"],symptoms:"পাতার কিনারা হলুদ-বাদামি",ipm:"কপার অক্সিক্লোরাইড, BLB-প্রতিরোধী জাত",etl:"১০% পাতা আক্রান্ত"},
+    {name:"টমেটো আর্লি ব্লাইট",en:"Early Blight",icon:"🍅",crops:["টমেটো","আলু"],symptoms:"কালো বৃত্তাকার দাগ, হলুদ বলয়",ipm:"ম্যানকোজেব, ক্লোরোথ্যালোনিল",etl:"১ম দাগ দেখলেই"},
+    {name:"আলু লেট ব্লাইট",en:"Late Blight",icon:"🥔",crops:["আলু","টমেটো"],symptoms:"পানিভেজা দাগ দ্রুত কালো হয়",ipm:"মেটালাক্সিল+মানকোজেব",etl:"যেকোনো দাগ দেখলেই"},
+    {name:"পাউডারি মিলডিউ",en:"Powdery Mildew",icon:"⚪",crops:["শসা","টমেটো"],symptoms:"পাতায় সাদা গুঁড়া আবরণ",ipm:"সালফার, পটাশিয়াম বাইকার্বোনেট",etl:"১% পাতা আক্রান্ত"},
   ],
   deficiencies:[
-    {name:"নাইট্রোজেন অভাব",en:"Nitrogen Deficiency",icon:"🟡",crops:["সব ফসল"],symptoms:"নিচের পাতা হলুদ, বৃদ্ধি কম",fix:"ইউরিয়া ১০-১৫ কেজি/বিঘা",etl:"সার্বক্ষণিক পর্যবেক্ষণ"},
+    {name:"নাইট্রোজেন অভাব",en:"Nitrogen Deficiency",icon:"🟡",crops:["সব ফসল"],symptoms:"নিচের পাতা হলুদ, বৃদ্ধি কম",fix:"ইউরিয়া ১০-১৫ কেজি/বিঘা",etl:"সার্বক্ষণিক"},
     {name:"জিংক অভাব (খইরা রোগ)",en:"Zinc Deficiency",icon:"🔵",crops:["ধান"],symptoms:"বাদামি মরচে দাগ, বৃদ্ধি থমকে",fix:"জিংক সালফেট ৪ কেজি/বিঘা",etl:"লক্ষণ দেখলেই"},
     {name:"আয়রন অভাব",en:"Iron Deficiency",icon:"🟠",crops:["ধান","সবজি"],symptoms:"নতুন পাতা হলুদ, শিরা সবুজ",fix:"ফেরাস সালফেট ০.৫% স্প্রে",etl:"লক্ষণ দেখলেই"},
-    {name:"পটাশিয়াম অভাব",en:"Potassium Deficiency",icon:"🟤",crops:["আলু","কলা"],symptoms:"পাতার কিনারা পুড়ে বাদামি",fix:"MoP সার প্রয়োগ",etl:"লক্ষণ দেখলেই"},
+    {name:"পটাশিয়াম অভাব",en:"Potassium Deficiency",icon:"🟤",crops:["আলু","কলা"],symptoms:"পাতার কিনারা পোড়া বাদামি",fix:"MoP সার প্রয়োগ",etl:"লক্ষণ দেখলেই"},
   ],
 };
-// ─── Weather & spraying helpers ───────────────────────────────────────────────
+
+// ─── Weather helpers ──────────────────────────────────────────────────────────
 function assessWeatherRisks(w){
   const r=[];if(!w)return r;
   if(w.humidity>=80&&w.temp>=26&&w.temp<=36)r.push({level:"high",icon:"🔴",text:"Blast ও Sheath Blight ঝুঁকি বেশি"});
   if(w.rain24h>=50)r.push({level:"high",icon:"🔴",text:"মাজরা পোকা ও শিকড় পচা ঝুঁকি বেশি"});
-  if(w.rain24h===0&&w.humidity<55)r.push({level:"medium",icon:"🟡",text:"মাইট ও থ্রিপস ঝুঁকি (শুষ্ক আবহাওয়া)"});
+  if(w.rain24h===0&&w.humidity<55)r.push({level:"medium",icon:"🟡",text:"মাইট ও থ্রিপস ঝুঁকি (শুষ্ক)"});
   if(w.temp<20)r.push({level:"medium",icon:"🟡",text:"টুংরো ভাইরাস ঝুঁকি (ঠান্ডা)"});
   if(w.humidity>=85)r.push({level:"high",icon:"🔴",text:"BLB ব্যাকটেরিয়াল ব্লাইট ঝুঁকি বেশি"});
-  if(r.length===0)r.push({level:"low",icon:"🟢",text:"আবহাওয়া স্বাভাবিক — রোগ বালাই চাপ কম"});
+  if(r.length===0)r.push({level:"low",icon:"🟢",text:"আবহাওয়া স্বাভাবিক — চাপ কম"});
   return r;
 }
 function getSprayingCondition(w){
   if(!w)return null;
   if(w.windSpeed>20)return{ok:false,reason:`বাতাসের গতি বেশি (${w.windSpeed}km/h)`,until:"বাতাস কমলে"};
-  if(w.rain24h>5)return{ok:false,reason:"বৃষ্টির সম্ভাবনা আছে",until:"বৃষ্টি থামলে"};
-  if(w.temp>38)return{ok:false,reason:"তাপমাত্রা অতিরিক্ত বেশি",until:"বিকালে"};
-  if(w.uvIndex>8)return{ok:false,reason:"UV বেশি, কীটনাশক নষ্ট হবে",until:"সন্ধ্যায়"};
+  if(w.rain24h>5)return{ok:false,reason:"বৃষ্টির সম্ভাবনা",until:"বৃষ্টি থামলে"};
+  if(w.temp>38)return{ok:false,reason:"তাপমাত্রা অতিরিক্ত",until:"বিকালে"};
+  if(w.uvIndex>8)return{ok:false,reason:"UV বেশি",until:"সন্ধ্যায়"};
   return{ok:true,reason:"স্প্রে করার উপযুক্ত সময়",until:null};
 }
 function weatherPromptText(w,loc){
   if(!w)return"";
-  const r=assessWeatherRisks(w);
-  return`REAL-TIME WEATHER:\nLocation:${loc||"Bangladesh"}\nTemp:${w.temp}°C | Humidity:${w.humidity}% | Rain24h:${w.rain24h}mm | Wind:${w.windSpeed}km/h | UV:${w.uvIndex}\nRisks:${r.map(x=>x.text).join("; ")}\nFactor this into diagnosis.`;
+  return`REAL-TIME WEATHER:\nLocation:${loc||"Bangladesh"}\nTemp:${w.temp}°C | Humidity:${w.humidity}% | Rain24h:${w.rain24h}mm | Wind:${w.windSpeed}km/h | UV:${w.uvIndex}\nRisks:${assessWeatherRisks(w).map(x=>x.text).join("; ")}\nFactor this into diagnosis.`;
 }
 
 // ─── Markdown renderer ────────────────────────────────────────────────────────
@@ -349,72 +226,67 @@ const SECTION_META={
   "মাঠে":{icon:"🧪",color:"#065f46",bg:"#ecfdf5",border:"#a7f3d0"},
   "Field":{icon:"🧪",color:"#065f46",bg:"#ecfdf5",border:"#a7f3d0"},
 };
-function getMeta(title){for(const[k,v]of Object.entries(SECTION_META))if((title||"").includes(k))return v;return{icon:"📄",color:C.text,bg:C.bgMuted,border:C.border};}
+function getMeta(t){for(const[k,v]of Object.entries(SECTION_META))if((t||"").includes(k))return v;return{icon:"📄",color:C.text,bg:C.bgMuted,border:C.border};}
 function SectionCard({title,bodyLines,defaultOpen}){
   const[open,setOpen]=useState(defaultOpen!==false);
   const meta=getMeta(title);
   const bodyText=bodyLines.join("\n").trim();
   if(!bodyText&&!title)return null;
   return(
-    <div style={{borderRadius:12,border:`1px solid ${meta.border}`,marginBottom:10,overflow:"hidden"}}>
+    <div style={{borderRadius:14,border:`1px solid ${meta.border}`,marginBottom:10,overflow:"hidden",animation:"fadeIn .3s ease"}}>
       {title&&<button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"12px 16px",background:meta.bg,border:"none",cursor:"pointer",textAlign:"left"}}>
-        <span style={{fontSize:20}}>{meta.icon}</span>
+        <span style={{fontSize:19}}>{meta.icon}</span>
         <span style={{color:meta.color,fontWeight:700,fontSize:14,flex:1}}>{title}</span>
-        <span style={{color:meta.color,fontSize:14,opacity:.7}}>{open?"▲":"▼"}</span>
+        <span style={{color:meta.color,fontSize:13,opacity:.7}}>{open?"▲":"▼"}</span>
       </button>}
       {open&&<div style={{padding:"14px 18px",background:"#fff",color:C.text,fontSize:13.5,lineHeight:1.85}}>{renderInline(bodyText)}</div>}
     </div>
   );
 }
-
-// ─── InfoRow ──────────────────────────────────────────────────────────────────
 function InfoRow({icon,label,val}){
   if(!val)return null;
   return(
-    <div style={{display:"flex",gap:10}}>
-      <span style={{fontSize:16,flexShrink:0}}>{icon}</span>
-      <div>
-        <div style={{fontSize:11,color:C.textMuted,fontWeight:600}}>{label}</div>
+    <div style={{display:"flex",gap:10,padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+      <span style={{fontSize:16,flexShrink:0,marginTop:1}}>{icon}</span>
+      <div style={{flex:1}}>
+        <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:.5,marginBottom:2}}>{label}</div>
         <div style={{fontSize:13,color:C.text,lineHeight:1.5}}>{val}</div>
       </div>
     </div>
   );
 }
 
-// ─── SprayingWidget ───────────────────────────────────────────────────────────
+// ─── Small UI components ──────────────────────────────────────────────────────
 function SprayingWidget({weather,weatherLoading}){
   if(weatherLoading||!weather)return null;
   const spray=getSprayingCondition(weather);
   return(
-    <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 16px",background:spray.ok?"#f0fdf4":"#fff7ed",border:`1px solid ${spray.ok?"#bbf7d0":"#fed7aa"}`,borderRadius:12,marginBottom:14}}>
-      <div style={{fontSize:22}}>{spray.ok?"✅":"⚠️"}</div>
+    <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:spray.ok?"#f0fdf4":"#fff7ed",border:`1px solid ${spray.ok?"#bbf7d0":"#fed7aa"}`,borderRadius:14,marginBottom:12}}>
+      <span style={{fontSize:20}}>{spray.ok?"✅":"⚠️"}</span>
       <div style={{flex:1}}>
-        <div style={{fontWeight:700,fontSize:13,color:spray.ok?C.success:C.warning}}>স্প্রে অবস্থা: {spray.ok?"অনুকূল":"প্রতিকূল"}</div>
-        <div style={{fontSize:11,color:C.textMuted,marginTop:2}}>{spray.reason}</div>
+        <div style={{fontWeight:700,fontSize:12,color:spray.ok?C.success:C.warning}}>স্প্রে: {spray.ok?"অনুকূল":"প্রতিকূল"}</div>
+        <div style={{fontSize:11,color:C.textMuted}}>{spray.reason}</div>
       </div>
-      {!spray.ok&&spray.until&&<div style={{fontSize:11,color:C.warning,fontWeight:600,whiteSpace:"nowrap"}}>{spray.until} পর্যন্ত</div>}
+      {!spray.ok&&spray.until&&<div style={{fontSize:11,color:C.warning,fontWeight:600,whiteSpace:"nowrap"}}>{spray.until}</div>}
     </div>
   );
 }
-
-// ─── WeatherBar ───────────────────────────────────────────────────────────────
 function WeatherBar({weather,weatherLoading,locationName,locationSource,onRefresh}){
-  const risks=assessWeatherRisks(weather);
-  const top=risks[0];
+  const risks=assessWeatherRisks(weather);const top=risks[0];
   return(
-    <div style={{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:14,overflow:"hidden",marginBottom:14}}>
-      <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 16px",background:"#0ea5e9",color:"#fff"}}>
-        <span>🌦️</span>
-        <span style={{fontWeight:700,fontSize:13}}>আবহাওয়া {locationSource==="gps"?"📍":"🌐"}</span>
-        {locationName&&<span style={{fontSize:11,opacity:.85,flex:1}}>— {locationName}</span>}
-        <button onClick={onRefresh} style={{marginLeft:"auto",background:"rgba(255,255,255,0.2)",border:"1px solid rgba(255,255,255,0.4)",borderRadius:8,color:"#fff",padding:"3px 10px",cursor:"pointer",fontSize:11}}>🔄</button>
+    <div style={{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:14,overflow:"hidden",marginBottom:12}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 14px",background:"linear-gradient(90deg,#0ea5e9,#0284c7)",color:"#fff"}}>
+        <span style={{fontSize:15}}>🌦️</span>
+        <span style={{fontWeight:700,fontSize:12}}>আবহাওয়া {locationSource==="gps"?"📍":"🌐"}</span>
+        {locationName&&<span style={{fontSize:11,opacity:.85,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>— {locationName}</span>}
+        <button onClick={onRefresh} style={{marginLeft:"auto",background:"rgba(255,255,255,0.2)",border:"none",borderRadius:8,color:"#fff",padding:"2px 10px",cursor:"pointer",fontSize:11,flexShrink:0}}>🔄</button>
       </div>
-      {weatherLoading&&!weather&&<div style={{padding:"10px 16px",color:"#0369a1",fontSize:12}}>⏳ আবহাওয়া সংগ্রহ করছি...</div>}
+      {weatherLoading&&!weather&&<div style={{padding:"10px 14px",color:"#0369a1",fontSize:12}}>⏳ আবহাওয়া সংগ্রহ...</div>}
       {weather&&(
-        <div style={{padding:"10px 16px"}}>
-          <div style={{display:"flex",gap:14,flexWrap:"wrap",marginBottom:6}}>
-            {[{icon:"🌡️",v:`${weather.temp}°C`},{icon:"💧",v:`${weather.humidity}%`},{icon:"🌧️",v:`${weather.rain24h}mm`},{icon:"💨",v:`${weather.windSpeed}km/h`},{icon:"☀️",v:`UV ${weather.uvIndex}`}].map(({icon,v})=>(
-              <div key={v} style={{display:"flex",alignItems:"center",gap:4,fontSize:12,color:C.text}}><span>{icon}</span><span style={{fontWeight:600}}>{v}</span></div>
+        <div style={{padding:"8px 14px"}}>
+          <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:5}}>
+            {[{icon:"🌡️",v:`${weather.temp}°C`},{icon:"💧",v:`${weather.humidity}%`},{icon:"🌧️",v:`${weather.rain24h}mm`},{icon:"💨",v:`${weather.windSpeed}km/h`},{icon:"☀️",v:`UV${weather.uvIndex}`}].map(({icon,v})=>(
+              <div key={v} style={{display:"flex",alignItems:"center",gap:3,fontSize:12,color:C.text}}><span>{icon}</span><span style={{fontWeight:600}}>{v}</span></div>
             ))}
           </div>
           {top&&<div style={{fontSize:11,color:top.level==="high"?C.danger:top.level==="medium"?C.warning:C.success,fontWeight:600}}>{top.icon} {top.text}</div>}
@@ -423,75 +295,67 @@ function WeatherBar({weather,weatherLoading,locationName,locationSource,onRefres
     </div>
   );
 }
-
-// ─── QuickCropRow ─────────────────────────────────────────────────────────────
 function QuickCropRow({onSelect,selected}){
   return(
-    <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
+    <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:6,scrollbarWidth:"none"}}>
       {QUICK_CROPS.map(crop=>{
         const active=(selected||"").includes(crop.en);
         return(
-          <button key={crop.id} onClick={()=>onSelect(crop.en+" / "+crop.label)} style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:4}}>
-            <div style={{width:56,height:56,borderRadius:"50%",border:`3px solid ${active?crop.color:C.border}`,background:active?crop.color+"22":"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,transition:"all .2s",boxShadow:active?`0 0 0 2px ${crop.color}66`:"none"}}>{crop.emoji}</div>
-            <span style={{fontSize:11,color:active?C.primaryDark:C.text,fontWeight:active?700:400,whiteSpace:"nowrap"}}>{crop.label}</span>
+          <button key={crop.id} onClick={()=>onSelect(crop.en+" / "+crop.label)} style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"none",border:"none",cursor:"pointer",padding:"2px 4px"}}>
+            <div style={{width:54,height:54,borderRadius:"50%",border:`2.5px solid ${active?crop.color:C.border}`,background:active?crop.color+"18":"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,transition:"all .2s",boxShadow:active?`0 0 0 3px ${crop.color}33`:"none"}}>{crop.emoji}</div>
+            <span style={{fontSize:10,color:active?C.primaryDark:C.textMuted,fontWeight:active?700:400,whiteSpace:"nowrap"}}>{crop.label}</span>
           </button>
         );
       })}
-      <button onClick={()=>onSelect("__more__")} style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:4}}>
-        <div style={{width:56,height:56,borderRadius:"50%",border:`2px dashed ${C.border}`,background:"#f8faf8",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>➕</div>
-        <span style={{fontSize:11,color:C.textMuted,whiteSpace:"nowrap"}}>আরও</span>
+      <button onClick={()=>onSelect("__more__")} style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"none",border:"none",cursor:"pointer",padding:"2px 4px"}}>
+        <div style={{width:54,height:54,borderRadius:"50%",border:`2px dashed ${C.border}`,background:C.bgMuted,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>➕</div>
+        <span style={{fontSize:10,color:C.textMuted,whiteSpace:"nowrap"}}>আরও</span>
       </button>
     </div>
   );
 }
-
-// ─── DiagnosisHistory ─────────────────────────────────────────────────────────
 function DiagnosisHistory({history,onLoad}){
   if(history.length===0)return null;
   return(
-    <div style={{marginBottom:14}}>
-      <div style={{fontSize:12,color:C.textMuted,fontWeight:600,marginBottom:8}}>📋 সাম্প্রতিক রোগ নির্ণয়</div>
-      <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4}}>
+    <div style={{marginBottom:12}}>
+      <div style={{fontSize:11,color:C.textMuted,fontWeight:700,marginBottom:7,textTransform:"uppercase",letterSpacing:.5}}>📋 সাম্প্রতিক নির্ণয়</div>
+      <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
         {[...history].reverse().slice(0,4).map((h,i)=>(
-          <button key={i} onClick={()=>onLoad(h)} style={{flexShrink:0,padding:"8px 14px",borderRadius:20,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",fontSize:12,color:C.text,display:"flex",alignItems:"center",gap:8}}>
-            <span>🌾</span>
+          <button key={i} onClick={()=>onLoad(h)} style={{flexShrink:0,padding:"7px 12px",borderRadius:20,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",gap:7,boxShadow:C.shadow}}>
+            <span style={{fontSize:16}}>🌾</span>
             <div style={{textAlign:"left"}}>
-              <div style={{fontWeight:600,fontSize:11}}>{h.crop?.split("/")[0]?.trim()||"Unknown"}</div>
+              <div style={{fontWeight:700,fontSize:11,color:C.text}}>{h.crop?.split("/")[0]?.trim()||"Unknown"}</div>
               <div style={{color:C.textMuted,fontSize:10}}>{h.date}</div>
             </div>
-            <span style={{background:"#dcfce7",color:"#166534",borderRadius:10,padding:"1px 8px",fontSize:10,fontWeight:700}}>সম্পন্ন</span>
+            <span style={{background:"#dcfce7",color:"#166534",borderRadius:10,padding:"1px 7px",fontSize:9,fontWeight:700}}>✓</span>
           </button>
         ))}
       </div>
     </div>
   );
 }
-
-// ─── SeveritySurvey ───────────────────────────────────────────────────────────
 function SeveritySurvey({onSubmit}){
   const[selected,setSelected]=useState("");
-  const options=["মাঠ সম্পূর্ণ সুস্থ, কোনো লক্ষণ নেই","কয়েকটি গাছে লক্ষণ দেখা যাচ্ছে","মাঠের কিছু অংশে লক্ষণ (৫০% এর কম)","অর্ধেক মাঠ আক্রান্ত","বেশিরভাগ মাঠ আক্রান্ত (৫০%+)","সমস্ত মাঠ আক্রান্ত — প্রতিটি গাছ"];
+  const options=["মাঠ সম্পূর্ণ সুস্থ","কয়েকটি গাছে লক্ষণ","মাঠের ৫০% এর কম","অর্ধেক মাঠ আক্রান্ত","বেশিরভাগ মাঠ (৫০%+)","সমস্ত মাঠ আক্রান্ত"];
   return(
     <div>
-      <div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:12}}>📊 আপনার ফসলের কতটুকু আক্রান্ত?</div>
-      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+      <div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:12}}>📊 কতটুকু মাঠ আক্রান্ত?</div>
+      <div style={{display:"flex",flexDirection:"column",gap:7}}>
         {options.map(opt=>(
-          <button key={opt} onClick={()=>setSelected(opt)} style={{padding:"12px 16px",borderRadius:10,border:`1.5px solid ${selected===opt?C.primary:C.border}`,background:selected===opt?"#f0fdf4":"#fff",cursor:"pointer",textAlign:"left",fontSize:13,color:C.text,display:"flex",alignItems:"center",gap:10,transition:"all .15s"}}>
-            <div style={{width:20,height:20,borderRadius:"50%",border:`2px solid ${selected===opt?C.primary:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              {selected===opt&&<div style={{width:10,height:10,borderRadius:"50%",background:C.primary}}/>}
+          <button key={opt} onClick={()=>setSelected(opt)} style={{padding:"11px 14px",borderRadius:12,border:`1.5px solid ${selected===opt?C.primary:C.border}`,background:selected===opt?"#f0fdf4":"#fff",cursor:"pointer",textAlign:"left",fontSize:13,color:C.text,display:"flex",alignItems:"center",gap:10,transition:"all .15s"}}>
+            <div style={{width:18,height:18,borderRadius:"50%",border:`2px solid ${selected===opt?C.primary:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              {selected===opt&&<div style={{width:8,height:8,borderRadius:"50%",background:C.primary}}/>}
             </div>
             {opt}
           </button>
         ))}
       </div>
-      <button onClick={()=>selected&&onSubmit(selected)} disabled={!selected} style={{marginTop:14,width:"100%",padding:"13px",borderRadius:12,border:"none",background:selected?C.primary:C.border,color:"#fff",fontWeight:700,fontSize:14,cursor:selected?"pointer":"not-allowed"}}>
+      <button onClick={()=>selected&&onSubmit(selected)} disabled={!selected} style={{marginTop:12,width:"100%",padding:"12px",borderRadius:12,border:"none",background:selected?C.primary:C.border,color:"#fff",fontWeight:700,fontSize:14,cursor:selected?"pointer":"not-allowed",transition:"all .2s"}}>
         সংরক্ষণ করুন
       </button>
     </div>
   );
 }
-
-// ─── ProductRecommendations ───────────────────────────────────────────────────
 function ProductRecommendations({products,crop}){
   const[selected,setSelected]=useState(null);
   const typeColor=(t)=>({
@@ -513,16 +377,15 @@ function ProductRecommendations({products,crop}){
   if(selected){
     const tc=typeColor(selected.type);
     return(
-      <div style={{background:"#fff",borderRadius:16,padding:20,marginTop:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-        <button onClick={()=>setSelected(null)} style={{background:"none",border:"none",color:C.primary,cursor:"pointer",fontSize:13,marginBottom:14,display:"flex",alignItems:"center",gap:4}}>← পণ্য তালিকায় ফিরুন</button>
-        <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:14}}>
-          <div style={{flex:1}}>
-            <div style={{fontWeight:800,fontSize:16,color:C.primaryDark}}>{selected.trade_name}</div>
-            <div style={{color:C.textMuted,fontSize:12,marginTop:2}}>{selected.company}</div>
-            <span style={{display:"inline-block",background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,borderRadius:20,padding:"2px 10px",fontSize:11,fontWeight:700,marginTop:6}}>{tc.label}</span>
-          </div>
+      <div style={{background:"#fff",borderRadius:16,padding:18,marginTop:12,border:`1px solid ${C.border}`,boxShadow:C.shadow,animation:"fadeIn .3s ease"}}>
+        <button onClick={()=>setSelected(null)} style={{background:"none",border:"none",color:C.primary,cursor:"pointer",fontSize:13,marginBottom:12,display:"flex",alignItems:"center",gap:4,fontWeight:600}}>← ফিরুন</button>
+        <div style={{marginBottom:14}}>
+          <div style={{fontWeight:800,fontSize:16,color:C.primaryDark}}>{selected.trade_name}</div>
+          <div style={{color:C.textMuted,fontSize:12,marginTop:2}}>{selected.company}</div>
+          {selected.dae_reg&&<div style={{fontSize:11,color:C.blue,marginTop:4}}>🏛️ DAE রেজি: {selected.dae_reg}</div>}
+          <span style={{display:"inline-block",background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,borderRadius:20,padding:"2px 10px",fontSize:11,fontWeight:700,marginTop:6}}>{tc.label}</span>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        <div style={{display:"flex",flexDirection:"column"}}>
           <InfoRow icon="🧪" label="সক্রিয় উপাদান" val={selected.active_ingredient}/>
           <InfoRow icon="🎯" label="কার্যকর পোকা/রোগ" val={selected.target_bn?.join(", ")||selected.targets?.join(", ")}/>
           <InfoRow icon="🌾" label="ফসল" val={selected.crops_bn?.join(", ")||selected.crops?.join(", ")}/>
@@ -531,38 +394,38 @@ function ProductRecommendations({products,crop}){
           <InfoRow icon="📅" label="PHI (ফসল কাটার আগে)" val={`${selected.phi_days} দিন`}/>
           <InfoRow icon="🔬" label="প্রয়োগ পদ্ধতি" val={selected.method}/>
         </div>
-        {selected.ipm_note&&<div style={{marginTop:12,background:"#f0fdf4",borderRadius:10,padding:12}}><div style={{fontWeight:700,fontSize:12,color:C.success,marginBottom:4}}>🌿 IPM পরামর্শ</div><div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{selected.ipm_note}</div></div>}
-        <div style={{marginTop:10,background:"#fffbeb",borderRadius:10,padding:12}}><div style={{fontWeight:700,fontSize:12,color:C.warning,marginBottom:4}}>⚠️ সতর্কতা</div><div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{selected.caution_bn||selected.caution}</div></div>
-        <div style={{marginTop:12,padding:"10px 12px",background:"#fef2f2",borderRadius:8,fontSize:11,color:C.danger}}>⚠️ শুধুমাত্র একটি পণ্য ব্যবহার করুন। DAE কর্মকর্তার পরামর্শ নিন।</div>
+        {selected.ipm_note&&<div style={{marginTop:10,background:"#f0fdf4",borderRadius:10,padding:10}}><div style={{fontWeight:700,fontSize:11,color:C.success,marginBottom:3}}>🌿 IPM পরামর্শ</div><div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{selected.ipm_note}</div></div>}
+        <div style={{marginTop:8,background:"#fffbeb",borderRadius:10,padding:10}}><div style={{fontWeight:700,fontSize:11,color:C.warning,marginBottom:3}}>⚠️ সতর্কতা</div><div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{selected.caution_bn||selected.caution}</div></div>
+        <div style={{marginTop:10,padding:"8px 12px",background:"#fef2f2",borderRadius:8,fontSize:11,color:C.danger}}>⚠️ শুধুমাত্র একটি পণ্য ব্যবহার করুন। DAE কর্মকর্তার পরামর্শ নিন।</div>
       </div>
     );
   }
   return(
-    <div style={{background:"#fff",borderRadius:16,padding:16,marginTop:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-        <div style={{fontSize:20}}>💊</div>
+    <div style={{background:"#fff",borderRadius:16,padding:14,marginTop:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+        <span style={{fontSize:19}}>💊</span>
         <div>
-          <div style={{fontWeight:800,fontSize:14,color:C.primaryDark}}>সুপারিশকৃত পণ্যসমূহ</div>
-          <div style={{fontSize:11,color:C.textMuted}}>{crop?.split("/")[0]?.trim()} · DAE নিবন্ধিত</div>
+          <div style={{fontWeight:800,fontSize:13,color:C.primaryDark}}>সুপারিশকৃত পণ্যসমূহ</div>
+          <div style={{fontSize:10,color:C.textMuted}}>{crop?.split("/")[0]?.trim()} · DAE নিবন্ধিত</div>
         </div>
       </div>
-      <div style={{background:"#fffbeb",border:"1px solid #fed7aa",borderRadius:8,padding:"8px 12px",marginBottom:12,fontSize:11,color:C.warning,fontWeight:600}}>⚠️ নিচের পণ্যগুলো থেকে শুধুমাত্র একটি বেছে নিন।</div>
-      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+      <div style={{background:"#fffbeb",border:"1px solid #fed7aa",borderRadius:8,padding:"7px 10px",marginBottom:10,fontSize:11,color:C.warning,fontWeight:600}}>⚠️ শুধুমাত্র একটি পণ্য বেছে নিন</div>
+      <div style={{display:"flex",flexDirection:"column",gap:7}}>
         {products.map((p,i)=>{
           const tc=typeColor(p.type);
           return(
-            <button key={p.id} onClick={()=>setSelected(p)} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:12,cursor:"pointer",textAlign:"left",transition:"all .15s"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.primary} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
-              <div style={{width:32,height:32,borderRadius:"50%",background:tc.bg,border:`1.5px solid ${tc.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:tc.color,flexShrink:0}}>{i+1}</div>
-              <div style={{flex:1}}>
-                <div style={{fontWeight:700,fontSize:13,color:C.text}}>{p.trade_name}</div>
+            <button key={p.id} onClick={()=>setSelected(p)} style={{display:"flex",alignItems:"center",gap:11,padding:"11px 12px",background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:12,cursor:"pointer",textAlign:"left",transition:"all .15s"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.primary} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
+              <div style={{width:30,height:30,borderRadius:"50%",background:tc.bg,border:`1.5px solid ${tc.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:tc.color,flexShrink:0}}>{i+1}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:700,fontSize:13,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.trade_name}</div>
                 <div style={{color:C.textMuted,fontSize:11,marginTop:1}}>{p.active_ingredient?.split(" ").slice(0,4).join(" ")}</div>
-                <div style={{display:"flex",gap:6,marginTop:4,flexWrap:"wrap"}}>
-                  <span style={{background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,borderRadius:10,padding:"1px 8px",fontSize:10,fontWeight:700}}>{tc.label}</span>
-                  <span style={{background:"#f0fdf4",border:"1px solid #bbf7d0",color:"#065f46",borderRadius:10,padding:"1px 8px",fontSize:10}}>PHI:{p.phi_days}d</span>
-                  {isBio(p.type)&&<span style={{background:"#ecfdf5",border:"1px solid #a7f3d0",color:"#065f46",borderRadius:10,padding:"1px 8px",fontSize:10}}>🌿IPM</span>}
+                <div style={{display:"flex",gap:5,marginTop:4,flexWrap:"wrap"}}>
+                  <span style={{background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>{tc.label}</span>
+                  <span style={{background:"#f0fdf4",border:"1px solid #bbf7d0",color:"#065f46",borderRadius:10,padding:"1px 7px",fontSize:10}}>PHI:{p.phi_days}d</span>
+                  {isBio(p.type)&&<span style={{background:"#ecfdf5",border:"1px solid #a7f3d0",color:"#065f46",borderRadius:10,padding:"1px 7px",fontSize:10}}>🌿IPM</span>}
                 </div>
               </div>
-              <span style={{color:C.textLight,fontSize:18}}>›</span>
+              <span style={{color:C.textLight,fontSize:16,flexShrink:0}}>›</span>
             </button>
           );
         })}
@@ -570,7 +433,8 @@ function ProductRecommendations({products,crop}){
     </div>
   );
 }
-// ─── LibrarySection ───────────────────────────────────────────────────────────
+
+// ─── Library section ──────────────────────────────────────────────────────────
 function LibrarySection(){
   const[activeTab,setActiveTab]=useState("pests");
   const[selected,setSelected]=useState(null);
@@ -578,42 +442,37 @@ function LibrarySection(){
   const items=LIBRARY[activeTab]||[];
   return(
     <div>
-      <div style={{display:"flex",gap:8,marginBottom:16}}>
+      <div style={{display:"flex",gap:6,marginBottom:14}}>
         {tabs.map(t=>(
-          <button key={t.id} onClick={()=>{setActiveTab(t.id);setSelected(null);}} style={{flex:1,padding:"10px 8px",borderRadius:10,border:`1px solid ${activeTab===t.id?C.primary:C.border}`,background:activeTab===t.id?"#f0fdf4":"#fff",cursor:"pointer",fontSize:12,fontWeight:600,color:activeTab===t.id?C.primaryDark:C.text}}>{t.icon} {t.label}</button>
+          <button key={t.id} onClick={()=>{setActiveTab(t.id);setSelected(null);}} style={{flex:1,padding:"9px 6px",borderRadius:10,border:`1px solid ${activeTab===t.id?C.primary:C.border}`,background:activeTab===t.id?C.primary:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,color:activeTab===t.id?"#fff":C.text,transition:"all .15s"}}>{t.icon} {t.label}</button>
         ))}
       </div>
       {selected?(
-        <div>
-          <button onClick={()=>setSelected(null)} style={{background:"none",border:"none",color:C.primary,cursor:"pointer",fontSize:13,marginBottom:12,display:"flex",alignItems:"center",gap:4}}>← ফিরে যান</button>
-          <div style={{background:"#fff",borderRadius:14,border:`1px solid ${C.border}`,padding:20}}>
+        <div style={{animation:"fadeIn .3s ease"}}>
+          <button onClick={()=>setSelected(null)} style={{background:"none",border:"none",color:C.primary,cursor:"pointer",fontSize:13,marginBottom:10,display:"flex",alignItems:"center",gap:4,fontWeight:600}}>← ফিরে যান</button>
+          <div style={{background:"#fff",borderRadius:14,border:`1px solid ${C.border}`,padding:18}}>
             <div style={{fontSize:32,marginBottom:8}}>{selected.icon}</div>
-            <h3 style={{color:C.primaryDark,fontSize:18,marginBottom:4}}>{selected.name}</h3>
-            <div style={{color:C.textMuted,fontSize:13,marginBottom:16}}>{selected.en}</div>
-            <div style={{background:"#f8faf8",borderRadius:10,padding:14,marginBottom:12}}>
-              <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:6}}>🔍 লক্ষণসমূহ</div>
+            <h3 style={{color:C.primaryDark,fontSize:17,marginBottom:3}}>{selected.name}</h3>
+            <div style={{color:C.textMuted,fontSize:12,marginBottom:14}}>{selected.en}</div>
+            <div style={{background:C.bgMuted,borderRadius:10,padding:12,marginBottom:10}}>
+              <div style={{fontWeight:700,fontSize:12,color:C.text,marginBottom:5}}>🔍 লক্ষণসমূহ</div>
               <div style={{fontSize:13,color:C.text,lineHeight:1.7}}>{selected.symptoms}</div>
             </div>
-            {(selected.ipm||selected.fix)&&(
-              <div style={{background:"#f0fdf4",borderRadius:10,padding:14,marginBottom:12}}>
-                <div style={{fontWeight:700,fontSize:13,color:C.success,marginBottom:6}}>{selected.ipm?"🌿 IPM ব্যবস্থাপনা":"💊 প্রতিকার"}</div>
-                <div style={{fontSize:13,color:C.text,lineHeight:1.7}}>{selected.ipm||selected.fix}</div>
-              </div>
-            )}
-            {selected.etl&&<div style={{background:"#fffbeb",borderRadius:10,padding:14,marginBottom:12}}><div style={{fontWeight:700,fontSize:13,color:C.warning,marginBottom:4}}>📊 ETL (ক্ষতির সীমা)</div><div style={{fontSize:13,color:C.text}}>{selected.etl}</div></div>}
-            <div style={{padding:"8px 12px",background:"#eff6ff",borderRadius:8,fontSize:12,color:"#1d4ed8"}}>🌾 ফসল: {Array.isArray(selected.crops)?selected.crops.join(", "):selected.crops}</div>
+            {(selected.ipm||selected.fix)&&<div style={{background:"#f0fdf4",borderRadius:10,padding:12,marginBottom:10}}><div style={{fontWeight:700,fontSize:12,color:C.success,marginBottom:5}}>{selected.ipm?"🌿 IPM ব্যবস্থাপনা":"💊 প্রতিকার"}</div><div style={{fontSize:13,color:C.text,lineHeight:1.7}}>{selected.ipm||selected.fix}</div></div>}
+            {selected.etl&&<div style={{background:"#fffbeb",borderRadius:10,padding:12,marginBottom:10}}><div style={{fontWeight:700,fontSize:12,color:C.warning,marginBottom:3}}>📊 ETL</div><div style={{fontSize:13,color:C.text}}>{selected.etl}</div></div>}
+            <div style={{padding:"7px 10px",background:"#eff6ff",borderRadius:8,fontSize:11,color:C.blue}}>🌾 ফসল: {Array.isArray(selected.crops)?selected.crops.join(", "):selected.crops}</div>
           </div>
         </div>
       ):(
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        <div style={{display:"flex",flexDirection:"column",gap:7}}>
           {items.map((item,i)=>(
-            <button key={i} onClick={()=>setSelected(item)} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",background:"#fff",border:`1px solid ${C.border}`,borderRadius:12,cursor:"pointer",textAlign:"left"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.primary} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
-              <div style={{fontSize:28,flexShrink:0}}>{item.icon}</div>
+            <button key={i} onClick={()=>setSelected(item)} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",background:"#fff",border:`1px solid ${C.border}`,borderRadius:12,cursor:"pointer",textAlign:"left",transition:"all .15s",boxShadow:C.shadow}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.primary} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
+              <div style={{fontSize:26,flexShrink:0}}>{item.icon}</div>
               <div style={{flex:1}}>
-                <div style={{fontWeight:700,fontSize:14,color:C.text}}>{item.name}</div>
-                <div style={{color:C.textMuted,fontSize:12,marginTop:2}}>{item.en}</div>
+                <div style={{fontWeight:700,fontSize:13,color:C.text}}>{item.name}</div>
+                <div style={{color:C.textMuted,fontSize:11,marginTop:2}}>{item.en}</div>
               </div>
-              <span style={{color:C.textLight,fontSize:18}}>›</span>
+              <span style={{color:C.textLight,fontSize:16}}>›</span>
             </button>
           ))}
         </div>
@@ -622,221 +481,326 @@ function LibrarySection(){
   );
 }
 
-// ─── CABI Guide Tab ───────────────────────────────────────────────────────────
+// ─── CABI Guide tab ───────────────────────────────────────────────────────────
 function CABIGuideTab(){
   const[section,setSection]=useState("protocol");
-  const sections=[
-    {id:"protocol",label:"প্রোটোকল",icon:"📋"},
-    {id:"etl",label:"ETL সীমা",icon:"📊"},
-    {id:"nutrients",label:"পুষ্টি",icon:"🧪"},
-    {id:"ipm",label:"IPM পিরামিড",icon:"🌿"},
-    {id:"resistance",label:"প্রতিরোধ",icon:"🔄"},
-  ];
+  const sections=[{id:"protocol",label:"প্রোটোকল",icon:"📋"},{id:"etl",label:"ETL সীমা",icon:"📊"},{id:"nutrients",label:"পুষ্টি",icon:"🧪"},{id:"ipm",label:"IPM পিরামিড",icon:"🌿"},{id:"resistance",label:"প্রতিরোধ",icon:"🔄"}];
+  const resistanceData={
+    frac:[
+      {group:"FRAC 1 (MBC)",ai:"কার্বেন্ডাজিম, থিওফানেট",risk:"উচ্চ",rotate:"FRAC 3 বা 11 এর সাথে"},
+      {group:"FRAC 3 (Triazole)",ai:"ট্রাইসাইক্লাজোল, হেক্সাকোনাজোল",risk:"মাঝারি",rotate:"FRAC 11 বা 7 এর সাথে"},
+      {group:"FRAC 4 (PA)",ai:"মেটালাক্সিল-এম",risk:"উচ্চ",rotate:"FRAC M3 (মানকোজেব) মিশিয়ে"},
+      {group:"FRAC 11 (Strobilurin)",ai:"আজোক্সিস্ট্রোবিন, ট্রাইফ্লোক্সিস্ট্রোবিন",risk:"উচ্চ",rotate:"FRAC 3 সাথে, মৌসুমে ২ বার"},
+      {group:"FRAC M3 (Dithiocarbamate)",ai:"মানকোজেব, জিনেব",risk:"কম",rotate:"যেকোনো সিস্টেমিকের সাথে"},
+    ],
+    irac:[
+      {group:"IRAC 1A (Organophosphate)",ai:"ক্লোরপাইরিফস, ডাইমিথোয়েট",risk:"মাঝারি",rotate:"IRAC 3 বা 4 এর সাথে"},
+      {group:"IRAC 3 (Pyrethroid)",ai:"সাইপারমেথ্রিন, ডেলটামেথ্রিন",risk:"উচ্চ",rotate:"IRAC 1 বা 4 এর সাথে"},
+      {group:"IRAC 4A (Neonicotinoid)",ai:"ইমিডাক্লোপ্রিড, থিয়ামেথোক্সাম",risk:"উচ্চ",rotate:"IRAC 22 বা 28; মৌমাছি সতর্কতা"},
+      {group:"IRAC 22 (Pymetrozine)",ai:"পাইমেট্রোজিন",risk:"কম",rotate:"নিওনিকোটিনয়েডের বিকল্প"},
+      {group:"IRAC 28 (Diamide)",ai:"ক্লোরান্ট্রানিলিপ্রোল",risk:"মাঝারি",rotate:"মৌসুমে ২ বারের বেশি নয়"},
+    ]
+  };
   return(
     <div>
-      {/* Sub-nav */}
-      <div style={{display:"flex",gap:6,marginBottom:16,overflowX:"auto",paddingBottom:4}}>
+      <div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
         {sections.map(s=>(
-          <button key={s.id} onClick={()=>setSection(s.id)} style={{flexShrink:0,padding:"8px 12px",borderRadius:20,border:`1px solid ${section===s.id?C.primary:C.border}`,background:section===s.id?C.primary:"#fff",color:section===s.id?"#fff":C.text,cursor:"pointer",fontSize:12,fontWeight:600,whiteSpace:"nowrap"}}>
-            {s.icon} {s.label}
-          </button>
+          <button key={s.id} onClick={()=>setSection(s.id)} style={{flexShrink:0,padding:"7px 12px",borderRadius:20,border:`1px solid ${section===s.id?C.primary:C.border}`,background:section===s.id?C.primary:"#fff",color:section===s.id?"#fff":C.text,cursor:"pointer",fontSize:11,fontWeight:600,whiteSpace:"nowrap",transition:"all .15s"}}>{s.icon} {s.label}</button>
         ))}
       </div>
-
       {section==="protocol"&&(
         <div>
-          <div style={{background:"linear-gradient(135deg,#0f5a28,#1a7a3a)",borderRadius:16,padding:20,marginBottom:16,color:"#fff"}}>
+          <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,borderRadius:16,padding:20,marginBottom:14,color:"#fff"}}>
             <div style={{fontSize:24,marginBottom:8}}>🔬</div>
-            <div style={{fontWeight:800,fontSize:18,marginBottom:4}}>{CABI_GUIDE.protocol.title}</div>
-            <div style={{opacity:.85,fontSize:13}}>{CABI_GUIDE.protocol.subtitle}</div>
+            <div style={{fontWeight:800,fontSize:17,marginBottom:3}}>{CABI_GUIDE.protocol.title}</div>
+            <div style={{opacity:.8,fontSize:12}}>{CABI_GUIDE.protocol.subtitle}</div>
           </div>
           {CABI_GUIDE.protocol.steps.map((step,i)=>(
-            <div key={i} style={{background:"#fff",borderRadius:16,padding:20,marginBottom:12,border:`1px solid ${step.border}`,boxShadow:C.shadow}}>
-              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
-                <div style={{width:44,height:44,borderRadius:"50%",background:step.bg,border:`2px solid ${step.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{step.icon}</div>
+            <div key={i} style={{background:"#fff",borderRadius:14,padding:16,marginBottom:10,border:`1px solid ${step.border}`,boxShadow:C.shadow,animation:`fadeIn .3s ease ${i*.05}s both`}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:10}}>
+                <div style={{width:42,height:42,borderRadius:"50%",background:step.bg,border:`2px solid ${step.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>{step.icon}</div>
                 <div style={{flex:1}}>
-                  <div style={{fontWeight:800,fontSize:15,color:step.color}}>ধাপ {step.num}: {step.title}</div>
+                  <div style={{fontWeight:800,fontSize:14,color:step.color}}>ধাপ {step.num}: {step.title}</div>
                   <div style={{fontSize:11,color:C.textMuted}}>{step.en}</div>
                 </div>
               </div>
-              <p style={{fontSize:13,color:C.text,lineHeight:1.7,marginBottom:12}}>{step.desc}</p>
-              <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                {step.points.map((pt,j)=>(
-                  <div key={j} style={{display:"flex",gap:8,fontSize:13,color:C.text}}>
-                    <span style={{color:step.color,fontWeight:700,flexShrink:0}}>✓</span>
-                    <span>{pt}</span>
-                  </div>
-                ))}
-              </div>
+              <p style={{fontSize:13,color:C.text,lineHeight:1.7,marginBottom:10}}>{step.desc}</p>
+              {step.points.map((pt,j)=><div key={j} style={{display:"flex",gap:8,fontSize:12,color:C.text,padding:"3px 0"}}><span style={{color:step.color,fontWeight:700,flexShrink:0}}>✓</span><span>{pt}</span></div>)}
             </div>
           ))}
         </div>
       )}
-
       {section==="etl"&&(
         <div>
-          <div style={{background:"#fffbeb",borderRadius:12,padding:14,marginBottom:16,border:"1px solid #fcd34d"}}>
-            <div style={{fontWeight:700,fontSize:14,color:C.warning,marginBottom:4}}>📊 Economic Threshold Level (ETL) কী?</div>
-            <div style={{fontSize:13,color:C.text,lineHeight:1.7}}>ETL হলো সেই মাত্রা যখন কীটনাশক ব্যবহারের অর্থনৈতিক ন্যায্যতা থাকে। ETL-এর নিচে থাকলে প্রাকৃতিক নিয়ন্ত্রণই যথেষ্ট।</div>
+          <div style={{background:"#fffbeb",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #fcd34d"}}>
+            <div style={{fontWeight:700,fontSize:13,color:C.warning,marginBottom:3}}>📊 ETL কী?</div>
+            <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>ETL হলো সেই মাত্রা যখন কীটনাশক ব্যবহারের অর্থনৈতিক ন্যায্যতা থাকে। নিচে থাকলে প্রাকৃতিক নিয়ন্ত্রণই যথেষ্ট।</div>
           </div>
           {CABI_GUIDE.etl.map((e,i)=>(
-            <div key={i} style={{background:"#fff",borderRadius:12,padding:16,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+            <div key={i} style={{background:"#fff",borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-                <div>
-                  <div style={{fontWeight:700,fontSize:14,color:C.primaryDark}}>{e.pest}</div>
-                  <div style={{color:C.textMuted,fontSize:12}}>{e.en}</div>
-                </div>
-                <span style={{background:"#fef3c7",border:"1px solid #fcd34d",color:"#92400e",borderRadius:8,padding:"3px 10px",fontSize:11,fontWeight:700,whiteSpace:"nowrap",flexShrink:0,marginLeft:8}}>ETL</span>
+                <div><div style={{fontWeight:700,fontSize:13,color:C.primaryDark}}>{e.pest}</div><div style={{color:C.textMuted,fontSize:11}}>{e.en}</div></div>
+                <span style={{background:"#fef3c7",border:"1px solid #fcd34d",color:"#92400e",borderRadius:8,padding:"2px 8px",fontSize:10,fontWeight:700,flexShrink:0,marginLeft:8}}>ETL</span>
               </div>
-              <div style={{background:"#fffbeb",borderRadius:8,padding:"8px 12px",marginBottom:8}}>
-                <div style={{fontWeight:700,fontSize:12,color:C.warning,marginBottom:2}}>ব্যবস্থার সীমা:</div>
-                <div style={{fontSize:13,color:C.text}}>{e.etl}</div>
-              </div>
-              <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+              <div style={{background:"#fffbeb",borderRadius:8,padding:"7px 10px",marginBottom:7}}><div style={{fontSize:11,fontWeight:700,color:C.warning,marginBottom:2}}>ব্যবস্থার সীমা:</div><div style={{fontSize:12,color:C.text}}>{e.etl}</div></div>
+              <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                 <div style={{fontSize:11,color:C.textMuted}}>📅 পর্যায়: <span style={{color:C.text,fontWeight:600}}>{e.stage}</span></div>
-                <div style={{fontSize:11,color:C.textMuted}}>🔍 পর্যবেক্ষণ: <span style={{color:C.text,fontWeight:600}}>{e.monitor}</span></div>
+                <div style={{fontSize:11,color:C.textMuted}}>🔍 <span style={{color:C.text,fontWeight:600}}>{e.monitor}</span></div>
               </div>
             </div>
           ))}
         </div>
       )}
-
       {section==="nutrients"&&(
         <div>
-          <div style={{background:"#f0fdf4",borderRadius:12,padding:14,marginBottom:16,border:"1px solid #bbf7d0"}}>
-            <div style={{fontWeight:700,fontSize:14,color:C.success,marginBottom:4}}>🧪 পুষ্টি উপাদানের অভাব ও প্রতিকার</div>
-            <div style={{fontSize:13,color:C.text,lineHeight:1.7}}>পুষ্টি অভাবের লক্ষণ প্রায়ই রোগের মতো দেখায়। CABI প্রোটোকলে এটি প্রথমেই বাদ দিতে হয়।</div>
-          </div>
+          <div style={{background:"#f0fdf4",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #bbf7d0"}}><div style={{fontWeight:700,fontSize:13,color:C.success,marginBottom:3}}>🧪 পুষ্টি উপাদান</div><div style={{fontSize:12,color:C.text,lineHeight:1.7}}>পুষ্টি অভাবের লক্ষণ প্রায়ই রোগের মতো দেখায়। CABI প্রোটোকলে এটি প্রথমেই বাদ দিতে হয়।</div></div>
           {CABI_GUIDE.nutrients.map((n,i)=>(
-            <div key={i} style={{background:"#fff",borderRadius:12,padding:16,marginBottom:10,border:`1px solid ${C.border}`,borderLeft:`4px solid ${n.color}`,boxShadow:C.shadow}}>
+            <div key={i} style={{background:"#fff",borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${C.border}`,borderLeft:`4px solid ${n.color}`,boxShadow:C.shadow}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                <div style={{width:36,height:36,borderRadius:"50%",background:n.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:14,color:n.color}}>{n.name.split("(")[0].trim().split(" ").pop()}</div>
-                <div>
-                  <div style={{fontWeight:800,fontSize:15,color:C.text}}>{n.name}</div>
-                  <div style={{fontSize:11,color:C.textMuted}}>{n.en}</div>
-                </div>
+                <div style={{width:34,height:34,borderRadius:"50%",background:n.color+"20",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:13,color:n.color,flexShrink:0}}>{n.name.match(/\((.*?)\)/)?.[1]||n.name[0]}</div>
+                <div><div style={{fontWeight:800,fontSize:14,color:C.text}}>{n.name}</div><div style={{fontSize:11,color:C.textMuted}}>{n.en}</div></div>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-                <div style={{background:"#fef2f2",borderRadius:8,padding:10}}>
-                  <div style={{fontSize:11,fontWeight:700,color:C.danger,marginBottom:4}}>🔴 অভাবের লক্ষণ</div>
-                  <div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{n.deficiency}</div>
-                </div>
-                <div style={{background:"#fff7ed",borderRadius:8,padding:10}}>
-                  <div style={{fontSize:11,fontWeight:700,color:C.warning,marginBottom:4}}>🟡 অতিরিক্তের ক্ষতি</div>
-                  <div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{n.excess}</div>
-                </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:9}}>
+                <div style={{background:"#fef2f2",borderRadius:8,padding:9}}><div style={{fontSize:10,fontWeight:700,color:C.danger,marginBottom:3}}>🔴 অভাব</div><div style={{fontSize:11,color:C.text,lineHeight:1.6}}>{n.deficiency}</div></div>
+                <div style={{background:"#fff7ed",borderRadius:8,padding:9}}><div style={{fontSize:10,fontWeight:700,color:C.warning,marginBottom:3}}>🟡 আধিক্য</div><div style={{fontSize:11,color:C.text,lineHeight:1.6}}>{n.excess}</div></div>
               </div>
-              <div style={{background:"#f0fdf4",borderRadius:8,padding:10,marginBottom:8}}>
-                <div style={{fontSize:11,fontWeight:700,color:C.success,marginBottom:4}}>✅ প্রতিকার</div>
-                <div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{n.fix}</div>
-              </div>
-              <div style={{fontSize:11,color:C.textMuted}}>🌾 ফসল: {n.crops.join(", ")}</div>
+              <div style={{background:"#f0fdf4",borderRadius:8,padding:9,marginBottom:7}}><div style={{fontSize:10,fontWeight:700,color:C.success,marginBottom:2}}>✅ প্রতিকার</div><div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{n.fix}</div></div>
+              <div style={{fontSize:11,color:C.textMuted}}>🌾 {n.crops.join(", ")}</div>
             </div>
           ))}
         </div>
       )}
-
       {section==="ipm"&&(
         <div>
-          <div style={{background:"linear-gradient(135deg,#0f5a28,#1a7a3a)",borderRadius:16,padding:20,marginBottom:16,color:"#fff"}}>
-            <div style={{fontWeight:800,fontSize:16,marginBottom:4}}>🌿 IPM পিরামিড</div>
-            <div style={{opacity:.85,fontSize:13}}>Integrated Pest Management — সমন্বিত বালাই ব্যবস্থাপনা</div>
-          </div>
+          <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,borderRadius:16,padding:18,marginBottom:12,color:"#fff"}}><div style={{fontWeight:800,fontSize:15,marginBottom:3}}>🌿 IPM পিরামিড</div><div style={{opacity:.8,fontSize:12}}>Integrated Pest Management — সমন্বিত বালাই ব্যবস্থাপনা</div></div>
           {[...CABI_GUIDE.ipm_pyramid].reverse().map((level,i)=>(
-            <div key={i} style={{background:"#fff",borderRadius:12,padding:16,marginBottom:10,border:`1px solid ${C.border}`,borderLeft:`4px solid ${level.color}`,boxShadow:C.shadow}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                <div style={{width:32,height:32,borderRadius:"50%",background:level.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:14,color:level.color}}>{level.level}</div>
-                <div style={{fontWeight:700,fontSize:14,color:level.color}}>{level.label}</div>
-                {level.level===4&&<span style={{background:"#fef2f2",border:"1px solid #fecaca",color:C.danger,borderRadius:10,padding:"1px 8px",fontSize:10,fontWeight:700}}>শেষ উপায়</span>}
-                {level.level===1&&<span style={{background:"#f0fdf4",border:"1px solid #bbf7d0",color:C.success,borderRadius:10,padding:"1px 8px",fontSize:10,fontWeight:700}}>সবার আগে</span>}
+            <div key={i} style={{background:"#fff",borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${C.border}`,borderLeft:`4px solid ${level.color}`,boxShadow:C.shadow}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:9}}>
+                <div style={{width:30,height:30,borderRadius:"50%",background:level.color+"20",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:13,color:level.color,flexShrink:0}}>{level.level}</div>
+                <div style={{fontWeight:700,fontSize:13,color:level.color,flex:1}}>{level.label}</div>
+                {level.level===4&&<span style={{background:"#fef2f2",border:"1px solid #fecaca",color:C.danger,borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>শেষ উপায়</span>}
+                {level.level===1&&<span style={{background:"#f0fdf4",border:"1px solid #bbf7d0",color:C.success,borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>সবার আগে</span>}
               </div>
               {level.items.map((item,j)=>(
-                <div key={j} style={{display:"flex",gap:8,padding:"5px 0",borderBottom:j<level.items.length-1?`1px dashed ${C.border}`:"none"}}>
-                  <span style={{color:level.color,fontWeight:700,flexShrink:0}}>✓</span>
-                  <span style={{fontSize:13,color:C.text}}>{item}</span>
+                <div key={j} style={{display:"flex",gap:8,padding:"4px 0",borderBottom:j<level.items.length-1?`1px dashed ${C.border}`:"none"}}><span style={{color:level.color,fontWeight:700,flexShrink:0}}>✓</span><span style={{fontSize:12,color:C.text}}>{item}</span></div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+      {section==="resistance"&&(
+        <div>
+          <div style={{background:"#fff7ed",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #fed7aa"}}><div style={{fontWeight:700,fontSize:13,color:C.warning,marginBottom:3}}>🔄 প্রতিরোধ ব্যবস্থাপনা</div><div style={{fontSize:12,color:C.text,lineHeight:1.7}}>একই গ্রুপের কীটনাশক বারবার ব্যবহারে প্রতিরোধ গড়ে ওঠে।</div></div>
+          {["frac","irac"].map(type=>(
+            <div key={type}>
+              <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,margin:"12px 0 8px"}}>{type==="frac"?"ছত্রাকনাশক (FRAC)":"কীটনাশক (IRAC)"}</div>
+              {resistanceData[type].map((f,i)=>(
+                <div key={i} style={{background:"#fff",borderRadius:10,padding:12,marginBottom:7,border:`1px solid ${C.border}`}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:5}}>
+                    <div style={{fontWeight:700,fontSize:12,color:C.text,flex:1}}>{f.group}</div>
+                    <span style={{background:f.risk==="উচ্চ"?"#fef2f2":f.risk==="কম"?"#f0fdf4":"#fffbeb",border:`1px solid ${f.risk==="উচ্চ"?"#fecaca":f.risk==="কম"?"#bbf7d0":"#fed7aa"}`,color:f.risk==="উচ্চ"?C.danger:f.risk==="কম"?C.success:C.warning,borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700,flexShrink:0,marginLeft:6}}>{f.risk}</span>
+                  </div>
+                  <div style={{fontSize:11,color:C.textMuted,marginBottom:3}}>উদাহরণ: {f.ai}</div>
+                  <div style={{fontSize:11,color:C.primary,fontWeight:600}}>🔄 {f.rotate}</div>
                 </div>
               ))}
             </div>
           ))}
         </div>
       )}
-
-      {section==="resistance"&&(
-        <div>
-          <div style={{background:"#fff7ed",borderRadius:12,padding:14,marginBottom:16,border:"1px solid #fed7aa"}}>
-            <div style={{fontWeight:700,fontSize:14,color:C.warning,marginBottom:4}}>🔄 {CABI_GUIDE.resistance.title}</div>
-            <div style={{fontSize:13,color:C.text,lineHeight:1.7}}>একই গ্রুপের কীটনাশক বারবার ব্যবহারে প্রতিরোধ গড়ে ওঠে। FRAC/IRAC গাইড অনুযায়ী রোটেশন করুন।</div>
-          </div>
-          <div style={{fontWeight:700,fontSize:15,color:C.primaryDark,marginBottom:10}}>ছত্রাকনাশক (FRAC)</div>
-          {CABI_GUIDE.resistance.frac.map((f,i)=>(
-            <div key={i} style={{background:"#fff",borderRadius:10,padding:14,marginBottom:8,border:`1px solid ${C.border}`}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
-                <div style={{fontWeight:700,fontSize:13,color:C.text}}>{f.group}</div>
-                <span style={{background:f.risk==="উচ্চ ঝুঁকি"?"#fef2f2":f.risk==="কম ঝুঁকি"?"#f0fdf4":"#fffbeb",border:`1px solid ${f.risk==="উচ্চ ঝুঁকি"?"#fecaca":f.risk==="কম ঝুঁকি"?"#bbf7d0":"#fed7aa"}`,color:f.risk==="উচ্চ ঝুঁকি"?C.danger:f.risk==="কম ঝুঁকি"?C.success:C.warning,borderRadius:10,padding:"1px 8px",fontSize:10,fontWeight:700,flexShrink:0}}>{f.risk}</span>
-              </div>
-              <div style={{fontSize:12,color:C.textMuted,marginBottom:4}}>উদাহরণ: {f.ai}</div>
-              <div style={{fontSize:12,color:C.primary,fontWeight:600}}>🔄 রোটেশন: {f.rotate}</div>
-            </div>
-          ))}
-          <div style={{fontWeight:700,fontSize:15,color:C.primaryDark,margin:"16px 0 10px"}}>কীটনাশক (IRAC)</div>
-          {CABI_GUIDE.resistance.irac.map((f,i)=>(
-            <div key={i} style={{background:"#fff",borderRadius:10,padding:14,marginBottom:8,border:`1px solid ${C.border}`}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
-                <div style={{fontWeight:700,fontSize:13,color:C.text}}>{f.group}</div>
-                <span style={{background:f.risk==="উচ্চ ঝুঁকি"?"#fef2f2":f.risk==="কম ঝুঁকি"?"#f0fdf4":"#fffbeb",border:`1px solid ${f.risk==="উচ্চ ঝুঁকি"?"#fecaca":f.risk==="কম ঝুঁকি"?"#bbf7d0":"#fed7aa"}`,color:f.risk==="উচ্চ ঝুঁকি"?C.danger:f.risk==="কম ঝুঁকি"?C.success:C.warning,borderRadius:10,padding:"1px 8px",fontSize:10,fontWeight:700,flexShrink:0}}>{f.risk}</span>
-              </div>
-              <div style={{fontSize:12,color:C.textMuted,marginBottom:4}}>উদাহরণ: {f.ai}</div>
-              <div style={{fontSize:12,color:C.primary,fontWeight:600}}>🔄 রোটেশন: {f.rotate}</div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
 
-// ─── GameTab ──────────────────────────────────────────────────────────────────
-function GameTab(){
-  const[loaded,setLoaded]=useState(false);
-  const[err,setErr]=useState(false);
+// ─── 🎮 GAME HUB ─────────────────────────────────────────────────────────────
+function GameHub(){
+  const[activeGame,setActiveGame]=useState(null);
+  const[gameLoaded,setGameLoaded]=useState(false);
+  const[gameErr,setGameErr]=useState(false);
+
+  const GAMES=[
+    {
+      id:"dhan-doctor",
+      title:"ধানের ডাক্তার",
+      subtitle:"Dhan Doctor Simulation",
+      desc:"ধানের ৫টি প্রধান রোগ চিহ্নিত করুন এবং সঠিক চিকিৎসা দিন। বাস্তব মাঠের পরিস্থিতি থেকে শিখুন।",
+      icon:"🌾",
+      color:C.game2,
+      bg:"linear-gradient(135deg,#0c4a6e,#0891b2)",
+      tags:["ধান","রোগ নির্ণয়","IPM"],
+      difficulty:"মধ্যম",
+      duration:"১৫-২০ মিনিট",
+      src:"https://game-diagnosis.space.z.ai/",
+      badge:"🏆 ৩টি সিমুলেশন",
+    },
+    {
+      id:"smart-krishok",
+      title:"স্মার্ট কৃষক ৩.০",
+      subtitle:"Smart Farmer Decision Game",
+      desc:"কৃষি সিদ্ধান্ত গ্রহণের দক্ষতা বাড়ান। ফসল ব্যবস্থাপনা, সার প্রয়োগ ও বাজার দর বিশ্লেষণ।",
+      icon:"👨‍🌾",
+      color:C.game1,
+      bg:"linear-gradient(135deg,#4c1d95,#7c3aed)",
+      tags:["কৃষি সিদ্ধান্ত","অর্থনীতি","সার"],
+      difficulty:"কঠিন",
+      duration:"২০-৩০ মিনিট",
+      src:"https://game-diagnosis.space.z.ai/",
+      badge:"⭐ নতুন সংস্করণ",
+    },
+    {
+      id:"plant-clinic",
+      title:"প্ল্যান্ট ক্লিনিক",
+      subtitle:"Plant Clinic Simulation",
+      desc:"কৃষকের সমস্যা শুনুন, লক্ষণ বিশ্লেষণ করুন এবং বিশেষজ্ঞ পরামর্শ দিন। CABI প্রোটোকল অনুশীলন।",
+      icon:"🏥",
+      color:C.game3,
+      bg:"linear-gradient(135deg,#7c2d12,#ea580c)",
+      tags:["CABI","পরামর্শ","IPM"],
+      difficulty:"সহজ",
+      duration:"১০-১৫ মিনিট",
+      src:"https://game-diagnosis.space.z.ai/",
+      badge:"🌱 শুরু করুন",
+    },
+  ];
+
+  if(activeGame){
+    const game=GAMES.find(g=>g.id===activeGame);
+    return(
+      <div style={{display:"flex",flexDirection:"column",height:"calc(100svh - 110px)"}}>
+        {/* game header */}
+        <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",flexShrink:0}}>
+          <button onClick={()=>{setActiveGame(null);setGameLoaded(false);setGameErr(false);}} style={{width:36,height:36,borderRadius:10,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0,boxShadow:C.shadow}}>←</button>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:800,fontSize:14,color:C.primaryDark}}>{game.icon} {game.title}</div>
+            <div style={{fontSize:11,color:C.textMuted}}>{game.subtitle}</div>
+          </div>
+          <a href={game.src} target="_blank" rel="noreferrer" style={{padding:"6px 12px",borderRadius:10,background:game.color,color:"#fff",textDecoration:"none",fontSize:12,fontWeight:700,flexShrink:0,boxShadow:C.shadow}}>↗ খুলুন</a>
+        </div>
+        {/* loading state */}
+        {!gameLoaded&&!gameErr&&(
+          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#fff",borderRadius:16,border:`1px solid ${C.border}`,gap:14,padding:24}}>
+            <div style={{fontSize:48,animation:"float 2s ease-in-out infinite"}}>{game.icon}</div>
+            <div style={{textAlign:"center"}}>
+              <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:4}}>{game.title}</div>
+              <div style={{color:C.textMuted,fontSize:13}}>{game.subtitle}</div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:8,color:C.textMuted,fontSize:12}}>
+              <span style={{display:"inline-block",animation:"spin 1s linear infinite",fontSize:16}}>⟳</span>গেম লোড হচ্ছে...
+            </div>
+          </div>
+        )}
+        {gameErr&&(
+          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#fff",borderRadius:16,border:`1px solid ${C.border}`,gap:12,padding:24,textAlign:"center"}}>
+            <div style={{fontSize:40}}>{game.icon}</div>
+            <div style={{fontWeight:700,fontSize:15,color:C.text}}>গেম লোড হয়নি</div>
+            <div style={{color:C.textMuted,fontSize:13}}>সরাসরি ব্রাউজারে খুলুন:</div>
+            <a href={game.src} target="_blank" rel="noreferrer" style={{background:game.color,color:"#fff",padding:"12px 24px",borderRadius:12,textDecoration:"none",fontWeight:700,fontSize:14,boxShadow:C.shadowMd}}>🎮 {game.title} খেলুন →</a>
+          </div>
+        )}
+        <iframe
+          key={activeGame}
+          src={game.src}
+          title={game.title}
+          style={{flex:1,width:"100%",border:"none",borderRadius:16,display:gameLoaded&&!gameErr?"block":"none",boxShadow:C.shadowMd}}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; microphone"
+          onLoad={()=>setGameLoaded(true)}
+          onError={()=>setGameErr(true)}
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+        />
+      </div>
+    );
+  }
+
+  // Game hub home
   return(
-    <div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 120px)",minHeight:500}}>
-      {!loaded&&!err&&(
-        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#fff",borderRadius:16,border:`1px solid ${C.border}`,gap:16,padding:24}}>
-          <div style={{width:80,height:80,borderRadius:20,overflow:"hidden",boxShadow:C.shadowMd}}>
-            <img src="/cabi-logo.png" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+    <div style={{animation:"fadeIn .3s ease"}}>
+      {/* Hero banner */}
+      <div style={{background:`linear-gradient(135deg,${C.primaryXDark} 0%,${C.primary} 60%,${C.primaryLight} 100%)`,borderRadius:20,padding:22,marginBottom:16,position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:-20,right:-20,fontSize:80,opacity:.15,transform:"rotate(15deg)"}}>🎮</div>
+        <div style={{position:"relative"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+            <div style={{width:40,height:40,borderRadius:12,overflow:"hidden",flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.3)"}}>
+              <img src="/cabi-logo.png" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+            </div>
+            <div>
+              <div style={{color:"#fff",fontWeight:800,fontSize:16,lineHeight:1.2}}>উদ্ভিদ গোয়েন্দা</div>
+              <div style={{color:"rgba(255,255,255,0.75)",fontSize:11}}>কৃষি শিক্ষা গেম হাব</div>
+            </div>
           </div>
-          <div style={{textAlign:"center"}}>
-            <div style={{fontWeight:800,fontSize:18,color:C.primaryDark,marginBottom:4}}>কৃষি শিক্ষা গেম</div>
-            <div style={{color:C.textMuted,fontSize:13}}>Krishi AI — Smart Farmer Decision Game</div>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:8,color:C.textMuted,fontSize:12}}>
-            <span style={{display:"inline-block",animation:"spin 1s linear infinite"}}>⟳</span>
-            <span>গেম লোড হচ্ছে...</span>
+          <p style={{color:"rgba(255,255,255,0.9)",fontSize:13,lineHeight:1.6,marginBottom:12}}>খেলার ছলে শিখুন — ধানের রোগ নির্ণয়, কৃষি সিদ্ধান্ত, এবং CABI প্ল্যান্ট ক্লিনিক পরামর্শ পদ্ধতি।</p>
+          <div style={{display:"flex",gap:8}}>
+            <div style={{background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",borderRadius:10,padding:"6px 12px",fontSize:11,color:"#fff",fontWeight:600}}>🎮 ৩টি সিমুলেশন</div>
+            <div style={{background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",borderRadius:10,padding:"6px 12px",fontSize:11,color:"#fff",fontWeight:600}}>🌾 বাংলায়</div>
+            <div style={{background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",borderRadius:10,padding:"6px 12px",fontSize:11,color:"#fff",fontWeight:600}}>📱 মোবাইল বান্ধব</div>
           </div>
         </div>
-      )}
-      {err&&(
-        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#fff",borderRadius:16,border:`1px solid ${C.border}`,gap:12,padding:24,textAlign:"center"}}>
-          <div style={{fontSize:40}}>🎮</div>
-          <div style={{fontWeight:700,fontSize:16,color:C.text}}>গেম লোড হয়নি</div>
-          <div style={{color:C.textMuted,fontSize:13}}>ইন্টারনেট সংযোগ পরীক্ষা করুন অথবা সরাসরি ভিজিট করুন:</div>
-          <a href="https://game.krishiai.live" target="_blank" rel="noreferrer" style={{background:C.primary,color:"#fff",padding:"12px 24px",borderRadius:12,textDecoration:"none",fontWeight:700,fontSize:14}}>🎮 গেম খেলুন →</a>
+      </div>
+
+      {/* Game cards */}
+      <div style={{display:"flex",flexDirection:"column",gap:12}}>
+        {GAMES.map((game,i)=>(
+          <div key={game.id} style={{background:"#fff",borderRadius:18,overflow:"hidden",boxShadow:C.shadowMd,border:`1px solid ${C.border}`,animation:`popIn .4s ease ${i*.1}s both`,cursor:"pointer"}} onClick={()=>{setActiveGame(game.id);setGameLoaded(false);setGameErr(false);}}>
+            {/* Card header with gradient */}
+            <div style={{background:game.bg,padding:"18px 20px 16px",position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",top:-10,right:-10,fontSize:60,opacity:.2}}>{game.icon}</div>
+              <div style={{position:"relative",display:"flex",alignItems:"flex-start",gap:12}}>
+                <div style={{width:52,height:52,borderRadius:14,background:"rgba(255,255,255,0.2)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>{game.icon}</div>
+                <div style={{flex:1}}>
+                  <div style={{color:"#fff",fontWeight:800,fontSize:16,marginBottom:2}}>{game.title}</div>
+                  <div style={{color:"rgba(255,255,255,0.75)",fontSize:11,marginBottom:8}}>{game.subtitle}</div>
+                  <span style={{background:"rgba(255,255,255,0.2)",backdropFilter:"blur(4px)",color:"#fff",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:700}}>{game.badge}</span>
+                </div>
+              </div>
+            </div>
+            {/* Card body */}
+            <div style={{padding:"14px 16px"}}>
+              <p style={{fontSize:12,color:C.textMuted,lineHeight:1.6,marginBottom:12}}>{game.desc}</p>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
+                {game.tags.map(tag=><span key={tag} style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:20,padding:"2px 9px",fontSize:10,color:C.textMuted,fontWeight:600}}>{tag}</span>)}
+              </div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div style={{display:"flex",gap:14}}>
+                  <div style={{fontSize:11,color:C.textMuted}}>⚡ <span style={{color:C.text,fontWeight:600}}>{game.difficulty}</span></div>
+                  <div style={{fontSize:11,color:C.textMuted}}>⏱ <span style={{color:C.text,fontWeight:600}}>{game.duration}</span></div>
+                </div>
+                <button style={{background:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,border:"none",borderRadius:12,color:"#fff",padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",boxShadow:`0 3px 10px ${C.primary}44`}}>
+                  খেলুন →
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Learning path section */}
+      <div style={{marginTop:16,background:"#fff",borderRadius:16,padding:16,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+        <div style={{fontWeight:800,fontSize:14,color:C.primaryDark,marginBottom:4}}>📚 শেখার পথ</div>
+        <div style={{color:C.textMuted,fontSize:12,marginBottom:12}}>নতুন হলে এই ক্রমে খেলুন:</div>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          {["প্ল্যান্ট ক্লিনিক","ধানের ডাক্তার","স্মার্ট কৃষক"].map((name,i,arr)=>(
+            <span key={name} style={{display:"flex",alignItems:"center",gap:6}}>
+              <span style={{background:C.primary,color:"#fff",borderRadius:20,padding:"4px 10px",fontSize:11,fontWeight:700}}>{i+1}. {name}</span>
+              {i<arr.length-1&&<span style={{color:C.textLight,fontSize:14}}>→</span>}
+            </span>
+          ))}
         </div>
-      )}
-      <iframe
-        src="https://game.krishiai.live"
-        title="Krishi AI Smart Farmer Game"
-        style={{flex:1,width:"100%",border:"none",borderRadius:16,display:loaded?"block":"none",minHeight:500}}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
-        onLoad={()=>setLoaded(true)}
-        onError={()=>setErr(true)}
-      />
+      </div>
+
+      {/* External link */}
+      <div style={{marginTop:12,background:`linear-gradient(135deg,${C.bgMuted},#fff)`,borderRadius:14,padding:14,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12}}>
+        <span style={{fontSize:26}}>🌐</span>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:700,fontSize:13,color:C.text}}>পূর্ণ স্ক্রিনে খেলুন</div>
+          <div style={{fontSize:11,color:C.textMuted}}>game-diagnosis.space.z.ai</div>
+        </div>
+        <a href="https://game-diagnosis.space.z.ai" target="_blank" rel="noreferrer" style={{background:C.primary,color:"#fff",padding:"8px 14px",borderRadius:10,textDecoration:"none",fontSize:12,fontWeight:700,flexShrink:0,boxShadow:C.shadow}}>↗ খুলুন</a>
+      </div>
     </div>
   );
 }
+
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function CABIDiagnosis(){
+export default function UdbhidGoenda(){
   const[activeTab,setActiveTab]=useState("diagnose");
   const[step,setStep]=useState(1);
   const[form,setForm]=useState({crop:"",district:"",season:"",growthStage:"",symptoms:"",duration:"",affectedArea:""});
@@ -850,7 +814,7 @@ export default function CABIDiagnosis(){
   const[loading,setLoading]=useState(false);
   const[error,setError]=useState(null);
   const[severity,setSeverity]=useState(null);
-  const[history,setHistory]=useState(()=>{try{return JSON.parse(localStorage.getItem("cabi-history")||"[]");}catch{return[];}});
+  const[history,setHistory]=useState(()=>{try{return JSON.parse(localStorage.getItem("ud-history")||"[]");}catch{return[];}});
   const[pesticideDb,setPesticideDb]=useState(null);
   const[recommendedProducts,setRecommendedProducts]=useState([]);
 
@@ -865,14 +829,11 @@ export default function CABIDiagnosis(){
 
   const[weather,setWeather]=useState(null);
   const[weatherLoading,setWeatherLoading]=useState(false);
-  const[weatherError,setWeatherError]=useState(null);
   const[locationName,setLocationName]=useState(null);
   const[coords,setCoords]=useState(null);
   const[locationSource,setLocationSource]=useState(null);
 
-  useEffect(()=>{
-    fetch("/pesticides.json").then(r=>r.json()).then(d=>setPesticideDb(d)).catch(()=>{});
-  },[]);
+  useEffect(()=>{fetch("/pesticides.json").then(r=>r.json()).then(d=>setPesticideDb(d)).catch(()=>{});},[]);
 
   useEffect(()=>{
     if(!pesticideDb||!result||!form.crop)return;
@@ -881,7 +842,7 @@ export default function CABIDiagnosis(){
     const cropIds=cropKey?(pesticideDb.crop_to_product_map[cropKey]||[]):[];
     const pestIds=[];
     for(const[pest,ids]of Object.entries(pesticideDb.pest_to_product_map))if(text.includes(pest.toLowerCase()))ids.forEach(id=>pestIds.push(id));
-    const allIds=[...new Set([...pestIds,...(Array.isArray(cropIds)?cropIds:[])])];
+    const allIds=[...new Set([...pestIds,...cropIds])];
     const matched=allIds.map(id=>pesticideDb.products.find(p=>p.id===id)).filter(Boolean);
     const pestSet=new Set(pestIds);
     matched.sort((a,b)=>{const aP=pestSet.has(a.id)?1:0;const bP=pestSet.has(b.id)?1:0;if(bP!==aP)return bP-aP;return(b.rating||0)-(a.rating||0);});
@@ -890,57 +851,49 @@ export default function CABIDiagnosis(){
 
   const fetchWeather=useCallback(async(lat,lon)=>{
     try{
-      const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,wind_speed_10m,uv_index,weather_code&daily=precipitation_sum&timezone=Asia%2FDhaka&forecast_days=1`;
-      const res=await fetch(url);const d=await res.json();const c=d.current;
-      const rain24h=d.daily?.precipitation_sum?.[0]??c.precipitation??0;
-      setWeather({temp:Math.round(c.temperature_2m),feelsLike:Math.round(c.apparent_temperature),humidity:Math.round(c.relative_humidity_2m),rain24h:Math.round(rain24h*10)/10,windSpeed:Math.round(c.wind_speed_10m),uvIndex:Math.round(c.uv_index)});
-    }catch{setWeatherError("আবহাওয়া ডেটা পাওয়া যায়নি");}
+      const d=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,wind_speed_10m,uv_index&daily=precipitation_sum&timezone=Asia%2FDhaka&forecast_days=1`)).json();
+      const c=d.current;
+      setWeather({temp:Math.round(c.temperature_2m),feelsLike:Math.round(c.apparent_temperature),humidity:Math.round(c.relative_humidity_2m),rain24h:Math.round((d.daily?.precipitation_sum?.[0]??c.precipitation??0)*10)/10,windSpeed:Math.round(c.wind_speed_10m),uvIndex:Math.round(c.uv_index)});
+    }catch{}
   },[]);
 
   const reverseGeocode=useCallback(async(lat,lon)=>{
     try{
-      const res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`,{headers:{"User-Agent":"CABI-Bangladesh/1.0"}});
-      const d=await res.json();
+      const d=await(await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`,{headers:{"User-Agent":"UddhidGoenda/1.0"}})).json();
       const district=d.address?.county||d.address?.state_district||d.address?.city||"";
       setLocationName([district,"Bangladesh"].filter(Boolean).join(", "));
-      const matched=DISTRICTS.find(dd=>dd.toLowerCase().includes(district.toLowerCase())||district.toLowerCase().includes(dd.split("/")[0].trim().toLowerCase()));
-      if(matched)setForm(f=>({...f,district:f.district||matched}));
+      const m=DISTRICTS.find(dd=>dd.toLowerCase().includes(district.toLowerCase())||district.toLowerCase().includes(dd.split("/")[0].trim().toLowerCase()));
+      if(m)setForm(f=>({...f,district:f.district||m}));
     }catch{setLocationName("Bangladesh");}
   },[]);
 
   const fetchByIP=useCallback(async()=>{
     try{
-      const res=await fetch("https://ip-api.com/json/?fields=lat,lon,city,regionName");const d=await res.json();
-      if(d.lat&&d.lon){setCoords({lat:d.lat,lon:d.lon});setLocationSource("ip");setLocationName([d.city,d.regionName,"Bangladesh"].filter(Boolean).join(", "));await fetchWeather(d.lat,d.lon);const matched=DISTRICTS.find(dd=>dd.toLowerCase().includes((d.city||"").toLowerCase()));if(matched)setForm(f=>({...f,district:f.district||matched}));}
+      const d=await(await fetch("https://ip-api.com/json/?fields=lat,lon,city,regionName")).json();
+      if(d.lat&&d.lon){setCoords({lat:d.lat,lon:d.lon});setLocationSource("ip");setLocationName([d.city,d.regionName,"Bangladesh"].filter(Boolean).join(", "));await fetchWeather(d.lat,d.lon);const m=DISTRICTS.find(dd=>dd.toLowerCase().includes((d.city||"").toLowerCase()));if(m)setForm(f=>({...f,district:f.district||m}));}
       else{setCoords({lat:23.685,lon:90.356});setLocationName("Bangladesh");await fetchWeather(23.685,90.356);}
-    }catch{setWeatherError("অবস্থান সনাক্ত করা যায়নি");}
+    }catch{}
   },[fetchWeather]);
 
   useEffect(()=>{
     setWeatherLoading(true);
-    if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(
-        async(pos)=>{const{latitude:lat,longitude:lon}=pos.coords;setCoords({lat,lon});setLocationSource("gps");await Promise.all([fetchWeather(lat,lon),reverseGeocode(lat,lon)]);setWeatherLoading(false);},
-        async()=>{await fetchByIP();setWeatherLoading(false);},
-        {timeout:8000}
-      );
-    }else{fetchByIP().then(()=>setWeatherLoading(false));}
+    if(navigator.geolocation){navigator.geolocation.getCurrentPosition(async(pos)=>{const{latitude:lat,longitude:lon}=pos.coords;setCoords({lat,lon});setLocationSource("gps");await Promise.all([fetchWeather(lat,lon),reverseGeocode(lat,lon)]);setWeatherLoading(false);},async()=>{await fetchByIP();setWeatherLoading(false);},{timeout:8000});}
+    else{fetchByIP().then(()=>setWeatherLoading(false));}
   },[fetchWeather,reverseGeocode,fetchByIP]);
 
   useEffect(()=>{setVoiceSupported(!!(window.SpeechRecognition||window.webkitSpeechRecognition));setTtsSupported(!!window.speechSynthesis);},[]);
 
-  const refreshWeather=async()=>{if(!coords)return;setWeatherLoading(true);setWeatherError(null);await fetchWeather(coords.lat,coords.lon);setWeatherLoading(false);};
+  const refreshWeather=async()=>{if(!coords)return;setWeatherLoading(true);await fetchWeather(coords.lat,coords.lon);setWeatherLoading(false);};
 
   const handleImage=(e)=>{
     const file=e.target.files[0];if(!file)return;
     setImage(URL.createObjectURL(file));
     const img=new Image();
     img.onload=()=>{
-      const MAX=800;let{width,height}=img;
-      if(width>MAX||height>MAX){if(width>height){height=Math.round(height*MAX/width);width=MAX;}else{width=Math.round(width*MAX/height);height=MAX;}}
-      const canvas=document.createElement("canvas");canvas.width=width;canvas.height=height;
-      canvas.getContext("2d").drawImage(img,0,0,width,height);
-      setImageBase64(canvas.toDataURL("image/jpeg",0.7).split(",")[1]);
+      const MAX=800;let{width:w,height:h}=img;
+      if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
+      const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
+      setImageBase64(cv.toDataURL("image/jpeg",0.7).split(",")[1]);
     };
     img.src=URL.createObjectURL(file);
   };
@@ -948,31 +901,27 @@ export default function CABIDiagnosis(){
   const handleSubmit=async()=>{
     if(!form.crop||!form.symptoms){setError("অনুগ্রহ করে ফসল এবং লক্ষণ উভয়ই পূরণ করুন।");return;}
     setLoading(true);setError(null);setResult(null);setSeverity(null);setRecommendedProducts([]);
-    const userContent=[];
-    if(imageBase64)userContent.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:imageBase64}});
-    userContent.push({type:"text",text:`Crop:${form.crop}\nDistrict:${form.district||locationName||"Not specified"}\nSeason:${form.season||"Not specified"}\nGrowth Stage:${form.growthStage||"Not specified"}\nDuration:${form.duration||"Not specified"}\nAffected Area:${form.affectedArea||"Not specified"}\nSymptoms:${form.symptoms}\n${imageBase64?"Photo attached.":"No photo."}\n${weatherPromptText(weather,locationName)}\n\nDiagnose using CABI Plantwise methodology with 5-step protocol. Respond in Bangla and English.\n---BANGLA_SECTION---\n[Full Bangla diagnosis]\n---END_BANGLA---\n---ENGLISH_SECTION---\n[Full English diagnosis]\n---END_ENGLISH---`});
+    const uc=[];
+    if(imageBase64)uc.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:imageBase64}});
+    uc.push({type:"text",text:`Crop:${form.crop}\nDistrict:${form.district||locationName||"N/A"}\nSeason:${form.season||"N/A"}\nGrowth:${form.growthStage||"N/A"}\nDuration:${form.duration||"N/A"}\nArea:${form.affectedArea||"N/A"}\nSymptoms:${form.symptoms}\n${imageBase64?"Photo attached.":"No photo."}\n${weatherPromptText(weather,locationName)}\n\nDiagnose using CABI Plantwise 5-step protocol.\n---BANGLA_SECTION---\n[Full Bangla]\n---END_BANGLA---\n---ENGLISH_SECTION---\n[Full English]\n---END_ENGLISH---`});
     try{
-      const response=await fetch("/api/diagnose",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,messages:[{role:"user",content:userContent}]})});
-      const data=await response.json();
-      if(!response.ok)throw new Error(data?.error||`HTTP ${response.status}`);
+      const res=await fetch("/api/diagnose",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,messages:[{role:"user",content:uc}]})});
+      const data=await res.json();
+      if(!res.ok)throw new Error(data?.error||`HTTP ${res.status}`);
       const raw=data.content?.map(b=>b.text||"").join("\n")||"";
-      const bnMatch=raw.match(/---BANGLA_SECTION---([\s\S]*?)---END_BANGLA---/);
-      const enMatch=raw.match(/---ENGLISH_SECTION---([\s\S]*?)---END_ENGLISH---/);
-      const bn=bnMatch?bnMatch[1].trim():raw;const en=enMatch?enMatch[1].trim():"";
+      const bn=(raw.match(/---BANGLA_SECTION---([\s\S]*?)---END_BANGLA---/)||[])[1]?.trim()||raw;
+      const en=(raw.match(/---ENGLISH_SECTION---([\s\S]*?)---END_ENGLISH---/)||[])[1]?.trim()||"";
       setResult({bn,en});setProvider(data.provider||null);setStep(2);
       const entry={crop:form.crop,district:form.district,date:new Date().toLocaleDateString("bn-BD"),resultPreview:bn.slice(0,80)};
-      const newHistory=[...history,entry].slice(-10);setHistory(newHistory);
-      try{localStorage.setItem("cabi-history",JSON.stringify(newHistory));}catch{}
+      const nh=[...history,entry].slice(-10);setHistory(nh);try{localStorage.setItem("ud-history",JSON.stringify(nh));}catch{}
       setTimeout(()=>resultRef.current?.scrollIntoView({behavior:"smooth"}),100);
-    }catch(err){setError(`রোগ নির্ণয়ে সমস্যা হয়েছে: ${err.message}`);}
+    }catch(err){setError(`রোগ নির্ণয়ে সমস্যা: ${err.message}`);}
     finally{setLoading(false);}
   };
 
   const stopSpeaking=()=>{window.speechSynthesis?.cancel();setIsSpeaking(false);};
-  const reset=()=>{
-    setForm({crop:"",district:"",season:"",growthStage:"",symptoms:"",duration:"",affectedArea:""});
-    setImage(null);setImageBase64(null);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setSeverity(null);setShowMoreCrops(false);setRecommendedProducts([]);stopSpeaking();
-  };
+  const reset=()=>{setForm({crop:"",district:"",season:"",growthStage:"",symptoms:"",duration:"",affectedArea:""});setImage(null);setImageBase64(null);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setSeverity(null);setShowMoreCrops(false);setRecommendedProducts([]);stopSpeaking();};
+
   const startListening=()=>{
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;stopSpeaking();
     const r=new SR();recognitionRef.current=r;r.lang="bn-BD";r.interimResults=true;r.continuous=false;
@@ -985,55 +934,54 @@ export default function CABIDiagnosis(){
     if(!window.speechSynthesis)return;stopSpeaking();
     const clean=text.replace(/#{1,6}\s/g,"").replace(/\*\*/g,"").replace(/---[\w_]+---/g,"").replace(/\*/g,"").replace(/`/g,"").trim();
     const u=new SpeechSynthesisUtterance(clean);u.lang=showEnglish?"en-US":"bn-BD";u.rate=0.88;
-    if(!showEnglish){const voices=window.speechSynthesis.getVoices();const v=voices.find(v=>v.lang.startsWith("bn"));if(v)u.voice=v;}
+    if(!showEnglish){const v=window.speechSynthesis.getVoices().find(v=>v.lang.startsWith("bn"));if(v)u.voice=v;}
     u.onstart=()=>setIsSpeaking(true);u.onend=()=>setIsSpeaking(false);u.onerror=()=>setIsSpeaking(false);
     window.speechSynthesis.speak(u);
   };
   const handleCropQuickSelect=(val)=>{if(val==="__more__"){setShowMoreCrops(true);return;}setForm(f=>({...f,crop:val}));setShowMoreCrops(false);};
 
-  // Responsive styles
-  const labelSt={display:"block",color:C.text,fontSize:12,fontWeight:700,marginBottom:6};
-  const selSt={width:"100%",background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"9px 10px",fontSize:13,outline:"none"};
-  const chipSt={padding:"5px 12px",borderRadius:20,fontSize:12,cursor:"pointer",transition:"all .15s"};
+  // style constants
+  const labelSt={display:"block",color:C.text,fontSize:12,fontWeight:700,marginBottom:5};
+  const selSt={width:"100%",background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:10,color:C.text,padding:"9px 10px",fontSize:13,outline:"none",appearance:"none"};
+  const chipSt={padding:"5px 12px",borderRadius:20,fontSize:12,cursor:"pointer",transition:"all .15s",flexShrink:0};
 
   const navTabs=[
-    {id:"diagnose",label:"রোগ নির্ণয়",icon:"🔬"},
+    {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
     {id:"guide",label:"CABI গাইড",icon:"📖"},
     {id:"library",label:"তথ্যভাণ্ডার",icon:"📚"},
-    {id:"game",label:"গেম",icon:"🎮"},
+    {id:"game",label:"গেম হাব",icon:"🎮"},
     {id:"history",label:"ইতিহাস",icon:"📋"},
   ];
 
   return(
-    <div style={{minHeight:"100vh",background:C.bg,maxWidth:620,margin:"0 auto",display:"flex",flexDirection:"column"}}>
+    <div style={{minHeight:"100svh",background:C.bg,maxWidth:640,margin:"0 auto",display:"flex",flexDirection:"column"}}>
 
-      {/* ── Header ─────────────────────────────────────────────────── */}
-      <div style={{background:C.primary,padding:"12px 16px 0",position:"sticky",top:0,zIndex:100,boxShadow:C.shadow}}>
+      {/* ══ HEADER ══════════════════════════════════════════════════════════ */}
+      <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,padding:"12px 14px 0",position:"sticky",top:0,zIndex:100,boxShadow:C.shadowMd}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-          {/* CABI Logo replacing rice panicle */}
-          <div style={{width:42,height:42,borderRadius:12,overflow:"hidden",flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
+          <div style={{width:40,height:40,borderRadius:11,overflow:"hidden",flexShrink:0,boxShadow:"0 2px 10px rgba(0,0,0,0.3)",animation:"glow 3s ease-in-out infinite"}}>
             <img src="/cabi-logo.png" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
           </div>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{color:"#fff",fontWeight:800,fontSize:17,letterSpacing:-.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>CABI কৃষি নির্ণয়</div>
-            <div style={{color:"rgba(255,255,255,0.75)",fontSize:10}}>Crop Disease Diagnosis · Bangladesh</div>
+            <div style={{color:"#fff",fontWeight:800,fontSize:17,letterSpacing:-.5,lineHeight:1.1}}>উদ্ভিদ গোয়েন্দা</div>
+            <div style={{color:"rgba(255,255,255,0.65)",fontSize:10,letterSpacing:.2}}>Plant Detective · Bangladesh · CABI Plantwise</div>
           </div>
-          {step===2&&result&&<button onClick={reset} style={{flexShrink:0,background:"rgba(255,255,255,0.2)",border:"none",borderRadius:8,color:"#fff",padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>🔁 নতুন</button>}
+          {step===2&&result&&<button onClick={reset} style={{flexShrink:0,background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.3)",borderRadius:10,color:"#fff",padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>🔁 নতুন</button>}
         </div>
-        {/* Scrollable tab bar */}
-        <div style={{display:"flex",overflowX:"auto",gap:0,scrollbarWidth:"none"}}>
+        {/* Tab bar */}
+        <div style={{display:"flex",overflowX:"auto",scrollbarWidth:"none",gap:0}}>
           {navTabs.map(t=>(
-            <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{flexShrink:0,padding:"9px 12px",border:"none",cursor:"pointer",background:"none",color:activeTab===t.id?"#fff":"rgba(255,255,255,0.6)",borderBottom:`3px solid ${activeTab===t.id?"#fff":"transparent"}`,fontSize:12,fontWeight:activeTab===t.id?700:400,transition:"all .15s",whiteSpace:"nowrap"}}>
+            <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{flexShrink:0,padding:"9px 11px",border:"none",cursor:"pointer",background:"none",color:activeTab===t.id?"#fff":"rgba(255,255,255,0.55)",borderBottom:`2.5px solid ${activeTab===t.id?"#fff":"transparent"}`,fontSize:11.5,fontWeight:activeTab===t.id?700:400,transition:"all .15s",whiteSpace:"nowrap",letterSpacing:.1}}>
               {t.icon} {t.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* ── Content ─────────────────────────────────────────────────── */}
-      <div style={{flex:1,padding:activeTab==="game"?"8px":"14px",overflowY:activeTab==="game"?"hidden":"auto"}}>
+      {/* ══ CONTENT ═════════════════════════════════════════════════════════ */}
+      <div style={{flex:1,padding:activeTab==="game"?"10px 12px":"14px",overflowY:activeTab==="game"?"hidden":"auto",overflowX:"hidden"}}>
 
-        {/* DIAGNOSE TAB */}
+        {/* ── DIAGNOSE ─────────────────────────────────────────────── */}
         {activeTab==="diagnose"&&(
           <div>
             <WeatherBar weather={weather} weatherLoading={weatherLoading} locationName={locationName} locationSource={locationSource} onRefresh={refreshWeather}/>
@@ -1042,28 +990,28 @@ export default function CABIDiagnosis(){
 
             {step===1&&(
               <div>
-                {/* Crop select */}
-                <div style={{background:"#fff",borderRadius:16,padding:16,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-                  <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:12}}>🌱 ফসল নির্বাচন করুন *</div>
+                {/* crop */}
+                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                  <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:10}}>🌱 ফসল নির্বাচন *</div>
                   {!form.crop&&!showMoreCrops&&<QuickCropRow onSelect={handleCropQuickSelect} selected={form.crop}/>}
                   {form.crop&&!showMoreCrops&&(
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{background:"#f0fdf4",border:`1.5px solid ${C.primary}`,borderRadius:12,padding:"8px 16px",color:C.primaryDark,fontWeight:700,fontSize:14,flex:1}}>✅ {form.crop}</div>
-                      <button onClick={()=>{setForm(f=>({...f,crop:""}));setShowMoreCrops(false);}} style={{background:"#fef2f2",border:`1px solid #fecaca`,borderRadius:8,color:C.danger,padding:"8px 12px",cursor:"pointer",fontSize:12,fontWeight:600}}>পরিবর্তন</button>
+                      <div style={{background:"#f0fdf4",border:`1.5px solid ${C.primary}`,borderRadius:12,padding:"8px 14px",color:C.primaryDark,fontWeight:700,fontSize:13,flex:1}}>✅ {form.crop}</div>
+                      <button onClick={()=>{setForm(f=>({...f,crop:""}));setShowMoreCrops(false);}} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,color:C.danger,padding:"7px 12px",cursor:"pointer",fontSize:12,fontWeight:600}}>পরিবর্তন</button>
                     </div>
                   )}
                   {showMoreCrops&&(
                     <div>
-                      <button onClick={()=>setShowMoreCrops(false)} style={{background:"none",border:"none",color:C.primary,cursor:"pointer",fontSize:13,marginBottom:10}}>← ফিরে যান</button>
+                      <button onClick={()=>setShowMoreCrops(false)} style={{background:"none",border:"none",color:C.primary,cursor:"pointer",fontSize:13,marginBottom:8,fontWeight:600}}>← ফিরুন</button>
                       {Object.keys(CROPS).map(group=>(
-                        <div key={group} style={{marginBottom:8}}>
-                          <button onClick={()=>setExpandedGroup(expandedGroup===group?null:group)} style={{width:"100%",background:expandedGroup===group?"#f0fdf4":C.bgMuted,border:`1px solid ${expandedGroup===group?C.primary:C.border}`,borderRadius:8,padding:"8px 12px",color:C.text,cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:600}}>
+                        <div key={group} style={{marginBottom:7}}>
+                          <button onClick={()=>setExpandedGroup(expandedGroup===group?null:group)} style={{width:"100%",background:expandedGroup===group?"#f0fdf4":C.bgMuted,border:`1px solid ${expandedGroup===group?C.primary:C.border}`,borderRadius:10,padding:"8px 12px",color:C.text,cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:600}}>
                             {group} {expandedGroup===group?"▲":"▼"}
                           </button>
                           {expandedGroup===group&&(
-                            <div style={{background:"#fff",border:`1px solid ${C.border}`,borderTop:"none",borderRadius:"0 0 8px 8px",padding:8,maxHeight:200,overflowY:"auto"}}>
+                            <div style={{background:"#fff",border:`1px solid ${C.border}`,borderTop:"none",borderRadius:"0 0 10px 10px",padding:7,maxHeight:190,overflowY:"auto"}}>
                               {CROPS[group].map(crop=>(
-                                <div key={crop} onClick={()=>{handleCropQuickSelect(crop);setExpandedGroup(null);}} style={{padding:"7px 10px",cursor:"pointer",fontSize:12,color:C.text,borderRadius:6}} onMouseEnter={e=>e.currentTarget.style.background="#f0fdf4"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{crop}</div>
+                                <div key={crop} onClick={()=>{handleCropQuickSelect(crop);setExpandedGroup(null);}} style={{padding:"6px 10px",cursor:"pointer",fontSize:12,color:C.text,borderRadius:7}} onMouseEnter={e=>e.currentTarget.style.background="#f0fdf4"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{crop}</div>
                               ))}
                             </div>
                           )}
@@ -1073,9 +1021,9 @@ export default function CABIDiagnosis(){
                   )}
                 </div>
 
-                {/* Location & Season */}
-                <div style={{background:"#fff",borderRadius:16,padding:16,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+                {/* location/season */}
+                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
                     <div>
                       <label style={labelSt}>📍 জেলা {locationSource&&<span style={{color:C.blue,fontSize:9}}>(auto)</span>}</label>
                       <select value={form.district} onChange={e=>setForm(f=>({...f,district:e.target.value}))} style={selSt}>
@@ -1100,174 +1048,165 @@ export default function CABIDiagnosis(){
                   </div>
                 </div>
 
-                {/* Duration */}
-                <div style={{background:"#fff",borderRadius:16,padding:16,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                {/* duration */}
+                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <label style={labelSt}>⏱️ সমস্যার সময়কাল</label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                    {DURATION_CHIPS.map(chip=>{const active=form.duration===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,duration:active?"":chip.value}))} style={{...chipSt,border:`1px solid ${active?C.primary:C.border}`,background:active?"#f0fdf4":"#f8faf8",color:active?C.primaryDark:C.text,fontWeight:active?700:400}}>{chip.label}</button>;})}
+                    {DURATION_CHIPS.map(chip=>{const a=form.duration===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,duration:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?"#f0fdf4":"#f8faf8",color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
                   </div>
                 </div>
 
-                {/* Affected area */}
-                <div style={{background:"#fff",borderRadius:16,padding:16,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                {/* area */}
+                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <label style={labelSt}>🗺️ আক্রান্ত এলাকা</label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                    {AREA_CHIPS.map(chip=>{const active=form.affectedArea===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,affectedArea:active?"":chip.value}))} style={{...chipSt,border:`1px solid ${active?C.primary:C.border}`,background:active?"#f0fdf4":"#f8faf8",color:active?C.primaryDark:C.text,fontWeight:active?700:400}}>{chip.label}</button>;})}
+                    {AREA_CHIPS.map(chip=>{const a=form.affectedArea===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,affectedArea:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?"#f0fdf4":"#f8faf8",color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
                   </div>
                 </div>
 
-                {/* Symptoms */}
-                <div style={{background:"#fff",borderRadius:16,padding:16,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                {/* symptoms */}
+                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:9}}>
                     <label style={{...labelSt,marginBottom:0}}>🩺 লক্ষণ বর্ণনা *</label>
-                    {voiceSupported&&<button onClick={isListening?stopListening:startListening} style={{width:42,height:42,borderRadius:"50%",border:`2px solid ${isListening?C.danger:C.primary}`,background:isListening?"#fef2f2":"#f0fdf4",cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>{isListening?<span style={{animation:"pulse 1s infinite"}}>⏹</span>:"🎙️"}</button>}
+                    {voiceSupported&&<button onClick={isListening?stopListening:startListening} style={{width:40,height:40,borderRadius:"50%",border:`2px solid ${isListening?C.danger:C.primary}`,background:isListening?"#fef2f2":"#f0fdf4",cursor:"pointer",fontSize:17,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isListening?<span style={{animation:"pulse 1s infinite"}}>⏹</span>:"🎙️"}</button>}
                   </div>
                   {Object.entries(SYMPTOM_CHIPS).map(([group,chips])=>(
-                    <div key={group} style={{marginBottom:10}}>
-                      <div style={{color:C.textMuted,fontSize:11,fontWeight:700,marginBottom:6}}>{group}</div>
+                    <div key={group} style={{marginBottom:9}}>
+                      <div style={{color:C.textMuted,fontSize:10,fontWeight:700,marginBottom:5,textTransform:"uppercase",letterSpacing:.5}}>{group}</div>
                       <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-                        {chips.map(chip=>{const active=form.symptoms.includes(chip.value);return<button key={chip.label} onClick={()=>{if(active)setForm(f=>({...f,symptoms:f.symptoms.replace(chip.value,"").replace(/\n\n+/g,"\n").trim()}));else setForm(f=>({...f,symptoms:f.symptoms?f.symptoms.trimEnd()+"\n"+chip.value:chip.value}));}} style={{...chipSt,border:`1px solid ${active?C.primary:C.border}`,background:active?"#f0fdf4":"#f8faf8",color:active?C.primaryDark:C.text,fontWeight:active?700:400}}>{active?"✓ ":""}{chip.label}</button>;})}
+                        {chips.map(chip=>{const a=form.symptoms.includes(chip.value);return<button key={chip.label} onClick={()=>{if(a)setForm(f=>({...f,symptoms:f.symptoms.replace(chip.value,"").replace(/\n\n+/g,"\n").trim()}));else setForm(f=>({...f,symptoms:f.symptoms?f.symptoms.trimEnd()+"\n"+chip.value:chip.value}));}} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?"#f0fdf4":"#f8faf8",color:a?C.primaryDark:C.textMuted,fontWeight:a?700:400,fontSize:11}}>{a?"✓ ":""}{chip.label}</button>;})}
                       </div>
                     </div>
                   ))}
-                  <textarea value={form.symptoms} onChange={e=>setForm(f=>({...f,symptoms:e.target.value}))} placeholder="এখানে বিস্তারিত লিখুন বা উপরে ট্যাপ করুন..." rows={3} style={{width:"100%",background:C.bgMuted,border:`1px solid ${isListening?C.danger:C.border}`,borderRadius:8,color:C.text,padding:"9px 12px",fontSize:13,outline:"none",resize:"vertical",marginTop:8,boxSizing:"border-box"}}/>
+                  <textarea value={form.symptoms} onChange={e=>setForm(f=>({...f,symptoms:e.target.value}))} placeholder="বিস্তারিত লিখুন বা উপরে ট্যাপ করুন..." rows={3} style={{width:"100%",background:C.bgMuted,border:`1px solid ${isListening?C.danger:C.border}`,borderRadius:10,color:C.text,padding:"9px 12px",fontSize:13,outline:"none",resize:"vertical",marginTop:8,boxSizing:"border-box",lineHeight:1.6}}/>
                 </div>
 
-                {/* Image */}
-                <div style={{background:"#fff",borderRadius:16,padding:16,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                {/* image */}
+                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <label style={labelSt}>📷 ছবি আপলোড (ঐচ্ছিক)</label>
                   <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{display:"none"}}/>
                   {!image?(
-                    <button onClick={()=>fileRef.current.click()} style={{width:"100%",padding:"20px",border:`2px dashed ${C.border}`,borderRadius:12,background:C.bgMuted,cursor:"pointer",color:C.textMuted,fontSize:13,display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-                      <span style={{fontSize:28}}>📁</span><span>ছবি বেছে নিন বা ক্যামেরা ব্যবহার করুন</span>
-                      <span style={{fontSize:11,color:C.textLight}}>JPG, PNG · AI দ্বারা বিশ্লেষণ হবে</span>
+                    <button onClick={()=>fileRef.current.click()} style={{width:"100%",padding:"18px",border:`2px dashed ${C.border}`,borderRadius:12,background:C.bgMuted,cursor:"pointer",color:C.textMuted,fontSize:13,display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
+                      <span style={{fontSize:26}}>📁</span><span style={{fontWeight:600}}>ছবি বেছে নিন</span>
+                      <span style={{fontSize:11}}>JPG, PNG · AI বিশ্লেষণ করবে</span>
                     </button>
                   ):(
                     <div style={{display:"flex",alignItems:"center",gap:12}}>
-                      <img src={image} alt="preview" style={{width:80,height:80,objectFit:"cover",borderRadius:10,border:`2px solid ${C.primary}`}}/>
-                      <div style={{flex:1}}><div style={{fontSize:13,color:C.success,fontWeight:600}}>✅ ছবি সংযুক্ত</div><div style={{fontSize:11,color:C.textMuted}}>AI দ্বারা বিশ্লেষণ হবে</div></div>
-                      <button onClick={()=>{setImage(null);setImageBase64(null);}} style={{background:"#fef2f2",border:`1px solid #fecaca`,borderRadius:8,color:C.danger,padding:"6px 10px",cursor:"pointer",fontSize:12}}>✕</button>
+                      <img src={image} alt="preview" style={{width:76,height:76,objectFit:"cover",borderRadius:12,border:`2px solid ${C.primary}`,flexShrink:0}}/>
+                      <div style={{flex:1}}><div style={{fontSize:13,color:C.success,fontWeight:700}}>✅ ছবি সংযুক্ত</div><div style={{fontSize:11,color:C.textMuted,marginTop:2}}>AI বিশ্লেষণ হবে</div></div>
+                      <button onClick={()=>{setImage(null);setImageBase64(null);}} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,color:C.danger,padding:"7px 10px",cursor:"pointer",fontSize:13}}>✕</button>
                     </div>
                   )}
                 </div>
 
-                {error&&<div style={{background:"#fef2f2",border:`1px solid #fecaca`,borderRadius:12,padding:"12px 16px",color:C.danger,marginBottom:12,fontSize:13}}>⚠️ {error}</div>}
+                {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:"12px 14px",color:C.danger,marginBottom:10,fontSize:13}}>⚠️ {error}</div>}
 
-                <button onClick={handleSubmit} disabled={loading} style={{width:"100%",padding:"16px",borderRadius:14,border:"none",background:loading?C.border:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,color:"#fff",fontWeight:800,fontSize:16,cursor:loading?"not-allowed":"pointer",boxShadow:loading?"none":`0 4px 20px rgba(26,122,58,0.4)`,display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"all .2s"}}>
-                  {loading?<><span style={{display:"inline-block",animation:"spin 1s linear infinite"}}>⟳</span>বিশ্লেষণ হচ্ছে...</>:<>📸 রোগ নির্ণয় করুন</>}
+                <button onClick={handleSubmit} disabled={loading} style={{width:"100%",padding:"15px",borderRadius:14,border:"none",background:loading?C.border:`linear-gradient(135deg,${C.primaryXDark},${C.primaryLight})`,color:"#fff",fontWeight:800,fontSize:15,cursor:loading?"not-allowed":"pointer",boxShadow:loading?"none":`0 4px 20px ${C.primary}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:9,transition:"all .2s"}}>
+                  {loading?<><span style={{display:"inline-block",animation:"spin 1s linear infinite",fontSize:17}}>⟳</span>বিশ্লেষণ হচ্ছে...</>:<><span style={{fontSize:18}}>🔍</span>রোগ নির্ণয় করুন</>}
                 </button>
               </div>
             )}
 
+            {/* ── RESULT ──────────────────────────────────────────────── */}
             {step===2&&result&&(
-              <div ref={resultRef}>
-                <div style={{background:"#fff",borderRadius:16,padding:16,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+              <div ref={resultRef} style={{animation:"slideUp .4s ease"}}>
+                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,flexWrap:"wrap"}}>
-                    <div style={{fontSize:26}}>📋</div>
+                    <div style={{width:38,height:38,borderRadius:10,background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>📋</div>
                     <div style={{flex:1}}>
-                      <div style={{fontWeight:800,fontSize:16,color:C.primaryDark}}>রোগ নির্ণয় প্রতিবেদন</div>
+                      <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>রোগ নির্ণয় প্রতিবেদন</div>
                       <div style={{fontSize:11,color:C.textMuted}}>{form.crop?.split("/")[0]?.trim()} · {form.district?.split("/")[0]?.trim()||locationName}</div>
                     </div>
-                    {provider&&<span style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:20,padding:"3px 10px",color:C.blue,fontSize:11,fontWeight:600}}>{provider}</span>}
+                    {provider&&<span style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:20,padding:"3px 9px",color:C.blue,fontSize:10,fontWeight:700}}>{provider}</span>}
                   </div>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
                     <div style={{display:"flex",background:C.bgMuted,borderRadius:20,padding:3,gap:2}}>
-                      <button onClick={()=>{setShowEnglish(false);stopSpeaking();}} style={{borderRadius:16,padding:"5px 16px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:!showEnglish?C.primary:"transparent",color:!showEnglish?"#fff":C.textMuted,transition:"all .2s"}}>বাংলা</button>
-                      <button onClick={()=>{setShowEnglish(true);stopSpeaking();}} style={{borderRadius:16,padding:"5px 16px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:showEnglish?C.primary:"transparent",color:showEnglish?"#fff":C.textMuted,transition:"all .2s"}}>English</button>
+                      <button onClick={()=>{setShowEnglish(false);stopSpeaking();}} style={{borderRadius:16,padding:"5px 14px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:!showEnglish?C.primary:"transparent",color:!showEnglish?"#fff":C.textMuted,transition:"all .2s"}}>বাংলা</button>
+                      <button onClick={()=>{setShowEnglish(true);stopSpeaking();}} style={{borderRadius:16,padding:"5px 14px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:showEnglish?C.primary:"transparent",color:showEnglish?"#fff":C.textMuted,transition:"all .2s"}}>English</button>
                     </div>
-                    {ttsSupported&&<button onClick={()=>isSpeaking?stopSpeaking():speakResult(showEnglish?result.en:result.bn)} style={{width:38,height:38,borderRadius:"50%",border:`2px solid ${isSpeaking?C.warning:C.primary}`,background:isSpeaking?"#fffbeb":"#f0fdf4",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>{isSpeaking?"⏹":"🔊"}</button>}
-                    {weather&&<span style={{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:20,padding:"3px 10px",color:"#0369a1",fontSize:11}}>🌡️{weather.temp}°C·💧{weather.humidity}%</span>}
+                    {ttsSupported&&<button onClick={()=>isSpeaking?stopSpeaking():speakResult(showEnglish?result.en:result.bn)} style={{width:36,height:36,borderRadius:"50%",border:`2px solid ${isSpeaking?C.warning:C.primary}`,background:isSpeaking?"#fffbeb":"#f0fdf4",cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isSpeaking?"⏹":"🔊"}</button>}
+                    {weather&&<span style={{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:20,padding:"3px 8px",color:"#0369a1",fontSize:10}}>🌡️{weather.temp}°C·💧{weather.humidity}%</span>}
                   </div>
                 </div>
 
-                <div>
-                  {(()=>{
-                    const text=showEnglish?(result.en||""):(result.bn||result.en||"");
-                    if(!text)return<div style={{color:C.textMuted,fontSize:13,textAlign:"center",padding:20}}>কোনো ফলাফল পাওয়া যায়নি।</div>;
-                    const sections=parseIntoSections(text);
-                    if(sections.length<=1&&!sections[0]?.title)return<div style={{background:"#fff",borderRadius:14,padding:16,color:C.text,fontSize:13.5,lineHeight:1.85,border:`1px solid ${C.border}`}}>{renderInline(text)}</div>;
-                    return sections.map((sec,i)=><SectionCard key={i} title={sec.title} bodyLines={sec.body} defaultOpen={i<3}/>);
-                  })()}
-                </div>
+                {(()=>{
+                  const text=showEnglish?(result.en||""):(result.bn||result.en||"");
+                  if(!text)return<div style={{color:C.textMuted,textAlign:"center",padding:20}}>ফলাফল পাওয়া যায়নি।</div>;
+                  const sections=parseIntoSections(text);
+                  if(sections.length<=1&&!sections[0]?.title)return<div style={{background:"#fff",borderRadius:14,padding:16,color:C.text,fontSize:13.5,lineHeight:1.85,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>{renderInline(text)}</div>;
+                  return sections.map((sec,i)=><SectionCard key={i} title={sec.title} bodyLines={sec.body} defaultOpen={i<3}/>);
+                })()}
 
                 {recommendedProducts.length>0&&<ProductRecommendations products={recommendedProducts} crop={form.crop}/>}
 
                 {!severity?(
-                  <div style={{background:"#fff",borderRadius:16,padding:20,marginTop:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-                    <SeveritySurvey onSubmit={(s)=>setSeverity(s)}/>
-                  </div>
+                  <div style={{background:"#fff",borderRadius:16,padding:18,marginTop:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}><SeveritySurvey onSubmit={s=>setSeverity(s)}/></div>
                 ):(
-                  <div style={{background:"#f0fdf4",borderRadius:12,padding:"12px 16px",marginTop:12,border:"1px solid #bbf7d0",fontSize:13,color:C.success,fontWeight:600}}>✅ তীব্রতা নথিভুক্ত: {severity}</div>
+                  <div style={{background:"#f0fdf4",borderRadius:12,padding:"11px 14px",marginTop:10,border:"1px solid #bbf7d0",fontSize:13,color:C.success,fontWeight:700}}>✅ তীব্রতা নথিভুক্ত: {severity}</div>
                 )}
 
-                <div style={{marginTop:12,padding:"10px 14px",background:"#fffbeb",border:`1px solid #fed7aa`,borderRadius:10,color:C.warning,fontSize:12}}>
-                  ⚠️ এই রিপোর্টটি প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তের জন্য DAE কর্মকর্তার পরামর্শ নিন।
-                </div>
-                <button onClick={reset} style={{width:"100%",marginTop:12,padding:"14px",borderRadius:14,border:`1px solid ${C.border}`,background:"#fff",color:C.text,fontWeight:600,fontSize:14,cursor:"pointer"}}>🔁 নতুন রোগ নির্ণয়</button>
+                <div style={{marginTop:10,padding:"10px 14px",background:"#fffbeb",border:"1px solid #fed7aa",borderRadius:12,color:C.warning,fontSize:12}}>⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।</div>
+                <button onClick={reset} style={{width:"100%",marginTop:10,padding:"13px",borderRadius:14,border:`1px solid ${C.border}`,background:"#fff",color:C.text,fontWeight:600,fontSize:14,cursor:"pointer",boxShadow:C.shadow}}>🔁 নতুন রোগ নির্ণয়</button>
               </div>
             )}
           </div>
         )}
 
-        {/* CABI GUIDE TAB */}
+        {/* ── GUIDE ────────────────────────────────────────────────── */}
         {activeTab==="guide"&&(
-          <div style={{background:"#fff",borderRadius:16,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-              <div style={{width:44,height:44,borderRadius:12,overflow:"hidden",flexShrink:0}}>
-                <img src="/cabi-logo.png" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-              </div>
-              <div>
-                <div style={{fontWeight:800,fontSize:16,color:C.primaryDark}}>CABI Plantwise গাইড</div>
-                <div style={{color:C.textMuted,fontSize:12}}>সম্পূর্ণ রোগ নির্ণয় প্রোটোকল</div>
-              </div>
+          <div style={{background:"#fff",borderRadius:16,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+              <div style={{width:42,height:42,borderRadius:11,overflow:"hidden",flexShrink:0}}><img src="/cabi-logo.png" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>
+              <div><div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>CABI Plantwise গাইড</div><div style={{color:C.textMuted,fontSize:11}}>সম্পূর্ণ রোগ নির্ণয় প্রোটোকল</div></div>
             </div>
             <CABIGuideTab/>
           </div>
         )}
 
-        {/* LIBRARY TAB */}
+        {/* ── LIBRARY ──────────────────────────────────────────────── */}
         {activeTab==="library"&&(
-          <div style={{background:"#fff",borderRadius:16,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-            <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:4}}>📚 তথ্যভাণ্ডার</div>
-            <div style={{color:C.textMuted,fontSize:12,marginBottom:16}}>পোকামাকড়, রোগ ও পুষ্টি অভাব সম্পর্কে জানুন</div>
+          <div style={{background:"#fff",borderRadius:16,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+            <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:3}}>📚 তথ্যভাণ্ডার</div>
+            <div style={{color:C.textMuted,fontSize:12,marginBottom:14}}>পোকামাকড়, রোগ ও পুষ্টি অভাব</div>
             <LibrarySection/>
           </div>
         )}
 
-        {/* GAME TAB */}
-        {activeTab==="game"&&<GameTab/>}
+        {/* ── GAME HUB ─────────────────────────────────────────────── */}
+        {activeTab==="game"&&<GameHub/>}
 
-        {/* HISTORY TAB */}
+        {/* ── HISTORY ──────────────────────────────────────────────── */}
         {activeTab==="history"&&(
-          <div style={{background:"#fff",borderRadius:16,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-            <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:16}}>📋 রোগ নির্ণয়ের ইতিহাস</div>
+          <div style={{background:"#fff",borderRadius:16,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+            <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:14}}>📋 নির্ণয়ের ইতিহাস</div>
             {history.length===0?(
               <div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>
-                <div style={{fontSize:40,marginBottom:12}}>🌾</div>
-                <div style={{fontWeight:600}}>এখনো কোনো রোগ নির্ণয় নেই</div>
+                <div style={{fontSize:48,marginBottom:12,animation:"float 2s ease-in-out infinite"}}>🌾</div>
+                <div style={{fontWeight:700,fontSize:15}}>এখনো কোনো নির্ণয় নেই</div>
                 <div style={{fontSize:12,marginTop:4}}>প্রথম নির্ণয় করুন!</div>
               </div>
             ):(
-              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <div style={{display:"flex",flexDirection:"column",gap:9}}>
                 {[...history].reverse().map((h,i)=>(
-                  <div key={i} style={{padding:"14px 16px",background:C.bgMuted,borderRadius:12,border:`1px solid ${C.border}`}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                      <div style={{fontWeight:700,fontSize:14,color:C.text}}>{h.crop?.split("/")[0]?.trim()}</div>
-                      <span style={{background:"#dcfce7",color:"#166534",borderRadius:10,padding:"2px 10px",fontSize:11,fontWeight:700}}>সম্পন্ন</span>
+                  <div key={i} style={{padding:"13px 14px",background:C.bgMuted,borderRadius:12,border:`1px solid ${C.border}`}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+                      <div style={{fontWeight:700,fontSize:13,color:C.text}}>{h.crop?.split("/")[0]?.trim()}</div>
+                      <span style={{background:"#dcfce7",color:"#166534",borderRadius:10,padding:"2px 9px",fontSize:11,fontWeight:700}}>সম্পন্ন</span>
                     </div>
-                    <div style={{color:C.textMuted,fontSize:12}}>📍 {h.district?.split("/")[0]?.trim()||"—"} · 📅 {h.date}</div>
-                    {h.resultPreview&&<div style={{color:C.textLight,fontSize:11,marginTop:6,lineHeight:1.5}}>{h.resultPreview}...</div>}
+                    <div style={{color:C.textMuted,fontSize:11}}>📍 {h.district?.split("/")[0]?.trim()||"—"} · 📅 {h.date}</div>
+                    {h.resultPreview&&<div style={{color:C.textLight,fontSize:11,marginTop:5,lineHeight:1.5,overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{h.resultPreview}...</div>}
                   </div>
                 ))}
-                <button onClick={()=>{setHistory([]);try{localStorage.removeItem("cabi-history");}catch{}}} style={{padding:"10px",borderRadius:10,border:`1px solid #fecaca`,background:"#fef2f2",color:C.danger,cursor:"pointer",fontSize:12,fontWeight:600,marginTop:4}}>🗑️ সব ইতিহাস মুছুন</button>
+                <button onClick={()=>{setHistory([]);try{localStorage.removeItem("ud-history");}catch{}}} style={{padding:"9px",borderRadius:10,border:"1px solid #fecaca",background:"#fef2f2",color:C.danger,cursor:"pointer",fontSize:12,fontWeight:600,marginTop:3}}>🗑️ সব ইতিহাস মুছুন</button>
               </div>
             )}
           </div>
         )}
       </div>
 
-      <div style={{textAlign:"center",padding:"8px",color:C.textLight,fontSize:10,borderTop:`1px solid ${C.border}`,background:"#fff"}}>
-        CABI Plantwise · BRRI · BARI · DAE Bangladesh · Open-Meteo
+      {/* Footer */}
+      <div style={{textAlign:"center",padding:"7px",color:C.textLight,fontSize:9.5,borderTop:`1px solid ${C.border}`,background:"#fff",letterSpacing:.3}}>
+        উদ্ভিদ গোয়েন্দা · CABI Plantwise · BRRI · BARI · DAE Bangladesh
       </div>
     </div>
   );
