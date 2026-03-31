@@ -16,14 +16,18 @@ function getStoragePath() {
 }
 
 function hasSupabase() {
-  return !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return !!(
+    (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+    (process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY)
+  );
 }
 
 function getSupabaseHeaders(prefer = "") {
+  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
   return {
     "Content-Type": "application/json",
-    apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-    Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+    apikey: publishableKey,
+    Authorization: `Bearer ${publishableKey}`,
     ...(prefer ? { Prefer: prefer } : {}),
   };
 }
@@ -31,7 +35,8 @@ function getSupabaseHeaders(prefer = "") {
 export async function readStore() {
   if (hasSupabase()) {
     try {
-      const url = `${process.env.SUPABASE_URL}/rest/v1/analytics_state?id=eq.main&select=*`;
+      const baseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const url = `${baseUrl}/rest/v1/analytics_state?id=eq.main&select=*`;
       const res = await fetch(url, { headers: getSupabaseHeaders() });
       const data = await res.json();
       if (Array.isArray(data) && data[0]) {
@@ -67,7 +72,8 @@ export async function writeStore(data) {
       sections: data.sections || {},
       updated_at: new Date().toISOString(),
     };
-    const url = `${process.env.SUPABASE_URL}/rest/v1/analytics_state?on_conflict=id`;
+    const baseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const url = `${baseUrl}/rest/v1/analytics_state?on_conflict=id`;
     await fetch(url, {
       method: "POST",
       headers: getSupabaseHeaders("resolution=merge-duplicates,return=representation"),
@@ -82,7 +88,8 @@ export async function writeStore(data) {
 
 export async function appendFeedback(item) {
   if (hasSupabase()) {
-    const url = `${process.env.SUPABASE_URL}/rest/v1/feedback_entries`;
+    const baseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const url = `${baseUrl}/rest/v1/feedback_entries`;
     await fetch(url, {
       method: "POST",
       headers: getSupabaseHeaders("return=minimal"),

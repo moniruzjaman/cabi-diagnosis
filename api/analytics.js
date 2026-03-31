@@ -45,6 +45,6 @@ export default async function handler(req, res) {
     sections: store.sections,
     visitor: store.visitors[visitorId],
     updatedAt: store.updatedAt,
-    persistence: process.env.SUPABASE_URL ? "supabase" : (process.env.VERCEL ? "temporary-instance-storage" : "local-file-storage"),
+    persistence: (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL) ? "supabase-rls" : (process.env.VERCEL ? "temporary-instance-storage" : "local-file-storage"),
   });
 }
