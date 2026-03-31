@@ -1988,11 +1988,11 @@ export default function UdbhidGoenda(){
         </div>
       </div>
 
-        <FeedbackPanel context={feedbackContext} summary={feedbackSummary} userEmail={userEmail} onEmailChange={setUserEmail} visitorStats={visitorStats} visitorId={visitorId}/>
+        {!isGameTab&&<FeedbackPanel context={feedbackContext} summary={feedbackSummary} userEmail={userEmail} onEmailChange={setUserEmail} visitorStats={visitorStats} visitorId={visitorId}/>}
       {/* Footer */}
-      <div style={{textAlign:"center",padding:"7px",color:C.textLight,fontSize:9.5,borderTop:`1px solid ${C.border}`,background:"#fff",letterSpacing:.3}}>
+      {!isGameTab&&<div style={{textAlign:"center",padding:"7px",color:C.textLight,fontSize:9.5,borderTop:`1px solid ${C.border}`,background:"#fff",letterSpacing:.3}}>
         উদ্ভিদ গোয়েন্দা · CABI Plantwise · BRRI · BARI · DAE Bangladesh
-      </div>
+      </div>}
     </div>
   );
 }
