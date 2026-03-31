@@ -471,7 +471,7 @@ function compressMessages(messages, maxBase64Chars = 1_000_000) {
 }
 
 // ─── Provider 1: Google Gemini 2.0 Flash ─────────────────────────────────────
-async function tryGemini(messages, withVision = true) {
+async function tryGemini(messages, withVision = true, systemPrompt = SYSTEM_PROMPT) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY not set");
 
@@ -491,7 +491,7 @@ async function tryGemini(messages, withVision = true) {
   }
 
   const body = {
-    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    system_instruction: { parts: [{ text: systemPrompt }] },
     contents: [{ role: "user", parts }],
     generationConfig: { maxOutputTokens: 3000, temperature: 0.3 },
   };
@@ -511,7 +511,7 @@ async function tryGemini(messages, withVision = true) {
 }
 
 // ─── Provider 2: Groq Llama 4 Scout ──────────────────────────────────────────
-async function tryGroq(messages) {
+async function tryGroq(messages, systemPrompt = SYSTEM_PROMPT) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY not set");
 
@@ -519,7 +519,7 @@ async function tryGroq(messages) {
     model: "meta-llama/llama-4-scout-17b-16e-instruct",
     max_tokens: 3000,
     temperature: 0.3,
-    messages: [{ role: "system", content: SYSTEM_PROMPT }, ...toOpenAIMessages(compressMessages(messages))],
+    messages: [{ role: "system", content: systemPrompt }, ...toOpenAIMessages(compressMessages(messages))],
   };
 
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -534,14 +534,14 @@ async function tryGroq(messages) {
 }
 
 // ─── Provider 3/4/5: OpenRouter ──────────────────────────────────────────────
-async function tryOpenRouter(messages, modelId) {
+async function tryOpenRouter(messages, modelId, systemPrompt = SYSTEM_PROMPT) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY not set");
 
   const body = {
     model: modelId,
     max_tokens: 3000,
-    messages: [{ role: "system", content: SYSTEM_PROMPT }, ...toOpenAIMessages(compressMessages(messages))],
+    messages: [{ role: "system", content: systemPrompt }, ...toOpenAIMessages(compressMessages(messages))],
   };
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -578,7 +578,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Invalid JSON body" });
   }
 
-  const { messages } = body || {};
+  const { messages, systemPrompt = SYSTEM_PROMPT } = body || {};
   if (!messages?.length) return res.status(400).json({ error: "No messages provided" });
 
   const imageAttached = hasImage(messages);
@@ -586,38 +586,38 @@ export default async function handler(req, res) {
 
   // 1. Gemini 2.0 Flash ──────────────────────────────────────────────────────
   try {
-    const r = await tryGemini(messages, true);
+    const r = await tryGemini(messages, true, systemPrompt);
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
   } catch (e) { attempts.push(`Gemini: ${e.message}`); }
 
   // 2. Groq Llama 4 Scout ───────────────────────────────────────────────────
   try {
-    const r = await tryGroq(messages);
+    const r = await tryGroq(messages, systemPrompt);
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
   } catch (e) { attempts.push(`Groq: ${e.message}`); }
 
   // 3. OpenRouter Qwen 2.5 VL ───────────────────────────────────────────────
   try {
-    const r = await tryOpenRouter(messages, "qwen/qwen2.5-vl-72b-instruct:free");
+    const r = await tryOpenRouter(messages, "qwen/qwen2.5-vl-72b-instruct:free", systemPrompt);
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
   } catch (e) { attempts.push(`OpenRouter Qwen: ${e.message}`); }
 
   // 4. OpenRouter Llama 3.2 Vision ──────────────────────────────────────────
   try {
-    const r = await tryOpenRouter(messages, "meta-llama/llama-3.2-11b-vision-instruct:free");
+    const r = await tryOpenRouter(messages, "meta-llama/llama-3.2-11b-vision-instruct:free", systemPrompt);
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
   } catch (e) { attempts.push(`OpenRouter Llama: ${e.message}`); }
 
   // 5. OpenRouter Phi-4 Multimodal ──────────────────────────────────────────
   try {
-    const r = await tryOpenRouter(messages, "microsoft/phi-4-multimodal-instruct:free");
+    const r = await tryOpenRouter(messages, "microsoft/phi-4-multimodal-instruct:free", systemPrompt);
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
   } catch (e) { attempts.push(`OpenRouter Phi4: ${e.message}`); }
 
   // 6. Gemini text-only fallback ─────────────────────────────────────────────
   if (imageAttached) {
     try {
-      const r = await tryGemini(messages, false);
+      const r = await tryGemini(messages, false, systemPrompt);
       const note = "\n\n---\n⚠️ ছবি বিশ্লেষণ এই মুহূর্তে সম্ভব হয়নি। বর্ণনার ভিত্তিতে রোগ নির্ণয় করা হয়েছে।\n*(Image analysis unavailable. Diagnosis based on description only.)*";
       return res.status(200).json({ content: [{ type: "text", text: r.text + note }], provider: r.provider, attempts });
     } catch (e) { attempts.push(`Gemini text: ${e.message}`); }

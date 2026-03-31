@@ -96,6 +96,120 @@ const SYMPTOM_CHIPS={
 };
 const AREA_CHIPS=[{label:"৫% এর কম",value:"৫% এর কম"},{label:"১০%",value:"প্রায় ১০%"},{label:"২৫%",value:"প্রায় ২৫%"},{label:"৫০%",value:"প্রায় ৫০%"},{label:"৭৫%+",value:"৭৫% এরও বেশি"},{label:"বিক্ষিপ্ত",value:"বিক্ষিপ্তভাবে ছড়িয়ে"},{label:"সমস্ত মাঠ",value:"সমস্ত মাঠ"}];
 const DURATION_CHIPS=[{label:"আজই",value:"আজই শুরু"},{label:"১-২ দিন",value:"১-২ দিন আগে"},{label:"৩-৫ দিন",value:"৩-৫ দিন ধরে"},{label:"১ সপ্তাহ",value:"প্রায় ১ সপ্তাহ"},{label:"২ সপ্তাহ",value:"প্রায় ২ সপ্তাহ"},{label:"১ মাস+",value:"১ মাসেরও বেশি"}];
+const OTHER_APPS=[
+  {name:"Krishi AI Web",url:"https://web.krishiai.live/",icon:"🌐",desc:"Browser-friendly agriculture support portal"},
+  {name:"Krishi AI App",url:"https://app.krishiai.live/",icon:"📱",desc:"Mobile-first support app for farmers"},
+  {name:"GAP Brinjal",url:"https://gap-brinjal-krishi-ai-team.vercel.app/",icon:"🍆",desc:"Safe brinjal cultivation and GAP guidance"},
+  {name:"CIRDAP GreenLoop",url:"https://cirdap-greenloop3-0.vercel.app/",icon:"♻️",desc:"Climate and circular agriculture tools"},
+];
+const LIBRARY_MEDIA={
+  videoUrl:"",
+  slides:[
+    {title:"স্লাইড ১",id:"1TFMKiKOiQMneoZEn3PYN59JVXJspcz2X"},
+    {title:"স্লাইড ২",id:"1ivvMxoVUCM1k9rl8bXpiZ7rLYg8RdMup"},
+    {title:"স্লাইড ৩",id:"1yKnsuo2_6Gdv8Zkm53WnmngQiqZUKGv0"},
+    {title:"স্লাইড ৪",id:"1Kit5SuPbmNIGail6HSQscRJSVoxPiF3u"},
+  ],
+  readings:[
+    {title:"CABI Guide",id:"1yw4JPZXY06FyEQ4b8O_TxPGLes9Kn_-v"},
+    {title:"IPM Manual",id:"1MOGzZhfxYCmC0vOpygpYL-zKttCVanSa"},
+  ],
+  audio:[
+    {title:"পডকাস্ট ১",id:"1JDrGis-p0aOs1ROrgkSIrqr9m82xdj0A"},
+    {title:"পডকাস্ট ২",id:"1teuRIiuPmKYQmpFmRTzuX105JHrgOfvH"},
+  ],
+};
+const CROP_DETECT_SYSTEM_PROMPT=`You identify the crop shown in a Bangladesh farm photo.
+Reply with one compact JSON object only.
+Schema: {"crop":"<best match from common Bangladesh crops or Unknown>","confidence":"high|medium|low","reason":"<very short>"}
+Prefer one of: Rice, Potato, Tomato, Brinjal, Mustard, Jute, Mango, Banana, Wheat, Maize, Chilli, Onion, Garlic, Cabbage, Cauliflower, Okra, Pumpkin, Papaya, Guava.
+Do not include markdown, prose, or extra keys.`;
+const FRIENDLY_SECTION_LABELS={
+  "CABI Exclusion Analysis":"কি দেখে বোঝা গেল",
+  "Probable Diagnosis":"সবচেয়ে সম্ভবত যে সমস্যা",
+  "Disease Triangle Assessment":"কেন এই সমস্যা বাড়ছে",
+  "Field Confirmation Method":"মাঠে কী দেখে মিলিয়ে নেবেন",
+  "Severity & Economic Importance":"ক্ষতির মাত্রা",
+  "IPM Recommendations":"কি করবেন এখন",
+  "Prevention":"পরের বার কীভাবে ঠেকাবেন",
+  "When to Consult DAE":"কখন কৃষি অফিসে বলবেন",
+};
+
+function getCurrentSeason(){
+  const month=new Date().getMonth()+1;
+  if(month>=10||month<=3)return "রবি মৌসুম / Rabi Season (Oct–Mar)";
+  return "খরিপ মৌসুম / Kharif Season (Apr–Sep)";
+}
+function findDistrictMatch(...values){
+  const checks=values.flat().filter(Boolean).map(v=>String(v).toLowerCase());
+  for(const district of DISTRICTS){
+    const bn=district.split("/")[0].trim().toLowerCase();
+    const en=(district.split("/")[1]||district).trim().toLowerCase();
+    if(checks.some(v=>v.includes(bn)||v.includes(en)||bn.includes(v)||en.includes(v)))return district;
+  }
+  return "";
+}
+function extractDriveId(url){
+  if(!url)return "";
+  const match=String(url).match(/\/d\/([^/]+)/);
+  return match?.[1]||url;
+}
+function toDrivePreviewUrl(id){return `https://drive.google.com/file/d/${extractDriveId(id)}/preview`;}
+function toDriveDownloadUrl(id){return `https://drive.google.com/uc?export=download&id=${extractDriveId(id)}`;}
+function toDriveViewUrl(id){return `https://drive.google.com/file/d/${extractDriveId(id)}/view`;}
+function simplifyFarmerText(text){
+  if(!text)return "";
+  return text
+    .replace(/Abiotic vs Biotic/gi,"সমস্যার উৎস")
+    .replace(/Abiotic/gi,"পরিবেশ/খাবারের ঘাটতিজনিত")
+    .replace(/Biotic/gi,"পোকা/রোগজীবাণুজনিত")
+    .replace(/Exclusion/gi,"কি কি বাদ গেল")
+    .replace(/Host/gi,"গাছের অবস্থা")
+    .replace(/Pathogen/gi,"রোগ/পোকার চাপ")
+    .replace(/Environment/gi,"আবহাওয়া ও মাঠের অবস্থা")
+    .replace(/Confidence level/gi,"কতটা নিশ্চিত")
+    .replace(/High/gi,"উচ্চ")
+    .replace(/Medium/gi,"মাঝারি")
+    .replace(/Low/gi,"কম");
+}
+function guessCropFromText(text){
+  const source=(text||"").toLowerCase();
+  const known=[
+    "Rice / ধান","Potato / আলু","Tomato / টমেটো","Brinjal / বেগুন","Mustard / সরিষা","Jute / পাট","Mango / আম","Banana / কলা",
+    "Wheat / গম","Maize / ভুট্টা","Chilli / মরিচ","Onion / পেঁয়াজ","Garlic / রসুন","Cabbage / বাঁধাকপি","Cauliflower / ফুলকপি","Okra / ঢেঁড়স","Pumpkin / কুমড়া","Papaya / পেঁপে","Guava / পেয়ারা"
+  ];
+  const fromData=[...QUICK_CROPS.map(c=>`${c.en} / ${c.label}`),...Object.values(CROPS).flat()];
+  for(const crop of [...new Set([...known,...fromData])]){
+    const parts=crop.split("/").map(p=>p.trim().toLowerCase()).filter(Boolean);
+    if(parts.some(part=>part.length>1&&source.includes(part)))return crop;
+  }
+  return "";
+}
+function getFriendlySectionTitle(title){
+  return FRIENDLY_SECTION_LABELS[title]||title;
+}
+function extractResultHighlights(text){
+  const body=simplifyFarmerText(text||"");
+  const find=(patterns)=>{
+    for(const pattern of patterns){
+      const match=body.match(pattern);
+      if(match?.[1])return match[1].trim();
+    }
+    return "";
+  };
+  return [
+    {icon:"🧾",label:"সমস্যা",value:find([/\*\*প্রাথমিক সন্দেহ:\*\*\s*([^\n]+)/,/\*\*Primary suspect:\*\*\s*([^\n]+)/])},
+    {icon:"📍",label:"ধরন",value:find([/\*\*অ্যাবায়োটিক নাকি বায়োটিক:\*\*\s*([^\n]+)/,/\*\*Abiotic vs Biotic:\*\*\s*([^\n]+)/])},
+    {icon:"📊",label:"নিশ্চয়তা",value:find([/\*\*আস্থার মাত্রা:\*\*\s*([^\n]+)/,/\*\*Confidence level:\*\*\s*([^\n]+)/])},
+    {icon:"⚠️",label:"ক্ষতি",value:find([/\*\*ক্ষয়ক্ষতির মাত্রা:\*\*\s*([^\n]+)/,/\*\*Damage level:\*\*\s*([^\n]+)/])},
+  ].filter(item=>item.value);
+}
+function formatTime(seconds){
+  if(!Number.isFinite(seconds))return "00:00";
+  const mm=Math.floor(seconds/60).toString().padStart(2,"0");
+  const ss=Math.floor(seconds%60).toString().padStart(2,"0");
+  return `${mm}:${ss}`;
+}
 
 // ─── CABI Guide data ──────────────────────────────────────────────────────────
 const CABI_GUIDE={
@@ -230,13 +344,13 @@ function getMeta(t){for(const[k,v]of Object.entries(SECTION_META))if((t||"").inc
 function SectionCard({title,bodyLines,defaultOpen}){
   const[open,setOpen]=useState(defaultOpen!==false);
   const meta=getMeta(title);
-  const bodyText=bodyLines.join("\n").trim();
+  const bodyText=simplifyFarmerText(bodyLines.join("\n").trim());
   if(!bodyText&&!title)return null;
   return(
     <div style={{borderRadius:14,border:`1px solid ${meta.border}`,marginBottom:10,overflow:"hidden",animation:"fadeIn .3s ease"}}>
       {title&&<button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"12px 16px",background:meta.bg,border:"none",cursor:"pointer",textAlign:"left"}}>
         <span style={{fontSize:19}}>{meta.icon}</span>
-        <span style={{color:meta.color,fontWeight:700,fontSize:14,flex:1}}>{title}</span>
+        <span style={{color:meta.color,fontWeight:700,fontSize:14,flex:1}}>{getFriendlySectionTitle(title)}</span>
         <span style={{color:meta.color,fontSize:13,opacity:.7}}>{open?"▲":"▼"}</span>
       </button>}
       {open&&<div style={{padding:"14px 18px",background:"#fff",color:C.text,fontSize:13.5,lineHeight:1.85}}>{renderInline(bodyText)}</div>}
@@ -435,7 +549,211 @@ function ProductRecommendations({products,crop}){
 }
 
 // ─── Library section ──────────────────────────────────────────────────────────
+function HomeTab({setActiveTab,history,weather,locationName}){
+  const highlights=[
+    {icon:"🧠",title:"ছবি দেখে রোগ ধরা",desc:"গ্যালারি বা ক্যামেরা থেকে ছবি দিন, তারপর সহজ ভাষায় রিপোর্ট পান.",action:"নির্ণয়ে যান",tab:"diagnose"},
+    {icon:"📚",title:"তথ্যভাণ্ডার",desc:"স্লাইড, পড়ার PDF, আর অডিও পডকাস্ট এক জায়গায়.",action:"তথ্যভাণ্ডার খুলুন",tab:"library"},
+    {icon:"🌐",title:"আমাদের আরও অ্যাপ",desc:"Krishi AI, GAP Brinjal, GreenLoop সহ অন্য টুলগুলো দেখুন.",action:"অ্যাপস দেখুন",tab:"apps"},
+  ];
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
+      <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary},${C.primaryLight})`,borderRadius:24,padding:24,color:"#fff",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",right:-24,top:-12,fontSize:110,opacity:.1}}>🌿</div>
+        <div style={{maxWidth:720,position:"relative"}}>
+          <div style={{fontWeight:800,fontSize:28,lineHeight:1.15,marginBottom:8}}>উদ্ভিদ গোয়েন্দা</div>
+          <div style={{fontSize:14,lineHeight:1.7,opacity:.92,marginBottom:14}}>কৃষকের জন্য সহজ রোগ-পোকা সহায়তা। ছবি, অবস্থান, মৌসুম আর মাঠের লক্ষণ মিলিয়ে রিপোর্ট দেখুন.</div>
+          <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+            <button onClick={()=>setActiveTab("diagnose")} style={{background:"#fff",color:C.primaryDark,border:"none",borderRadius:14,padding:"10px 16px",fontWeight:800,cursor:"pointer"}}>🔬 এখনই নির্ণয়</button>
+            <button onClick={()=>setActiveTab("library")} style={{background:"rgba(255,255,255,0.14)",color:"#fff",border:"1px solid rgba(255,255,255,0.28)",borderRadius:14,padding:"10px 16px",fontWeight:700,cursor:"pointer"}}>📚 শেখার ঘর</button>
+          </div>
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:12}}>
+        {highlights.map(card=>(
+          <button key={card.title} onClick={()=>setActiveTab(card.tab)} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:18,textAlign:"left",cursor:"pointer",boxShadow:C.shadowMd}}>
+            <div style={{fontSize:28,marginBottom:10}}>{card.icon}</div>
+            <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:6}}>{card.title}</div>
+            <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.65,marginBottom:12}}>{card.desc}</div>
+            <div style={{fontSize:12,color:C.primary,fontWeight:700}}>{card.action} →</div>
+          </button>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12}}>
+        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:16,boxShadow:C.shadow}}>
+          <div style={{fontSize:12,color:C.textMuted,marginBottom:6}}>📍 আপনার এলাকা</div>
+          <div style={{fontWeight:800,fontSize:16,color:C.text}}>{locationName||"অবস্থান সংগ্রহ হচ্ছে..."}</div>
+          <div style={{fontSize:12,color:C.textMuted,marginTop:6}}>জেলা স্বয়ংক্রিয়ভাবে ভরার চেষ্টা করা হয়.</div>
+        </div>
+        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:16,boxShadow:C.shadow}}>
+          <div style={{fontSize:12,color:C.textMuted,marginBottom:6}}>🗓️ বর্তমান মৌসুম</div>
+          <div style={{fontWeight:800,fontSize:16,color:C.text}}>{getCurrentSeason().split("/")[0].trim()}</div>
+          <div style={{fontSize:12,color:C.textMuted,marginTop:6}}>তারিখ অনুযায়ী Detection tab-এ আগেই বসে যাবে.</div>
+        </div>
+        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:16,boxShadow:C.shadow}}>
+          <div style={{fontSize:12,color:C.textMuted,marginBottom:6}}>🌦️ আজকের ঝুঁকি</div>
+          <div style={{fontWeight:800,fontSize:16,color:C.text}}>{weather?assessWeatherRisks(weather)[0]?.text:"আবহাওয়া আনা হচ্ছে..."}</div>
+        </div>
+      </div>
+      {history.length>0&&(
+        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:16,boxShadow:C.shadow}}>
+          <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:10}}>🕘 সাম্প্রতিক রিপোর্ট</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10}}>
+            {[...history].reverse().slice(0,4).map((item,index)=>(
+              <div key={index} style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:14,padding:12}}>
+                <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:4}}>{item.crop?.split("/")[0]?.trim()||"ফসল"}</div>
+                <div style={{fontSize:11,color:C.textMuted}}>{item.district?.split("/")[0]?.trim()||"জেলা নেই"}</div>
+                <div style={{fontSize:11,color:C.textLight,marginTop:6}}>{item.date}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+function AppsHub(){
+  return(
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:14,animation:"fadeIn .3s ease"}}>
+      {OTHER_APPS.map(app=>(
+        <a key={app.url} href={app.url} target="_blank" rel="noreferrer" style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:18,textDecoration:"none",boxShadow:C.shadowMd}}>
+          <div style={{fontSize:30,marginBottom:12}}>{app.icon}</div>
+          <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:6}}>{app.name}</div>
+          <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.7,marginBottom:14}}>{app.desc}</div>
+          <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"#f0fdf4",border:`1px solid ${C.border}`,borderRadius:999,padding:"6px 12px",fontSize:12,color:C.primary,fontWeight:700}}>↗ খুলুন</div>
+        </a>
+      ))}
+    </div>
+  );
+}
+function MediaFrame({title,src,height=520}){
+  return(
+    <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:12,boxShadow:C.shadow}}>
+      <div style={{fontWeight:800,fontSize:14,color:C.primaryDark,marginBottom:10}}>{title}</div>
+      <iframe src={src} title={title} style={{width:"100%",height,border:"none",borderRadius:14,background:"#f8fafc"}} allow="autoplay" />
+    </div>
+  );
+}
+function AudioPodcastCard({title,id}){
+  const audioRef=useRef(null);
+  const[playing,setPlaying]=useState(false);
+  const[currentTime,setCurrentTime]=useState(0);
+  const[duration,setDuration]=useState(0);
+  useEffect(()=>{
+    const audio=audioRef.current;
+    if(!audio)return;
+    const onTime=()=>setCurrentTime(audio.currentTime||0);
+    const onMeta=()=>setDuration(audio.duration||0);
+    const onEnd=()=>setPlaying(false);
+    audio.addEventListener("timeupdate",onTime);
+    audio.addEventListener("loadedmetadata",onMeta);
+    audio.addEventListener("ended",onEnd);
+    return()=>{
+      audio.removeEventListener("timeupdate",onTime);
+      audio.removeEventListener("loadedmetadata",onMeta);
+      audio.removeEventListener("ended",onEnd);
+    };
+  },[]);
+  const toggle=async()=>{
+    const audio=audioRef.current;
+    if(!audio)return;
+    if(audio.paused){await audio.play();setPlaying(true);}else{audio.pause();setPlaying(false);}
+  };
+  const seek=(event)=>{
+    const audio=audioRef.current;
+    if(!audio||!duration)return;
+    const rect=event.currentTarget.getBoundingClientRect();
+    const ratio=Math.min(1,Math.max(0,(event.clientX-rect.left)/rect.width));
+    audio.currentTime=ratio*duration;
+  };
+  const skip=(seconds)=>{
+    const audio=audioRef.current;
+    if(!audio)return;
+    audio.currentTime=Math.max(0,Math.min((audio.duration||0),audio.currentTime+seconds));
+  };
+  const progress=duration?`${(currentTime/duration)*100}%`:"0%";
+  return(
+    <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:16,boxShadow:C.shadow}}>
+      <audio ref={audioRef} preload="metadata" src={toDriveDownloadUrl(id)} />
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+        <div style={{width:46,height:46,borderRadius:14,background:"#ecfeff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>🎙️</div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>{title}</div>
+          <div style={{fontSize:11,color:C.textMuted}}>Google Drive podcast</div>
+        </div>
+        <button onClick={toggle} style={{width:46,height:46,borderRadius:"50%",border:"none",background:C.primary,color:"#fff",cursor:"pointer",fontSize:18}}>{playing?"⏸":"▶"}</button>
+      </div>
+      <div onClick={seek} style={{height:10,background:"#e5efe5",borderRadius:999,cursor:"pointer",overflow:"hidden",marginBottom:12}}>
+        <div style={{width:progress,height:"100%",background:`linear-gradient(90deg,${C.primary},${C.primaryLight})`}} />
+      </div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",fontSize:12,color:C.textMuted,marginBottom:12}}>
+        <span>{formatTime(currentTime)}</span>
+        <span>{formatTime(duration)}</span>
+      </div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        <button onClick={()=>skip(-10)} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer"}}>⏪ 10s</button>
+        <button onClick={()=>skip(10)} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer"}}>10s ⏩</button>
+        <a href={toDriveViewUrl(id)} target="_blank" rel="noreferrer" style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:"#f0fdf4",cursor:"pointer",textDecoration:"none",color:C.primary,fontWeight:700}}>Drive লিংক</a>
+      </div>
+    </div>
+  );
+}
 function LibrarySection(){
+  const[section,setSection]=useState("slides");
+  const[currentSlide,setCurrentSlide]=useState(0);
+  const sections=[
+    {id:"slides",label:"স্লাইড ডেক",icon:"🖼️"},
+    {id:"read",label:"পড়ার ডকুমেন্ট",icon:"📖"},
+    {id:"audio",label:"অডিও পডকাস্ট",icon:"🎙️"},
+  ];
+  const slide=LIBRARY_MEDIA.slides[currentSlide];
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:14}}>
+      <div style={{background:"#f8fafc",border:`1px dashed ${C.border}`,borderRadius:18,padding:16}}>
+        <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:4}}>🎬 ভিডিও সেকশন</div>
+        <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.7}}>
+          {LIBRARY_MEDIA.videoUrl?"উপরের ভিডিওটি দেখুন.":"এই ট্যাবের জন্য MP4 লিংক দেওয়া হয়নি, তাই ভিডিও স্লট প্রস্তুত রাখা হয়েছে."}
+        </div>
+        {LIBRARY_MEDIA.videoUrl&&<div style={{marginTop:12}}><MediaFrame title="ভিডিও" src={LIBRARY_MEDIA.videoUrl} height={340}/></div>}
+      </div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        {sections.map(item=>(
+          <button key={item.id} onClick={()=>setSection(item.id)} style={{padding:"9px 14px",borderRadius:999,border:`1px solid ${section===item.id?C.primary:C.border}`,background:section===item.id?C.primary:"#fff",color:section===item.id?"#fff":C.text,fontWeight:700,cursor:"pointer"}}>{item.icon} {item.label}</button>
+        ))}
+      </div>
+      {section==="slides"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {LIBRARY_MEDIA.slides.map((item,index)=>(
+              <button key={item.id} onClick={()=>setCurrentSlide(index)} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${currentSlide===index?C.primary:C.border}`,background:currentSlide===index?"#f0fdf4":"#fff",color:currentSlide===index?C.primaryDark:C.text,cursor:"pointer",fontWeight:700}}>📄 {index+1}</button>
+            ))}
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",gap:8,flexWrap:"wrap"}}>
+            <button onClick={()=>setCurrentSlide(s=>Math.max(0,s-1))} disabled={currentSlide===0} style={{padding:"9px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer"}}>← আগেরটি</button>
+            <a href={toDriveViewUrl(slide.id)} target="_blank" rel="noreferrer" style={{padding:"9px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#f0fdf4",textDecoration:"none",color:C.primary,fontWeight:700}}>Drive এ খুলুন</a>
+            <button onClick={()=>setCurrentSlide(s=>Math.min(LIBRARY_MEDIA.slides.length-1,s+1))} disabled={currentSlide===LIBRARY_MEDIA.slides.length-1} style={{padding:"9px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer"}}>পরেরটি →</button>
+          </div>
+          <MediaFrame title={slide.title} src={toDrivePreviewUrl(slide.id)} height={620}/>
+        </div>
+      )}
+      {section==="read"&&(
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:14}}>
+          {LIBRARY_MEDIA.readings.map(item=>(
+            <div key={item.id} style={{display:"flex",flexDirection:"column",gap:10}}>
+              <MediaFrame title={item.title} src={toDrivePreviewUrl(item.id)} height={560}/>
+              <a href={toDriveViewUrl(item.id)} target="_blank" rel="noreferrer" style={{alignSelf:"flex-start",padding:"9px 14px",borderRadius:12,background:"#f0fdf4",border:`1px solid ${C.border}`,textDecoration:"none",color:C.primary,fontWeight:700}}>পূর্ণ স্ক্রিনে পড়ুন</a>
+            </div>
+          ))}
+        </div>
+      )}
+      {section==="audio"&&(
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:14}}>
+          {LIBRARY_MEDIA.audio.map(item=><AudioPodcastCard key={item.id} title={item.title} id={item.id}/>)}
+        </div>
+      )}
+    </div>
+  );
+}
+function LegacyLibrarySection(){
   const[activeTab,setActiveTab]=useState("pests");
   const[selected,setSelected]=useState(null);
   const tabs=[{id:"pests",label:"পোকামাকড়",icon:"🐛"},{id:"diseases",label:"রোগ",icon:"🦠"},{id:"deficiencies",label:"পুষ্টি অভাব",icon:"🌿"}];
@@ -801,9 +1119,9 @@ function GameHub(){
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function UdbhidGoenda(){
-  const[activeTab,setActiveTab]=useState("diagnose");
+  const[activeTab,setActiveTab]=useState("home");
   const[step,setStep]=useState(1);
-  const[form,setForm]=useState({crop:"",district:"",season:"",growthStage:"",symptoms:"",duration:"",affectedArea:""});
+  const[form,setForm]=useState({crop:"",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""});
   const[showMoreCrops,setShowMoreCrops]=useState(false);
   const[expandedGroup,setExpandedGroup]=useState(null);
   const[image,setImage]=useState(null);
@@ -832,8 +1150,19 @@ export default function UdbhidGoenda(){
   const[locationName,setLocationName]=useState(null);
   const[coords,setCoords]=useState(null);
   const[locationSource,setLocationSource]=useState(null);
+  const[analysingCrop,setAnalysingCrop]=useState(false);
+  const[viewportWidth,setViewportWidth]=useState(()=>typeof window!=="undefined"?window.innerWidth:1280);
+
+  const galleryRef=useRef();
+  const cameraRef=useRef();
+  const isDesktop=viewportWidth>=1100;
 
   useEffect(()=>{fetch("/pesticides.json").then(r=>r.json()).then(d=>setPesticideDb(d)).catch(()=>{});},[]);
+  useEffect(()=>{
+    const onResize=()=>setViewportWidth(window.innerWidth);
+    window.addEventListener("resize",onResize);
+    return()=>window.removeEventListener("resize",onResize);
+  },[]);
 
   useEffect(()=>{
     if(!pesticideDb||!result||!form.crop)return;
@@ -860,9 +1189,9 @@ export default function UdbhidGoenda(){
   const reverseGeocode=useCallback(async(lat,lon)=>{
     try{
       const d=await(await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`,{headers:{"User-Agent":"UddhidGoenda/1.0"}})).json();
-      const district=d.address?.county||d.address?.state_district||d.address?.city||"";
+      const district=d.address?.county||d.address?.state_district||d.address?.city||d.address?.town||d.address?.village||"";
       setLocationName([district,"Bangladesh"].filter(Boolean).join(", "));
-      const m=DISTRICTS.find(dd=>dd.toLowerCase().includes(district.toLowerCase())||district.toLowerCase().includes(dd.split("/")[0].trim().toLowerCase()));
+      const m=findDistrictMatch(district,d.address?.state,d.address?.region);
       if(m)setForm(f=>({...f,district:f.district||m}));
     }catch{setLocationName("Bangladesh");}
   },[]);
@@ -870,7 +1199,7 @@ export default function UdbhidGoenda(){
   const fetchByIP=useCallback(async()=>{
     try{
       const d=await(await fetch("https://ip-api.com/json/?fields=lat,lon,city,regionName")).json();
-      if(d.lat&&d.lon){setCoords({lat:d.lat,lon:d.lon});setLocationSource("ip");setLocationName([d.city,d.regionName,"Bangladesh"].filter(Boolean).join(", "));await fetchWeather(d.lat,d.lon);const m=DISTRICTS.find(dd=>dd.toLowerCase().includes((d.city||"").toLowerCase()));if(m)setForm(f=>({...f,district:f.district||m}));}
+      if(d.lat&&d.lon){setCoords({lat:d.lat,lon:d.lon});setLocationSource("ip");setLocationName([d.city,d.regionName,"Bangladesh"].filter(Boolean).join(", "));await fetchWeather(d.lat,d.lon);const m=findDistrictMatch(d.city,d.regionName);if(m)setForm(f=>({...f,district:f.district||m}));}
       else{setCoords({lat:23.685,lon:90.356});setLocationName("Bangladesh");await fetchWeather(23.685,90.356);}
     }catch{}
   },[fetchWeather]);
@@ -880,30 +1209,56 @@ export default function UdbhidGoenda(){
     if(navigator.geolocation){navigator.geolocation.getCurrentPosition(async(pos)=>{const{latitude:lat,longitude:lon}=pos.coords;setCoords({lat,lon});setLocationSource("gps");await Promise.all([fetchWeather(lat,lon),reverseGeocode(lat,lon)]);setWeatherLoading(false);},async()=>{await fetchByIP();setWeatherLoading(false);},{timeout:8000});}
     else{fetchByIP().then(()=>setWeatherLoading(false));}
   },[fetchWeather,reverseGeocode,fetchByIP]);
+  useEffect(()=>{setForm(f=>f.season?f:{...f,season:getCurrentSeason()});},[]);
 
   useEffect(()=>{setVoiceSupported(!!(window.SpeechRecognition||window.webkitSpeechRecognition));setTtsSupported(!!window.speechSynthesis);},[]);
 
   const refreshWeather=async()=>{if(!coords)return;setWeatherLoading(true);await fetchWeather(coords.lat,coords.lon);setWeatherLoading(false);};
 
-  const handleImage=(e)=>{
-    const file=e.target.files[0];if(!file)return;
-    setImage(URL.createObjectURL(file));
+  const detectCropFromImage=useCallback(async(base64,fileName="")=>{
+    setAnalysingCrop(true);
+    try{
+      const res=await fetch("/api/diagnose",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+        systemPrompt:CROP_DETECT_SYSTEM_PROMPT,
+        messages:[{role:"user",content:[
+          {type:"image",source:{type:"base64",media_type:"image/jpeg",data:base64}},
+          {type:"text",text:`Identify the crop in this image. Filename: ${fileName||"unknown"}. Return JSON only.`},
+        ]}]
+      })});
+      const data=await res.json();
+      const raw=data.content?.map(b=>b.text||"").join("\n")||"";
+      let crop="";
+      try{crop=guessCropFromText(JSON.parse(raw).crop||"");}catch{crop=guessCropFromText(raw);}
+      if(crop)setForm(f=>f.crop?f:{...f,crop});
+    }catch{}
+    finally{setAnalysingCrop(false);}
+  },[]);
+  const handleImageFile=(file)=>{
+    if(!file)return;
+    const objectUrl=URL.createObjectURL(file);
+    setImage(objectUrl);
     const img=new Image();
     img.onload=()=>{
       const MAX=800;let{width:w,height:h}=img;
       if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
       const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
-      setImageBase64(cv.toDataURL("image/jpeg",0.7).split(",")[1]);
+      const base64=cv.toDataURL("image/jpeg",0.7).split(",")[1];
+      setImageBase64(base64);
+      const cropFromName=guessCropFromText(file.name||"");
+      if(cropFromName)setForm(f=>f.crop?f:{...f,crop:cropFromName});
+      else detectCropFromImage(base64,file.name);
+      URL.revokeObjectURL(objectUrl);
     };
-    img.src=URL.createObjectURL(file);
+    img.src=objectUrl;
   };
+  const handleImage=(e)=>handleImageFile(e.target.files?.[0]);
 
   const handleSubmit=async()=>{
     if(!form.crop||!form.symptoms){setError("অনুগ্রহ করে ফসল এবং লক্ষণ উভয়ই পূরণ করুন।");return;}
     setLoading(true);setError(null);setResult(null);setSeverity(null);setRecommendedProducts([]);
     const uc=[];
     if(imageBase64)uc.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:imageBase64}});
-    uc.push({type:"text",text:`Crop:${form.crop}\nDistrict:${form.district||locationName||"N/A"}\nSeason:${form.season||"N/A"}\nGrowth:${form.growthStage||"N/A"}\nDuration:${form.duration||"N/A"}\nArea:${form.affectedArea||"N/A"}\nSymptoms:${form.symptoms}\n${imageBase64?"Photo attached.":"No photo."}\n${weatherPromptText(weather,locationName)}\n\nDiagnose using CABI Plantwise 5-step protocol.\n---BANGLA_SECTION---\n[Full Bangla]\n---END_BANGLA---\n---ENGLISH_SECTION---\n[Full English]\n---END_ENGLISH---`});
+    uc.push({type:"text",text:`Crop:${form.crop}\nDistrict:${form.district||locationName||"N/A"}\nSeason:${form.season||"N/A"}\nGrowth:${form.growthStage||"N/A"}\nDuration:${form.duration||"N/A"}\nArea:${form.affectedArea||"N/A"}\nSymptoms:${form.symptoms}\n${imageBase64?"Photo attached.":"No photo."}\n${weatherPromptText(weather,locationName)}\n\nDiagnose using CABI Plantwise 5-step protocol. Use very simple Bangla for farmers. Avoid technical words unless you immediately explain them in plain language. Prefer short icon-led bullets and practical field actions.\n---BANGLA_SECTION---\n[Full Bangla]\n---END_BANGLA---\n---ENGLISH_SECTION---\n[Full English]\n---END_ENGLISH---`});
     try{
       const res=await fetch("/api/diagnose",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,messages:[{role:"user",content:uc}]})});
       const data=await res.json();
@@ -920,7 +1275,7 @@ export default function UdbhidGoenda(){
   };
 
   const stopSpeaking=()=>{window.speechSynthesis?.cancel();setIsSpeaking(false);};
-  const reset=()=>{setForm({crop:"",district:"",season:"",growthStage:"",symptoms:"",duration:"",affectedArea:""});setImage(null);setImageBase64(null);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setSeverity(null);setShowMoreCrops(false);setRecommendedProducts([]);stopSpeaking();};
+  const reset=()=>{setForm({crop:"",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""});setImage(null);setImageBase64(null);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setSeverity(null);setShowMoreCrops(false);setRecommendedProducts([]);stopSpeaking();};
 
   const startListening=()=>{
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;stopSpeaking();
@@ -946,6 +1301,15 @@ export default function UdbhidGoenda(){
   const chipSt={padding:"5px 12px",borderRadius:20,fontSize:12,cursor:"pointer",transition:"all .15s",flexShrink:0};
 
   const navTabs=[
+    {id:"home",label:"হোম",icon:"🏠"},
+    {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
+    {id:"apps",label:"অন্য অ্যাপ",icon:"🌐"},
+    {id:"guide",label:"CABI গাইড",icon:"📖"},
+    {id:"library",label:"তথ্যভাণ্ডার",icon:"📚"},
+    {id:"game",label:"গেম হাব",icon:"🎮"},
+    {id:"history",label:"ইতিহাস",icon:"📋"},
+  ];
+  const legacyNavTabs=[
     {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
     {id:"guide",label:"CABI গাইড",icon:"📖"},
     {id:"library",label:"তথ্যভাণ্ডার",icon:"📚"},
@@ -954,10 +1318,11 @@ export default function UdbhidGoenda(){
   ];
 
   return(
-    <div style={{minHeight:"100svh",background:C.bg,maxWidth:640,margin:"0 auto",display:"flex",flexDirection:"column"}}>
+    <div style={{minHeight:"100svh",background:C.bg,width:"100%",display:"flex",flexDirection:"column"}}>
 
       {/* ══ HEADER ══════════════════════════════════════════════════════════ */}
       <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,padding:"12px 14px 0",position:"sticky",top:0,zIndex:100,boxShadow:C.shadowMd}}>
+        <div style={{maxWidth:1280,width:"100%",margin:"0 auto"}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
           <div style={{width:40,height:40,borderRadius:11,overflow:"hidden",flexShrink:0,boxShadow:"0 2px 10px rgba(0,0,0,0.3)",animation:"glow 3s ease-in-out infinite"}}>
             <img src="/cabi-logo.png" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
@@ -976,10 +1341,22 @@ export default function UdbhidGoenda(){
             </button>
           ))}
         </div>
+        </div>
       </div>
 
       {/* ══ CONTENT ═════════════════════════════════════════════════════════ */}
       <div style={{flex:1,padding:activeTab==="game"?"10px 12px":"14px",overflowY:activeTab==="game"?"hidden":"auto",overflowX:"hidden"}}>
+        <div style={{maxWidth:isDesktop?1280:1040,margin:"0 auto",width:"100%"}}>
+
+        {activeTab==="home"&&<HomeTab setActiveTab={setActiveTab} history={history} weather={weather} locationName={locationName}/>}
+
+        {activeTab==="apps"&&(
+          <div style={{background:"#fff",borderRadius:16,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+            <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:3}}>🌐 আমাদের অন্য অ্যাপ</div>
+            <div style={{color:C.textMuted,fontSize:12,marginBottom:14}}>আরও কৃষি টুল ও শেখার প্ল্যাটফর্ম</div>
+            <AppsHub/>
+          </div>
+        )}
 
         {/* ── DIAGNOSE ─────────────────────────────────────────────── */}
         {activeTab==="diagnose"&&(
@@ -1084,7 +1461,7 @@ export default function UdbhidGoenda(){
                 {/* image */}
                 <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <label style={labelSt}>📷 ছবি আপলোড (ঐচ্ছিক)</label>
-                  <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{display:"none"}}/>
+                  <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
                   {!image?(
                     <button onClick={()=>fileRef.current.click()} style={{width:"100%",padding:"18px",border:`2px dashed ${C.border}`,borderRadius:12,background:C.bgMuted,cursor:"pointer",color:C.textMuted,fontSize:13,display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
                       <span style={{fontSize:26}}>📁</span><span style={{fontWeight:600}}>ছবি বেছে নিন</span>
@@ -1130,10 +1507,25 @@ export default function UdbhidGoenda(){
                 </div>
 
                 {(()=>{
-                  const text=showEnglish?(result.en||""):(result.bn||result.en||"");
+                  const text=simplifyFarmerText(showEnglish?(result.en||""):(result.bn||result.en||""));
                   if(!text)return<div style={{color:C.textMuted,textAlign:"center",padding:20}}>ফলাফল পাওয়া যায়নি।</div>;
+                  const highlights=extractResultHighlights(text);
                   const sections=parseIntoSections(text);
                   if(sections.length<=1&&!sections[0]?.title)return<div style={{background:"#fff",borderRadius:14,padding:16,color:C.text,fontSize:13.5,lineHeight:1.85,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>{renderInline(text)}</div>;
+                  if(highlights.length>0){
+                    return<>
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10,marginBottom:10}}>
+                        {highlights.map(item=>(
+                          <div key={item.label} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:14,boxShadow:C.shadow}}>
+                            <div style={{fontSize:20,marginBottom:8}}>{item.icon}</div>
+                            <div style={{fontSize:11,color:C.textMuted,marginBottom:4}}>{item.label}</div>
+                            <div style={{fontWeight:700,fontSize:13,color:C.text,lineHeight:1.5}}>{item.value}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {sections.map((sec,i)=><SectionCard key={i} title={sec.title} bodyLines={sec.body} defaultOpen={i<3}/>)}
+                    </>;
+                  }
                   return sections.map((sec,i)=><SectionCard key={i} title={sec.title} bodyLines={sec.body} defaultOpen={i<3}/>);
                 })()}
 
@@ -1202,6 +1594,7 @@ export default function UdbhidGoenda(){
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* Footer */}
