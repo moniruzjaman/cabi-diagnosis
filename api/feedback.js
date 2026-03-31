@@ -1,4 +1,4 @@
-import { readStore, writeStore } from "./storage.js";
+import { appendFeedback, readStore } from "./storage.js";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -19,9 +19,8 @@ export default async function handler(req, res) {
     createdAt: new Date().toISOString(),
   };
 
+  await appendFeedback(item);
   const store = await readStore();
-  store.feedback = [...(store.feedback || []), item].slice(-200);
-  await writeStore(store);
 
-  return res.status(200).json({ ok: true, count: store.feedback.length, persistence: process.env.VERCEL ? "temporary-instance-storage" : "local-file-storage" });
+  return res.status(200).json({ ok: true, count: store.feedback.length, persistence: process.env.SUPABASE_URL ? "supabase" : (process.env.VERCEL ? "temporary-instance-storage" : "local-file-storage") });
 }
