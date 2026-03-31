@@ -220,6 +220,14 @@ function buildFeedbackMessage({context,rating,feedback,email,summary,visits}){
     `Visitor Count (this browser): ${visits||1}`,
   ].join("\n");
 }
+async function postJson(url, payload){
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return res.json().catch(() => ({}));
+}
 
 // ─── CABI Guide data ──────────────────────────────────────────────────────────
 const CABI_GUIDE={
@@ -585,7 +593,7 @@ function ProductRecommendations({products,crop}){
 }
 
 // ─── Library section ──────────────────────────────────────────────────────────
-function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats}){
+function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,visitorId}){
   const[rating,setRating]=useState(0);
   const[feedback,setFeedback]=useState("");
   const[status,setStatus]=useState("");
@@ -598,15 +606,18 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats}){
     summary,
     visits:visitorStats?.visits,
   });
-  const saveFeedback=()=>{
+  const saveFeedback=async()=>{
     try{
       const items=JSON.parse(localStorage.getItem("ud-feedback-log")||"[]");
       items.push({context,rating,feedback,email:userEmail,summary,date:new Date().toISOString()});
       localStorage.setItem("ud-feedback-log",JSON.stringify(items.slice(-50)));
     }catch{}
+    try{
+      await postJson("/api/feedback",{context,rating,feedback,email:userEmail,summary,visitorId});
+    }catch{}
   };
   const handleCopy=async()=>{
-    saveFeedback();
+    await saveFeedback();
     try{
       await navigator.clipboard.writeText(payload);
       setStatus("কপি হয়েছে");
@@ -622,7 +633,7 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats}){
           <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>⭐ রেটিং ও মতামত</div>
           <div style={{fontSize:12,color:C.textMuted}}>এই অংশ শেষে আপনার মতামত কপি করুন বা এক ক্লিকে পাঠান.</div>
         </div>
-        <div style={{fontSize:11,color:C.textMuted}}>Visitors: {visitorStats?.visits||1}</div>
+        <div style={{fontSize:11,color:C.textMuted}}>This browser: {visitorStats?.visits||1} · Total: {visitorStats?.totalVisits||visitorStats?.visits||1}</div>
       </div>
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
         {[1,2,3,4,5].map(star=>(
@@ -639,11 +650,11 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats}){
         ))}
       </div>
       <textarea value={feedback} onChange={e=>setFeedback(e.target.value)} placeholder="কি ভালো লেগেছে, কোথায় সমস্যা, কী নতুন চাই..." rows={3} style={{width:"100%",border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 12px",resize:"vertical",marginBottom:10,fontSize:13}}/>
-      <input value={userEmail} onChange={e=>onEmailChange(e.target.value)} placeholder="ইমেইল দিন (একবার দিলে পরে মনে থাকবে)" style={{width:"100%",border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 12px",marginBottom:10,fontSize:13}}/>
-      <div style={{fontSize:11,color:C.textLight,marginBottom:12}}>ব্রাউজার নিরাপত্তার কারণে ইমেইল স্বয়ংক্রিয়ভাবে পড়া যায় না, তাই একবার দিলে পরে এই ডিভাইসে নিজে ভরে যাবে.</div>
+      <input name="email" autoComplete="email" inputMode="email" value={userEmail} onChange={e=>onEmailChange(e.target.value)} placeholder="ইমেইল দিন (ব্রাউজার থাকলে নিজে ভরতে পারে)" style={{width:"100%",border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 12px",marginBottom:10,fontSize:13}}/>
+      <div style={{fontSize:11,color:C.textLight,marginBottom:12}}>ব্রাউজার নিরাপত্তার কারণে ইমেইল সরাসরি পড়া যায় না। তবে `autocomplete=email` দেওয়া আছে, তাই সেভ করা ইমেইল থাকলে ব্রাউজার নিজে সাজেস্ট/অটোফিল করতে পারবে.</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         <button onClick={handleCopy} style={{padding:"10px 14px",borderRadius:12,border:"none",background:C.primary,color:"#fff",fontWeight:700,cursor:"pointer"}}>📋 কপি করুন</button>
-        <a href={mailto} onClick={saveFeedback} style={{padding:"10px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#f0fdf4",color:C.primary,textDecoration:"none",fontWeight:700}}>✉️ ক্লিকে পাঠান</a>
+        <a href={mailto} onClick={()=>{saveFeedback();}} style={{padding:"10px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#f0fdf4",color:C.primary,textDecoration:"none",fontWeight:700}}>✉️ ক্লিকে পাঠান</a>
         {status&&<div style={{padding:"10px 0",fontSize:12,color:C.textMuted}}>{status}</div>}
       </div>
     </div>
@@ -1254,6 +1265,7 @@ export default function UdbhidGoenda(){
   const[viewportWidth,setViewportWidth]=useState(()=>typeof window!=="undefined"?window.innerWidth:1280);
   const[userEmail,setUserEmail]=useState(()=>{try{return localStorage.getItem("ud-user-email")||"";}catch{return"";}});
   const[visitorStats,setVisitorStats]=useState(()=>({visits:1,sections:{}}));
+  const[visitorId,setVisitorId]=useState(()=>{try{return localStorage.getItem("ud-visitor-id")||"";}catch{return"";}});
 
   const galleryRef=useRef();
   const cameraRef=useRef();
@@ -1268,8 +1280,10 @@ export default function UdbhidGoenda(){
   useEffect(()=>{
     try{
       const raw=JSON.parse(localStorage.getItem("ud-visitor-stats")||"{}");
-      const next={visits:(raw.visits||0)+1,sections:raw.sections||{}};
-      if(!localStorage.getItem("ud-visitor-id"))localStorage.setItem("ud-visitor-id",`${Date.now()}-${Math.random().toString(36).slice(2,8)}`);
+      const next={visits:(raw.visits||0)+1,sections:raw.sections||{},totalVisits:raw.totalVisits||0,uniqueVisitors:raw.uniqueVisitors||0};
+      const id=localStorage.getItem("ud-visitor-id")||`${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+      localStorage.setItem("ud-visitor-id",id);
+      setVisitorId(id);
       localStorage.setItem("ud-visitor-stats",JSON.stringify(next));
       setVisitorStats(next);
     }catch{}
@@ -1280,11 +1294,26 @@ export default function UdbhidGoenda(){
   useEffect(()=>{
     try{
       const raw=JSON.parse(localStorage.getItem("ud-visitor-stats")||"{}");
-      const next={visits:raw.visits||1,sections:{...(raw.sections||{}),[activeTab]:(raw.sections?.[activeTab]||0)+1}};
+      const next={visits:raw.visits||1,sections:{...(raw.sections||{}),[activeTab]:(raw.sections?.[activeTab]||0)+1},totalVisits:raw.totalVisits||0,uniqueVisitors:raw.uniqueVisitors||0};
       localStorage.setItem("ud-visitor-stats",JSON.stringify(next));
       setVisitorStats(next);
     }catch{}
   },[activeTab]);
+  useEffect(()=>{
+    if(!visitorId)return;
+    postJson("/api/analytics",{visitorId,section:"app_open"}).then(data=>{
+      if(data?.totalVisits) {
+        setVisitorStats(prev=>({...prev,totalVisits:data.totalVisits,uniqueVisitors:data.uniqueVisitors,sections:data.sections||prev.sections}));
+        try{localStorage.setItem("ud-visitor-stats",JSON.stringify({...visitorStats,totalVisits:data.totalVisits,uniqueVisitors:data.uniqueVisitors,sections:data.sections||visitorStats.sections,visits:visitorStats.visits||1}));}catch{}
+      }
+    }).catch(()=>{});
+  },[visitorId]);
+  useEffect(()=>{
+    if(!visitorId||!activeTab)return;
+    postJson("/api/analytics",{visitorId,section:activeTab}).then(data=>{
+      if(data?.totalVisits) setVisitorStats(prev=>({...prev,totalVisits:data.totalVisits,uniqueVisitors:data.uniqueVisitors,sections:data.sections||prev.sections}));
+    }).catch(()=>{});
+  },[visitorId,activeTab]);
 
   useEffect(()=>{
     if(!pesticideDb||!result||!form.crop)return;
@@ -1719,7 +1748,7 @@ export default function UdbhidGoenda(){
         </div>
       </div>
 
-        <FeedbackPanel context={feedbackContext} summary={feedbackSummary} userEmail={userEmail} onEmailChange={setUserEmail} visitorStats={visitorStats}/>
+        <FeedbackPanel context={feedbackContext} summary={feedbackSummary} userEmail={userEmail} onEmailChange={setUserEmail} visitorStats={visitorStats} visitorId={visitorId}/>
       {/* Footer */}
       <div style={{textAlign:"center",padding:"7px",color:C.textLight,fontSize:9.5,borderTop:`1px solid ${C.border}`,background:"#fff",letterSpacing:.3}}>
         উদ্ভিদ গোয়েন্দা · CABI Plantwise · BRRI · BARI · DAE Bangladesh
