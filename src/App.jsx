@@ -2,10 +2,10 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 // ─── Global styles ────────────────────────────────────────────────────────────
 const GLOBAL_STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{font-family:'Sora','Noto Sans Bengali',sans-serif;background:#f0f6f1;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Inter','Noto Sans Bengali',sans-serif;background:#f5fbf6;color:#171d1a;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
   @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -14,10 +14,13 @@ const GLOBAL_STYLE = `
   @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
   @keyframes popIn{0%{transform:scale(.85);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
   @keyframes glow{0%,100%{box-shadow:0 0 8px rgba(26,122,58,0.3)}50%{box-shadow:0 0 20px rgba(26,122,58,0.6)}}
+  @keyframes scan{0%{transform:translateY(-120px)}100%{transform:translateY(260px)}}
   ::-webkit-scrollbar{width:3px;height:3px}
   ::-webkit-scrollbar-thumb{background:#2d9d52;border-radius:4px}
   input,select,textarea,button{font-family:inherit}
   button:active{transform:scale(0.97)}
+  .ud-headline{font-family:'Plus Jakarta Sans','Noto Sans Bengali',sans-serif}
+  .ud-editorial-shadow{box-shadow:0 16px 44px rgba(0,33,9,0.10)}
 `;
 if(typeof document!=="undefined"&&!document.getElementById("ud-gs")){
   const s=document.createElement("style");s.id="ud-gs";s.textContent=GLOBAL_STYLE;document.head.appendChild(s);
@@ -25,15 +28,15 @@ if(typeof document!=="undefined"&&!document.getElementById("ud-gs")){
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C={
-  primary:"#1a7a3a", primaryLight:"#2d9d52", primaryDark:"#0f5a28", primaryXDark:"#093d1b",
+  primary:"#006028", primaryLight:"#1a7a3a", primaryDark:"#005322", primaryXDark:"#002109",
   accent:"#f59e0b", accentLight:"#fbbf24", accentDark:"#d97706",
-  bg:"#f0f6f1", bgCard:"#ffffff", bgMuted:"#f5faf6",
-  text:"#132213", textMuted:"#5a6e5a", textLight:"#8fa88f",
-  border:"#c8e0c8", borderFocus:"#2d9d52",
+  bg:"#f5fbf6", bgCard:"#ffffff", bgMuted:"#eff5f0",
+  text:"#171d1a", textMuted:"#3f493f", textLight:"#6f7a6e",
+  border:"#becabc", borderFocus:"#1a7a3a",
   success:"#16a34a", warning:"#d97706", danger:"#dc2626", blue:"#2563eb",
-  shadow:"0 1px 4px rgba(0,60,20,0.08)",
-  shadowMd:"0 4px 16px rgba(0,60,20,0.12)",
-  shadowLg:"0 8px 32px rgba(0,60,20,0.16)",
+  shadow:"0 8px 24px rgba(0,33,9,0.08)",
+  shadowMd:"0 16px 40px rgba(0,33,9,0.10)",
+  shadowLg:"0 22px 60px rgba(0,33,9,0.14)",
   // game colors
   game1:"#7c3aed", game2:"#0891b2", game3:"#ea580c",
 };
@@ -686,6 +689,93 @@ function HomeTab({setActiveTab,history,weather,locationName}){
             {[...history].reverse().slice(0,4).map((item,index)=>(
               <div key={index} style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:14,padding:12}}>
                 <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:4}}>{item.crop?.split("/")[0]?.trim()||"ফসল"}</div>
+                <div style={{fontSize:11,color:C.textMuted}}>{item.district?.split("/")[0]?.trim()||"জেলা নেই"}</div>
+                <div style={{fontSize:11,color:C.textLight,marginTop:6}}>{item.date}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
+  const highlights=[
+    {icon:"📸",title:"ছবি তুলে রোগ ধরুন",desc:"পাতার ছবি দিন, সিস্টেম ফসল আন্দাজ করবে, তারপর সহজ রিপোর্ট দেখাবে.",action:"নির্ণয়ে যান",tab:"diagnose"},
+    {icon:"📚",title:"চিত্রভিত্তিক তথ্যঘর",desc:"ভিডিও, স্লাইড, পুরো PDF আর অডিও একই ট্যাবে সাজানো আছে.",action:"তথ্যভাণ্ডার খুলুন",tab:"library"},
+    {icon:"🌐",title:"অন্য কৃষি অ্যাপ",desc:"Krishi AI, GAP Brinjal, GreenLoop ও আরও সেবা একসাথে খুলুন.",action:"অ্যাপস দেখুন",tab:"apps"},
+  ];
+  const risk=weather?assessWeatherRisks(weather)[0]:null;
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:18,animation:"fadeIn .3s ease"}}>
+      <div className="ud-editorial-shadow" style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary},${C.primaryLight})`,borderRadius:32,padding:"26px 24px",color:"#fff",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",right:-18,top:-20,fontSize:130,opacity:.08}}>🌿</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:24,alignItems:"center",position:"relative"}}>
+          <div>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"7px 12px",borderRadius:999,background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.18)",fontSize:11,fontWeight:700,letterSpacing:.3,marginBottom:14}}>AI কৃষি সহকারী</div>
+            <div className="ud-headline" style={{fontWeight:800,fontSize:36,lineHeight:1.05,letterSpacing:-1.2,marginBottom:10}}>পাতার ছবি থেকে দ্রুত সমস্যা ধরুন</div>
+            <div style={{fontSize:14.5,lineHeight:1.8,opacity:.92,marginBottom:16,maxWidth:560}}>কৃষকের ভাষায় রোগ, পোকা, খাবারের ঘাটতি, আবহাওয়ার ঝুঁকি আর করণীয় একসাথে দেখুন। জেলা ও মৌসুমও আগে থেকেই বসে যাবে.</div>
+            <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+              <button onClick={()=>setActiveTab("diagnose")} className="ud-headline" style={{background:"#fff",color:C.primaryDark,border:"none",borderRadius:999,padding:"13px 20px",fontWeight:800,cursor:"pointer",boxShadow:"0 10px 24px rgba(0,0,0,0.12)"}}>📸 ছবি দিয়ে শুরু</button>
+              <button onClick={()=>setActiveTab("library")} className="ud-headline" style={{background:"rgba(255,255,255,0.12)",color:"#fff",border:"1px solid rgba(255,255,255,0.24)",borderRadius:999,padding:"13px 20px",fontWeight:700,cursor:"pointer"}}>📚 শেখার লাইব্রেরি</button>
+            </div>
+          </div>
+          <div style={{display:"flex",justifyContent:"center"}}>
+            <button onClick={()=>setActiveTab("diagnose")} style={{width:"100%",maxWidth:320,aspectRatio:"1 / 1",borderRadius:28,border:"4px solid rgba(255,255,255,0.16)",background:"linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.05))",padding:18,cursor:"pointer",position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:18,border:"2px solid rgba(255,255,255,0.4)",borderRadius:22}}>
+                <div style={{position:"absolute",left:14,top:14,width:28,height:28,borderTop:"3px solid #fff",borderLeft:"3px solid #fff"}} />
+                <div style={{position:"absolute",right:14,top:14,width:28,height:28,borderTop:"3px solid #fff",borderRight:"3px solid #fff"}} />
+                <div style={{position:"absolute",left:14,bottom:14,width:28,height:28,borderBottom:"3px solid #fff",borderLeft:"3px solid #fff"}} />
+                <div style={{position:"absolute",right:14,bottom:14,width:28,height:28,borderBottom:"3px solid #fff",borderRight:"3px solid #fff"}} />
+                <div style={{position:"absolute",left:18,right:18,height:2,background:"rgba(170,255,181,0.95)",top:"22%",boxShadow:"0 0 18px rgba(155,247,168,0.85)",animation:"scan 3.2s linear infinite"}} />
+              </div>
+              <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,color:"#fff"}}>
+                <div style={{fontSize:64}}>🌱</div>
+                <div className="ud-headline" style={{fontWeight:800,fontSize:22}}>Ready to scan</div>
+                <div style={{fontSize:12,opacity:.9}}>পাতা মাঝখানে রাখুন</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:14}}>
+        {highlights.map(card=>(
+          <button key={card.title} onClick={()=>setActiveTab(card.tab)} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:24,padding:20,textAlign:"left",cursor:"pointer",boxShadow:C.shadow}}>
+            <div style={{fontSize:28,marginBottom:10}}>{card.icon}</div>
+            <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.primaryDark,marginBottom:6}}>{card.title}</div>
+            <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.65,marginBottom:12}}>{card.desc}</div>
+            <div style={{fontSize:12,color:C.primary,fontWeight:700}}>{card.action} →</div>
+          </button>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:14}}>
+        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:24,padding:18,boxShadow:C.shadow}}>
+          <div style={{fontSize:12,color:C.textMuted,marginBottom:6}}>📍 আপনার এলাকা</div>
+          <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text}}>{locationName||"অবস্থান সংগ্রহ হচ্ছে..."}</div>
+          <div style={{fontSize:12,color:C.textMuted,marginTop:6}}>জেলা স্বয়ংক্রিয়ভাবে ভরার চেষ্টা করা হয়.</div>
+        </div>
+        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:24,padding:18,boxShadow:C.shadow}}>
+          <div style={{fontSize:12,color:C.textMuted,marginBottom:6}}>🗓️ বর্তমান মৌসুম</div>
+          <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text}}>{getCurrentSeason().split("/")[0].trim()}</div>
+          <div style={{fontSize:12,color:C.textMuted,marginTop:6}}>তারিখ অনুযায়ী Detection tab-এ আগেই বসে যাবে.</div>
+        </div>
+        <div style={{background:risk?"linear-gradient(135deg,#ffffff,#eff6ff)":"#fff",border:`1px solid ${C.border}`,borderRadius:24,padding:18,boxShadow:C.shadow}}>
+          <div style={{fontSize:12,color:C.textMuted,marginBottom:6}}>🌦️ আজকের ঝুঁকি</div>
+          <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text}}>{risk?.text||"আবহাওয়া আনা হচ্ছে..."}</div>
+          {weather&&<div style={{fontSize:12,color:C.textMuted,marginTop:6}}>তাপমাত্রা {weather.temp}°C · আর্দ্রতা {weather.humidity}%</div>}
+        </div>
+      </div>
+      {history.length>0&&(
+        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:28,padding:18,boxShadow:C.shadow}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:10,marginBottom:12,flexWrap:"wrap"}}>
+            <div className="ud-headline" style={{fontWeight:800,fontSize:22,color:C.primaryDark}}>সাম্প্রতিক নির্ণয়</div>
+            <button onClick={()=>setActiveTab("history")} style={{background:"none",border:"none",color:C.primary,fontWeight:700,cursor:"pointer"}}>সব দেখুন</button>
+          </div>
+          <div style={{display:"flex",gap:12,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
+            {[...history].reverse().slice(0,4).map((item,index)=>(
+              <div key={index} style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:22,padding:14,minWidth:210}}>
+                <div style={{width:"100%",height:120,borderRadius:18,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,marginBottom:12}}>🌿</div>
+                <div className="ud-headline" style={{fontWeight:800,fontSize:16,color:C.text,marginBottom:4}}>{item.crop?.split("/")[0]?.trim()||"ফসল"}</div>
                 <div style={{fontSize:11,color:C.textMuted}}>{item.district?.split("/")[0]?.trim()||"জেলা নেই"}</div>
                 <div style={{fontSize:11,color:C.textLight,marginTop:6}}>{item.date}</div>
               </div>
