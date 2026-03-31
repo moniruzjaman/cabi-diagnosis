@@ -802,9 +802,9 @@ function AppsHub(){
 }
 function MediaFrame({title,src,height=520}){
   return(
-    <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:12,boxShadow:C.shadow}}>
-      <div style={{fontWeight:800,fontSize:14,color:C.primaryDark,marginBottom:10}}>{title}</div>
-      <iframe src={src} title={title} style={{width:"100%",height,border:"none",borderRadius:14,background:"#f8fafc"}} allow="autoplay" />
+    <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:24,padding:12,boxShadow:C.shadow}}>
+      <div className="ud-headline" style={{fontWeight:800,fontSize:14,color:C.primaryDark,marginBottom:10}}>{title}</div>
+      <iframe src={src} title={title} style={{width:"100%",height,border:"none",borderRadius:18,background:"#f8fafc"}} allow="autoplay" />
     </div>
   );
 }
@@ -916,6 +916,68 @@ function LibrarySection(){
             <div key={item.id} style={{display:"flex",flexDirection:"column",gap:10}}>
               <MediaFrame title={item.title} src={toDrivePreviewUrl(item.id)} height={560}/>
               <a href={toDriveViewUrl(item.id)} target="_blank" rel="noreferrer" style={{alignSelf:"flex-start",padding:"9px 14px",borderRadius:12,background:"#f0fdf4",border:`1px solid ${C.border}`,textDecoration:"none",color:C.primary,fontWeight:700}}>পূর্ণ স্ক্রিনে পড়ুন</a>
+            </div>
+          ))}
+        </div>
+      )}
+      {section==="audio"&&(
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:14}}>
+          {LIBRARY_MEDIA.audio.map(item=><AudioPodcastCard key={item.id} title={item.title} id={item.id}/>)}
+        </div>
+      )}
+    </div>
+  );
+}
+function EnhancedLibrarySection(){
+  const[section,setSection]=useState("slides");
+  const[currentSlide,setCurrentSlide]=useState(0);
+  const sections=[
+    {id:"slides",label:"স্লাইড ডেক",icon:"🖼️"},
+    {id:"read",label:"পড়ার ডকুমেন্ট",icon:"📖"},
+    {id:"audio",label:"অডিও পডকাস্ট",icon:"🎙️"},
+  ];
+  const slide=LIBRARY_MEDIA.slides[currentSlide];
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:16}}>
+      <div className="ud-editorial-shadow" style={{background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",border:`1px solid ${C.border}`,borderRadius:28,padding:18}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:12,flexWrap:"wrap",marginBottom:8}}>
+          <div>
+            <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",marginBottom:6}}>ভিডিও গাইড</div>
+            <div className="ud-headline" style={{fontWeight:800,fontSize:28,color:C.primaryDark,lineHeight:1.1}}>দেখে শিখুন, তারপর খুলুন স্লাইড ও ডকুমেন্ট</div>
+          </div>
+          <div style={{padding:"8px 12px",borderRadius:999,background:"#fff",border:`1px solid ${C.border}`,fontSize:12,fontWeight:700,color:C.primary}}>তথ্যভাণ্ডার</div>
+        </div>
+        <div style={{fontSize:13,color:C.textMuted,lineHeight:1.7}}>
+          {LIBRARY_MEDIA.videoUrl?"উপরের ভিডিওটি দেখুন.":"এই ট্যাবের জন্য MP4 লিংক দেওয়া হয়নি, তাই ভিডিও স্লট প্রস্তুত রাখা হয়েছে."}
+        </div>
+        {LIBRARY_MEDIA.videoUrl&&<div style={{marginTop:12}}><MediaFrame title="ভিডিও" src={LIBRARY_MEDIA.videoUrl} height={340}/></div>}
+      </div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        {sections.map(item=>(
+          <button key={item.id} onClick={()=>setSection(item.id)} className="ud-headline" style={{padding:"11px 16px",borderRadius:999,border:`1px solid ${section===item.id?C.primary:C.border}`,background:section===item.id?C.primary:"#fff",color:section===item.id?"#fff":C.text,fontWeight:700,cursor:"pointer"}}>{item.icon} {item.label}</button>
+        ))}
+      </div>
+      {section==="slides"&&(
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {LIBRARY_MEDIA.slides.map((item,index)=>(
+              <button key={item.id} onClick={()=>setCurrentSlide(index)} style={{padding:"8px 12px",borderRadius:14,border:`1px solid ${currentSlide===index?C.primary:C.border}`,background:currentSlide===index?"#f0fdf4":"#fff",color:currentSlide===index?C.primaryDark:C.text,cursor:"pointer",fontWeight:700}}>📄 {index+1}</button>
+            ))}
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",gap:8,flexWrap:"wrap"}}>
+            <button onClick={()=>setCurrentSlide(s=>Math.max(0,s-1))} disabled={currentSlide===0} style={{padding:"10px 14px",borderRadius:14,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer"}}>← আগেরটি</button>
+            <a href={toDriveViewUrl(slide.id)} target="_blank" rel="noreferrer" style={{padding:"10px 14px",borderRadius:14,border:`1px solid ${C.border}`,background:"#f0fdf4",textDecoration:"none",color:C.primary,fontWeight:700}}>Drive এ খুলুন</a>
+            <button onClick={()=>setCurrentSlide(s=>Math.min(LIBRARY_MEDIA.slides.length-1,s+1))} disabled={currentSlide===LIBRARY_MEDIA.slides.length-1} style={{padding:"10px 14px",borderRadius:14,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer"}}>পরেরটি →</button>
+          </div>
+          <MediaFrame title={slide.title} src={toDrivePreviewUrl(slide.id)} height={640}/>
+        </div>
+      )}
+      {section==="read"&&(
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:14}}>
+          {LIBRARY_MEDIA.readings.map(item=>(
+            <div key={item.id} style={{display:"flex",flexDirection:"column",gap:10}}>
+              <MediaFrame title={item.title} src={toDrivePreviewUrl(item.id)} height={560}/>
+              <a href={toDriveViewUrl(item.id)} target="_blank" rel="noreferrer" style={{alignSelf:"flex-start",padding:"10px 14px",borderRadius:14,background:"#f0fdf4",border:`1px solid ${C.border}`,textDecoration:"none",color:C.primary,fontWeight:700}}>পূর্ণ স্ক্রিনে পড়ুন</a>
             </div>
           ))}
         </div>
@@ -1589,7 +1651,7 @@ export default function UdbhidGoenda(){
       <div style={{flex:1,padding:activeTab==="game"?"10px 12px":"14px",overflowY:activeTab==="game"?"hidden":"auto",overflowX:"hidden"}}>
         <div style={{maxWidth:isDesktop?1280:1040,margin:"0 auto",width:"100%"}}>
 
-        {activeTab==="home"&&<HomeTab setActiveTab={setActiveTab} history={history} weather={weather} locationName={locationName}/>}
+        {activeTab==="home"&&<EnhancedHomeTab setActiveTab={setActiveTab} history={history} weather={weather} locationName={locationName}/>}
 
         {activeTab==="apps"&&(
           <div style={{background:"#fff",borderRadius:16,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
@@ -1608,6 +1670,29 @@ export default function UdbhidGoenda(){
 
             {step===1&&(
               <div>
+                <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:18,marginBottom:12,border:`1px solid ${C.border}`,overflow:"hidden"}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:18,alignItems:"center"}}>
+                    <div>
+                      <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",marginBottom:8}}>নতুন নির্ণয়</div>
+                      <div className="ud-headline" style={{fontWeight:800,fontSize:30,color:C.primaryDark,lineHeight:1.08,marginBottom:10}}>পাতার ছবি দিন, বাকি তথ্য সহজে পূরণ করুন</div>
+                      <div style={{fontSize:13,color:C.textMuted,lineHeight:1.75}}>ফসল, জেলা, মৌসুম, লক্ষণ আর ছবি একসাথে দিলে ফল বেশি ভালো আসে। ছবি থাকলে সিস্টেম নিজে ফসল ধরারও চেষ্টা করবে.</div>
+                    </div>
+                    <div style={{minHeight:240,borderRadius:26,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden"}}>
+                      <div style={{position:"absolute",inset:18,border:`2px solid ${C.primary}55`,borderRadius:20}}>
+                        <div style={{position:"absolute",left:12,top:12,width:28,height:28,borderTop:`3px solid ${C.primary}`,borderLeft:`3px solid ${C.primary}`}} />
+                        <div style={{position:"absolute",right:12,top:12,width:28,height:28,borderTop:`3px solid ${C.primary}`,borderRight:`3px solid ${C.primary}`}} />
+                        <div style={{position:"absolute",left:12,bottom:12,width:28,height:28,borderBottom:`3px solid ${C.primary}`,borderLeft:`3px solid ${C.primary}`}} />
+                        <div style={{position:"absolute",right:12,bottom:12,width:28,height:28,borderBottom:`3px solid ${C.primary}`,borderRight:`3px solid ${C.primary}`}} />
+                        <div style={{position:"absolute",left:18,right:18,height:2,background:"#9bf7a8",top:"22%",boxShadow:"0 0 18px rgba(26,122,58,0.55)",animation:"scan 3.2s linear infinite"}} />
+                      </div>
+                      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
+                        <div style={{fontSize:62}}>🍃</div>
+                        <div className="ud-headline" style={{fontWeight:800,fontSize:22,color:C.primaryDark}}>পাতা ফ্রেমের মাঝে রাখুন</div>
+                        <div style={{fontSize:12,color:C.textMuted}}>ভালো আলো থাকলে ফল বেশি নির্ভুল হয়</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 {/* crop */}
                 <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:10}}>🌱 ফসল নির্বাচন *</div>
@@ -1703,6 +1788,8 @@ export default function UdbhidGoenda(){
                 <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <label style={labelSt}>📷 ছবি আপলোড (ঐচ্ছিক)</label>
                   <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
+                  <input ref={galleryRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
+                  <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{display:"none"}}/>
                   {!image?(
                     <button onClick={()=>fileRef.current.click()} style={{width:"100%",padding:"18px",border:`2px dashed ${C.border}`,borderRadius:12,background:C.bgMuted,cursor:"pointer",color:C.textMuted,fontSize:13,display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
                       <span style={{fontSize:26}}>📁</span><span style={{fontWeight:600}}>ছবি বেছে নিন</span>
@@ -1801,7 +1888,7 @@ export default function UdbhidGoenda(){
           <div style={{background:"#fff",borderRadius:16,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
             <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:3}}>📚 তথ্যভাণ্ডার</div>
             <div style={{color:C.textMuted,fontSize:12,marginBottom:14}}>পোকামাকড়, রোগ ও পুষ্টি অভাব</div>
-            <LibrarySection/>
+            <EnhancedLibrarySection/>
           </div>
         )}
 
