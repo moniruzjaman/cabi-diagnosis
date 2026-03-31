@@ -1072,8 +1072,8 @@ function CABIGuideTab(){
           </div>
           {CABI_GUIDE.protocol.steps.map((step,i)=>(
             <div key={i} style={{background:"#fff",borderRadius:18,padding:18,marginBottom:12,border:`1px solid ${step.border}`,boxShadow:C.shadow,animation:`fadeIn .3s ease ${i*.05}s both`}}>
-              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:10}}>
-                <div style={{width:42,height:42,borderRadius:"50%",background:step.bg,border:`2px solid ${step.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>{step.icon}</div>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+                <div style={{width:46,height:46,borderRadius:16,background:step.bg,border:`2px solid ${step.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>{step.icon}</div>
                 <div style={{flex:1}}>
                   <div style={{fontWeight:800,fontSize:14,color:step.color}}>ধাপ {step.num}: {step.title}</div>
                   <div style={{fontSize:11,color:C.textMuted}}>{step.en}</div>
