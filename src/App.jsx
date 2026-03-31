@@ -1790,6 +1790,28 @@ export default function UdbhidGoenda(){
                   <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
                   <input ref={galleryRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
                   <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{display:"none"}}/>
+                  {!image&&(
+                    <div style={{marginBottom:12}}>
+                      <div style={{padding:"22px 16px",border:`2px dashed ${C.border}`,borderRadius:22,background:"linear-gradient(135deg,#eff5f0,#ffffff)",color:C.textMuted,fontSize:13,display:"flex",flexDirection:"column",alignItems:"center",gap:6,marginBottom:12}}>
+                        <span style={{fontSize:34}}>📷</span>
+                        <span className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.primaryDark}}>পাতার পরিষ্কার ছবি দিন</span>
+                        <span style={{fontSize:11}}>JPG, PNG · সামনে থেকে তুলুন · AI বিশ্লেষণ করবে</span>
+                      </div>
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:10}}>
+                        <button onClick={()=>cameraRef.current?.click()} className="ud-headline" style={{padding:"16px 14px",borderRadius:20,border:"none",background:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>📸 ক্যামেরা</button>
+                        <button onClick={()=>galleryRef.current?.click()} className="ud-headline" style={{padding:"16px 14px",borderRadius:20,border:`1px solid ${C.border}`,background:"#fff",color:C.primaryDark,cursor:"pointer",fontWeight:800,fontSize:15}}>🖼️ গ্যালারি</button>
+                      </div>
+                    </div>
+                  )}
+                  {image&&(
+                    <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:16,padding:"10px 12px",marginBottom:12}}>
+                      <div>
+                        <div className="ud-headline" style={{fontSize:16,color:C.success,fontWeight:800}}>✅ ছবি যুক্ত হয়েছে</div>
+                        <div style={{fontSize:11,color:C.textMuted}}>{analysingCrop?"ফসল চিনে দেখছে...":"AI বিশ্লেষণ প্রস্তুত"}</div>
+                      </div>
+                      <button onClick={()=>galleryRef.current?.click()} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",fontWeight:700,flexShrink:0}}>অন্য ছবি</button>
+                    </div>
+                  )}
                   {!image?(
                     <button onClick={()=>fileRef.current.click()} style={{width:"100%",padding:"18px",border:`2px dashed ${C.border}`,borderRadius:12,background:C.bgMuted,cursor:"pointer",color:C.textMuted,fontSize:13,display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
                       <span style={{fontSize:26}}>📁</span><span style={{fontWeight:600}}>ছবি বেছে নিন</span>
@@ -1815,6 +1837,20 @@ export default function UdbhidGoenda(){
             {/* ── RESULT ──────────────────────────────────────────────── */}
             {step===2&&result&&(
               <div ref={resultRef} style={{animation:"slideUp .4s ease"}}>
+                <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:18,marginBottom:12,border:`1px solid ${C.border}`,overflow:"hidden"}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:18,alignItems:"center"}}>
+                    <div>
+                      <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",marginBottom:8}}>নির্ণয় সম্পন্ন</div>
+                      <div className="ud-headline" style={{fontWeight:800,fontSize:30,color:C.primaryDark,lineHeight:1.08,marginBottom:10}}>{form.crop?.split("/")[0]?.trim()||"ফসল"} এর জন্য সহজ রিপোর্ট</div>
+                      <div style={{fontSize:13,color:C.textMuted,lineHeight:1.75}}>কোন সমস্যা বেশি মনে হচ্ছে, কী লক্ষণ দেখা গেছে, আর এখন কী করলে ক্ষতি কমবে তা নিচে কার্ড আকারে সাজানো আছে.</div>
+                    </div>
+                    <div style={{minHeight:220,borderRadius:26,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      {image?<img src={image} alt="diagnosis preview" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<div style={{fontSize:64}}>🍃</div>}
+                      <div style={{position:"absolute",inset:18,border:"2px solid rgba(255,255,255,0.7)",borderRadius:20}} />
+                      <div style={{position:"absolute",top:18,right:18,padding:"7px 12px",borderRadius:999,background:"rgba(0,96,40,0.88)",color:"#fff",fontSize:11,fontWeight:800}}>বিশ্লেষণ শেষ</div>
+                    </div>
+                  </div>
+                </div>
                 <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,flexWrap:"wrap"}}>
                     <div style={{width:38,height:38,borderRadius:10,background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>📋</div>
