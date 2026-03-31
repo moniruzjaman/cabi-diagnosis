@@ -604,7 +604,7 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,vis
   };
   const mailto=`mailto:?subject=${encodeURIComponent(`Udbhid Goenda feedback - ${context}`)}&body=${encodeURIComponent(payload)}`;
   return(
-    <div style={{marginTop:16,background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:16,boxShadow:C.shadow}}>
+    <div className="ud-editorial-shadow" style={{marginTop:16,background:"linear-gradient(135deg,#ffffff,#eff5f0)",border:`1px solid ${C.border}`,borderRadius:28,padding:18,boxShadow:C.shadow}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap",marginBottom:10}}>
         <div>
           <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>⭐ রেটিং ও মতামত</div>
@@ -614,7 +614,7 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,vis
       </div>
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
         {[1,2,3,4,5].map(star=>(
-          <button key={star} onClick={()=>setRating(star)} style={{width:40,height:40,borderRadius:12,border:`1px solid ${rating>=star?"#fbbf24":C.border}`,background:rating>=star?"#fffbeb":"#fff",cursor:"pointer",fontSize:20}}>
+          <button key={star} onClick={()=>setRating(star)} style={{width:44,height:44,borderRadius:14,border:`1px solid ${rating>=star?"#fbbf24":C.border}`,background:rating>=star?"#fffbeb":"#fff",cursor:"pointer",fontSize:22}}>
             {rating>=star?"★":"☆"}
           </button>
         ))}
@@ -1654,7 +1654,7 @@ export default function UdbhidGoenda(){
         {activeTab==="home"&&<EnhancedHomeTab setActiveTab={setActiveTab} history={history} weather={weather} locationName={locationName}/>}
 
         {activeTab==="apps"&&(
-          <div style={{background:"#fff",borderRadius:16,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
             <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:3}}>🌐 আমাদের অন্য অ্যাপ</div>
             <div style={{color:C.textMuted,fontSize:12,marginBottom:14}}>আরও কৃষি টুল ও শেখার প্ল্যাটফর্ম</div>
             <AppsHub/>
@@ -1910,7 +1910,7 @@ export default function UdbhidGoenda(){
 
         {/* ── GUIDE ────────────────────────────────────────────────── */}
         {activeTab==="guide"&&(
-          <div style={{background:"#fff",borderRadius:16,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
               <div style={{width:42,height:42,borderRadius:11,overflow:"hidden",flexShrink:0}}><img src="/cabi-logo.png" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>
               <div><div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>CABI Plantwise গাইড</div><div style={{color:C.textMuted,fontSize:11}}>সম্পূর্ণ রোগ নির্ণয় প্রোটোকল</div></div>
@@ -1921,7 +1921,7 @@ export default function UdbhidGoenda(){
 
         {/* ── LIBRARY ──────────────────────────────────────────────── */}
         {activeTab==="library"&&(
-          <div style={{background:"#fff",borderRadius:16,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
             <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:3}}>📚 তথ্যভাণ্ডার</div>
             <div style={{color:C.textMuted,fontSize:12,marginBottom:14}}>পোকামাকড়, রোগ ও পুষ্টি অভাব</div>
             <EnhancedLibrarySection/>
@@ -1933,7 +1933,7 @@ export default function UdbhidGoenda(){
 
         {/* ── HISTORY ──────────────────────────────────────────────── */}
         {activeTab==="history"&&(
-          <div style={{background:"#fff",borderRadius:16,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
             <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:14}}>📋 নির্ণয়ের ইতিহাস</div>
             {history.length===0?(
               <div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>
