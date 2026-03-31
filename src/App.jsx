@@ -210,6 +210,16 @@ function formatTime(seconds){
   const ss=Math.floor(seconds%60).toString().padStart(2,"0");
   return `${mm}:${ss}`;
 }
+function buildFeedbackMessage({context,rating,feedback,email,summary,visits}){
+  return [
+    `App Section: ${context}`,
+    `Rating: ${rating||"Not given"}/5`,
+    `Feedback or Request: ${feedback||"Not written"}`,
+    `Contact Email: ${email||"Not provided"}`,
+    `Summary: ${summary||"N/A"}`,
+    `Visitor Count (this browser): ${visits||1}`,
+  ].join("\n");
+}
 
 // ─── CABI Guide data ──────────────────────────────────────────────────────────
 const CABI_GUIDE={
@@ -346,6 +356,32 @@ function SectionCard({title,bodyLines,defaultOpen}){
   const meta=getMeta(title);
   const bodyText=simplifyFarmerText(bodyLines.join("\n").trim());
   if(!bodyText&&!title)return null;
+  const feedbackContext=activeTab==="diagnose"
+    ?(step===2?"Diagnosis Report":"Diagnosis Form")
+    :activeTab==="game"
+      ?"Game Hub"
+      :activeTab==="library"
+        ?"Information Library"
+        :activeTab==="guide"
+          ?"CABI Guide"
+          :activeTab==="apps"
+            ?"Apps Hub"
+            :activeTab==="history"
+              ?"History"
+              :"Home";
+  const feedbackSummary=activeTab==="diagnose"&&result
+    ?`${form.crop||"Unknown crop"} | ${form.district||locationName||"Unknown district"} | ${(result.bn||result.en||"").slice(0,160)}`
+    :activeTab==="game"
+      ?"Game tab feedback"
+      :activeTab==="library"
+        ?"Drive-based slide, reading, and audio library"
+        :activeTab==="apps"
+          ?"External agriculture apps hub"
+          :activeTab==="guide"
+            ?"CABI training guide view"
+            :activeTab==="history"
+              ?`Saved reports: ${history.length}`
+              :"General app feedback";
   return(
     <div style={{borderRadius:14,border:`1px solid ${meta.border}`,marginBottom:10,overflow:"hidden",animation:"fadeIn .3s ease"}}>
       {title&&<button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"12px 16px",background:meta.bg,border:"none",cursor:"pointer",textAlign:"left"}}>
@@ -549,6 +585,70 @@ function ProductRecommendations({products,crop}){
 }
 
 // ─── Library section ──────────────────────────────────────────────────────────
+function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats}){
+  const[rating,setRating]=useState(0);
+  const[feedback,setFeedback]=useState("");
+  const[status,setStatus]=useState("");
+  const quickNotes=["খুব কাজে লেগেছে","ভাষা আরও সহজ দরকার","আরও ছবি/ইনফোগ্রাফ চাই","এখানে বাগ আছে","নতুন ফসল যোগ করুন"];
+  const payload=buildFeedbackMessage({
+    context,
+    rating,
+    feedback,
+    email:userEmail,
+    summary,
+    visits:visitorStats?.visits,
+  });
+  const saveFeedback=()=>{
+    try{
+      const items=JSON.parse(localStorage.getItem("ud-feedback-log")||"[]");
+      items.push({context,rating,feedback,email:userEmail,summary,date:new Date().toISOString()});
+      localStorage.setItem("ud-feedback-log",JSON.stringify(items.slice(-50)));
+    }catch{}
+  };
+  const handleCopy=async()=>{
+    saveFeedback();
+    try{
+      await navigator.clipboard.writeText(payload);
+      setStatus("কপি হয়েছে");
+    }catch{
+      setStatus("কপি করা যায়নি");
+    }
+  };
+  const mailto=`mailto:?subject=${encodeURIComponent(`Udbhid Goenda feedback - ${context}`)}&body=${encodeURIComponent(payload)}`;
+  return(
+    <div style={{marginTop:16,background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:16,boxShadow:C.shadow}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap",marginBottom:10}}>
+        <div>
+          <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>⭐ রেটিং ও মতামত</div>
+          <div style={{fontSize:12,color:C.textMuted}}>এই অংশ শেষে আপনার মতামত কপি করুন বা এক ক্লিকে পাঠান.</div>
+        </div>
+        <div style={{fontSize:11,color:C.textMuted}}>Visitors: {visitorStats?.visits||1}</div>
+      </div>
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
+        {[1,2,3,4,5].map(star=>(
+          <button key={star} onClick={()=>setRating(star)} style={{width:40,height:40,borderRadius:12,border:`1px solid ${rating>=star?"#fbbf24":C.border}`,background:rating>=star?"#fffbeb":"#fff",cursor:"pointer",fontSize:20}}>
+            {rating>=star?"★":"☆"}
+          </button>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
+        {quickNotes.map(note=>(
+          <button key={note} onClick={()=>setFeedback(prev=>prev?`${prev}${prev.includes(note)?"":"; "+note}`:note)} style={{padding:"7px 10px",borderRadius:999,border:`1px solid ${C.border}`,background:"#f8faf8",cursor:"pointer",fontSize:11}}>
+            {note}
+          </button>
+        ))}
+      </div>
+      <textarea value={feedback} onChange={e=>setFeedback(e.target.value)} placeholder="কি ভালো লেগেছে, কোথায় সমস্যা, কী নতুন চাই..." rows={3} style={{width:"100%",border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 12px",resize:"vertical",marginBottom:10,fontSize:13}}/>
+      <input value={userEmail} onChange={e=>onEmailChange(e.target.value)} placeholder="ইমেইল দিন (একবার দিলে পরে মনে থাকবে)" style={{width:"100%",border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 12px",marginBottom:10,fontSize:13}}/>
+      <div style={{fontSize:11,color:C.textLight,marginBottom:12}}>ব্রাউজার নিরাপত্তার কারণে ইমেইল স্বয়ংক্রিয়ভাবে পড়া যায় না, তাই একবার দিলে পরে এই ডিভাইসে নিজে ভরে যাবে.</div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        <button onClick={handleCopy} style={{padding:"10px 14px",borderRadius:12,border:"none",background:C.primary,color:"#fff",fontWeight:700,cursor:"pointer"}}>📋 কপি করুন</button>
+        <a href={mailto} onClick={saveFeedback} style={{padding:"10px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#f0fdf4",color:C.primary,textDecoration:"none",fontWeight:700}}>✉️ ক্লিকে পাঠান</a>
+        {status&&<div style={{padding:"10px 0",fontSize:12,color:C.textMuted}}>{status}</div>}
+      </div>
+    </div>
+  );
+}
 function HomeTab({setActiveTab,history,weather,locationName}){
   const highlights=[
     {icon:"🧠",title:"ছবি দেখে রোগ ধরা",desc:"গ্যালারি বা ক্যামেরা থেকে ছবি দিন, তারপর সহজ ভাষায় রিপোর্ট পান.",action:"নির্ণয়ে যান",tab:"diagnose"},
@@ -1152,6 +1252,8 @@ export default function UdbhidGoenda(){
   const[locationSource,setLocationSource]=useState(null);
   const[analysingCrop,setAnalysingCrop]=useState(false);
   const[viewportWidth,setViewportWidth]=useState(()=>typeof window!=="undefined"?window.innerWidth:1280);
+  const[userEmail,setUserEmail]=useState(()=>{try{return localStorage.getItem("ud-user-email")||"";}catch{return"";}});
+  const[visitorStats,setVisitorStats]=useState(()=>({visits:1,sections:{}}));
 
   const galleryRef=useRef();
   const cameraRef=useRef();
@@ -1163,6 +1265,26 @@ export default function UdbhidGoenda(){
     window.addEventListener("resize",onResize);
     return()=>window.removeEventListener("resize",onResize);
   },[]);
+  useEffect(()=>{
+    try{
+      const raw=JSON.parse(localStorage.getItem("ud-visitor-stats")||"{}");
+      const next={visits:(raw.visits||0)+1,sections:raw.sections||{}};
+      if(!localStorage.getItem("ud-visitor-id"))localStorage.setItem("ud-visitor-id",`${Date.now()}-${Math.random().toString(36).slice(2,8)}`);
+      localStorage.setItem("ud-visitor-stats",JSON.stringify(next));
+      setVisitorStats(next);
+    }catch{}
+  },[]);
+  useEffect(()=>{
+    try{localStorage.setItem("ud-user-email",userEmail||"");}catch{}
+  },[userEmail]);
+  useEffect(()=>{
+    try{
+      const raw=JSON.parse(localStorage.getItem("ud-visitor-stats")||"{}");
+      const next={visits:raw.visits||1,sections:{...(raw.sections||{}),[activeTab]:(raw.sections?.[activeTab]||0)+1}};
+      localStorage.setItem("ud-visitor-stats",JSON.stringify(next));
+      setVisitorStats(next);
+    }catch{}
+  },[activeTab]);
 
   useEffect(()=>{
     if(!pesticideDb||!result||!form.crop)return;
@@ -1597,6 +1719,7 @@ export default function UdbhidGoenda(){
         </div>
       </div>
 
+        <FeedbackPanel context={feedbackContext} summary={feedbackSummary} userEmail={userEmail} onEmailChange={setUserEmail} visitorStats={visitorStats}/>
       {/* Footer */}
       <div style={{textAlign:"center",padding:"7px",color:C.textLight,fontSize:9.5,borderTop:`1px solid ${C.border}`,background:"#fff",letterSpacing:.3}}>
         উদ্ভিদ গোয়েন্দা · CABI Plantwise · BRRI · BARI · DAE Bangladesh
