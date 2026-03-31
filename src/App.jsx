@@ -1065,7 +1065,7 @@ function CABIGuideTab(){
       </div>
       {section==="protocol"&&(
         <div>
-          <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,borderRadius:16,padding:20,marginBottom:14,color:"#fff"}}>
+          <div className="ud-editorial-shadow" style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,borderRadius:24,padding:22,marginBottom:16,color:"#fff"}}>
             <div style={{fontSize:24,marginBottom:8}}>🔬</div>
             <div style={{fontWeight:800,fontSize:17,marginBottom:3}}>{CABI_GUIDE.protocol.title}</div>
             <div style={{opacity:.8,fontSize:12}}>{CABI_GUIDE.protocol.subtitle}</div>
