@@ -103,7 +103,7 @@ const OTHER_APPS=[
   {name:"CIRDAP GreenLoop",url:"https://cirdap-greenloop3-0.vercel.app/",icon:"♻️",desc:"Climate and circular agriculture tools"},
 ];
 const LIBRARY_MEDIA={
-  videoUrl:"",
+  videoUrl:"https://drive.google.com/file/d/1k8A7PSsVHiuPUY5i22wnlktyJESxMpBs/preview",
   slides:[
     {title:"স্লাইড ১",id:"1TFMKiKOiQMneoZEn3PYN59JVXJspcz2X"},
     {title:"স্লাইড ২",id:"1ivvMxoVUCM1k9rl8bXpiZ7rLYg8RdMup"},
