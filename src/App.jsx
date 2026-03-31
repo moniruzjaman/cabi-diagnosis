@@ -1058,9 +1058,9 @@ function CABIGuideTab(){
   };
   return(
     <div>
-      <div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
+      <div style={{display:"flex",gap:8,marginBottom:16,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
         {sections.map(s=>(
-          <button key={s.id} onClick={()=>setSection(s.id)} style={{flexShrink:0,padding:"7px 12px",borderRadius:20,border:`1px solid ${section===s.id?C.primary:C.border}`,background:section===s.id?C.primary:"#fff",color:section===s.id?"#fff":C.text,cursor:"pointer",fontSize:11,fontWeight:600,whiteSpace:"nowrap",transition:"all .15s"}}>{s.icon} {s.label}</button>
+          <button key={s.id} onClick={()=>setSection(s.id)} className="ud-headline" style={{flexShrink:0,padding:"9px 14px",borderRadius:999,border:`1px solid ${section===s.id?C.primary:C.border}`,background:section===s.id?C.primary:"#fff",color:section===s.id?"#fff":C.text,cursor:"pointer",fontSize:12,fontWeight:700,whiteSpace:"nowrap",transition:"all .15s"}}>{s.icon} {s.label}</button>
         ))}
       </div>
       {section==="protocol"&&(
