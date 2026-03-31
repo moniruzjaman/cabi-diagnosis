@@ -364,32 +364,6 @@ function SectionCard({title,bodyLines,defaultOpen}){
   const meta=getMeta(title);
   const bodyText=simplifyFarmerText(bodyLines.join("\n").trim());
   if(!bodyText&&!title)return null;
-  const feedbackContext=activeTab==="diagnose"
-    ?(step===2?"Diagnosis Report":"Diagnosis Form")
-    :activeTab==="game"
-      ?"Game Hub"
-      :activeTab==="library"
-        ?"Information Library"
-        :activeTab==="guide"
-          ?"CABI Guide"
-          :activeTab==="apps"
-            ?"Apps Hub"
-            :activeTab==="history"
-              ?"History"
-              :"Home";
-  const feedbackSummary=activeTab==="diagnose"&&result
-    ?`${form.crop||"Unknown crop"} | ${form.district||locationName||"Unknown district"} | ${(result.bn||result.en||"").slice(0,160)}`
-    :activeTab==="game"
-      ?"Game tab feedback"
-      :activeTab==="library"
-        ?"Drive-based slide, reading, and audio library"
-        :activeTab==="apps"
-          ?"External agriculture apps hub"
-          :activeTab==="guide"
-            ?"CABI training guide view"
-            :activeTab==="history"
-              ?`Saved reports: ${history.length}`
-              :"General app feedback";
   return(
     <div style={{borderRadius:14,border:`1px solid ${meta.border}`,marginBottom:10,overflow:"hidden",animation:"fadeIn .3s ease"}}>
       {title&&<button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"12px 16px",background:meta.bg,border:"none",cursor:"pointer",textAlign:"left"}}>
@@ -1467,6 +1441,32 @@ export default function UdbhidGoenda(){
     {id:"game",label:"গেম হাব",icon:"🎮"},
     {id:"history",label:"ইতিহাস",icon:"📋"},
   ];
+  const feedbackContext=activeTab==="diagnose"
+    ?(step===2?"Diagnosis Report":"Diagnosis Form")
+    :activeTab==="game"
+      ?"Game Hub"
+      :activeTab==="library"
+        ?"Information Library"
+        :activeTab==="guide"
+          ?"CABI Guide"
+          :activeTab==="apps"
+            ?"Apps Hub"
+            :activeTab==="history"
+              ?"History"
+              :"Home";
+  const feedbackSummary=activeTab==="diagnose"&&result
+    ?`${form.crop||"Unknown crop"} | ${form.district||locationName||"Unknown district"} | ${(result.bn||result.en||"").slice(0,160)}`
+    :activeTab==="game"
+      ?"Game tab feedback"
+      :activeTab==="library"
+        ?"Drive-based slide, reading, and audio library"
+        :activeTab==="apps"
+          ?"External agriculture apps hub"
+          :activeTab==="guide"
+            ?"CABI training guide view"
+            :activeTab==="history"
+              ?`Saved reports: ${history.length}`
+              :"General app feedback";
 
   return(
     <div style={{minHeight:"100svh",background:C.bg,width:"100%",display:"flex",flexDirection:"column"}}>
