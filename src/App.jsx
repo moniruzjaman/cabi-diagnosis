@@ -1292,9 +1292,9 @@ function GameHub(){
       </div>
 
       {/* Game cards */}
-      <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:14}}>
         {GAMES.map((game,i)=>(
-          <div key={game.id} style={{background:"#fff",borderRadius:18,overflow:"hidden",boxShadow:C.shadowMd,border:`1px solid ${C.border}`,animation:`popIn .4s ease ${i*.1}s both`,cursor:"pointer"}} onClick={()=>{setActiveGame(game.id);setGameLoaded(false);setGameErr(false);}}>
+          <div key={game.id} style={{background:"#fff",borderRadius:18,overflow:"hidden",boxShadow:C.shadowMd,border:`1px solid ${C.border}`,animation:`popIn .4s ease ${i*.1}s both`,cursor:"pointer",height:"100%",display:"flex",flexDirection:"column"}} onClick={()=>{setActiveGame(game.id);setGameLoaded(false);setGameErr(false);}}>
             {/* Card header with gradient */}
             <div style={{background:game.bg,padding:"18px 20px 16px",position:"relative",overflow:"hidden"}}>
               <div style={{position:"absolute",top:-10,right:-10,fontSize:60,opacity:.2}}>{game.icon}</div>
@@ -1308,12 +1308,12 @@ function GameHub(){
               </div>
             </div>
             {/* Card body */}
-            <div style={{padding:"14px 16px"}}>
+            <div style={{padding:"14px 16px",display:"flex",flexDirection:"column",flex:1}}>
               <p style={{fontSize:12,color:C.textMuted,lineHeight:1.6,marginBottom:12}}>{game.desc}</p>
               <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
                 {game.tags.map(tag=><span key={tag} style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:20,padding:"2px 9px",fontSize:10,color:C.textMuted,fontWeight:600}}>{tag}</span>)}
               </div>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:"auto"}}>
                 <div style={{display:"flex",gap:14}}>
                   <div style={{fontSize:11,color:C.textMuted}}>⚡ <span style={{color:C.text,fontWeight:600}}>{game.difficulty}</span></div>
                   <div style={{fontSize:11,color:C.textMuted}}>⏱ <span style={{color:C.text,fontWeight:600}}>{game.duration}</span></div>
