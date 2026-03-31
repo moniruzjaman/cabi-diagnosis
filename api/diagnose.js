@@ -470,6 +470,89 @@ function compressMessages(messages, maxBase64Chars = 1_000_000) {
   });
 }
 
+const OPENROUTER_VISION_MODELS = [
+  "qwen/qwen2.5-vl-72b-instruct:free",
+  "meta-llama/llama-3.2-11b-vision-instruct:free",
+  "microsoft/phi-4-multimodal-instruct:free",
+];
+
+const OPENROUTER_TEXT_MODELS = [
+  "qwen/qwen-2.5-72b-instruct:free",
+  "qwen/qwen-2.5-7b-instruct:free",
+];
+
+function extractPlainUserText(messages) {
+  return messages
+    .flatMap((m) => {
+      if (!Array.isArray(m.content)) return typeof m.content === "string" ? [m.content] : [];
+      return m.content.filter((b) => b.type === "text" && b.text).map((b) => b.text);
+    })
+    .join("\n");
+}
+
+function buildEmergencyDiagnosis(messages, imageAttached) {
+  const text = extractPlainUserText(messages);
+  const lower = text.toLowerCase();
+
+  const suspects = [];
+  if (/yellow|হলুদ|chlorosis/.test(lower)) suspects.push("পুষ্টি ঘাটতি / nutrient deficiency");
+  if (/spot|দাগ|blast|blight|lesion/.test(lower)) suspects.push("ছত্রাক বা ব্যাকটেরিয়া / fungal or bacterial disease");
+  if (/curl|কুঁক|মোড়া|mosaic|virus/.test(lower)) suspects.push("ভাইরাস বা থ্রিপস-এফিড / virus or sucking pest damage");
+  if (/hole|ছিদ্র|chew|roll|frass|web|mite|aphid|thrips|insect|পোকা/.test(lower)) suspects.push("পোকার আক্রমণ / insect or mite attack");
+  if (/wilt|মরে|শুক|rot|পচা/.test(lower)) suspects.push("উইল্ট বা রুট/স্টেম রট / wilt or root-stem rot");
+
+  const primary = suspects[0] || "ছবি ও বর্ণনার ভিত্তিতে রোগ/পোকার একটি প্রাথমিক সন্দেহ";
+  const differentials = suspects.slice(1, 3);
+  const imageNote = imageAttached
+    ? "ছবি যুক্ত আছে, তাই এটি একটি প্রাথমিক মাঠ-স্তরের জরুরি বিশ্লেষণ।"
+    : "এই বিশ্লেষণটি মূলত আপনার বর্ণনার ভিত্তিতে করা হয়েছে।";
+
+  return `---BANGLA_SECTION---
+## ১. প্রাথমিক CABI বিশ্লেষণ
+**অবস্থা:** জরুরি বিকল্প বিশ্লেষণ
+**মন্তব্য:** ${imageNote}
+
+## ২. সম্ভাব্য কারণ
+**প্রাথমিক সন্দেহ:** ${primary}
+**বিকল্প সন্দেহ:** ${differentials.length ? differentials.join(" ; ") : "মাঠে দেখে নিশ্চিত করা দরকার"}
+**আস্থার মাত্রা:** কম থেকে মাঝারি
+
+## ৩. এখনই যা করবেন
+- আক্রান্ত গাছ/পাতা আলাদা করে দেখুন
+- পাতার উল্টোপাশে পোকা, ডিম, জাল, মধুরস বা কালো ফোঁটা আছে কি না দেখুন
+- দাগ পানিভেজা কিনারা থেকে শুরু হলে ব্যাকটেরিয়া সন্দেহ করুন
+- দাগ হীরার মতো বা বাদামি গোল হলে ছত্রাক সন্দেহ করুন
+- উপসর্গ দুই পাশ সমান হলে পুষ্টি ঘাটতি আগে বিবেচনা করুন
+
+## ৪. কৃষক-নিরাপদ তাৎক্ষণিক পরামর্শ
+- এখনই অপ্রয়োজনীয় কীটনাশক/ফাঙ্গিসাইড স্প্রে করবেন না
+- আক্রান্ত অংশের পরিষ্কার ছবি আবার নিন: পুরো গাছ, পাতার সামনে, পাতার পেছন, কান্ডের গোড়া
+- জমিতে পানি, সার, আগাছা ও সাম্প্রতিক স্প্রের ইতিহাস লিখে রাখুন
+- ক্ষতি দ্রুত বাড়লে নিকটস্থ DAE কর্মকর্তাকে দেখান
+---END_BANGLA---
+
+---ENGLISH_SECTION---
+## 1. Provisional CABI Analysis
+**Status:** Emergency fallback assessment
+**Note:** ${imageAttached ? "An image was attached, but this is still a provisional field-safe analysis." : "This assessment is mainly based on the user description."}
+
+## 2. Most Likely Cause
+**Primary suspect:** ${primary}
+**Differentials:** ${differentials.length ? differentials.join(" ; ") : "Needs field confirmation"}
+**Confidence:** Low to Medium
+
+## 3. Immediate Safe Actions
+- Inspect the underside of leaves for insects, mites, eggs, webbing, honeydew, or black frass
+- If lesions are water-soaked from the tip/margin, consider bacterial causes
+- If lesions are spindle, circular, or dry brown spots, consider fungal causes
+- If symptoms are symmetrical on both leaf halves, consider nutrient deficiency first
+- Avoid unnecessary pesticide spraying until the cause is narrowed
+
+## 4. Next Step
+Capture clearer photos of the whole plant, front and back of leaves, and stem base, then retry or consult a local DAE officer if spread is rapid.
+---END_ENGLISH---`;
+}
+
 // ─── Provider 1: Google Gemini 2.0 Flash ─────────────────────────────────────
 async function tryGemini(messages, withVision = true, systemPrompt = SYSTEM_PROMPT) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -534,7 +617,7 @@ async function tryGroq(messages, systemPrompt = SYSTEM_PROMPT) {
 }
 
 // ─── Provider 3/4/5: OpenRouter ──────────────────────────────────────────────
-async function tryOpenRouter(messages, modelId, systemPrompt = SYSTEM_PROMPT) {
+async function tryOpenRouter(messages, modelId, systemPrompt = SYSTEM_PROMPT, extraBody = {}) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY not set");
 
@@ -542,6 +625,7 @@ async function tryOpenRouter(messages, modelId, systemPrompt = SYSTEM_PROMPT) {
     model: modelId,
     max_tokens: 3000,
     messages: [{ role: "system", content: systemPrompt }, ...toOpenAIMessages(compressMessages(messages))],
+    ...extraBody,
   };
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -558,7 +642,9 @@ async function tryOpenRouter(messages, modelId, systemPrompt = SYSTEM_PROMPT) {
   const data = await res.json();
   if (!res.ok || data.error) throw new Error(data?.error?.message || `OpenRouter HTTP ${res.status}`);
 
-  const label = modelId.split("/").pop().replace(":free", "");
+  const resolvedModel = (data?.model || modelId).split("/").pop().replace(":free", "");
+  const providerName = data?.provider ? ` via ${data.provider}` : "";
+  return { text: data?.choices?.[0]?.message?.content || "No response.", provider: `OpenRouter / ${resolvedModel}${providerName}` };
   return { text: data?.choices?.[0]?.message?.content || "No response.", provider: `OpenRouter / ${label} 🔀` };
 }
 
