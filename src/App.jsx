@@ -1060,7 +1060,7 @@ function CABIGuideTab(){
     <div>
       <div style={{display:"flex",gap:8,marginBottom:16,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
         {sections.map(s=>(
-          <button key={s.id} onClick={()=>setSection(s.id)} className="ud-headline" style={{flexShrink:0,padding:"9px 14px",borderRadius:999,border:`1px solid ${section===s.id?C.primary:C.border}`,background:section===s.id?C.primary:"#fff",color:section===s.id?"#fff":C.text,cursor:"pointer",fontSize:12,fontWeight:700,whiteSpace:"nowrap",transition:"all .15s"}}>{s.icon} {s.label}</button>
+          <button key={s.id} onClick={()=>setSection(s.id)} className="ud-headline" style={{flexShrink:0,padding:"10px 15px",borderRadius:999,border:`1px solid ${section===s.id?C.primary:C.border}`,background:section===s.id?C.primary:"#fff",color:section===s.id?"#fff":C.text,cursor:"pointer",fontSize:12,fontWeight:800,whiteSpace:"nowrap",transition:"all .15s"}}>{s.icon} {s.label}</button>
         ))}
       </div>
       {section==="protocol"&&(
@@ -1071,7 +1071,7 @@ function CABIGuideTab(){
             <div style={{opacity:.8,fontSize:12}}>{CABI_GUIDE.protocol.subtitle}</div>
           </div>
           {CABI_GUIDE.protocol.steps.map((step,i)=>(
-            <div key={i} style={{background:"#fff",borderRadius:14,padding:16,marginBottom:10,border:`1px solid ${step.border}`,boxShadow:C.shadow,animation:`fadeIn .3s ease ${i*.05}s both`}}>
+            <div key={i} style={{background:"#fff",borderRadius:18,padding:18,marginBottom:12,border:`1px solid ${step.border}`,boxShadow:C.shadow,animation:`fadeIn .3s ease ${i*.05}s both`}}>
               <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:10}}>
                 <div style={{width:42,height:42,borderRadius:"50%",background:step.bg,border:`2px solid ${step.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>{step.icon}</div>
                 <div style={{flex:1}}>
@@ -1945,13 +1945,13 @@ export default function UdbhidGoenda(){
             ):(
               <div style={{display:"flex",flexDirection:"column",gap:9}}>
                 {[...history].reverse().map((h,i)=>(
-                  <div key={i} style={{padding:"13px 14px",background:C.bgMuted,borderRadius:12,border:`1px solid ${C.border}`}}>
+                  <div key={i} style={{padding:"16px",background:C.bgMuted,borderRadius:20,border:`1px solid ${C.border}`,boxShadow:"0 6px 18px rgba(0,33,9,0.05)"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
-                      <div style={{fontWeight:700,fontSize:13,color:C.text}}>{h.crop?.split("/")[0]?.trim()}</div>
+                      <div className="ud-headline" style={{fontWeight:800,fontSize:17,color:C.text}}>{h.crop?.split("/")[0]?.trim()}</div>
                       <span style={{background:"#dcfce7",color:"#166534",borderRadius:10,padding:"2px 9px",fontSize:11,fontWeight:700}}>সম্পন্ন</span>
                     </div>
                     <div style={{color:C.textMuted,fontSize:11}}>📍 {h.district?.split("/")[0]?.trim()||"—"} · 📅 {h.date}</div>
-                    {h.resultPreview&&<div style={{color:C.textLight,fontSize:11,marginTop:5,lineHeight:1.5,overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{h.resultPreview}...</div>}
+                    {h.resultPreview&&<div style={{color:C.textLight,fontSize:12,marginTop:8,lineHeight:1.6,overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{h.resultPreview}...</div>}
                   </div>
                 ))}
                 <button onClick={()=>{setHistory([]);try{localStorage.removeItem("ud-history");}catch{}}} style={{padding:"9px",borderRadius:10,border:"1px solid #fecaca",background:"#fef2f2",color:C.danger,cursor:"pointer",fontSize:12,fontWeight:600,marginTop:3}}>🗑️ সব ইতিহাস মুছুন</button>
