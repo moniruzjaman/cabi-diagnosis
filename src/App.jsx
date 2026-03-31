@@ -1421,6 +1421,7 @@ export default function UdbhidGoenda(){
   const galleryRef=useRef();
   const cameraRef=useRef();
   const isDesktop=viewportWidth>=1100;
+  const isGameTab=activeTab==="game";
 
   useEffect(()=>{fetch("/pesticides.json").then(r=>r.json()).then(d=>setPesticideDb(d)).catch(()=>{});},[]);
   useEffect(()=>{
@@ -1649,9 +1650,9 @@ export default function UdbhidGoenda(){
     <div style={{minHeight:"100svh",background:C.bg,width:"100%",display:"flex",flexDirection:"column"}}>
 
       {/* ══ HEADER ══════════════════════════════════════════════════════════ */}
-      <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,padding:"12px 14px 0",position:"sticky",top:0,zIndex:100,boxShadow:C.shadowMd}}>
+      <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,padding:isGameTab?"8px 14px 0":"12px 14px 0",position:"sticky",top:0,zIndex:100,boxShadow:C.shadowMd}}>
         <div style={{maxWidth:1280,width:"100%",margin:"0 auto"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+        {!isGameTab&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
           <div style={{width:40,height:40,borderRadius:11,overflow:"hidden",flexShrink:0,boxShadow:"0 2px 10px rgba(0,0,0,0.3)",animation:"glow 3s ease-in-out infinite"}}>
             <img src="/cabi-logo.png" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
           </div>
@@ -1660,11 +1661,11 @@ export default function UdbhidGoenda(){
             <div style={{color:"rgba(255,255,255,0.65)",fontSize:10,letterSpacing:.2}}>Plant Detective · Bangladesh · CABI Plantwise</div>
           </div>
           {step===2&&result&&<button onClick={reset} style={{flexShrink:0,background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.3)",borderRadius:10,color:"#fff",padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>🔁 নতুন</button>}
-        </div>
+        </div>}
         {/* Tab bar */}
-        <div style={{display:"flex",overflowX:"auto",scrollbarWidth:"none",gap:0}}>
+        <div style={{display:"flex",overflowX:"auto",scrollbarWidth:"none",gap:0,justifyContent:isGameTab?"center":"flex-start"}}>
           {navTabs.map(t=>(
-            <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{flexShrink:0,padding:"9px 11px",border:"none",cursor:"pointer",background:"none",color:activeTab===t.id?"#fff":"rgba(255,255,255,0.55)",borderBottom:`2.5px solid ${activeTab===t.id?"#fff":"transparent"}`,fontSize:11.5,fontWeight:activeTab===t.id?700:400,transition:"all .15s",whiteSpace:"nowrap",letterSpacing:.1}}>
+            <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{flexShrink:0,padding:isGameTab?"11px 12px":"9px 11px",border:"none",cursor:"pointer",background:"none",color:activeTab===t.id?"#fff":"rgba(255,255,255,0.55)",borderBottom:`2.5px solid ${activeTab===t.id?"#fff":"transparent"}`,fontSize:isGameTab?12:11.5,fontWeight:activeTab===t.id?700:400,transition:"all .15s",whiteSpace:"nowrap",letterSpacing:.1}}>
               {t.icon} {t.label}
             </button>
           ))}
