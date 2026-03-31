@@ -1172,6 +1172,15 @@ function GameHub(){
   const[activeGame,setActiveGame]=useState(null);
   const[gameLoaded,setGameLoaded]=useState(false);
   const[gameErr,setGameErr]=useState(false);
+  const[gameViewportWidth,setGameViewportWidth]=useState(()=>typeof window!=="undefined"?window.innerWidth:1280);
+
+  useEffect(()=>{
+    if(typeof window==="undefined")return;
+    const onResize=()=>setGameViewportWidth(window.innerWidth);
+    onResize();
+    window.addEventListener("resize",onResize);
+    return()=>window.removeEventListener("resize",onResize);
+  },[]);
 
   const GAMES=[
     {
@@ -1217,17 +1226,21 @@ function GameHub(){
       badge:"🌱 শুরু করুন",
     },
   ];
+  const gameStageDesktop=gameViewportWidth>=980;
+  const gameStageTablet=gameViewportWidth>=700;
 
   if(activeGame){
     const game=GAMES.find(g=>g.id===activeGame);
     return(
-      <div style={{display:"flex",flexDirection:"column",height:"calc(100svh - 110px)"}}>
+      <div style={{position:"fixed",inset:0,zIndex:220,background:"linear-gradient(180deg,#03160b 0%, #052412 34%, #eef6ef 34%, #f5fbf6 100%)",display:"flex",flexDirection:"column"}}>
+        <div style={{position:"absolute",top:-120,right:-80,width:320,height:320,borderRadius:"50%",background:`radial-gradient(circle, ${game.color}55 0%, transparent 70%)`,pointerEvents:"none"}} />
+        <div style={{position:"absolute",left:-120,bottom:-120,width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle, rgba(26,122,58,0.15) 0%, transparent 72%)",pointerEvents:"none"}} />
         {/* game header */}
-        <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",flexShrink:0}}>
+        <div style={{display:"flex",alignItems:gameStageTablet?"center":"flex-start",gap:12,padding:gameStageTablet?"16px 18px 10px":"12px 12px 8px",flexShrink:0,flexWrap:"wrap",position:"relative",zIndex:1}}>
           <button onClick={()=>{setActiveGame(null);setGameLoaded(false);setGameErr(false);}} style={{width:36,height:36,borderRadius:10,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0,boxShadow:C.shadow}}>←</button>
-          <div style={{flex:1}}>
-            <div style={{fontWeight:800,fontSize:14,color:C.primaryDark}}>{game.icon} {game.title}</div>
-            <div style={{fontSize:11,color:C.textMuted}}>{game.subtitle}</div>
+          <div style={{flex:"1 1 260px",minWidth:0,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:20,padding:gameStageTablet?"12px 14px":"10px 12px",backdropFilter:"blur(18px)"}}>
+            <div style={{fontWeight:800,fontSize:gameStageTablet?18:15,color:"#fff"}}>{game.icon} {game.title}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.72)",marginTop:4}}>{game.subtitle}</div>
           </div>
           <a href={game.src} target="_blank" rel="noreferrer" style={{padding:"6px 12px",borderRadius:10,background:game.color,color:"#fff",textDecoration:"none",fontSize:12,fontWeight:700,flexShrink:0,boxShadow:C.shadow}}>↗ খুলুন</a>
         </div>
@@ -1283,7 +1296,7 @@ function GameHub(){
             </div>
           </div>
           <p style={{color:"rgba(255,255,255,0.9)",fontSize:13,lineHeight:1.6,marginBottom:12}}>খেলার ছলে শিখুন — ধানের রোগ নির্ণয়, কৃষি সিদ্ধান্ত, এবং CABI প্ল্যান্ট ক্লিনিক পরামর্শ পদ্ধতি।</p>
-          <div style={{display:"flex",gap:8}}>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
             <div style={{background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",borderRadius:10,padding:"6px 12px",fontSize:11,color:"#fff",fontWeight:600}}>🎮 ৩টি সিমুলেশন</div>
             <div style={{background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",borderRadius:10,padding:"6px 12px",fontSize:11,color:"#fff",fontWeight:600}}>🌾 বাংলায়</div>
             <div style={{background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",borderRadius:10,padding:"6px 12px",fontSize:11,color:"#fff",fontWeight:600}}>📱 মোবাইল বান্ধব</div>
@@ -1294,7 +1307,7 @@ function GameHub(){
       {/* Game cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:14}}>
         {GAMES.map((game,i)=>(
-          <div key={game.id} style={{background:"#fff",borderRadius:18,overflow:"hidden",boxShadow:C.shadowMd,border:`1px solid ${C.border}`,animation:`popIn .4s ease ${i*.1}s both`,cursor:"pointer",height:"100%",display:"flex",flexDirection:"column"}} onClick={()=>{setActiveGame(game.id);setGameLoaded(false);setGameErr(false);}}>
+          <div key={game.id} style={{background:"#fff",borderRadius:22,overflow:"hidden",boxShadow:C.shadowMd,border:`1px solid ${C.border}`,animation:`popIn .4s ease ${i*.1}s both`,cursor:"pointer",height:"100%",display:"flex",flexDirection:"column"}} onClick={()=>{setActiveGame(game.id);setGameLoaded(false);setGameErr(false);}}>
             {/* Card header with gradient */}
             <div style={{background:game.bg,padding:"18px 20px 16px",position:"relative",overflow:"hidden"}}>
               <div style={{position:"absolute",top:-10,right:-10,fontSize:60,opacity:.2}}>{game.icon}</div>
@@ -1309,6 +1322,18 @@ function GameHub(){
             </div>
             {/* Card body */}
             <div style={{padding:"14px 16px",display:"flex",flexDirection:"column",flex:1}}>
+              <div style={{marginBottom:14,borderRadius:18,background:"linear-gradient(135deg,#f6fbf7,#edf6ef)",border:`1px solid ${C.border}`,padding:12,display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+                <div>
+                  <div style={{fontSize:11,color:C.textMuted,marginBottom:4}}>Preview mode</div>
+                  <div style={{fontWeight:800,fontSize:13,color:C.primaryDark}}>Responsive wide game stage</div>
+                </div>
+                <div style={{width:84,height:52,borderRadius:12,background:"#dce8de",padding:5,boxShadow:"inset 0 0 0 1px rgba(0,96,40,0.08)"}}>
+                  <div style={{width:"100%",height:"100%",borderRadius:8,background:game.bg,position:"relative",overflow:"hidden"}}>
+                    <div style={{position:"absolute",left:6,right:6,top:6,height:5,borderRadius:999,background:"rgba(255,255,255,0.42)"}} />
+                    <div style={{position:"absolute",left:6,right:22,bottom:8,height:24,borderRadius:7,background:"rgba(255,255,255,0.18)"}} />
+                  </div>
+                </div>
+              </div>
               <p style={{fontSize:12,color:C.textMuted,lineHeight:1.6,marginBottom:12}}>{game.desc}</p>
               <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
                 {game.tags.map(tag=><span key={tag} style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:20,padding:"2px 9px",fontSize:10,color:C.textMuted,fontWeight:600}}>{tag}</span>)}
@@ -1318,7 +1343,7 @@ function GameHub(){
                   <div style={{fontSize:11,color:C.textMuted}}>⚡ <span style={{color:C.text,fontWeight:600}}>{game.difficulty}</span></div>
                   <div style={{fontSize:11,color:C.textMuted}}>⏱ <span style={{color:C.text,fontWeight:600}}>{game.duration}</span></div>
                 </div>
-                <button style={{background:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,border:"none",borderRadius:12,color:"#fff",padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",boxShadow:`0 3px 10px ${C.primary}44`}}>
+                <button style={{background:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,border:"none",borderRadius:14,color:"#fff",padding:"10px 18px",fontSize:13,fontWeight:800,cursor:"pointer",boxShadow:`0 8px 18px ${C.primary}33`}}>
                   খেলুন →
                 </button>
               </div>
