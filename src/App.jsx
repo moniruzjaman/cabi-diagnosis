@@ -1934,6 +1934,7 @@ export default function UdbhidGoenda(){
         {/* ── HISTORY ──────────────────────────────────────────────── */}
         {activeTab==="history"&&(
           <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+            <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",marginBottom:6}}>History</div>
             <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:14}}>📋 নির্ণয়ের ইতিহাস</div>
             {history.length===0?(
               <div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>
