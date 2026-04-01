@@ -1,7 +1,7 @@
 // Offline Diagnosis Module
 // Export the diagnostic engine functions for use in the main app
 
-const { diagnoseOffline, assessAbioticBiotic, applyExclusionGates, assessDiseaseTriangle, getFieldConfirmationMethods, generateIPMRecommendations } = require('./diagnosticEngine');
+import { diagnoseOffline, assessAbioticBiotic, applyExclusionGates, assessDiseaseTriangle, getFieldConfirmationMethods, generateIPMRecommendations } from './diagnosticEngine.js';
 
 // For browser usage, we'll attach to window object
 if (typeof window !== 'undefined') {
@@ -16,7 +16,7 @@ if (typeof window !== 'undefined') {
 }
 
 // Also export for ES6 modules
-module.exports = {
+export {
   diagnoseOffline,
   assessAbioticBiotic,
   applyExclusionGates,

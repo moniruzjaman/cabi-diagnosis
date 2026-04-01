@@ -2055,12 +2055,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                         </label>
                       </div>
                     </div>
-                    {diagnosisMode==="offline"&&(
-                      <div style={{background:"#fffbeb",border:`1px solid ${C.warning}`,borderRadius:8,padding:12,marginTop:8}}>
-                        <div style={{fontWeight:600,fontSize:12,color:C.warning}}⚠️ limitée ফუნksiyonালিটি</div>
-                        <div style={{fontSize:11,color:C.text}}>অফলাইন মোডে CABI বর্জন পদ্ধতি ও র 준ি ত্রিভুজ মূল্যায়ন ব্যবহার করা হয়। ছবি বিশ্লেষণ উপলব্ধ নয়।</div>
-                      </div>
-                    )}
+                  
                   </div>
                 </div>
 
