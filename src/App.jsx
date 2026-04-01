@@ -1039,131 +1039,258 @@ function LegacyLibrarySection(){
 
 // ─── CABI Guide tab ───────────────────────────────────────────────────────────
 function CABIGuideTab(){
-  const[section,setSection]=useState("protocol");
-  const sections=[{id:"protocol",label:"প্রোটোকল",icon:"📋"},{id:"etl",label:"ETL সীমা",icon:"📊"},{id:"nutrients",label:"পুষ্টি",icon:"🧪"},{id:"ipm",label:"IPM পিরামিড",icon:"🌿"},{id:"resistance",label:"প্রতিরোধ",icon:"🔄"}];
-  const resistanceData={
-    frac:[
-      {group:"FRAC 1 (MBC)",ai:"কার্বেন্ডাজিম, থিওফানেট",risk:"উচ্চ",rotate:"FRAC 3 বা 11 এর সাথে"},
-      {group:"FRAC 3 (Triazole)",ai:"ট্রাইসাইক্লাজোল, হেক্সাকোনাজোল",risk:"মাঝারি",rotate:"FRAC 11 বা 7 এর সাথে"},
-      {group:"FRAC 4 (PA)",ai:"মেটালাক্সিল-এম",risk:"উচ্চ",rotate:"FRAC M3 (মানকোজেব) মিশিয়ে"},
-      {group:"FRAC 11 (Strobilurin)",ai:"আজোক্সিস্ট্রোবিন, ট্রাইফ্লোক্সিস্ট্রোবিন",risk:"উচ্চ",rotate:"FRAC 3 সাথে, মৌসুমে ২ বার"},
-      {group:"FRAC M3 (Dithiocarbamate)",ai:"মানকোজেব, জিনেব",risk:"কম",rotate:"যেকোনো সিস্টেমিকের সাথে"},
-    ],
-    irac:[
-      {group:"IRAC 1A (Organophosphate)",ai:"ক্লোরপাইরিফস, ডাইমিথোয়েট",risk:"মাঝারি",rotate:"IRAC 3 বা 4 এর সাথে"},
-      {group:"IRAC 3 (Pyrethroid)",ai:"সাইপারমেথ্রিন, ডেলটামেথ্রিন",risk:"উচ্চ",rotate:"IRAC 1 বা 4 এর সাথে"},
-      {group:"IRAC 4A (Neonicotinoid)",ai:"ইমিডাক্লোপ্রিড, থিয়ামেথোক্সাম",risk:"উচ্চ",rotate:"IRAC 22 বা 28; মৌমাছি সতর্কতা"},
-      {group:"IRAC 22 (Pymetrozine)",ai:"পাইমেট্রোজিন",risk:"কম",rotate:"নিওনিকোটিনয়েডের বিকল্প"},
-      {group:"IRAC 28 (Diamide)",ai:"ক্লোরান্ট্রানিলিপ্রোল",risk:"মাঝারি",rotate:"মৌসুমে ২ বারের বেশি নয়"},
-    ]
-  };
-  return(
-    <div>
-      <div style={{display:"flex",gap:8,marginBottom:16,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
-        {sections.map(s=>(
-          <button key={s.id} onClick={()=>setSection(s.id)} className="ud-headline" style={{flexShrink:0,padding:"10px 15px",borderRadius:999,border:`1px solid ${section===s.id?C.primary:C.border}`,background:section===s.id?C.primary:"#fff",color:section===s.id?"#fff":C.text,cursor:"pointer",fontSize:12,fontWeight:800,whiteSpace:"nowrap",transition:"all .15s"}}>{s.icon} {s.label}</button>
-        ))}
-      </div>
-      {section==="protocol"&&(
-        <div>
-          <div className="ud-editorial-shadow" style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,borderRadius:24,padding:22,marginBottom:16,color:"#fff"}}>
-            <div style={{fontSize:24,marginBottom:8}}>🔬</div>
-            <div style={{fontWeight:800,fontSize:17,marginBottom:3}}>{CABI_GUIDE.protocol.title}</div>
-            <div style={{opacity:.8,fontSize:12}}>{CABI_GUIDE.protocol.subtitle}</div>
-          </div>
-          {CABI_GUIDE.protocol.steps.map((step,i)=>(
-            <div key={i} style={{background:"#fff",borderRadius:18,padding:18,marginBottom:12,border:`1px solid ${step.border}`,boxShadow:C.shadow,animation:`fadeIn .3s ease ${i*.05}s both`}}>
-              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
-                <div style={{width:46,height:46,borderRadius:16,background:step.bg,border:`2px solid ${step.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>{step.icon}</div>
-                <div style={{flex:1}}>
-                  <div style={{fontWeight:800,fontSize:14,color:step.color}}>ধাপ {step.num}: {step.title}</div>
-                  <div style={{fontSize:11,color:C.textMuted}}>{step.en}</div>
-                </div>
-              </div>
-              <p style={{fontSize:13,color:C.text,lineHeight:1.7,marginBottom:10}}>{step.desc}</p>
-              {step.points.map((pt,j)=><div key={j} style={{display:"flex",gap:8,fontSize:12,color:C.text,padding:"3px 0"}}><span style={{color:step.color,fontWeight:700,flexShrink:0}}>✓</span><span>{pt}</span></div>)}
-            </div>
-          ))}
-        </div>
-      )}
-      {section==="etl"&&(
-        <div>
-          <div style={{background:"#fffbeb",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #fcd34d"}}>
-            <div style={{fontWeight:700,fontSize:13,color:C.warning,marginBottom:3}}>📊 ETL কী?</div>
-            <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>ETL হলো সেই মাত্রা যখন কীটনাশক ব্যবহারের অর্থনৈতিক ন্যায্যতা থাকে। নিচে থাকলে প্রাকৃতিক নিয়ন্ত্রণই যথেষ্ট।</div>
-          </div>
-          {CABI_GUIDE.etl.map((e,i)=>(
-            <div key={i} style={{background:"#fff",borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-                <div><div style={{fontWeight:700,fontSize:13,color:C.primaryDark}}>{e.pest}</div><div style={{color:C.textMuted,fontSize:11}}>{e.en}</div></div>
-                <span style={{background:"#fef3c7",border:"1px solid #fcd34d",color:"#92400e",borderRadius:8,padding:"2px 8px",fontSize:10,fontWeight:700,flexShrink:0,marginLeft:8}}>ETL</span>
-              </div>
-              <div style={{background:"#fffbeb",borderRadius:8,padding:"7px 10px",marginBottom:7}}><div style={{fontSize:11,fontWeight:700,color:C.warning,marginBottom:2}}>ব্যবস্থার সীমা:</div><div style={{fontSize:12,color:C.text}}>{e.etl}</div></div>
-              <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                <div style={{fontSize:11,color:C.textMuted}}>📅 পর্যায়: <span style={{color:C.text,fontWeight:600}}>{e.stage}</span></div>
-                <div style={{fontSize:11,color:C.textMuted}}>🔍 <span style={{color:C.text,fontWeight:600}}>{e.monitor}</span></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      {section==="nutrients"&&(
-        <div>
-          <div style={{background:"#f0fdf4",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #bbf7d0"}}><div style={{fontWeight:700,fontSize:13,color:C.success,marginBottom:3}}>🧪 পুষ্টি উপাদান</div><div style={{fontSize:12,color:C.text,lineHeight:1.7}}>পুষ্টি অভাবের লক্ষণ প্রায়ই রোগের মতো দেখায়। CABI প্রোটোকলে এটি প্রথমেই বাদ দিতে হয়।</div></div>
-          {CABI_GUIDE.nutrients.map((n,i)=>(
-            <div key={i} style={{background:"#fff",borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${C.border}`,borderLeft:`4px solid ${n.color}`,boxShadow:C.shadow}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                <div style={{width:34,height:34,borderRadius:"50%",background:n.color+"20",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:13,color:n.color,flexShrink:0}}>{n.name.match(/\((.*?)\)/)?.[1]||n.name[0]}</div>
-                <div><div style={{fontWeight:800,fontSize:14,color:C.text}}>{n.name}</div><div style={{fontSize:11,color:C.textMuted}}>{n.en}</div></div>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:9}}>
-                <div style={{background:"#fef2f2",borderRadius:8,padding:9}}><div style={{fontSize:10,fontWeight:700,color:C.danger,marginBottom:3}}>🔴 অভাব</div><div style={{fontSize:11,color:C.text,lineHeight:1.6}}>{n.deficiency}</div></div>
-                <div style={{background:"#fff7ed",borderRadius:8,padding:9}}><div style={{fontSize:10,fontWeight:700,color:C.warning,marginBottom:3}}>🟡 আধিক্য</div><div style={{fontSize:11,color:C.text,lineHeight:1.6}}>{n.excess}</div></div>
-              </div>
-              <div style={{background:"#f0fdf4",borderRadius:8,padding:9,marginBottom:7}}><div style={{fontSize:10,fontWeight:700,color:C.success,marginBottom:2}}>✅ প্রতিকার</div><div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{n.fix}</div></div>
-              <div style={{fontSize:11,color:C.textMuted}}>🌾 {n.crops.join(", ")}</div>
-            </div>
-          ))}
-        </div>
-      )}
-      {section==="ipm"&&(
-        <div>
-          <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,borderRadius:16,padding:18,marginBottom:12,color:"#fff"}}><div style={{fontWeight:800,fontSize:15,marginBottom:3}}>🌿 IPM পিরামিড</div><div style={{opacity:.8,fontSize:12}}>Integrated Pest Management — সমন্বিত বালাই ব্যবস্থাপনা</div></div>
-          {[...CABI_GUIDE.ipm_pyramid].reverse().map((level,i)=>(
-            <div key={i} style={{background:"#fff",borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${C.border}`,borderLeft:`4px solid ${level.color}`,boxShadow:C.shadow}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:9}}>
-                <div style={{width:30,height:30,borderRadius:"50%",background:level.color+"20",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:13,color:level.color,flexShrink:0}}>{level.level}</div>
-                <div style={{fontWeight:700,fontSize:13,color:level.color,flex:1}}>{level.label}</div>
-                {level.level===4&&<span style={{background:"#fef2f2",border:"1px solid #fecaca",color:C.danger,borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>শেষ উপায়</span>}
-                {level.level===1&&<span style={{background:"#f0fdf4",border:"1px solid #bbf7d0",color:C.success,borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>সবার আগে</span>}
-              </div>
-              {level.items.map((item,j)=>(
-                <div key={j} style={{display:"flex",gap:8,padding:"4px 0",borderBottom:j<level.items.length-1?`1px dashed ${C.border}`:"none"}}><span style={{color:level.color,fontWeight:700,flexShrink:0}}>✓</span><span style={{fontSize:12,color:C.text}}>{item}</span></div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-      {section==="resistance"&&(
-        <div>
-          <div style={{background:"#fff7ed",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #fed7aa"}}><div style={{fontWeight:700,fontSize:13,color:C.warning,marginBottom:3}}>🔄 প্রতিরোধ ব্যবস্থাপনা</div><div style={{fontSize:12,color:C.text,lineHeight:1.7}}>একই গ্রুপের কীটনাশক বারবার ব্যবহারে প্রতিরোধ গড়ে ওঠে।</div></div>
-          {["frac","irac"].map(type=>(
-            <div key={type}>
-              <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,margin:"12px 0 8px"}}>{type==="frac"?"ছত্রাকনাশক (FRAC)":"কীটনাশক (IRAC)"}</div>
-              {resistanceData[type].map((f,i)=>(
-                <div key={i} style={{background:"#fff",borderRadius:10,padding:12,marginBottom:7,border:`1px solid ${C.border}`}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:5}}>
-                    <div style={{fontWeight:700,fontSize:12,color:C.text,flex:1}}>{f.group}</div>
-                    <span style={{background:f.risk==="উচ্চ"?"#fef2f2":f.risk==="কম"?"#f0fdf4":"#fffbeb",border:`1px solid ${f.risk==="উচ্চ"?"#fecaca":f.risk==="কম"?"#bbf7d0":"#fed7aa"}`,color:f.risk==="উচ্চ"?C.danger:f.risk==="কম"?C.success:C.warning,borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700,flexShrink:0,marginLeft:6}}>{f.risk}</span>
-                  </div>
-                  <div style={{fontSize:11,color:C.textMuted,marginBottom:3}}>উদাহরণ: {f.ai}</div>
-                  <div style={{fontSize:11,color:C.primary,fontWeight:600}}>🔄 {f.rotate}</div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
+   const[section,setSection]=useState("protocol");
+   const[database,setDatabase]=useState(null);
+   const[loading,setLoading]=useState(true);
+   
+   useEffect(()=>{
+     fetch('/database.json')
+       .then(res=>res.json())
+       .then(data=>{
+         setDatabase(data);
+         setLoading(false);
+       })
+       .catch(err=>{
+         console.error('Failed to load database:', err);
+         setLoading(false);
+       });
+   },[]);
+   
+   const sections=[{id:"protocol",label:"প্রোটোকল",icon:"📋"},{id:"etl",label:"ETL সীমা",icon:"📊"},{id:"nutrients",label:"পুষ্টি",icon:"🧪"},{id:"ipm",label:"IPM পিরামিড",icon:"🌿"},{id:"resistance",label:"প্রতিরোধ",icon:"🔄"}];
+   const resistanceData={
+     frac:[
+       {group:"FRAC 1 (MBC)",ai:"কার্বেন্ডাজিম, থিওফানেট",risk:"উচ্চ",rotate:"FRAC 3 বা 11 এর ساتھ"},
+       {group:"FRAC 3 (Triazole)",ai:"ট্রাইসাইক্লাজোল, হেক্সাকোনাজোল",risk:"মাঝারি",rotate:"FRAC 11 বা 7 এর ساتھ"},
+       {group:"FRAC 4 (PA)",ai:"মেটালাক্সিল-এম",risk:"উচ্চ",rotate:"FRAC M3 (মানকোজেব) মিশিয়ে"},
+       {group:"FRAC 11 (Strobilurin)",ai:"আজোক্সিস্ট্রোবিন, ট্রাইফ্লোক্সিস্ট্রোবিন",risk:"উচ্চ",rotate:"FRAC 3 ساتھ, মৌসুমে ২ বার"},
+       {group:"FRAC M3 (Dithiocarbamate)",ai:"মানকোজেব, জিনেব",risk:"কম",rotate:"যেকোনো সিস্টেমিকের সাথে"},
+     ],
+      irac:[
+        {group:"IRAC 1A (Organophosphate)",ai:"ক্লোরপাইরিফস, ডাইমিথোয়েট",risk:"মাঝারি",rotate:"IRAC 3 বা 4 এর সাথে"},
+        {group:"IRAC 3 (Pyrethroid)",ai:"সাইপারমেথ্রিন, ডেলটামেথ্রিন",risk:"উচ্চ",rotate:"IRAC 1 বা 4 এর সাথে"},
+        {group:"IRAC 4A (Neonicotinoid)",ai:"ইমিডাক্লোপ্রিড, থিয়ামেথók্সাম",risk:"উচ্চ",rotate:"IRAC 22 বা 28; মৌমাছি সতর্কতা"},
+        {group:"IRAC 22 (Pymetrozine)",ai:"পাইমেট্রোজিন",risk:"কম",rotate:"নিম্যের বিকল্প"},
+        {group:"IRAC 28 (Diamide)",ai:"ক্লোরান্ট্রানিলিপ্রোল",risk:"মাঝারি",rotate:"মৌসুমে ২ বারের বেশি নয়"},
+      ]
+   };
+
+   // Function to get relevant images based on section
+   const getRelevantImages = (db, sectionId) => {
+     if (!db?.diagnostic_keys) return [];
+     
+     // Map section IDs to symptom categories in database
+     const sectionToSymptomMap = {
+       protocol: null, // Show general images for protocol
+       etl: ["Drying/necrosis/blight", "Leaf spot", "Wilt"],
+       nutrients: ["Yellowing of leaves", "Distortion of leaves"],
+       ipm: ["Leaf spot", "Wilt", "Galls"],
+       resistance: null
+     };
+     
+     const targetSymptoms = sectionToSymptomMap[sectionId];
+     if (!targetSymptoms) return [];
+     
+     return db.diagnostic_keys
+       .filter(page => 
+         targetSymptoms.some(symptom => 
+           page.symptom_category && 
+           page.symptom_category.toLowerCase().includes(symptom.toLowerCase())
+         )
+       )
+       .flatMap(page => page.images || [])
+       .slice(0, 3); // Return at most 3 images
+   };
+
+   return(
+     <div>
+       <div style={{display:"flex",gap:8,marginBottom:16,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
+         {sections.map(s=>(
+           <button key={s.id} onClick={()=>setSection(s.id)} className="ud-headline" style={{flexShrink:0,padding:"10px 15px",borderRadius:999,border:`1px solid ${section===s.id?C.primary:C.border}`,background:section===s.id?C.primary:"#fff",color:section===s.id?"#fff":C.text,cursor:"pointer",fontSize:12,fontWeight:800,whiteSpace:"nowrap",transition:"all .15s"}}>{s.icon} {s.label}</button>
+         ))}
+       </div>
+       {section==="protocol"&&(
+         <div>
+           <div className="ud-editorial-shadow" style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,borderRadius:24,padding:22,marginBottom:16,color:"#fff"}}>
+             <div style={{fontSize:24,marginBottom:8}}>🔬</div>
+             <div style={{fontWeight:800,fontSize:17,marginBottom:3}}>{CABI_GUIDE.protocol.title}</div>
+             <div style={{opacity:.8,fontSize:12}}>{CABI_GUIDE.protocol.subtitle}</div>
+           </div>
+           {CABI_GUIDE.protocol.steps.map((step,i)=>(
+             <div key={i} style={{background:"#fff",borderRadius:18,padding:18,marginBottom:12,border:`1px solid ${step.border}`,boxShadow:C.shadow,animation:`fadeIn .3s ease ${i*.05}s both`}}>
+               <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+                 <div style={{width:46,height:46,borderRadius:16,background:step.bg,border:`2px solid ${step.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>{step.icon}</div>
+                 <div style={{flex:1}}>
+                   <div style={{fontWeight:800,fontSize:14,color:step.color}}>ধাপ {step.num}: {step.title}</div>
+                   <div style={{fontSize:11,color:C.textMuted}}>{step.en}</div>
+                 </div>
+               </div>
+               <p style={{fontSize:13,color:C.text,lineHeight:1.7,marginBottom:10}}>{step.desc}</p>
+               {step.points.map((pt,j)=><div key={j} style={{display:"flex",gap:8,fontSize:12,color:C.text,padding:"3px 0"}}><span style={{color:step.color,fontWeight:700,flexShrink:0}}>✓</span><span>{pt}</span></div>)}
+             </div>
+           ))}
+           {/* Add reference images for protocol section */}
+           {!loading && database && (
+             <div style={{marginTop:20}}>
+               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🔍 সごめんなさい načewskiprzed</div>
+               <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
+                 {getRelevantImages(database, "protocol").map((img, index)=>( 
+                   <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
+                     <img src={`/images/${img}`} alt={`Reference ${index+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
+         </div>
+       )}
+       {section==="etl"&&(
+         <div>
+           <div style={{background:"#fffbeb",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #fcd34d"}}>
+             <div style={{fontWeight:700,fontSize:13,color:C.warning,marginBottom:3}}>📊 ETL কী?</div>
+             <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>ETL হলো সেই মাত্রা যখন কীটনাশক ব্যবহারের অর্থনৈতিক ন্যায্যতা থাকে। নিচে থাকলে প্রাকৃতিক নিয়ন্ত্রণই যথেষ্ট।</div>
+           </div>
+           {CABI_GUIDE.etl.map((e,i)=>(
+             <div key={i} style={{background:"#fff",borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                 <div><div style={{fontWeight:700,fontSize:13,color:C.primaryDark}}>{e.pest}</div><div style={{color:C.textMuted,fontSize:11}}>{e.en}</div></div>
+                 <span style={{background:"#fef3c7",border:"1px solid #fcd34d",color:"#92400e",borderRadius:8,padding:"2px 8px",fontSize:10,fontWeight:700,flexShrink:0,marginLeft:8}}>ETL</span>
+               </div>
+               <div style={{background:"#fffbeb",borderRadius:8,padding:"7px 10px",marginBottom:7}}><div style={{fontSize:11,fontWeight:700,color:C.warning,marginBottom:2}}>ব্যবস্থার সীমা:</div><div style={{fontSize:12,color:C.text}}>{e.etl}</div></div>
+               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                 <div style={{fontSize:11,color:C.textMuted}}>📅 পর্যায়: <span style={{color:C.text,fontWeight:600}}>{e.stage}</span></div>
+                 <div style={{fontSize:11,color:C.textMuted}}>🔍 <span style={{color:C.text,fontWeight:600}}>{e.monitor}</span></div>
+               </div>
+             </div>
+           ))}
+           {/* Add reference images for ETL section */}
+           {!loading && database && (
+             <div style={{marginTop:20}}>
+               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ ETL সম্পর্কিত संदर्भ ছবি</div>
+               <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
+                 {getRelevantImages(database, "etl").map((img, index)=>( 
+                   <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
+                     <img src={`/images/${img}`} alt={`ETL Reference ${index+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
+         </div>
+       )}
+       {section==="nutrients"&&(
+         <div>
+           <div style={{background:"#f0fdf4",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #bbf7d0"}}><div style={{fontWeight:700,fontSize:13,color:C.success,marginBottom:3}}>🧪 পুষ্টি উপাদান</div><div style={{fontSize:12,color:C.text,lineHeight:1.7}}>পুষ্টি অভাবের লক্ষণ প্রায়ই রোগের মতো দেখায়। CABI প্রোটোকলে এটি প্রথমেই বাদ দিতে হয়।</div></div>
+           {CABI_GUIDE.nutrients.map((n,i)=>(
+             <div key={i} style={{background:"#fff",borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${C.border}`,borderLeft:`4px solid ${n.color}`,boxShadow:C.shadow}}>
+               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                 <div style={{width:34,height:34,borderRadius:"50%",background:n.color+"20",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:13,color:n.color,flexShrink:0}}>{n.name.match(/\((.*?)\)/)?.[1]||n.name[0]}</div>
+                 <div><div style={{fontWeight:800,fontSize:14,color:C.text}}>{n.name}</div><div style={{fontSize:11,color:C.textMuted}}>{n.en}</div></div>
+               </div>
+               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:9}}>
+                 <div style={{fontSize:11,color:C.textMuted}}>অভাবের লক্ষণ:</div><div style={{fontSize:12,color:C.text}}>{n.deficiency}</div>
+                 <div style={{fontSize:11,color:C.textMuted}}>অতিক্রমের লক্ষণ:</div><div style={{fontSize:12,color:C.text}}>{n.excess}</div>
+               </div>
+               <div style={{fontSize:11,color:C.textMuted}}>শ말로 পূরণ:</div><div style={{fontSize:12,color:C.text}}>{n.fix}</div>
+                  {n.crops && (
+                    <div>
+                      <div style={{fontSize:11,color:C.textMuted}}>প্রভাবিত ফসল:</div>
+                      <div style={{fontSize:12,color:C.text}}>{n.crops.join(", ")}</div>
+                    </div>
+                  )}
+             </div>
+           ))}
+           {/* Add reference images for nutrients section */}
+           {!loading && database && (
+             <div style={{marginTop:20}}>
+               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ পুষ্টি-abnormalitetে σχετية छवियां</div>
+               <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
+                 {getRelevantImages(database, "nutrients").map((img, index)=>( 
+                   <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
+                     <img src={`/images/${img}`} alt={`Nutrient Reference ${index+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
+         </div>
+       )}
+       {section==="ipm"&&(
+         <div>
+           <div style={{display:"flex",gap:10,marginBottom:12}}>
+             {[...CABI_GUIDE.ipm_pyramid].reverse().map((level,i)=>(
+               <div key={i} style={{flex:1,minWidth:0,background:level.color+"15",borderRadius:12,padding:12,position:"relative"}}>
+                 <div style={{position:"absolute",top:-6,left:12,background:level.color,color:"#fff",borderRadius:10,padding:"2px 6px",fontSize:10,fontWeight:700}}>LEVEL {level.level}</div>
+                 <div style={{fontWeight:800,fontSize:14,color:level.color,marginBottom:8}}>{level.label}</div>
+                 <div style={{fontSize:11,color:C.text,lineHeight:1.6,marginBottom:10}}>{level.items.map((item,j)=><div key={j} style={{display:"flex",alignItems:"start",gap:6,marginBottom:4}}><span style={{color:level.color,flexShrink:0}}>▸</span><span>{item}</span></div>)}</div>
+               </div>
+             ))}
+           </div>
+           {/* Add reference images for IPM section */}
+           {!loading && database && (
+             <div style={{marginTop:20}}>
+               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ IPM পিরামিডের संदर्भ छवियां</div>
+               <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
+                 {getRelevantImages(database, "ipm").map((img, index)=>( 
+                   <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
+                     <img src={`/images/${img}`} alt={`IPM Reference ${index+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
+         </div>
+       )}
+       {section==="resistance"&&(
+         <div>
+           <div style={{background:"#faf5ff",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #e9d5ff"}}>
+             <div style={{fontWeight:700,fontSize:13,color:"#7c3aed",marginBottom:3}}>🔄 PRC/IRAC রোটেশন গাইড</div>
+             <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>PRC ও IRAC gruppi ప్ర 따라 রাসায়নিকs ব্যবহার করে রোগ/পোকা-নিয়ন্ত্র ССР algunosprotocols</div>
+           </div>
+           <div style={{display:"grid",gap:10,marginBottom:12}}>
+             <div>
+               <div style={{fontWeight:700,fontSize:13,color:"#7c3aed",marginBottom:4}}>FRAC (ছত্রাকনাশক)</div>
+               <div style={{background:"#fff",borderRadius:10,padding:12}}>
+                 {resistanceData.frac.map((f,i)=>(
+                   <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:i===resistanceData.frac.length-1?"none":`1px solid ${C.border}`}}>
+                     <div><div style={{fontSize:11,color:C.textMuted}}>{f.group}</div><div style={{fontSize:10,color:C.text}}>{f.ai}</div></div>
+                     <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                       <span style={{background:"#fed7aa",borderRadius:4,padding:"1px 4px",fontSize:9,color:C.warning}}>{f.risk}</span>
+                       <span style={{fontSize:10,color:C.text}}>{f.rotate}</span>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
+             <div>
+               <div style={{fontWeight:700,fontSize:13,color:"#7c3aed",marginBottom:4}}>IRAC (কীটনাশক)</div>
+               <div style={{background:"#fff",borderRadius:10,padding:12}}>
+                 {resistanceData.irac.map((i,idx)=>( 
+                   <div key={idx} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:idx===resistanceData.irac.length-1?"none":`1px solid ${C.border}`}}>
+                     <div><div style={{fontSize:11,color:C.textMuted}}>{i.group}</div><div style={{fontSize:10,color:C.text}}>{i.ai}</div></div>
+                     <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                       <span style={{background:"#fed7aa",borderRadius:4,padding:"1px 4px",fontSize:9,color:C.warning}}>{i.risk}</span>
+                       <span style={{fontSize:10,color:C.text}}>{i.rotate}</span>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           </div>
+           {/* Add reference images for resistance section */}
+           {!loading && database && (
+             <div style={{marginTop:20}}>
+               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ PRC/IRAC রোটেশনের संदर्भ छवियां</div>
+               <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
+                 {getRelevantImages(database, "resistance").map((img, index)=>( 
+                   <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
+                     <img src={`/images/${img}`} alt={`Resistance Reference ${index+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
+         </div>
+       )}
     </div>
   );
 }
