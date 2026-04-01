@@ -23,6 +23,10 @@ const GLOBAL_STYLE = `
   .ud-headline{font-family:'Plus Jakarta Sans','Noto Sans Bengali',sans-serif}
   .ud-editorial-shadow{box-shadow:0 16px 44px rgba(0,33,9,0.10)}
 `;
+/* Reduced header/footer heights for better game visibility */
+const REDUCED_HEADER_HEIGHT = `60px`;
+const REDUCED_FOOTER_HEIGHT = `35px`;
+`;
 if(typeof document!=="undefined"&&!document.getElementById("ud-gs")){
   const s=document.createElement("style");s.id="ud-gs";s.textContent=GLOBAL_STYLE;document.head.appendChild(s);
 }
@@ -646,7 +650,7 @@ function HomeTab({setActiveTab,history,weather,locationName}){
   ];
   return(
     <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
-      <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary},${C.primaryLight})`,borderRadius:24,padding:24,color:"#fff",position:"relative",overflow:"hidden"}}>
+       <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary},${C.primaryLight})`,borderRadius:20,padding:"16px 12px",color:"#fff",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",right:-24,top:-12,fontSize:110,opacity:.1}}>🌿</div>
         <div style={{maxWidth:720,position:"relative"}}>
           <div style={{fontWeight:800,fontSize:28,lineHeight:1.15,marginBottom:8}}>উদ্ভিদ গোয়েন্দা</div>
@@ -1475,19 +1479,19 @@ function GameHub(){
         gameStageTablet={gameStageTablet}
       />
     );
-    return(
-      <div style={{position:"fixed",inset:0,zIndex:220,background:"linear-gradient(180deg,#03160b 0%, #052412 34%, #eef6ef 34%, #f5fbf6 100%)",display:"flex",flexDirection:"column"}}>
-        <div style={{position:"absolute",top:-120,right:-80,width:320,height:320,borderRadius:"50%",background:`radial-gradient(circle, ${game.color}55 0%, transparent 70%)`,pointerEvents:"none"}} />
-        <div style={{position:"absolute",left:-120,bottom:-120,width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle, rgba(26,122,58,0.15) 0%, transparent 72%)",pointerEvents:"none"}} />
-        {/* game header */}
-        <div style={{display:"flex",alignItems:gameStageTablet?"center":"flex-start",gap:12,padding:gameStageTablet?"16px 18px 10px":"12px 12px 8px",flexShrink:0,flexWrap:"wrap",position:"relative",zIndex:1}}>
-          <button onClick={()=>{setActiveGame(null);setGameLoaded(false);setGameErr(false);}} style={{width:36,height:36,borderRadius:10,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0,boxShadow:C.shadow}}>←</button>
-          <div style={{flex:"1 1 260px",minWidth:0,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:20,padding:gameStageTablet?"12px 14px":"10px 12px",backdropFilter:"blur(18px)"}}>
-            <div style={{fontWeight:800,fontSize:gameStageTablet?18:15,color:"#fff"}}>{game.icon} {game.title}</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,0.72)",marginTop:4}}>{game.subtitle}</div>
-          </div>
-          <a href={game.src} target="_blank" rel="noreferrer" style={{padding:"6px 12px",borderRadius:10,background:game.color,color:"#fff",textDecoration:"none",fontSize:12,fontWeight:700,flexShrink:0,boxShadow:C.shadow}}>↗ খুলুন</a>
-        </div>
+     return(
+       <div style={{position:"fixed",inset:0,zIndex:220,background:"linear-gradient(180deg,#03160b 0%, #052412 30%, #eef6ef 30%, #f5fbf6 100%)",display:"flex",flexDirection:"column",height:"100vh"}}>
+         <div style={{position:"absolute",top:-80,right:-60,width:200,height:200,borderRadius:"50%",background:`radial-gradient(circle, ${game.color}55 0%, transparent 70%)`,pointerEvents:"none"}} />
+         <div style={{position:"absolute",left:-80,bottom:-80,width:180,height:180,borderRadius:"50%",background:"radial-gradient(circle, rgba(26,122,58,0.15) 0%, transparent 72%)",pointerEvents:"none"}} />
+         {/* game header */}
+         <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",flexShrink:0,flexWrap:"wrap",position:"relative",zIndex:1,borderBottom:`1px solid ${C.border}`}}>
+           <button onClick={()=>{setActiveGame(null);setGameLoaded(false);setGameErr(false);}} style={{width:32,height:32,borderRadius:8,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,boxShadow:C.shadow}}>←</button>
+           <div style={{flex:1,minWidth:0,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:16,padding:"8px 10px",backdropFilter:"blur(12px)"}}>
+             <div style={{fontWeight:700,fontSize:14,color:"#fff"}}>{game.icon} {game.title}</div>
+             <div style={{fontSize:10,color:"rgba(255,255,255,0.6)",marginTop:2}}>{game.subtitle}</div>
+           </div>
+           <a href={game.src} target="_blank" rel="noreferrer" style={{padding:"4px 8px",borderRadius:8,background:game.color,color:"#fff",textDecoration:"none",fontSize:11,fontWeight:600,flexShrink:0,boxShadow:C.shadow}}>↗ খুলুন</a>
+         </div>
         {/* loading state */}
         {!gameLoaded&&!gameErr&&(
           <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#fff",borderRadius:16,border:`1px solid ${C.border}`,gap:14,padding:24}}>
@@ -2425,10 +2429,10 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       </div>
 
         {!isGameTab&&<FeedbackPanel context={feedbackContext} summary={feedbackSummary} userEmail={userEmail} onEmailChange={setUserEmail} visitorStats={visitorStats} visitorId={visitorId}/>}
-      {/* Footer */}
-      {!isGameTab&&<div style={{textAlign:"center",padding:"7px",color:C.textLight,fontSize:9.5,borderTop:`1px solid ${C.border}`,background:"#fff",letterSpacing:.3}}>
-        উদ্ভিদ গোয়েন্দা · CABI Plantwise · BRRI · BARI · DAE Bangladesh
-      </div>}
+       {/* Footer - Optimized for better spacing */}
+       {!isGameTab&&<div style={{textAlign:"center",padding:"8px 4px",color:C.textLight,fontSize:10,borderTop:`1px solid ${C.border}`,background:"#fff",letterSpacing:0.5}}>
+         উদ্ভিদ গোয়েন্দা · CABI Plantwise · BRRI · BARI · DAE Bangladesh
+       </div>}
     </div>
   );
 }
