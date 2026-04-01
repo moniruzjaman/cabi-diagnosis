@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { diagnoseOffline } from "./offline/index";
 
 // ─── Global styles ────────────────────────────────────────────────────────────
 const GLOBAL_STYLE = `
@@ -1497,9 +1498,11 @@ function GameHub(){
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function UdbhidGoenda(){
-  const[activeTab,setActiveTab]=useState("home");
+const[activeTab,setActiveTab]=useState("home");
   const[step,setStep]=useState(1);
   const[form,setForm]=useState({crop:"",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""});
+  const[diagnosisMode,setDiagnosisMode]=useState("online"); // "online" or "offline"
+  const[offlineDiagnosis,setOfflineDiagnosis]=useState(null);
   const[showMoreCrops,setShowMoreCrops]=useState(false);
   const[expandedGroup,setExpandedGroup]=useState(null);
   const[image,setImage]=useState(null);
@@ -1672,25 +1675,182 @@ export default function UdbhidGoenda(){
   };
   const handleImage=(e)=>handleImageFile(e.target.files?.[0]);
 
-  const handleSubmit=async()=>{
+const handleSubmit=async()=>{
     if(!form.crop||!form.symptoms){setError("অনুগ্রহ করে ফসল এবং লক্ষণ উভয়ই পূরণ করুন।");return;}
     setLoading(true);setError(null);setResult(null);setSeverity(null);setRecommendedProducts([]);
-    const uc=[];
-    if(imageBase64)uc.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:imageBase64}});
-    uc.push({type:"text",text:`Crop:${form.crop}\nDistrict:${form.district||locationName||"N/A"}\nSeason:${form.season||"N/A"}\nGrowth:${form.growthStage||"N/A"}\nDuration:${form.duration||"N/A"}\nArea:${form.affectedArea||"N/A"}\nSymptoms:${form.symptoms}\n${imageBase64?"Photo attached.":"No photo."}\n${weatherPromptText(weather,locationName)}\n\nDiagnose using CABI Plantwise 5-step protocol. Use very simple Bangla for farmers. Avoid technical words unless you immediately explain them in plain language. Prefer short icon-led bullets and practical field actions.\n---BANGLA_SECTION---\n[Full Bangla]\n---END_BANGLA---\n---ENGLISH_SECTION---\n[Full English]\n---END_ENGLISH---`});
-    try{
-      const res=await fetch("/api/diagnose",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,messages:[{role:"user",content:uc}]})});
-      const data=await res.json();
-      if(!res.ok)throw new Error(data?.error||`HTTP ${res.status}`);
-      const raw=data.content?.map(b=>b.text||"").join("\n")||"";
-      const bn=(raw.match(/---BANGLA_SECTION---([\s\S]*?)---END_BANGLA---/)||[])[1]?.trim()||raw;
-      const en=(raw.match(/---ENGLISH_SECTION---([\s\S]*?)---END_ENGLISH---/)||[])[1]?.trim()||"";
-      setResult({bn,en});setProvider(data.provider||null);setStep(2);
-      const entry={crop:form.crop,district:form.district,date:new Date().toLocaleDateString("bn-BD"),resultPreview:bn.slice(0,80)};
-      const nh=[...history,entry].slice(-10);setHistory(nh);try{localStorage.setItem("ud-history",JSON.stringify(nh));}catch{}
-      setTimeout(()=>resultRef.current?.scrollIntoView({behavior:"smooth"}),100);
-    }catch(err){setError(`রোগ নির্ণয়ে সমস্যা: ${err.message}`);}
-    finally{setLoading(false);}
+    
+    if (diagnosisMode === "offline") {
+      // Use offline diagnosis
+      try {
+        // Prepare input data for offline diagnosis
+        const inputData = {
+          symptoms: {
+            leafSymptoms: form.symptoms,
+            distribution: form.affectedArea || "N/A",
+            progression: form.duration || "N/A",
+            signs: "N/A" // We could extract more specific signs from symptoms
+          },
+          hostInfo: {
+            varietySusceptibility: "medium", // Default - could be improved
+            growthStage: form.growthStage || "N/A"
+          },
+          pathogenInfo: {
+            inoculumPressure: "low", // Default - could be improved
+            recentHistory: "none" // Default - could be improved
+          },
+          envInfo: weather ? {
+            temp: weather.temp,
+            humidity: weather.humidity,
+            rainfall: weather.rain24h
+          } : null
+        };
+        
+        // Perform offline diagnosis
+        const offlineResult = diagnoseOffline(inputData);
+        
+        // Convert offline result to format compatible with existing result display
+        const banglaText = `
+---BANGLA_SECTION---
+## ১. CABI বর্জন পদ্ধতি অনুযায়ী বিশ্লেষণ
+**অ্যাবায়োটিক নাকি বায়োটিক:** ${offlineResult.abioticBiotic === "abiotic" ? "অবায়টিক (পরিবেশজ)" : offlineResult.abioticBiotic === "biotic" ? "বায়োটিক (জীবজিৎ)" : "নিশ্চিত নয়"}
+**বর্জন গেট ফলাফল:** ${offlineResult.excluded.length > 0 ? offlineResult.excluded.join(", ") : "কোনোcause বাদ দেয়নি"} || ${offlineResult.suspects.length > 0 ? offlineResult.suspects.join(", ") : "কোনোসন্দেহ নেই"}
+
+## ২. সম্ভাব্য রোগ / পোকার নাম
+**প্রাথমিক সন্দেহ:** ${offlineResult.primarySuspect}
+**বিকল্প সন্দেহ (যদি থাকে):** ${offlineResult.suspects.slice(1,3).length > 0 ? offlineResult.suspects.slice(1,3).join(" ; ") : "না"}
+**আস্থার মাত্রা:** ${offlineResult.confidence}
+
+## ৩. রোগ ত্রিভুজ মূল্যায়ন
+**পোষক (Host):** ${offlineResult.diseaseTriangle.host}
+**জীবাণু (Pathogen):** ${offlineResult.diseaseTriangle.pathogen}
+**পরিবেশ (Environment):** ${offlineResult.diseaseTriangle.environment}
+
+## ৪. মাঠে নিশ্চিতকরণের পদ্ধতি
+${offlineResult.fieldConfirmation.map((method, idx) => `${idx+1}. ${method}`).join("\n")}
+
+## ৫. তীব্রতা ও অর্থনৈতিক গুরুত্ব
+**ক্ষয়ক্ষতির মাত্রা:** মূল্যায়ন করতে필요
+**অর্থনৈতিক থ্রেশহোল্ড:** ${offlineResult.economicThreshold}
+
+## ৬. সমন্বিত বালাই ব্যবস্থাপনা (IPM)
+**কৃষি ব্যবস্থাপনা (সর্বোচ্চ অগ্রাধিকার):**
+${offlineResult.ipmRecommendations.cultural.map((item, idx) => `${idx+1}. ${item}`).join("\n")}
+**জৈবিক নিয়ন্ত্রণ:**
+${offlineResult.ipmRecommendations.biological.map((item, idx) => `${idx+1}. ${item}`).join("\n")}
+**রাসায়নিক (শেষ উপায় — FRAC/IRAC গ্রুপ উল্লেখসহ):**
+${offlineResult.ipmRecommendations.chemical.map((item, idx) => `${idx+1}. ${item}`).join("\n")}
+
+## ৭. প্রতিরোধ — পরবর্তী মৌসুম
+${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${item}`).join("\n")}
+
+## ৮. কখন DAE কর্মকর্তার পরামর্শ নেবেন
+- শুত মূল্যায়ন নিশ্চিৎ হলে
+- রोग দ্রুত প্রসারিত হলে
+- নিরাপদ কিমিয়ার ব্যবহারে হুমকি হলে
+---END_BANGLA---
+
+---ENGLISH_SECTION---
+## 1. CABI Exclusion Analysis
+**Abiotic vs Biotic:** ${offlineResult.abioticBiotic}
+**Exclusion Gates:** Excluded: ${offlineResult.excluded.join(", ")} | Suspects: ${offlineResult.suspects.join(", ")}
+
+## 2. Probable Diagnosis
+**Primary suspect:** ${offlineResult.primarySuspect}
+**Differential diagnosis:** ${offlineResult.suspects.slice(1,3).length > 0 ? offlineResult.suspects.slice(1,3).join(" ; ") : "None"}
+**Confidence level:** ${offlineResult.confidence}
+
+## 3. Disease Triangle Assessment
+**Host:** ${offlineResult.diseaseTriangle.host}
+**Pathogen:** ${offlineResult.diseaseTriangle.pathogen}
+**Environment:** ${offlineResult.diseaseTriangle.environment}
+**Risk Level:** ${offlineResult.diseaseTriangle.riskLevel}
+
+## 4. Field Confirmation Method
+${offlineResult.fieldConfirmation.map((method, idx) => `${idx+1}. ${method}`).join("\n")}
+
+## 5. Severity & Economic Importance
+**Damage level:** Assessment required
+**Economic threshold:** ${offlineResult.economicThreshold}
+
+## 6. IPM Recommendations
+**Cultural control (highest priority):**
+${offlineResult.ipmRecommendations.cultural.map((item, idx) => `${idx+1}. ${item}`).join("\n")}
+**Biological control:**
+${offlineResult.ipmRecommendations.biological.map((item, idx) => `${idx+1}. ${item}`).join("\n")}
+**Chemical — last resort (with FRAC/IRAC group):**
+${offlineResult.ipmRecommendations.chemical.map((item, idx) => `${idx+1}. ${item}`).join("\n")}
+
+## 7. Prevention — Next Season
+${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${item}`).join("\n")}
+
+## 8. When to Consult DAE
+- When initial assessment needs confirmation
+- When disease is rapidly spreading
+- When safe chemical application is uncertain
+---END_ENGLISH---
+`;
+        
+        setResult({
+          bn: banglaText.split("---END_BANGLA---")[0].replace("---BANGLA_SECTION---", "").trim(),
+          en: banglaText.split("---END_ENGLISH---")[1].replace("---ENGLISH_SECTION---", "").trim()
+        });
+        setProvider("Offline CABI Diagnostic Engine");
+        setStep(2);
+        
+        const entry = {
+          crop: form.crop,
+          district: form.district,
+          date: new Date().toLocaleDateString("bn-BD"),
+          resultPreview: banglaText.substring(0, 100)
+        };
+        const nh = [...history, entry].slice(-10);
+        setHistory(nh);
+        try { localStorage.setItem("ud-history", JSON.stringify(nh)); } catch {}
+        setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+      } catch (err) {
+        setError(`অফলাইন নিদানে সমস্যা: ${err.message}`);
+        console.error("Offline diagnosis error:", err);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+    
+    // Online diagnosis (existing code)
+    const uc = [];
+    if (imageBase64) uc.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: imageBase64 } });
+    uc.push({ 
+      type: "text", 
+      text: `Crop:${form.crop}\nDistrict:${form.district||locationName||"N/A"}\nSeason:${form.season||"N/A"}\nGrowth:${form.growthStage||"N/A"}\nDuration:${form.duration||"N/A"}\nArea:${form.affectedArea||"N/A"}\nSymptoms:${form.symptoms}\n${imageBase64?"Photo attached.":"No photo."}\n${weatherPromptText(weather,locationName)}\n\nDiagnose using CABI Plantwise 5-step protocol. Use very simple Bangla for farmers. Avoid technical words unless you immediately explain them in plain language. Prefer short icon-led bullets and practical field actions.\n---BANGLA_SECTION---\n[Full Bangla]\n---END_BANGLA---\n---ENGLISH_SECTION---\n[Full English]\n---END_ENGLISH---`} 
+    );
+    try {
+      const res = await fetch("/api/diagnose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          model: "claude-sonnet-4-20250514", 
+          max_tokens: 2000, 
+          messages: [{ role: "user", content: uc }] 
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      const raw = data.content?.map(b => b.text || "").join("\n") || "";
+      const bn = (raw.match(/---BANGLA_SECTION---([\s\S]*?)---END_BANGLA---/) || [])[1]?.trim() || raw;
+      const en = (raw.match(/---ENGLISH_SECTION---([\s\S]*?)---END_ENGLISH---/) || [])[1]?.trim() || "";
+      setResult({ bn, en });
+      setProvider(data.provider || null);
+      setStep(2);
+      const entry = { crop: form.crop, district: form.district, date: new Date().toLocaleDateString("bn-BD"), resultPreview: bn.slice(0, 80) };
+      const nh = [...history, entry].slice(-10);
+      setHistory(nh);
+      try { localStorage.setItem("ud-history", JSON.stringify(nh)); } catch {}
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    } catch (err) {
+      setError(`রোগ নির্ণয়ে সমস্যা: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const stopSpeaking=()=>{window.speechSynthesis?.cancel();setIsSpeaking(false);};
@@ -1864,6 +2024,44 @@ export default function UdbhidGoenda(){
                       ))}
                     </div>
                   )}
+                  
+                  {/* Diagnosis Mode Toggle */}
+                  <div style={{marginTop:16,paddingTop:12,borderTop:`1px solid ${C.border}`}}>
+                    <div style={{fontWeight:600,fontSize:13,color:C.text,marginBottom:8}}>নিদান মোড</div>
+                    <div style={{display:"flex",alignItems:"center",gap:16}}>
+                      <div style={{display:"flex",alignItems:"center",gap:4}}>
+                        <label style={{cursor:"pointer",userSelect:"none"}}>
+                          <input
+                            type="radio"
+                            name="diagnosisMode"
+                            value="online"
+                            checked={diagnosisMode==="online"}
+                            onChange={(e)=>setDiagnosisMode(e.target.value)}
+                            style={{margin:0,width:16,height:16}}
+                          />
+                          <span style={{fontSize:11,color:C.text}}>Online (AI-based)</span>
+                        </label>
+                        <div style={{width:1}}></div>
+                        <label style={{cursor:"pointer",userSelect:"none"}}>
+                          <input
+                            type="radio"
+                            name="diagnosisMode"
+                            value="offline"
+                            checked={diagnosisMode==="offline"}
+                            onChange={(e)=>setDiagnosisMode(e.target.value)}
+                            style={{margin:0,width:16,height:16}}
+                          />
+                          <span style={{fontSize:11,color:C.text}}>Offline (Rule-based)</span>
+                        </label>
+                      </div>
+                    </div>
+                    {diagnosisMode==="offline"&&(
+                      <div style={{background:"#fffbeb",border:`1px solid ${C.warning}`,borderRadius:8,padding:12,marginTop:8}}>
+                        <div style={{fontWeight:600,fontSize:12,color:C.warning}}⚠️ limitée ফუნksiyonালিটি</div>
+                        <div style={{fontSize:11,color:C.text}}>অফলাইন মোডে CABI বর্জন পদ্ধতি ও র 준ি ত্রিভুজ মূল্যায়ন ব্যবহার করা হয়। ছবি বিশ্লেষণ উপলব্ধ নয়।</div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* location/season */}
