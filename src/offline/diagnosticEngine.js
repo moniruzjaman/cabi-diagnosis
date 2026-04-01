@@ -203,114 +203,138 @@ function applyExclusionGates(abioticBiotic, symptoms) {
  * @param {Object} hostInfo - Host susceptibility data
  * @param {Object} pathogenInfo - Pathogen pressure data
  * @param {Object} envInfo - Environmental data (temperature, humidity, rainfall)
- * @returns {Object} - Disease triangle assessment
+ * @returns {Object} - Disease triangle assessment with field observation guidance
  */
 function assessDiseaseTriangle(hostInfo, pathogenInfo, envInfo) {
-  const assessment = {
-    host: "",
-    pathogen: "",
-    environment: "",
-    riskLevel: "low"
-  };
+   const assessment = {
+     host: "",
+     pathogen: "",
+     environment: "",
+     riskLevel: "low",
+     fieldObservationGuidance: [] // New field to guide users on what observations to collect
+   };
 
-  // Host assessment
-  if (hostInfo.varietySusceptibility === "high" || 
-      hostInfo.growthStage === "seedling" || 
-      hostInfo.growthStage === "vegetative") {
-    assessment.host = "High susceptibility due to variety and growth stage";
-    assessment.riskLevel = "medium";
-  } else {
-    assessment.host = "Moderate to low susceptibility";
-  }
+   // Host assessment
+   if (hostInfo.varietySusceptibility === "high" || 
+       hostInfo.growthStage === "seedling" || 
+       hostInfo.growthStage === "vegetative") {
+     assessment.host = "High susceptibility due to variety and growth stage";
+     assessment.riskLevel = "medium";
+     assessment.fieldObservationGuidance.push("Record variety name and exact growth stage (days after planting)");
+   } else {
+     assessment.host = "Moderate to low susceptibility";
+     assessment.fieldObservationGuidance.push("Document variety and growth stage for baseline comparison");
+   }
 
-  // Pathogen assessment
-  if (pathogenInfo.inoculumPressure === "high" || 
-      pathogenInfo.recentHistory === "present") {
-    assessment.pathogen = "High pathogen pressure";
-    if (assessment.riskLevel === "medium") assessment.riskLevel = "high";
-    else assessment.riskLevel = "medium";
-  } else {
-    assessment.pathogen = "Low to moderate pathogen pressure";
-  }
+   // Pathogen assessment
+   if (pathogenInfo.inoculumPressure === "high" || 
+       pathogenInfo.recentHistory === "present") {
+     assessment.pathogen = "High pathogen pressure";
+     if (assessment.riskLevel === "medium") assessment.riskLevel = "high";
+     else assessment.riskLevel = "medium";
+     assessment.fieldObservationGuidance.push("Note recent disease history in this field and surrounding areas");
+   } else {
+     assessment.pathogen = "Low to moderate pathogen pressure";
+     assessment.fieldObservationGuidance.push("Survey field edges and nearby areas for disease presence");
+   }
 
-  // Environment assessment (using CABI thresholds)
-  if (envInfo) {
-    const { temp, humidity, rainfall } = envInfo;
-    
-    if (humidity > 80 && temp >= 26 && temp <= 35) {
-      assessment.environment = "High humidity + optimal temperature = High fungal blast/blight risk";
-      if (assessment.riskLevel !== "high") assessment.riskLevel = "high";
-    } else if (humidity > 85) {
-      assessment.environment = "Very high humidity = High bacterial blight risk";
-      if (assessment.riskLevel !== "high") assessment.riskLevel = "high";
-    } else if (temp < 20) {
-      assessment.environment = "Cool nights = Tungro virus/insect vector risk";
-      if (assessment.riskLevel === "low") assessment.riskLevel = "medium";
-    } else if (rainfall > 50) {
-      assessment.environment = "Heavy rain = Stem borer, root rot, waterlogging stress";
-      if (assessment.riskLevel === "low") assessment.riskLevel = "medium";
-    } else {
-      assessment.environment = "Environmental conditions moderate";
-    }
-  } else {
-    assessment.environment = "No environmental data available";
-  }
+   // Environment assessment (using CABI thresholds)
+   if (envInfo) {
+     const { temp, humidity, rainfall } = envInfo;
+     
+     if (humidity > 80 && temp >= 26 && temp <= 35) {
+       assessment.environment = "High humidity + optimal temperature = High fungal blast/blight risk";
+       if (assessment.riskLevel !== "high") assessment.riskLevel = "high";
+       assessment.fieldObservationGuidance.push("Monitor leaf wetness duration and canopy humidity throughout day");
+     } else if (humidity > 85) {
+       assessment.environment = "Very high humidity = High bacterial blight risk";
+       if (assessment.riskLevel !== "high") assessment.riskLevel = "high";
+       assessment.fieldObservationGuidance.push("Check for bacterial ooze early morning; monitor hourly humidity");
+     } else if (temp < 20) {
+       assessment.environment = "Cool nights = Tungro virus/insect vector risk";
+       if (assessment.riskLevel === "low") assessment.riskLevel = "medium";
+       assessment.fieldObservationGuidance.push("Record daily min/max temperatures and vector insect activity");
+     } else if (rainfall > 50) {
+       assessment.environment = "Heavy rain = Stem borer, root rot, waterlogging stress";
+       if (assessment.riskLevel === "low") assessment.riskLevel = "medium";
+       assessment.fieldObservationGuidance.push("Check soil drainage and look for waterlogging signs");
+     } else {
+       assessment.environment = "Environmental conditions moderate";
+       assessment.fieldObservationGuidance.push("Continue standard environmental monitoring");
+     }
+   } else {
+     assessment.environment = "No environmental data available";
+     // When no environmental data, provide specific guidance on what to collect
+     assessment.fieldObservationGuidance.push("CRITICAL: Measure temperature (°C), humidity (%), and rainfall (mm)");
+     assessment.fieldObservationGuidance.push("Record time of day for all measurements");
+     assessment.fieldObservationGuidance.push("Note recent weather patterns (last 3-5 days)");
+   }
 
-  return assessment;
-}
+   // Add general field observation guidance
+   assessment.fieldObservationGuidance.push("For improved diagnosis, also record: symptom progression rate, affected plant percentage, and exact symptom location on plant");
+   
+   return assessment;
+ }
 
 /**
- * Provides field confirmation methods based on suspected cause
+ * Provides field confirmation methods based on suspected cause, prioritized by diagnostic value
  * @param {Array} suspects - Array of suspected causes
- * @returns {Array} - Field confirmation methods
+ * @returns {Array} - Field confirmation methods with priority levels and interpretation guidance
  */
 function getFieldConfirmationMethods(suspects) {
-  const methods = [];
-  
-  suspects.forEach(suspect => {
-    switch (suspect) {
-      case "bacteria":
-        methods.push("Bacterial streaming test: Cut stem 15cm from base, place in clear water - milky streaming after 5 min confirms bacterial wilt");
-        methods.push("Look for water-soaked margins at lesion edges");
-        methods.push("Check for bacterial ooze or sticky exudate");
-        break;
-        
-      case "fungi/oomycetes":
-      case "true fungi":
-      case "oomycetes":
-        methods.push("Check for visible fruiting bodies (black pycnidia, pustules, powdery coating, cottony growth)");
-        methods.push("Look for rapid aggressive rot with white cottony sporulation (indicates oomycete)");
-        methods.push("Check for hard black sclerotia (indicates true fungus)");
-        break;
-        
-      case "insects/mites":
-        methods.push("Examine leaf underside for insects, mites, eggs, webbing");
-        methods.push("Look for chewing marks, holes, rolled leaves, mines, frass, cast skins");
-        methods.push("Shake leaf over white paper to check for thrips");
-        methods.push("Run finger under leaf - fine grit indicates mite eggs/cast skins");
-        break;
-        
-      case "virus":
-        methods.push("Look for mosaic, ring spots, chlorotic patterns following vein boundaries");
-        methods.push("Check for systemic distortion of young leaves");
-        methods.push("Note: Symptoms confined between veins = NOT virus");
-        break;
-        
-      case "nutrient deficiency":
-        methods.push("Check symmetry: Symmetrical on both leaf halves suggests nutrient deficiency");
-        methods.push("Older leaves affected = N, P, K, Mg deficiency");
-        methods.push("Younger leaves affected = Zn, Fe, S, Cu, Mn deficiency");
-        methods.push("Yellowing pattern: Tip/margin burn = K deficiency");
-        methods.push("Whitening along mid-vein = Zn deficiency");
-        break;
-        
-      default:
-        methods.push("General observation: Check distribution, progression, and associated symptoms");
-    }
-  });
-  
-  return methods;
-}
+   const methods = [];
+   
+   suspects.forEach(suspect => {
+     switch (suspect) {
+       case "bacteria":
+         methods.push("HIGH PRIORITY: Bacterial streaming test - Cut stem 15cm from base, place in clear water - milky streaming after 5-30 min confirms bacterial infection");
+         methods.push("HIGH PRIORITY: Check for water-soaked margins at lesion edges (appear dark green/black, water-soaked)");
+         methods.push("MEDIUM PRIORITY: Look for bacterial ooze or sticky exudate (especially in morning)");
+         methods.push("INTERPRETATION: Positive streaming = bacterial wilt/rot; Water-soaked margins = active bacterial infection");
+         break;
+         
+       case "fungi/oomycetes":
+       case "true fungi":
+       case "oomycetes":
+         methods.push("HIGH PRIORITY: Check for visible fruiting bodies (black pycnidia=pseudothecia, pustules=acervuli, powdery coating=conidia, cottony growth=mycelium)");
+         methods.push("HIGH PRIORITY: Look for rapid aggressive rot with white cottony sporulation on soil surface (indicates oomycete like Pythium/Phytophthora)");
+         methods.push("MEDIUM PRIORITY: Check for hard black sclerotia (sclerotia = survival structures of fungi like Sclerotium)");
+         methods.push("INTERPRETATION: Fruiting bodies confirm fungal infection; Location/texture helps identify specific fungus");
+         break;
+         
+       case "insects/mites":
+         methods.push("HIGH PRIORITY: Examine leaf underside for insects, mites, eggs, webbing, honeydew (use 10x hand lens if available)");
+         methods.push("HIGH PRIORITY: Look for chewing marks (caterpillars/beetles), holes (shot-hole=beetles, irregular=caterpillars), mines (serpentine=larvae)");
+         methods.push("MEDIUM PRIORITY: Look for frass (insect excrement), cast skins (molts), stippling (spider mite feeding)");
+         methods.push("LOW PRIORITY: Shake leaf over white paper to check for thrips and other small insects");
+         methods.push("INTERPRETATION: Type of damage + insect found = specific pest identification; Frass location indicates feeding site");
+         break;
+         
+       case "virus":
+         methods.push("HIGH PRIORITY: Look for mosaic (irregular light/dark green), ring spots, chlorotic patterns following vein boundaries");
+         methods.push("HIGH PRIORITY: Check for systemic distortion of young leaves (twisting, narrowing, fanning)");
+         methods.push("CRITICAL: Note: Symptoms confined between veins = NOT virus (indicates nutrient deficiency or herbicide)");
+         methods.push("INTERPRETATION: Vein-bound patterns suggest virus; Interveinal patterns suggest nutrient/chemical cause");
+         break;
+         
+       case "nutrient deficiency":
+         methods.push("HIGH PRIORITY: Check symmetry: Symmetrical damage on both leaf halves strongly suggests nutrient deficiency");
+         methods.push("HIGH PRIORITY: Older leaves affected = Mobile nutrients deficient (N, P, K, Mg)");
+         methods.push("HIGH PRIORITY: Younger leaves affected = Immobile nutrients deficient (Zn, Fe, S, Cu, Mn, B, Ca)");
+         methods.push("MEDIUM PRIORITY: Yellowing pattern: Tip/margin burn = K deficiency; Interveinal yellowing = Mg/Fe deficiency");
+         methods.push("MEDIUM PRIORITY: Whitening along mid-vein = Zn deficiency; Leaf thickening/crinkling = Ca deficiency");
+         methods.push("INTERPRETATION: Pattern + mobility determines specific nutrient; Soil test confirms deficiency");
+         break;
+         
+       default:
+         methods.push("GENERAL: Check distribution (uniform=abiotic, patchy=biotic), progression rate, and associated symptoms");
+         methods.push("OBSERVATION GUIDE: Record % plants affected, symptom progression (hours/days/weeks), and exact symptom location");
+         break;
+     }
+   });
+   
+   return methods;
+ }
 
 /**
  * Generates IPM recommendations based on diagnosis
@@ -414,23 +438,24 @@ function diagnoseOffline(inputData) {
   // Determine primary suspect
   const primarySuspect = suspects.length > 0 ? suspects[0] : "No clear suspect - requires field observation";
   
-  // Build diagnosis object
-  const diagnosis = {
-    abioticBiotic,
-    excluded,
-    suspects,
-    primarySuspect,
-    confidence: suspects.length > 0 ? 
-      (suspects.length === 1 && excluded.length >= 3 ? "high" : 
-       suspects.length <= 2 ? "medium" : "low") : "low",
-    diseaseTriangle: triangle,
-    fieldConfirmation: fieldMethods,
-    ipmRecommendations: ipmRecommendations,
-    economicThreshold: suspects.length > 0 ? 
-      "Assess: <5% leaf area damaged for most insects = no action needed" : 
-      "Monitor without treatment until cause is confirmed",
-    timestamp: new Date().toISOString()
-  };
+   // Build diagnosis object
+   const diagnosis = {
+     abioticBiotic,
+     excluded,
+     suspects,
+     primarySuspect,
+     confidence: suspects.length > 0 ? 
+       (suspects.length === 1 && excluded.length >= 3 ? "high" : 
+        suspects.length <= 2 ? "medium" : "low") : "low",
+     diseaseTriangle: triangle,
+     fieldConfirmation: fieldMethods,
+     ipmRecommendations: ipmRecommendations,
+     economicThreshold: suspects.length > 0 ? 
+       "Assess: <5% leaf area damaged for most insects = no action needed" : 
+       "Monitor without treatment until cause is confirmed",
+     recommendedFieldObservations: triangle.fieldObservationGuidance || [],
+     timestamp: new Date().toISOString()
+   };
   
   return diagnosis;
 }
