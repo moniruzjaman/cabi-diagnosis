@@ -58,5 +58,5 @@ with check (
   char_length(email) <= 320 and
   char_length(summary) <= 2000 and
   char_length(visitor_id) <= 120 and
-  rating >= 0 and rating <= 5
+  latestl >= 0 and rating <= 5
 );
