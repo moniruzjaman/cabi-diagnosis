@@ -473,12 +473,11 @@ function compressMessages(messages, maxBase64Chars = 1_000_000) {
 const OPENROUTER_VISION_MODELS = [
   "qwen/qwen2.5-vl-72b-instruct:free",
   "meta-llama/llama-3.2-11b-vision-instruct:free",
-  "microsoft/phi-4-multimodal-instruct:free",
 ];
 
 const OPENROUTER_TEXT_MODELS = [
-  "qwen/qwen-2.5-72b-instruct:free",
-  "qwen/qwen-2.5-7b-instruct:free",
+  "qwen/qwen2.5-vl-72b-instruct:free",
+  "meta-llama/llama-3.2-11b-vision-instruct:free",
 ];
 
 function extractPlainUserText(messages) {
@@ -669,6 +668,51 @@ export default async function handler(req, res) {
 
   const imageAttached = hasImage(messages);
   const attempts = [];
+  try {
+    const primaryModel = imageAttached ? OPENROUTER_VISION_MODELS[0] : OPENROUTER_TEXT_MODELS[0];
+    const fallbackModels = imageAttached ? OPENROUTER_VISION_MODELS.slice(1) : OPENROUTER_TEXT_MODELS.slice(1);
+    const r = await tryOpenRouter(messages, primaryModel, systemPrompt, {
+      models: fallbackModels,
+      route: "fallback",
+      provider: {
+        allow_fallbacks: true,
+        sort: "throughput",
+      },
+    });
+    return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
+  } catch (e) { attempts.push(`OpenRouter smart route: ${e.message}`); }
+
+  try {
+    const r = await tryGemini(messages, imageAttached, systemPrompt);
+    return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
+  } catch (e) { attempts.push(`Gemini: ${e.message}`); }
+
+  try {
+    const r = await tryGroq(messages, systemPrompt);
+    return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
+  } catch (e) { attempts.push(`Groq: ${e.message}`); }
+
+  try {
+    const r = await tryOpenRouter(messages, OPENROUTER_TEXT_MODELS[0], systemPrompt, {
+      models: OPENROUTER_TEXT_MODELS.slice(1),
+      route: "fallback",
+      provider: {
+        allow_fallbacks: true,
+        sort: "throughput",
+      },
+    });
+    const note = imageAttached
+      ? "\n\n---\nProvisional response: this answer was generated from the text description after the vision path fell back."
+      : "";
+    return res.status(200).json({ content: [{ type: "text", text: r.text + note }], provider: r.provider, attempts });
+  } catch (e) { attempts.push(`OpenRouter text: ${e.message}`); }
+
+  const fallbackText = buildEmergencyDiagnosis(messages, imageAttached);
+  return res.status(200).json({
+    content: [{ type: "text", text: fallbackText }],
+    provider: "Emergency CABI fallback",
+    attempts,
+  });
 
   // 1. Gemini 2.0 Flash ──────────────────────────────────────────────────────
   try {
