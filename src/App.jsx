@@ -1500,7 +1500,7 @@ function GameHub(){
 export default function UdbhidGoenda(){
 const[activeTab,setActiveTab]=useState("home");
   const[step,setStep]=useState(1);
-  const[form,setForm]=useState({crop:"",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""});
+  const[form,setForm]=useState({crop:"Rice / ধান, Tomato / টমেটো",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""});
   const[diagnosisMode,setDiagnosisMode]=useState("online"); // "online" or "offline"
   const[offlineDiagnosis,setOfflineDiagnosis]=useState(null);
   const[showMoreCrops,setShowMoreCrops]=useState(false);
