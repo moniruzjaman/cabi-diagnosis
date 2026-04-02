@@ -1,5 +1,15 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const C = {
+  primary: "#006028", primaryLight: "#1a7a3a", primaryDark: "#005322",
+  accent: "#f59e0b", accentLight: "#fbbf24", accentDark: "#d97706",
+  bg: "#f5fbf6", bgCard: "#ffffff", bgMuted: "#eff5f0",
+  text: "#171d1a", textMuted: "#3f493f", textLight: "#6f7a6e",
+  border: "#becabc", success: "#16a34a", warning: "#d97706", danger: "#dc2626", blue: "#2563eb",
+  shadow: "0 8px 24px rgba(0,33,9,0.08)", shadowMd: "0 16px 40px rgba(0,33,9,0.10)",
+};
+
 const SCENARIOS = [
   { crop: "ধান (Rice)", icon: "🌾", symptom: "ধানের মাকু আকৃতির ধূসর দাগ", correct: "ব্লাস্ট (Blast)", wrong: ["ব্যাকটেরিয়াল লিফ ব্লাইট", "শিথ ব্লাইট", "পাতামোড়া পোকা"] },
   { crop: "ধান (Rice)", icon: "🌾", symptom: "পাতার কিনারা হলুদ-বাদামি", correct: "ব্যাকটেরিয়াল লিফ ব্লাইট", wrong: ["ব্লাস্ট", "শিথ ব্লাইট", "খইরা রোগ"] },
@@ -108,7 +118,6 @@ function injectStyles() {
 
 /* ── Choice Button sub-component ────────────────────── */
 function ChoiceButton({ label, index, state, onClick, disabled }) {
-  const C = global.C;
   let bg = C.bgCard;
   let border = C.border;
   let color = C.text;
@@ -191,7 +200,6 @@ function ChoiceButton({ label, index, state, onClick, disabled }) {
 
 /* ── Timer Bar sub-component ────────────────────────── */
 function TimerBar({ timeLeft, max }) {
-  const C = global.C;
   const pct = (timeLeft / max) * 100;
   const isLow = timeLeft <= 5;
   const barColor = isLow
@@ -229,8 +237,6 @@ function TimerBar({ timeLeft, max }) {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════ */
 export default function SymptomSpotter() {
-  const C = global.C;
-
   /* ── state ─────────────────────────────── */
   const [phase, setPhase] = useState("start"); // "start" | "playing" | "result"
   const [questions, setQuestions] = useState([]);
