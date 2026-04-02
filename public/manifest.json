@@ -1,0 +1,43 @@
+{
+  "name": "উদ্ভিদ গোয়েন্দা — Plant Detective",
+  "short_name": "উদ্ভিদ গোয়েন্দা",
+  "description": "CABI Plantwise প্রোটোকল দিয়ে ফসলের রোগ নির্ণয় করুন — বাংলাদেশের কৃষকদের জন্য",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5fbf6",
+  "theme_color": "#006028",
+  "orientation": "portrait-primary",
+  "lang": "bn",
+  "categories": ["agriculture", "education", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/cabi-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "রোগ নির্ণয়",
+      "url": "/?tab=diagnose",
+      "description": "ফসলের ছবি দিয়ে রোগ চিনুন"
+    },
+    {
+      "name": "গেম হাব",
+      "url": "/?tab=game",
+      "description": "CABI প্রোটোকল গেম খেলুন"
+    },
+    {
+      "name": "CABI গাইড",
+      "url": "/?tab=guide",
+      "description": "CABI Plantwise গাইড পড়ুন"
+    }
+  ]
+}

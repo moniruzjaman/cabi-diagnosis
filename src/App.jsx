@@ -1438,6 +1438,136 @@ function CABIGuideTab(){
 }
 
 
+
+// ─── Award Crest Badge ────────────────────────────────────────────────
+function AwardCrest({ game }) {
+  const STORAGE_KEY = `game-${game.id}-high`;
+  const [highScore, setHighScore] = useState(() => {
+    try { return Number(localStorage.getItem(STORAGE_KEY)) || 0; } catch { return 0; }
+  });
+  
+  // Listen for storage changes (when game ends and saves new high score)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      try {
+        const fresh = Number(localStorage.getItem(STORAGE_KEY)) || 0;
+        if (fresh !== highScore) setHighScore(fresh);
+      } catch {}
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [highScore, STORAGE_KEY]);
+
+  const getTier = (score) => {
+    if (score >= 80) return { label: " platinum", emoji: "💎", color: "#8b5cf6", bg: "linear-gradient(135deg,#1e1b4b,#4c1d95)", border: "#7c3aed" };
+    if (score >= 60) return { label: " gold", emoji: "🏆", color: "#f59e0b", bg: "linear-gradient(135deg,#78350f,#d97706)", border: "#fbbf24" };
+    if (score >= 40) return { label: " silver", emoji: "🥈", color: "#6b7280", bg: "linear-gradient(135deg,#1f2937,#4b5563)", border: "#9ca3af" };
+    if (score >= 20) return { label: " bronze", emoji: "🥉", color: "#ea580c", bg: "linear-gradient(135deg,#7c2d12,#c2410c)", border: "#fb923c" };
+    return { label: "", emoji: "🏅", color: "#9ca3af", bg: "linear-gradient(135deg,#f3f4f6,#d1d5db)", border: "#e5e7eb" };
+  };
+  
+  const tier = getTier(highScore);
+  const hasPlayed = highScore > 0;
+
+  return (
+    <div style={{
+      width: 48, height: 48, borderRadius: "50%", flexShrink: 0, position: "relative",
+      background: hasPlayed ? tier.bg : "linear-gradient(135deg,#f3f4f6,#e5e7eb)",
+      border: `2.5px solid ${hasPlayed ? tier.border : "#d1d5db"}`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: hasPlayed ? 18 : 16, boxShadow: hasPlayed ? `0 0 12px ${tier.color}44` : "none",
+      transition: "all .3s ease",
+    }}>
+      <span>{hasPlayed ? tier.emoji : "🎮"}</span>
+      {hasPlayed && (
+        <div style={{
+          position: "absolute", bottom: -4, right: -4,
+          background: tier.color, color: "#fff", borderRadius: 8,
+          fontSize: 8, fontWeight: 800, padding: "1px 4px", lineHeight: 1.2,
+          boxShadow: "0 1px 4px rgba(0,0,0,0.2)", minWidth: 16, textAlign: "center",
+        }}>
+          {highScore}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// ─── Social Share + Install Bar ─────────────────────────────────────────
+function ShareAndInstallBar() {
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [canInstall, setCanInstall] = useState(false);
+  const [shared, setShared] = useState(false);
+  const APP_URL = "https://cabi-diagnosis.vercel.app";
+  const SHARE_TEXT = "🌾 উদ্ভিদ গোয়েন্দা — কৃষকের সহজ রোগ নির্ণয় অ্যাপ! CABI Plantwise প্রোটোকল দিয়ে ফসলের রোগ চিনুন।";
+
+  // PWA install prompt capture
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); setCanInstall(true); };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const result = await installPrompt.userChoice;
+    if (result.outcome === "accepted") setCanInstall(false);
+    setInstallPrompt(null);
+  };
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "উদ্ভিদ গোয়েন্দা", text: SHARE_TEXT, url: APP_URL });
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+        return;
+      } catch {}
+    }
+    setShowShareMenu(!showShareMenu);
+  };
+
+  const shareLinks = [
+    { name: "Facebook", icon: "📘", url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_URL)}&quote=${encodeURIComponent(SHARE_TEXT)}` },
+    { name: "LinkedIn", icon: "💼", url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(APP_URL)}` },
+    { name: "Twitter/X", icon: "🐦", url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(APP_URL)}` },
+    { name: "WhatsApp", icon: "💬", url: `https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + " " + APP_URL)}` },
+    { name: "Copy Link", icon: "📋", action: "copy" },
+  ];
+
+  return (
+    <div style={{position:"relative"}}>
+      <div style={{display:"flex",gap:8}}>
+        {canInstall && (
+          <button onClick={handleInstall} style={{display:"flex",alignItems:"center",gap:5,padding:"7px 12px",borderRadius:10,border:"1px solid "+C.success,background:"#f0fdf4",color:C.success,fontSize:11,fontWeight:700,cursor:"pointer",boxShadow:C.shadow}}>
+            📲 ইন্সটল
+          </button>
+        )}
+        <button onClick={handleNativeShare} style={{display:"flex",alignItems:"center",gap:5,padding:"7px 12px",borderRadius:10,border:`1px solid ${shared?C.success:C.border}`,background:shared?"#f0fdf4":C.bgMuted,color:shared?C.success:C.textMuted,fontSize:11,fontWeight:700,cursor:"pointer",boxShadow:C.shadow}}>
+          {shared ? "✅ শেয়ার হয়েছে" : "📤 শেয়ার করুন"}
+        </button>
+      </div>
+      {showShareMenu && (
+        <div style={{position:"absolute",bottom:48,right:0,background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:8,boxShadow:C.shadowLg,zIndex:200,minWidth:180,animation:"popIn .2s ease"}}>
+          {shareLinks.map((link) => (
+            link.action === "copy" ? (
+              <button key={link.name} onClick={async () => { await navigator.clipboard.writeText(APP_URL); setShared(true); setShowShareMenu(false); setTimeout(() => setShared(false), 2000); }} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",border:"none",background:"none",cursor:"pointer",width:"100%",borderRadius:8,fontSize:12,color:C.text,fontWeight:600}}>
+                <span style={{fontSize:18}}>{link.icon}</span> {link.name}
+              </button>
+            ) : (
+              <a key={link.name} href={link.url} target="_blank" rel="noreferrer" onClick={() => setShowShareMenu(false)} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",textDecoration:"none",color:C.text,borderRadius:8,fontSize:12,fontWeight:600}}>
+                <span style={{fontSize:18}}>{link.icon}</span> {link.name}
+              </a>
+            )
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── 🎮 GAME HUB ─────────────────────────────────────────────────────────────
 function GameHub(){
   const[activeGame,setActiveGame]=useState(null);
@@ -1495,11 +1625,14 @@ function GameHub(){
             onClick={()=>setActiveGame(game.id)}
             style={{display:"flex",alignItems:"center",gap:14,background:"#fff",borderRadius:16,padding:"14px 16px",border:`1px solid ${C.border}`,boxShadow:C.shadow,cursor:"pointer",animation:`popIn .4s ease ${i*.06}s both`,transition:"all .2s ease",textAlign:"left",width:"100%"}}
           >
-            <div style={{position:"relative",width:54,height:54,flexShrink:0}}>
-              <div style={{width:54,height:54,borderRadius:14,background:game.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:"0 4px 12px rgba(0,0,0,0.12)"}}>
-                {game.icon}
+            <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+              <AwardCrest game={game}/>
+              <div style={{position:"relative",width:54,height:54}}>
+                <div style={{width:54,height:54,borderRadius:14,background:game.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:"0 4px 12px rgba(0,0,0,0.12)"}}>
+                  {game.icon}
+                </div>
+                <div style={{position:"absolute",top:-4,right:-4,width:20,height:20,borderRadius:8,background:"#fff",border:`1.5px solid ${game.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:game.color,boxShadow:C.shadow}}>ধা.{game.step}</div>
               </div>
-              <div style={{position:"absolute",top:-4,right:-4,width:20,height:20,borderRadius:8,background:"#fff",border:`1.5px solid ${game.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:game.color,boxShadow:C.shadow}}>ধা.{game.step}</div>
             </div>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontWeight:800,fontSize:14,color:C.text,marginBottom:1,lineHeight:1.3}}>{game.title}</div>
@@ -1553,6 +1686,25 @@ function GameHub(){
         ))}
       </div>
 
+
+      {/* Award Showcase */}
+      <div style={{marginTop:16,padding:"14px 0",borderTop:"1px solid "+C.border}}>
+        <div style={{fontSize:11,color:C.textLight,fontWeight:700,marginBottom:10,textTransform:"uppercase",letterSpacing:.5}}>🏅 অর্জন ক্রেস্ট</div>
+        <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
+          {CABI_GAMES.map((game,i)=>{
+            const key=`game-${game.id}-high`;
+            let hs=0;try{hs=Number(localStorage.getItem(key))||0;}catch{}
+            const tier=hs>=80?{l:"platinum",e:"💎",c:"#8b5cf6"}:hs>=60?{l:"gold",e:"🏆",c:"#f59e0b"}:hs>=40?{l:"silver",e:"🥈",c:"#6b7280"}:hs>=20?{l:"bronze",e:"🥉",c:"#ea580c"}:{l:"",e:"🎮",c:"#9ca3af"};
+            return(
+              <div key={game.id} style={{flexShrink:0,textAlign:"center",minWidth:80,background:hs>0?tier.c+"10":"#f9fafb",borderRadius:14,padding:"10px 8px",border:"1px solid "+(hs>0?tier.c+"33":C.border)}}>
+                <div style={{fontSize:28,marginBottom:4}}>{tier.e}</div>
+                <div style={{fontWeight:700,fontSize:10,color:C.text}}>{game.title.split(" ")[0]}</div>
+                <div style={{fontSize:9,color:tier.c,fontWeight:800,marginTop:2}}>{hs>0?`⭐ ${hs}`:"অনলক"}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
       {/* Learning path */}
       <div style={{marginTop:20,padding:"12px 0",borderTop:`1px solid ${C.border}`}}>
         <div style={{fontSize:11,color:C.textLight,fontWeight:700,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>📚 CABI শেখার ক্রম</div>
@@ -2010,6 +2162,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
             <div style={{color:"rgba(255,255,255,0.65)",fontSize:10,letterSpacing:.2}}>Plant Detective · Bangladesh · CABI Plantwise</div>
           </div>
           {step===2&&result&&<button onClick={reset} style={{flexShrink:0,background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.3)",borderRadius:10,color:"#fff",padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>🔁 নতুন</button>}
+          {!isGameTab&&<ShareAndInstallBar/>}
         </div>}
         {/* Tab bar */}
         <div style={{display:"flex",overflowX:"auto",scrollbarWidth:"none",gap:0,justifyContent:isGameTab?"center":"flex-start"}}>
