@@ -26,7 +26,6 @@ const GLOBAL_STYLE = `
 /* Reduced header/footer heights for better game visibility */
 const REDUCED_HEADER_HEIGHT = `60px`;
 const REDUCED_FOOTER_HEIGHT = `35px`;
-`;
 if(typeof document!=="undefined"&&!document.getElementById("ud-gs")){
   const s=document.createElement("style");s.id="ud-gs";s.textContent=GLOBAL_STYLE;document.head.appendChild(s);
 }
