@@ -5,6 +5,7 @@ import CauseDetective from "./games/CauseDetective";
 import DiseaseTriangle from "./games/DiseaseTriangle";
 import FieldScout from "./games/FieldScout";
 import IPMCommander from "./games/IPMCommander";
+import useTTS from "./games/useTTS";
 
 // ─── Global styles ────────────────────────────────────────────────────────────
 const GLOBAL_STYLE = `
@@ -743,84 +744,117 @@ function HomeTab({setActiveTab,history,weather,locationName}){
   );
 }
 function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
-  const highlights=[
-    {icon:"📸",title:"ছবি তুলে রোগ ধরুন",desc:"পাতার ছবি দিন, সিস্টেম ফসল আন্দাজ করবে, তারপর সহজ রিপোর্ট দেখাবে.",action:"নির্ণয়ে যান",tab:"diagnose"},
-    {icon:"📚",title:"চিত্রভিত্তিক তথ্যঘর",desc:"ভিডিও, স্লাইড, পুরো PDF আর অডিও একই ট্যাবে সাজানো আছে.",action:"তথ্যভাণ্ডার খুলুন",tab:"library"},
-    {icon:"🌐",title:"অন্য কৃষি অ্যাপ",desc:"Krishi AI, GAP Brinjal, GreenLoop ও আরও সেবা একসাথে খুলুন.",action:"অ্যাপস দেখুন",tab:"apps"},
+  const { speak, stop, speaking, isSupported } = useTTS();
+  
+  const features = [
+    { icon: "🔬", title: "ছবি দিয়ে নির্ণয়", desc: "পাতার ছবি দিন, সিস্টেম ফসল আন্দাজ করবে ও সহজ বাংলায় রিপোর্ট দেখাবে। আবহাওয়া ও মৌসুমও বিবেচনায় নেবে।", tab: "diagnose", color: "#dc2626", bg: "#fef2f2" },
+    { icon: "📋", title: "CABI গাইড", desc: "CABI Plantwise ৫-ধাপ প্রোটোকল, ETL সীমা, পুষ্টি তথ্য ও IPM পিরামিড — সব এক জায়গায়।", tab: "guide", color: "#2563eb", bg: "#eff6ff" },
+    { icon: "🎮", title: "গেম হাব", desc: "৫টি ইন্টারেক্টিভ গেম খেলে CABI প্রোটোকল শিখুন! লক্ষণ চিহ্নিকরণ থেকে IPM সিদ্ধান্ত — সব গেমে আছে।", tab: "game", color: "#7c3aed", bg: "#faf5ff" },
+    { icon: "📚", title: "তথ্যভাণ্ডার", desc: "ভিডিও গাইড, স্লাইড ডেক, পড়ার PDF ও অডিও পডকাস্ট — দেখে ও শুনে শিখুন।", tab: "library", color: "#0891b2", bg: "#ecfeff" },
+    { icon: "🌐", title: "কৃষি অ্যাপস", desc: "Krishi AI, GAP Brinjal, CIRDAP GreenLoop — আরও সেবা একসাথে খুলুন।", tab: "apps", color: "#ea580c", bg: "#fff7ed" },
+    { icon: "📋", title: "নির্ণয় ইতিহাস", desc: "আগের সব নির্ণয় রিপোর্ট দেখুন, ট্র্যাক করুন ফসলের স্বাস্থ্য পরিবর্তন।", tab: "history", color: "#16a34a", bg: "#f0fdf4" },
   ];
-  const risk=weather?assessWeatherRisks(weather)[0]:null;
-  return(
-    <div style={{display:"flex",flexDirection:"column",gap:18,animation:"fadeIn .3s ease"}}>
-      <div className="ud-editorial-shadow" style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary},${C.primaryLight})`,borderRadius:32,padding:"26px 24px",color:"#fff",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",right:-18,top:-20,fontSize:130,opacity:.08}}>🌿</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:24,alignItems:"center",position:"relative"}}>
-          <div>
-            <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"7px 12px",borderRadius:999,background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.18)",fontSize:11,fontWeight:700,letterSpacing:.3,marginBottom:14}}>AI কৃষি সহকারী</div>
-            <div className="ud-headline" style={{fontWeight:800,fontSize:36,lineHeight:1.05,letterSpacing:-1.2,marginBottom:10}}>পাতার ছবি থেকে দ্রুত সমস্যা ধরুন</div>
-            <div style={{fontSize:14.5,lineHeight:1.8,opacity:.92,marginBottom:16,maxWidth:560}}>কৃষকের ভাষায় রোগ, পোকা, খাবারের ঘাটতি, আবহাওয়ার ঝুঁকি আর করণীয় একসাথে দেখুন। জেলা ও মৌসুমও আগে থেকেই বসে যাবে.</div>
-            <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-              <button onClick={()=>setActiveTab("diagnose")} className="ud-headline" style={{background:"#fff",color:C.primaryDark,border:"none",borderRadius:999,padding:"13px 20px",fontWeight:800,cursor:"pointer",boxShadow:"0 10px 24px rgba(0,0,0,0.12)"}}>📸 ছবি দিয়ে শুরু</button>
-              <button onClick={()=>setActiveTab("library")} className="ud-headline" style={{background:"rgba(255,255,255,0.12)",color:"#fff",border:"1px solid rgba(255,255,255,0.24)",borderRadius:999,padding:"13px 20px",fontWeight:700,cursor:"pointer"}}>📚 শেখার লাইব্রেরি</button>
-            </div>
-          </div>
-          <div style={{display:"flex",justifyContent:"center"}}>
-            <button onClick={()=>setActiveTab("diagnose")} style={{width:"100%",maxWidth:320,aspectRatio:"1 / 1",borderRadius:28,border:"4px solid rgba(255,255,255,0.16)",background:"linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.05))",padding:18,cursor:"pointer",position:"relative",overflow:"hidden"}}>
-              <div style={{position:"absolute",inset:18,border:"2px solid rgba(255,255,255,0.4)",borderRadius:22}}>
-                <div style={{position:"absolute",left:14,top:14,width:28,height:28,borderTop:"3px solid #fff",borderLeft:"3px solid #fff"}} />
-                <div style={{position:"absolute",right:14,top:14,width:28,height:28,borderTop:"3px solid #fff",borderRight:"3px solid #fff"}} />
-                <div style={{position:"absolute",left:14,bottom:14,width:28,height:28,borderBottom:"3px solid #fff",borderLeft:"3px solid #fff"}} />
-                <div style={{position:"absolute",right:14,bottom:14,width:28,height:28,borderBottom:"3px solid #fff",borderRight:"3px solid #fff"}} />
-                <div style={{position:"absolute",left:18,right:18,height:2,background:"rgba(170,255,181,0.95)",top:"22%",boxShadow:"0 0 18px rgba(155,247,168,0.85)",animation:"scan 3.2s linear infinite"}} />
-              </div>
-              <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,color:"#fff"}}>
-                <div style={{fontSize:64}}>🌱</div>
-                <div className="ud-headline" style={{fontWeight:800,fontSize:22}}>Ready to scan</div>
-                <div style={{fontSize:12,opacity:.9}}>পাতা মাঝখানে রাখুন</div>
-              </div>
-            </button>
-          </div>
+
+  const risk = weather ? assessWeatherRisks(weather)[0] : null;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, animation: "fadeIn .3s ease" }}>
+      {/* Hero Section */}
+      <div className="ud-editorial-shadow" style={{ background: `linear-gradient(135deg,${C.primaryXDark},${C.primary},${C.primaryLight})`, borderRadius: 28, padding: "24px 20px", color: "#fff", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", right: -18, top: -20, fontSize: 130, opacity: .08 }}>🌿</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 999, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 700 }}>🌾 AI কৃষি সহকারী</span>
+        </div>
+        <div className="ud-headline" style={{ fontWeight: 800, fontSize: 32, lineHeight: 1.1, marginBottom: 8, letterSpacing: -0.8 }}>
+          পাতার ছবি থেকে<br />দ্রুত সমস্যা ধরুন
+        </div>
+        <div style={{ fontSize: 14, lineHeight: 1.8, opacity: .9, marginBottom: 16, maxWidth: 500 }}>
+          কৃষকের ভাষায় রোগ, পোকা, খাবারের ঘাটতি ও করণীয় একসাথে দেখুন। গেম খেলে শিখুন, ছবি দিয়ে নির্ণয় করুন।
+        </div>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button onClick={() => setActiveTab("diagnose")} className="ud-headline" style={{ background: "#fff", color: C.primaryDark, border: "none", borderRadius: 999, padding: "12px 18px", fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 20px rgba(0,0,0,0.12)" }}>📸 ছবি দিয়ে শুরু</button>
+          <button onClick={() => setActiveTab("game")} className="ud-headline" style={{ background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.24)", borderRadius: 999, padding: "12px 18px", fontWeight: 700, cursor: "pointer" }}>🎮 গেম খেলুন</button>
         </div>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:14}}>
-        {highlights.map(card=>(
-          <button key={card.title} onClick={()=>setActiveTab(card.tab)} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:24,padding:20,textAlign:"left",cursor:"pointer",boxShadow:C.shadow}}>
-            <div style={{fontSize:28,marginBottom:10}}>{card.icon}</div>
-            <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.primaryDark,marginBottom:6}}>{card.title}</div>
-            <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.65,marginBottom:12}}>{card.desc}</div>
-            <div style={{fontSize:12,color:C.primary,fontWeight:700}}>{card.action} →</div>
+
+      {/* Read aloud home intro */}
+      {isSupported && (
+        <button onClick={() => speak("উদ্ভিদ গোয়েন্দায় স্বাগতম! আপনি ছবি দিয়ে রোগ নির্ণয় করতে পারবেন, CABI গাইড পড়তে পারবেন, গেম খেলে শিখতে পারবেন, আর তথ্যভাণ্ডার থেকেও জানতে পারবেন।", { prependFriendly: true })} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "10px 14px", borderRadius: 12, border: `1.5px solid ${speaking ? C.success : C.border}`, background: speaking ? "#f0fdf4" : C.bgMuted, color: speaking ? C.success : C.textMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", boxShadow: C.shadow }}>
+          <span style={{ fontSize: 18 }}>🔊</span>
+          {speaking ? "শুনছি..." : "হোম পেজ শুনুন"}
+        </button>
+      )}
+
+      {/* Feature Cards Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+        {features.map((feat, i) => (
+          <button key={feat.tab} onClick={() => setActiveTab(feat.tab)} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 20, padding: "18px 16px", textAlign: "left", cursor: "pointer", boxShadow: C.shadow, animation: `popIn .4s ease ${i * .05}s both`, display: "flex", gap: 14, alignItems: "flex-start", width: "100%" }}>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: feat.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, border: `1.5px solid ${feat.color}22` }}>
+              {feat.icon}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 4, lineHeight: 1.3 }}>{feat.title}</div>
+              <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.6, marginBottom: 8 }}>{feat.desc}</div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, color: feat.color }}>
+                খুলুন <span style={{ fontSize: 13 }}>→</span>
+              </div>
+            </div>
           </button>
         ))}
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:14}}>
-        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:24,padding:18,boxShadow:C.shadow}}>
-          <div style={{fontSize:12,color:C.textMuted,marginBottom:6}}>📍 আপনার এলাকা</div>
-          <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text}}>{locationName||"অবস্থান সংগ্রহ হচ্ছে..."}</div>
-          <div style={{fontSize:12,color:C.textMuted,marginTop:6}}>জেলা স্বয়ংক্রিয়ভাবে ভরার চেষ্টা করা হয়.</div>
+
+      {/* Quick Info Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
+        <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 20, padding: 16, boxShadow: C.shadow }}>
+          <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 4 }}>📍 আপনার এলাকা</div>
+          <div className="ud-headline" style={{ fontWeight: 800, fontSize: 17, color: C.text }}>{locationName || "অবস্থান সংগ্রহ হচ্ছে..."}</div>
         </div>
-        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:24,padding:18,boxShadow:C.shadow}}>
-          <div style={{fontSize:12,color:C.textMuted,marginBottom:6}}>🗓️ বর্তমান মৌসুম</div>
-          <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text}}>{getCurrentSeason().split("/")[0].trim()}</div>
-          <div style={{fontSize:12,color:C.textMuted,marginTop:6}}>তারিখ অনুযায়ী Detection tab-এ আগেই বসে যাবে.</div>
+        <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 20, padding: 16, boxShadow: C.shadow }}>
+          <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 4 }}>🗓️ বর্তমান মৌসুম</div>
+          <div className="ud-headline" style={{ fontWeight: 800, fontSize: 17, color: C.text }}>{getCurrentSeason().split("/")[0].trim()}</div>
         </div>
-        <div style={{background:risk?"linear-gradient(135deg,#ffffff,#eff6ff)":"#fff",border:`1px solid ${C.border}`,borderRadius:24,padding:18,boxShadow:C.shadow}}>
-          <div style={{fontSize:12,color:C.textMuted,marginBottom:6}}>🌦️ আজকের ঝুঁকি</div>
-          <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text}}>{risk?.text||"আবহাওয়া আনা হচ্ছে..."}</div>
-          {weather&&<div style={{fontSize:12,color:C.textMuted,marginTop:6}}>তাপমাত্রা {weather.temp}°C · আর্দ্রতা {weather.humidity}%</div>}
+        <div style={{ background: risk ? "linear-gradient(135deg,#fff,#eff6ff)" : "#fff", border: `1px solid ${C.border}`, borderRadius: 20, padding: 16, boxShadow: C.shadow }}>
+          <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 4 }}>🌦️ আজকের ঝুঁকি</div>
+          <div className="ud-headline" style={{ fontWeight: 800, fontSize: 15, color: C.text }}>{risk?.text || "আবহাওয়া আনা হচ্ছে..."}</div>
+          {weather && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>তাপমাত্রা {weather.temp}°C · আর্দ্রতা {weather.humidity}%</div>}
         </div>
       </div>
-      {history.length>0&&(
-        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:28,padding:18,boxShadow:C.shadow}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:10,marginBottom:12,flexWrap:"wrap"}}>
-            <div className="ud-headline" style={{fontWeight:800,fontSize:22,color:C.primaryDark}}>সাম্প্রতিক নির্ণয়</div>
-            <button onClick={()=>setActiveTab("history")} style={{background:"none",border:"none",color:C.primary,fontWeight:700,cursor:"pointer"}}>সব দেখুন</button>
+
+      {/* CABI Learning Path */}
+      <div style={{ background: "linear-gradient(135deg,#f0fdf4,#ecfdf5)", border: `1px solid #bbf7d0`, borderRadius: 20, padding: 18 }}>
+        <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 10 }}>📚 CABI শেখার পথ</div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {[
+            { icon: "👁️", label: "লক্ষণ পর্যবেক্ষণ", color: "#2563eb" },
+            { icon: "🔬", label: "বর্জন পদ্ধতি", color: "#7c3aed" },
+            { icon: "🔺", label: "রোগ ত্রিভুজ", color: "#d97706" },
+            { icon: "🧪", label: "মাঠ নিশ্চিতকরণ", color: "#16a34a" },
+            { icon: "🌿", label: "IPM সিদ্ধান্ত", color: "#0891b2" },
+          ].map((step, i, arr) => (
+            <span key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#fff", borderRadius: 12, padding: "6px 12px", border: `1px solid ${step.color}33`, fontSize: 11, fontWeight: 700, color: step.color }}>{step.icon} {step.label}</span>
+              {i < arr.length - 1 && <span style={{ color: C.border, fontSize: 14 }}>→</span>}
+            </span>
+          ))}
+        </div>
+        <button onClick={() => setActiveTab("game")} style={{ marginTop: 12, background: C.primary, color: "#fff", border: "none", borderRadius: 12, padding: "10px 16px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
+          🎮 গেম খেলে শিখুন
+        </button>
+      </div>
+
+      {/* Recent Reports */}
+      {history.length > 0 && (
+        <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 24, padding: 18, boxShadow: C.shadow }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
+            <div className="ud-headline" style={{ fontWeight: 800, fontSize: 18, color: C.primaryDark }}>🕐 সাম্প্রতিক নির্ণয়</div>
+            <button onClick={() => setActiveTab("history")} style={{ background: "none", border: "none", color: C.primary, fontWeight: 700, cursor: "pointer", fontSize: 13 }}>সব দেখুন →</button>
           </div>
-          <div style={{display:"flex",gap:12,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
-            {[...history].reverse().slice(0,4).map((item,index)=>(
-              <div key={index} style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:22,padding:14,minWidth:210}}>
-                <div style={{width:"100%",height:120,borderRadius:18,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,marginBottom:12}}>🌿</div>
-                <div className="ud-headline" style={{fontWeight:800,fontSize:16,color:C.text,marginBottom:4}}>{item.crop?.split("/")[0]?.trim()||"ফসল"}</div>
-                <div style={{fontSize:11,color:C.textMuted}}>{item.district?.split("/")[0]?.trim()||"জেলা নেই"}</div>
-                <div style={{fontSize:11,color:C.textLight,marginTop:6}}>{item.date}</div>
+          <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
+            {[...history].reverse().slice(0, 4).map((item, index) => (
+              <div key={index} style={{ background: C.bgMuted, border: `1px solid ${C.border}`, borderRadius: 18, padding: 14, minWidth: 200, flexShrink: 0 }}>
+                <div className="ud-headline" style={{ fontWeight: 800, fontSize: 15, color: C.text, marginBottom: 4 }}>{item.crop?.split("/")[0]?.trim() || "ফসল"}</div>
+                <div style={{ fontSize: 11, color: C.textMuted }}>{item.district?.split("/")[0]?.trim() || "জেলা নেই"}</div>
+                <div style={{ fontSize: 11, color: C.textLight, marginTop: 6 }}>{item.date}</div>
               </div>
             ))}
           </div>
@@ -1341,6 +1375,7 @@ function CABIGuideTab(){
 // ─── 🎮 GAME HUB ─────────────────────────────────────────────────────────────
 function GameHub(){
   const[activeGame,setActiveGame]=useState(null);
+  const { speak, stop, speaking, isSupported } = useTTS();
 
   const CABI_GAMES=[
     {id:"symptom-spotter",title:"লক্ষণ লক্ষ্য",en:"Symptom Spotter",step:1,icon:"👁️",color:"#2563eb",bg:"linear-gradient(135deg,#1e40af,#2563eb)",desc:"ফসলের লক্ষণ চিনুন — পাতার দাগ, রং ও আকৃতি থেকে রোগ শনাক্ত করুন",difficulty:"সহজ",duration:"৫-১০ মিনিট",Component:SymptomSpotter},
@@ -1378,6 +1413,13 @@ function GameHub(){
         <div style={{fontSize:13,color:C.textLight}}>CABI Plantwise ৫-ধাপ প্রোটোকল অনুসারে খেলুন ও শিখুন</div>
       </div>
 
+      {isSupported && (
+        <button onClick={() => speak("গেম হাবে স্বাগতম! এখানে পাঁচটি CABI গেম আছে। লক্ষণ লক্ষ্য, কারণ খুঁজো, রোগ ত্রিভুজ, মাঠ পরীক্ষক, এবং IPM কমান্ডার।", { prependFriendly: true })} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "10px 14px", borderRadius: 12, border: `1.5px solid ${speaking ? C.success : C.border}`, background: speaking ? "#f0fdf4" : C.bgMuted, color: speaking ? C.success : C.textMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 14, boxShadow: C.shadow }}>
+          <span style={{ fontSize: 18 }}>🔊</span>
+          {speaking ? "শুনছি..." : "গেম তালিকা শুনুন"}
+        </button>
+      )}
+
       {/* CABI Step Games — inline playable */}
       <div style={{marginBottom:8,fontSize:11,color:C.primary,fontWeight:700,textTransform:"uppercase",letterSpacing:.6}}>📖 CABI প্রোটোকল গেম</div>
       <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
@@ -1401,6 +1443,14 @@ function GameHub(){
                 <span style={{fontSize:10,color:C.textLight}}>⏱ {game.duration}</span>
               </div>
             </div>
+            {isSupported && (
+              <button
+                onClick={(e) => { e.stopPropagation(); speak(`${game.title}। ${game.desc}। ${game.difficulty} মাত্রা।`, { prependFriendly: true }); }}
+                style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 12, background: C.bgMuted, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: C.shadow, cursor: "pointer", fontSize: 16 }}
+              >
+                🔊
+              </button>
+            )}
             <div style={{flexShrink:0,width:38,height:38,borderRadius:12,background:`linear-gradient(135deg,${game.color},${game.color}bb)`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 16px rgba(0,0,0,0.15)"}}>
               <span style={{color:"#fff",fontSize:16}}>▶</span>
             </div>
