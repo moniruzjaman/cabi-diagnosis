@@ -1332,124 +1332,9 @@ function CABIGuideTab(){
   );
 }
 
+
 // ─── 🎮 GAME HUB ─────────────────────────────────────────────────────────────
-function GameStageOverlay({game,gameLoaded,gameErr,onClose,onReload,onLoad,onError,gameStageDesktop,gameStageTablet}){
-  return(
-    <div style={{position:"fixed",inset:0,zIndex:220,background:"linear-gradient(180deg,#03160b 0%, #052412 34%, #eef6ef 34%, #f5fbf6 100%)",display:"flex",flexDirection:"column"}}>
-      <div style={{position:"absolute",top:-120,right:-80,width:320,height:320,borderRadius:"50%",background:`radial-gradient(circle, ${game.color}55 0%, transparent 70%)`,pointerEvents:"none"}} />
-      <div style={{position:"absolute",left:-120,bottom:-120,width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle, rgba(26,122,58,0.15) 0%, transparent 72%)",pointerEvents:"none"}} />
-      <div style={{padding:gameStageTablet?"16px 18px 10px":"12px 12px 8px",position:"relative",zIndex:1}}>
-        <div style={{maxWidth:1440,margin:"0 auto",background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",backdropFilter:"blur(18px)",borderRadius:24,padding:gameStageTablet?16:12,display:"flex",alignItems:gameStageTablet?"center":"flex-start",gap:12,flexWrap:"wrap",boxShadow:"0 20px 60px rgba(0,0,0,0.24)"}}>
-          <button onClick={onClose} style={{width:42,height:42,borderRadius:14,border:"1px solid rgba(255,255,255,0.18)",background:"rgba(255,255,255,0.12)",color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>×</button>
-          <div style={{display:"flex",alignItems:"center",gap:12,flex:"1 1 260px",minWidth:0}}>
-            <div style={{width:gameStageTablet?56:48,height:gameStageTablet?56:48,borderRadius:18,background:"rgba(255,255,255,0.16)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:gameStageTablet?28:24,flexShrink:0,boxShadow:"inset 0 0 0 1px rgba(255,255,255,0.12)"}}>{game.icon}</div>
-            <div style={{minWidth:0}}>
-              <div style={{color:"#fff",fontWeight:800,fontSize:gameStageTablet?18:15,lineHeight:1.15,marginBottom:3}}>{game.title}</div>
-              <div style={{color:"rgba(255,255,255,0.72)",fontSize:12,marginBottom:8}}>{game.subtitle}</div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                <span style={{padding:"5px 10px",borderRadius:999,background:"rgba(255,255,255,0.12)",color:"#fff",fontSize:11,fontWeight:700}}>{game.badge}</span>
-                <span style={{padding:"5px 10px",borderRadius:999,background:"rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.82)",fontSize:11}}>{game.difficulty}</span>
-                <span style={{padding:"5px 10px",borderRadius:999,background:"rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.82)",fontSize:11}}>{game.duration}</span>
-              </div>
-            </div>
-          </div>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginLeft:"auto"}}>
-            <a href={game.src} target="_blank" rel="noreferrer" style={{padding:"10px 14px",borderRadius:14,background:"#fff",color:C.primaryDark,textDecoration:"none",fontSize:12,fontWeight:800,boxShadow:"0 8px 24px rgba(255,255,255,0.14)"}}>Open in new tab</a>
-            <button onClick={onReload} style={{padding:"10px 14px",borderRadius:14,border:"1px solid rgba(255,255,255,0.18)",background:"rgba(255,255,255,0.12)",color:"#fff",fontSize:12,fontWeight:800,cursor:"pointer"}}>Reload</button>
-          </div>
-        </div>
-      </div>
-      <div style={{flex:1,minHeight:0,padding:gameStageTablet?"0 18px 18px":"0 12px 12px",position:"relative",zIndex:1}}>
-        <div style={{maxWidth:1440,height:"100%",margin:"0 auto",display:"grid",gridTemplateColumns:gameStageDesktop?"320px minmax(0,1fr)":"1fr",gap:14}}>
-          {gameStageDesktop&&(
-            <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:28,padding:18,boxShadow:"0 24px 64px rgba(0,33,9,0.12)",display:"flex",flexDirection:"column",overflow:"hidden"}}>
-              <div style={{fontSize:11,fontWeight:800,letterSpacing:.6,textTransform:"uppercase",color:C.primary,marginBottom:10}}>Play Better</div>
-              <div className="ud-headline" style={{fontWeight:800,fontSize:28,lineHeight:1.05,color:C.primaryDark,marginBottom:10}}>Wider stage for a better game experience</div>
-              <p style={{fontSize:13,color:C.textMuted,lineHeight:1.7,marginBottom:14}}>{game.desc}</p>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-                <div style={{border:`1px solid ${C.border}`,background:"#f8fcf8",borderRadius:18,padding:12}}>
-                  <div style={{fontSize:11,color:C.textMuted,marginBottom:4}}>Difficulty</div>
-                  <div style={{fontWeight:800,fontSize:15,color:C.text}}>{game.difficulty}</div>
-                </div>
-                <div style={{border:`1px solid ${C.border}`,background:"#f8fcf8",borderRadius:18,padding:12}}>
-                  <div style={{fontSize:11,color:C.textMuted,marginBottom:4}}>Duration</div>
-                  <div style={{fontWeight:800,fontSize:15,color:C.text}}>{game.duration}</div>
-                </div>
-              </div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:18}}>
-                {game.tags.map(tag=><span key={tag} style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:999,padding:"7px 11px",fontSize:11,color:C.textMuted,fontWeight:700}}>{tag}</span>)}
-              </div>
-              <div style={{marginTop:"auto",borderRadius:22,padding:16,background:game.bg,color:"#fff",position:"relative",overflow:"hidden"}}>
-                <div style={{position:"absolute",right:-18,bottom:-20,fontSize:74,opacity:.16}}>{game.icon}</div>
-                <div style={{position:"relative"}}>
-                  <div style={{fontWeight:800,fontSize:15,marginBottom:6}}>Tip</div>
-                  <div style={{fontSize:12,lineHeight:1.7,color:"rgba(255,255,255,0.86)"}}>For the best experience, rotate your phone to landscape or open the game in a new browser tab.</div>
-                </div>
-              </div>
-            </div>
-          )}
-          <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:28,padding:gameStageTablet?12:8,boxShadow:"0 24px 64px rgba(0,33,9,0.14)",display:"flex",flexDirection:"column",minHeight:0,overflow:"hidden"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:gameStageTablet?"4px 6px 12px":"6px 6px 10px",flexWrap:"wrap"}}>
-              <div>
-                <div style={{fontWeight:800,fontSize:14,color:C.primaryDark}}>Live Game Window</div>
-                <div style={{fontSize:11,color:C.textMuted}}>The game runs here in a wider, less cramped view.</div>
-              </div>
-              <span style={{padding:"6px 10px",borderRadius:999,background:"#eff5f0",border:`1px solid ${C.border}`,fontSize:11,color:C.textMuted,fontWeight:700}}>{gameStageDesktop?"Desktop view":gameStageTablet?"Tablet view":"Mobile view"}</span>
-            </div>
-            <div style={{position:"relative",flex:1,minHeight:gameStageDesktop?520:380,borderRadius:22,overflow:"hidden",background:"#e8efe9"}}>
-              {!gameLoaded&&!gameErr&&(
-                <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"linear-gradient(180deg, rgba(255,255,255,0.92), rgba(245,251,246,0.96))",gap:14,padding:24,zIndex:2}}>
-                  <div style={{width:84,height:84,borderRadius:28,background:game.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:42,color:"#fff",boxShadow:"0 16px 36px rgba(0,0,0,0.18)",animation:"float 2.4s ease-in-out infinite"}}>{game.icon}</div>
-                  <div style={{textAlign:"center",maxWidth:380}}>
-                    <div style={{fontWeight:800,fontSize:gameStageTablet?20:17,color:C.primaryDark,marginBottom:6}}>{game.title}</div>
-                    <div style={{fontSize:13,color:C.textMuted,lineHeight:1.7}}>Preparing a roomier game stage. Once loaded, it will run directly here.</div>
-                  </div>
-                  <div style={{display:"inline-flex",alignItems:"center",gap:8,color:C.textMuted,fontSize:12,fontWeight:700}}>
-                    <span style={{display:"inline-block",animation:"spin 1s linear infinite",fontSize:16}}>⟳</span>
-                    Loading game...
-                  </div>
-                </div>
-              )}
-              {gameErr&&(
-                <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"linear-gradient(180deg, rgba(255,255,255,0.94), rgba(245,251,246,0.98))",gap:12,padding:24,textAlign:"center",zIndex:2}}>
-                  <div style={{fontSize:46}}>{game.icon}</div>
-                  <div style={{fontWeight:800,fontSize:18,color:C.text}}>Embedded view unavailable</div>
-                  <div style={{fontSize:13,color:C.textMuted,maxWidth:360,lineHeight:1.7}}>Some games work better outside an iframe. Use the button below to open it directly.</div>
-                  <a href={game.src} target="_blank" rel="noreferrer" style={{background:game.color,color:"#fff",padding:"12px 22px",borderRadius:14,textDecoration:"none",fontWeight:800,fontSize:14,boxShadow:C.shadowMd}}>Open full screen</a>
-                </div>
-              )}
-              <iframe
-                key={game.id}
-                src={game.src}
-                title={game.title}
-                style={{width:"100%",height:"100%",border:"none",borderRadius:18,display:gameErr?"none":"block",background:"#fff"}}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; microphone"
-                onLoad={onLoad}
-                onError={onError}
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function GameHub(){
-  const[activeGame,setActiveGame]=useState(null);
-  const[gameLoaded,setGameLoaded]=useState(false);
-  const[gameErr,setGameErr]=useState(false);
-  const[gameViewportWidth,setGameViewportWidth]=useState(()=>typeof window!=="undefined"?window.innerWidth:1280);
-
-  useEffect(()=>{
-    if(typeof window==="undefined")return;
-    const onResize=()=>setGameViewportWidth(window.innerWidth);
-    onResize();
-    window.addEventListener("resize",onResize);
-    return()=>window.removeEventListener("resize",onResize);
-  },[]);
-
   const GAMES=[
     {
       id:"dhan-doctor",
@@ -1494,167 +1379,58 @@ function GameHub(){
       badge:"🌱 শুরু করুন",
     },
   ];
-  const gameStageDesktop=gameViewportWidth>=980;
-  const gameStageTablet=gameViewportWidth>=700;
 
-  if(activeGame){
-    const game=GAMES.find(g=>g.id===activeGame);
-    return(
-      <GameStageOverlay
-        game={game}
-        gameLoaded={gameLoaded}
-        gameErr={gameErr}
-        onClose={()=>{setActiveGame(null);setGameLoaded(false);setGameErr(false);}}
-        onReload={()=>{setGameLoaded(false);setGameErr(false);setActiveGame(null);setTimeout(()=>setActiveGame(game.id),0);}}
-        onLoad={()=>setGameLoaded(true)}
-        onError={()=>setGameErr(true)}
-        gameStageDesktop={gameStageDesktop}
-        gameStageTablet={gameStageTablet}
-      />
-    );
-     return(
-       <div style={{position:"fixed",inset:0,zIndex:220,background:"linear-gradient(180deg,#03160b 0%, #052412 30%, #eef6ef 30%, #f5fbf6 100%)",display:"flex",flexDirection:"column",height:"100vh"}}>
-         <div style={{position:"absolute",top:-80,right:-60,width:200,height:200,borderRadius:"50%",background:`radial-gradient(circle, ${game.color}55 0%, transparent 70%)`,pointerEvents:"none"}} />
-         <div style={{position:"absolute",left:-80,bottom:-80,width:180,height:180,borderRadius:"50%",background:"radial-gradient(circle, rgba(26,122,58,0.15) 0%, transparent 72%)",pointerEvents:"none"}} />
-         {/* game header */}
-         <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",flexShrink:0,flexWrap:"wrap",position:"relative",zIndex:1,borderBottom:`1px solid ${C.border}`}}>
-           <button onClick={()=>{setActiveGame(null);setGameLoaded(false);setGameErr(false);}} style={{width:32,height:32,borderRadius:8,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,boxShadow:C.shadow}}>←</button>
-           <div style={{flex:1,minWidth:0,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:16,padding:"8px 10px",backdropFilter:"blur(12px)"}}>
-             <div style={{fontWeight:700,fontSize:14,color:"#fff"}}>{game.icon} {game.title}</div>
-             <div style={{fontSize:10,color:"rgba(255,255,255,0.6)",marginTop:2}}>{game.subtitle}</div>
-           </div>
-           <a href={game.src} target="_blank" rel="noreferrer" style={{padding:"4px 8px",borderRadius:8,background:game.color,color:"#fff",textDecoration:"none",fontSize:11,fontWeight:600,flexShrink:0,boxShadow:C.shadow}}>↗ খুলুন</a>
-         </div>
-        {/* loading state */}
-        {!gameLoaded&&!gameErr&&(
-          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#fff",borderRadius:16,border:`1px solid ${C.border}`,gap:14,padding:24}}>
-            <div style={{fontSize:48,animation:"float 2s ease-in-out infinite"}}>{game.icon}</div>
-            <div style={{textAlign:"center"}}>
-              <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:4}}>{game.title}</div>
-              <div style={{color:C.textMuted,fontSize:13}}>{game.subtitle}</div>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:8,color:C.textMuted,fontSize:12}}>
-              <span style={{display:"inline-block",animation:"spin 1s linear infinite",fontSize:16}}>⟳</span>গেম লোড হচ্ছে...
-            </div>
-          </div>
-        )}
-        {gameErr&&(
-          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#fff",borderRadius:16,border:`1px solid ${C.border}`,gap:12,padding:24,textAlign:"center"}}>
-            <div style={{fontSize:40}}>{game.icon}</div>
-            <div style={{fontWeight:700,fontSize:15,color:C.text}}>গেম লোড হয়নি</div>
-            <div style={{color:C.textMuted,fontSize:13}}>সরাসরি ব্রাউজারে খুলুন:</div>
-            <a href={game.src} target="_blank" rel="noreferrer" style={{background:game.color,color:"#fff",padding:"12px 24px",borderRadius:12,textDecoration:"none",fontWeight:700,fontSize:14,boxShadow:C.shadowMd}}>🎮 {game.title} খেলুন →</a>
-          </div>
-        )}
-        <iframe
-          key={activeGame}
-          src={game.src}
-          title={game.title}
-          style={{flex:1,width:"100%",border:"none",borderRadius:16,display:gameLoaded&&!gameErr?"block":"none",boxShadow:C.shadowMd}}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; microphone"
-          onLoad={()=>setGameLoaded(true)}
-          onError={()=>setGameErr(true)}
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-        />
-      </div>
-    );
-  }
-
-  // Game hub home
   return(
-    <div style={{animation:"fadeIn .3s ease"}}>
-      {/* Hero banner */}
-      <div style={{background:`linear-gradient(135deg,${C.primaryXDark} 0%,${C.primary} 60%,${C.primaryLight} 100%)`,borderRadius:20,padding:22,marginBottom:16,position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:-20,right:-20,fontSize:80,opacity:.15,transform:"rotate(15deg)"}}>🎮</div>
-        <div style={{position:"relative"}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-            <div style={{width:40,height:40,borderRadius:12,overflow:"hidden",flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.3)"}}>
-              <img src="/cabi-logo.jpg" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-            </div>
-            <div>
-              <div style={{color:"#fff",fontWeight:800,fontSize:16,lineHeight:1.2}}>উদ্ভিদ গোয়েন্দা</div>
-              <div style={{color:"rgba(255,255,255,0.75)",fontSize:11}}>কৃষি শিক্ষা গেম হাব</div>
-            </div>
-          </div>
-          <p style={{color:"rgba(255,255,255,0.9)",fontSize:13,lineHeight:1.6,marginBottom:12}}>খেলার ছলে শিখুন — ধানের রোগ নির্ণয়, কৃষি সিদ্ধান্ত, এবং CABI প্ল্যান্ট ক্লিনিক পরামর্শ পদ্ধতি।</p>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            <div style={{background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",borderRadius:10,padding:"6px 12px",fontSize:11,color:"#fff",fontWeight:600}}>🎮 ৩টি সিমুলেশন</div>
-            <div style={{background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",borderRadius:10,padding:"6px 12px",fontSize:11,color:"#fff",fontWeight:600}}>🌾 বাংলায়</div>
-            <div style={{background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",borderRadius:10,padding:"6px 12px",fontSize:11,color:"#fff",fontWeight:600}}>📱 মোবাইল বান্ধব</div>
-          </div>
-        </div>
+    <div style={{animation:"fadeIn .3s ease",paddingBottom:20}}>
+      {/* Section header */}
+      <div style={{marginBottom:20}}>
+        <div className="ud-headline" style={{fontWeight:800,fontSize:20,color:C.primaryDark,marginBottom:4}}>🎮 গেম হাব</div>
+        <div style={{fontSize:13,color:C.textLight}}>খেলার ছলে শিখুন — কৃষি সিদ্ধান্ত, রোগ নির্ণয় ও CABI প্রোটোকল</div>
       </div>
 
-      {/* Game cards */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(320px,1fr))",gap:14}}>
+      {/* Game cards — vertical list, each card separate and spacious */}
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
         {GAMES.map((game,i)=>(
-          <div key={game.id} style={{background:"#fff",borderRadius:22,overflow:"hidden",boxShadow:C.shadowMd,border:`1px solid ${C.border}`,animation:`popIn .4s ease ${i*.1}s both`,cursor:"pointer",height:"100%",display:"flex",flexDirection:"column"}} onClick={()=>{setActiveGame(game.id);setGameLoaded(false);setGameErr(false);}}>
-            {/* Card header with gradient */}
-            <div style={{background:game.bg,padding:"18px 20px 16px",position:"relative",overflow:"hidden"}}>
-              <div style={{position:"absolute",top:-10,right:-10,fontSize:60,opacity:.2}}>{game.icon}</div>
-              <div style={{position:"relative",display:"flex",alignItems:"flex-start",gap:12}}>
-                <div style={{width:52,height:52,borderRadius:14,background:"rgba(255,255,255,0.2)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>{game.icon}</div>
-                <div style={{flex:1}}>
-                  <div style={{color:"#fff",fontWeight:800,fontSize:16,marginBottom:2}}>{game.title}</div>
-                  <div style={{color:"rgba(255,255,255,0.75)",fontSize:11,marginBottom:8}}>{game.subtitle}</div>
-                  <span style={{background:"rgba(255,255,255,0.2)",backdropFilter:"blur(4px)",color:"#fff",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:700}}>{game.badge}</span>
-                </div>
+          <a
+            key={game.id}
+            href={game.src}
+            target="_blank"
+            rel="noreferrer"
+            style={{display:"flex",alignItems:"center",gap:14,background:"#fff",borderRadius:16,padding:"16px 18px",border:`1px solid ${C.border}`,boxShadow:C.shadow,textDecoration:"none",animation:`popIn .4s ease ${i*.08}s both`,transition:"all .2s ease"}}
+          >
+            {/* Game icon */}
+            <div style={{width:54,height:54,borderRadius:14,background:game.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0,boxShadow:"0 4px 12px rgba(0,0,0,0.12)"}}>
+              {game.icon}
+            </div>
+            {/* Game info */}
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:800,fontSize:15,color:C.text,marginBottom:2,lineHeight:1.3}}>{game.title}</div>
+              <div style={{fontSize:11,color:C.textMuted,marginBottom:6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{game.subtitle}</div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+                <span style={{fontSize:10,color:C.textLight}}>⚡ {game.difficulty}</span>
+                <span style={{fontSize:10,color:C.textLight}}>⏱ {game.duration}</span>
+                {game.tags.slice(0,2).map(tag=><span key={tag} style={{background:C.bgMuted,borderRadius:12,padding:"1px 8px",fontSize:10,color:C.textMuted}}>{tag}</span>)}
               </div>
             </div>
-            {/* Card body */}
-            <div style={{padding:"14px 16px",display:"flex",flexDirection:"column",flex:1}}>
-              <div style={{marginBottom:14,borderRadius:18,background:"linear-gradient(135deg,#f6fbf7,#edf6ef)",border:`1px solid ${C.border}`,padding:12,display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
-                <div>
-                  <div style={{fontSize:11,color:C.textMuted,marginBottom:4}}>Preview mode</div>
-                  <div style={{fontWeight:800,fontSize:13,color:C.primaryDark}}>Responsive wide game stage</div>
-                </div>
-                <div style={{width:84,height:52,borderRadius:12,background:"#dce8de",padding:5,boxShadow:"inset 0 0 0 1px rgba(0,96,40,0.08)"}}>
-                  <div style={{width:"100%",height:"100%",borderRadius:8,background:game.bg,position:"relative",overflow:"hidden"}}>
-                    <div style={{position:"absolute",left:6,right:6,top:6,height:5,borderRadius:999,background:"rgba(255,255,255,0.42)"}} />
-                    <div style={{position:"absolute",left:6,right:22,bottom:8,height:24,borderRadius:7,background:"rgba(255,255,255,0.18)"}} />
-                  </div>
-                </div>
-              </div>
-              <p style={{fontSize:12,color:C.textMuted,lineHeight:1.6,marginBottom:12}}>{game.desc}</p>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
-                {game.tags.map(tag=><span key={tag} style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:20,padding:"2px 9px",fontSize:10,color:C.textMuted,fontWeight:600}}>{tag}</span>)}
-              </div>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:"auto"}}>
-                <div style={{display:"flex",gap:14}}>
-                  <div style={{fontSize:11,color:C.textMuted}}>⚡ <span style={{color:C.text,fontWeight:600}}>{game.difficulty}</span></div>
-                  <div style={{fontSize:11,color:C.textMuted}}>⏱ <span style={{color:C.text,fontWeight:600}}>{game.duration}</span></div>
-                </div>
-                <button style={{background:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,border:"none",borderRadius:14,color:"#fff",padding:"10px 18px",fontSize:13,fontWeight:800,cursor:"pointer",boxShadow:`0 8px 18px ${C.primary}33`}}>
-                  খেলুন →
-                </button>
-              </div>
+            {/* Play button */}
+            <div style={{flexShrink:0,width:40,height:40,borderRadius:12,background:`linear-gradient(135deg,${game.color},${game.color}cc)`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 16px rgba(0,0,0,0.15)"}}>
+              <span style={{color:"#fff",fontSize:18}}>↗</span>
             </div>
-          </div>
+          </a>
         ))}
       </div>
 
-      {/* Learning path section */}
-      <div style={{marginTop:16,background:"#fff",borderRadius:16,padding:16,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-        <div style={{fontWeight:800,fontSize:14,color:C.primaryDark,marginBottom:4}}>📚 শেখার পথ</div>
-        <div style={{color:C.textMuted,fontSize:12,marginBottom:12}}>নতুন হলে এই ক্রমে খেলুন:</div>
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+      {/* Learning path — minimal */}
+      <div style={{marginTop:20,padding:"12px 0",borderTop:`1px solid ${C.border}`}}>
+        <div style={{fontSize:11,color:C.textLight,fontWeight:700,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>📚 শেখার ক্রম</div>
+        <div style={{display:"flex",gap:6,alignItems:"center",fontSize:11,color:C.textMuted}}>
           {["প্ল্যান্ট ক্লিনিক","ধানের ডাক্তার","স্মার্ট কৃষক"].map((name,i,arr)=>(
             <span key={name} style={{display:"flex",alignItems:"center",gap:6}}>
-              <span style={{background:C.primary,color:"#fff",borderRadius:20,padding:"4px 10px",fontSize:11,fontWeight:700}}>{i+1}. {name}</span>
-              {i<arr.length-1&&<span style={{color:C.textLight,fontSize:14}}>→</span>}
+              <span style={{color:C.primary,fontWeight:700}}>{i+1}. {name}</span>
+              {i<arr.length-1&&<span style={{color:C.border}}>→</span>}
             </span>
           ))}
         </div>
-      </div>
-
-      {/* External link */}
-      <div style={{marginTop:12,background:`linear-gradient(135deg,${C.bgMuted},#fff)`,borderRadius:14,padding:14,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12}}>
-        <span style={{fontSize:26}}>🌐</span>
-        <div style={{flex:1}}>
-          <div style={{fontWeight:700,fontSize:13,color:C.text}}>পূর্ণ স্ক্রিনে খেলুন</div>
-          <div style={{fontSize:11,color:C.textMuted}}>game-diagnosis.space.z.ai</div>
-        </div>
-        <a href="https://game-diagnosis.space.z.ai" target="_blank" rel="noreferrer" style={{background:C.primary,color:"#fff",padding:"8px 14px",borderRadius:10,textDecoration:"none",fontSize:12,fontWeight:700,flexShrink:0,boxShadow:C.shadow}}>↗ খুলুন</a>
       </div>
     </div>
   );
