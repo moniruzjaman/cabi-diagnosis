@@ -4,9 +4,43 @@ import { diagnoseOffline } from "./offline/index";
 // ─── Global styles ────────────────────────────────────────────────────────────
 const GLOBAL_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+  :root {
+    --c-primary: #006028;
+    --c-primary-light: #1a7a3a;
+    --c-primary-dark: #005322;
+    --c-primary-x-dark: #002109;
+    --c-accent: #f59e0b;
+    --c-accent-light: #fbbf24;
+    --c-accent-dark: #d97706;
+    --c-bg: #f5fbf6;
+    --c-bg-card: #ffffff;
+    --c-bg-muted: #eff5f0;
+    --c-text: #171d1a;
+    --c-text-muted: #3f493f;
+    --c-text-light: #6f7a6e;
+    --c-border: #becabc;
+    --c-border-focus: #1a7a3a;
+    --c-success: #16a34a;
+    --c-warning: #d97706;
+    --c-danger: #dc2626;
+    --c-blue: #2563eb;
+    --c-shadow: 0 8px 24px rgba(0,33,9,0.08);
+    --c-shadow-md: 0 16px 40px rgba(0,33,9,0.10);
+    --c-shadow-lg: 0 22px 60px rgba(0,33,9,0.14);
+    --c-scrollbar: #2d9d52;
+    --c-font-sans: 'Inter', 'Noto Sans Bengali', sans-serif;
+    --c-font-headline: 'Plus Jakarta Sans', 'Noto Sans Bengali', sans-serif;
+    --c-radius-sm: 8px;
+    --c-radius-md: 14px;
+    --c-radius-lg: 20px;
+    --c-radius-xl: 28px;
+    --c-transition: all 0.2s ease;
+    --c-glow-color: rgba(26,122,58,0.3);
+    --c-glow-color-strong: rgba(26,122,58,0.6);
+  }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{font-family:'Inter','Noto Sans Bengali',sans-serif;background:#f5fbf6;color:#171d1a;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+  body{font-family:var(--c-font-sans);background:var(--c-bg);color:var(--c-text);overflow-x:hidden;-webkit-tap-highlight-color:transparent}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
   @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -14,14 +48,14 @@ const GLOBAL_STYLE = `
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
   @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
   @keyframes popIn{0%{transform:scale(.85);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
-  @keyframes glow{0%,100%{box-shadow:0 0 8px rgba(26,122,58,0.3)}50%{box-shadow:0 0 20px rgba(26,122,58,0.6)}}
+  @keyframes glow{0%,100%{box-shadow:0 0 8px var(--c-glow-color)}50%{box-shadow:0 0 20px var(--c-glow-color-strong)}}
   @keyframes scan{0%{transform:translateY(-120px)}100%{transform:translateY(260px)}}
   ::-webkit-scrollbar{width:3px;height:3px}
-  ::-webkit-scrollbar-thumb{background:#2d9d52;border-radius:4px}
+  ::-webkit-scrollbar-thumb{background:var(--c-scrollbar);border-radius:4px}
   input,select,textarea,button{font-family:inherit}
   button:active{transform:scale(0.97)}
-  .ud-headline{font-family:'Plus Jakarta Sans','Noto Sans Bengali',sans-serif}
-  .ud-editorial-shadow{box-shadow:0 16px 44px rgba(0,33,9,0.10)}
+  .ud-headline{font-family:var(--c-font-headline)}
+  .ud-editorial-shadow{box-shadow:var(--c-shadow-md)}
 `;
 /* Reduced header/footer heights for better game visibility */
 const REDUCED_HEADER_HEIGHT = `60px`;
@@ -1535,7 +1569,7 @@ function GameHub(){
         <div style={{position:"relative"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
             <div style={{width:40,height:40,borderRadius:12,overflow:"hidden",flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.3)"}}>
-              <img src="/cabi-logo.png" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+              <img src="/cabi-logo.jpg" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
             </div>
             <div>
               <div style={{color:"#fff",fontWeight:800,fontSize:16,lineHeight:1.2}}>উদ্ভিদ গোয়েন্দা</div>
@@ -2060,7 +2094,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
         <div style={{maxWidth:1280,width:"100%",margin:"0 auto"}}>
         {!isGameTab&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
           <div style={{width:40,height:40,borderRadius:11,overflow:"hidden",flexShrink:0,boxShadow:"0 2px 10px rgba(0,0,0,0.3)",animation:"glow 3s ease-in-out infinite"}}>
-            <img src="/cabi-logo.png" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+            <img src="/cabi-logo.jpg" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
           </div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{color:"#fff",fontWeight:800,fontSize:17,letterSpacing:-.5,lineHeight:1.1}}>উদ্ভিদ গোয়েন্দা</div>
@@ -2377,7 +2411,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
         {activeTab==="guide"&&(
           <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-              <div style={{width:42,height:42,borderRadius:11,overflow:"hidden",flexShrink:0}}><img src="/cabi-logo.png" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>
+              <div style={{width:42,height:42,borderRadius:11,overflow:"hidden",flexShrink:0}}><img src="/cabi-logo.jpg" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>
               <div><div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>CABI Plantwise গাইড</div><div style={{color:C.textMuted,fontSize:11}}>সম্পূর্ণ রোগ নির্ণয় প্রোটোকল</div></div>
             </div>
             <CABIGuideTab/>
