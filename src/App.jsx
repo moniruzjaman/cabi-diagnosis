@@ -864,19 +864,73 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
   );
 }
 function AppsHub(){
+  const{ speak, stop, speaking: appsSpeaking, isSupported: appsTts } = useTTS();
   return(
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:14,animation:"fadeIn .3s ease"}}>
-      {OTHER_APPS.map(app=>(
-        <a key={app.url} href={app.url} target="_blank" rel="noreferrer" style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:18,textDecoration:"none",boxShadow:C.shadowMd}}>
-          <div style={{fontSize:30,marginBottom:12}}>{app.icon}</div>
-          <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:6}}>{app.name}</div>
-          <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.7,marginBottom:14}}>{app.desc}</div>
-          <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"#f0fdf4",border:`1px solid ${C.border}`,borderRadius:999,padding:"6px 12px",fontSize:12,color:C.primary,fontWeight:700}}>↗ খুলুন</div>
-        </a>
-      ))}
+    <div style={{animation:"fadeIn .3s ease"}}>
+      {/* YouTube Channel Section */}
+      <div style={{background:linearGradient("#1a1a2e","#16213e"),borderRadius:18,padding:20,marginBottom:16,overflow:"hidden",position:"relative"}}>
+        <div style={{position:"absolute",top:0,right:0,width:120,height:120,background:"radial-gradient(circle,rgba(255,0,0,0.15) 0%,transparent 70%)",borderRadius:"0 0 0 100%"}}/>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+          <div style={{width:48,height:48,borderRadius:12,background:"linear-gradient(135deg,#ff0000,#cc0000)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:"0 4px 12px rgba(255,0,0,0.3)",flexShrink:0}}>▶</div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:800,fontSize:16,color:"#fff",marginBottom:2}}>🎬 AgriWisdom BD</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.7)"}}>YouTube চ্যানেল — কৃষি শেখার ভিডিও</div>
+          </div>
+          <a href="https://www.youtube.com/@AgriWisdomBd" target="_blank" rel="noreferrer" style={{flexShrink:0,background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.25)",borderRadius:10,padding:"8px 14px",color:"#fff",textDecoration:"none",fontSize:12,fontWeight:700,display:"flex",alignItems:"center",gap:6}}>↗ চ্যানেল খুলুন</a>
+        </div>
+        {/* Plant Detective Playlist — future playlist embed area */}
+        <div style={{background:"rgba(0,0,0,0.3)",borderRadius:14,padding:4,overflow:"hidden"}}>
+          <iframe
+            style={{width:"100%",height:240,border:"none",borderRadius:12}}
+            src="https://www.youtube.com/embed?listType=user_uploads&list=AgriWisdomBd"
+            title="AgriWisdom BD ভিডিও"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginTop:10,paddingTop:10,borderTop:"1px solid rgba(255,255,255,0.1)"}}>
+          <span style={{fontSize:14}}>📹</span>
+          <span style={{fontSize:12,color:"rgba(255,255,255,0.8)",flex:1}}>শীঘ্রই <strong style={{color:"#fff"}}>Plant Detective</strong> প্লেইলিস্ট আসছে — রোগ নির্ণয়ের ধাপে ধাপে ভিডিও গাইড!</span>
+        </div>
+      </div>
+
+      {/* Quick Info Cards */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:16}}>
+        <div style={{background:"#f0fdf4",borderRadius:14,padding:14,textAlign:"center"}}>
+          <div style={{fontSize:24,marginBottom:6}}>🔬</div>
+          <div style={{fontWeight:700,fontSize:12,color:C.primaryDark}}>CABI প্রোটোকল</div>
+          <div style={{fontSize:10,color:C.textMuted,marginTop:4}}>৫-ধাপ নির্ণয়</div>
+        </div>
+        <div style={{background:"#eff6ff",borderRadius:14,padding:14,textAlign:"center"}}>
+          <div style={{fontSize:24,marginBottom:6}}>🎮</div>
+          <div style={{fontWeight:700,fontSize:12,color:"#1d4ed8"}}>গেম হাব</div>
+          <div style={{fontSize:10,color:C.textMuted,marginTop:4}}>৫টি শেখার গেম</div>
+        </div>
+        <div style={{background:"#faf5ff",borderRadius:14,padding:14,textAlign:"center"}}>
+          <div style={{fontSize:24,marginBottom:6}}>📚</div>
+          <div style={{fontWeight:700,fontSize:12,color:"#7c3aed"}}>তথ্য ভান্ডার</div>
+          <div style={{fontSize:10,color:C.textMuted,marginTop:4}}>ভিডিও, পিডিএফ, অডিও</div>
+        </div>
+      </div>
+
+      {/* Apps Section */}
+      <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:10}}>🌐 আমাদের অন্য অ্যাপ</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12}}>
+        {OTHER_APPS.map(app=>(
+          <a key={app.url} href={app.url} target="_blank" rel="noreferrer" style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:16,padding:16,textDecoration:"none",boxShadow:C.shadow,display:"flex",alignItems:"center",gap:12}}>
+            <div style={{width:44,height:44,borderRadius:12,background:C.bgMuted,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{app.icon}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:700,fontSize:13,color:C.primaryDark,marginBottom:2}}>{app.name}</div>
+              <div style={{fontSize:11,color:C.textMuted,lineHeight:1.4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{app.desc}</div>
+            </div>
+            <span style={{flexShrink:0,fontSize:16,color:C.primary}}>↗</span>
+          </a>
+        ))}
+      </div>
     </div>
   );
 }
+function linearGradient(a,b){return `linear-gradient(135deg,${a},${b})`;}
 function MediaFrame({title,src,height=520}){
   return(
     <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:24,padding:12,boxShadow:C.shadow}}>
@@ -1118,6 +1172,8 @@ function CABIGuideTab(){
    const[section,setSection]=useState("protocol");
    const[database,setDatabase]=useState(null);
    const[loading,setLoading]=useState(true);
+   const{ speak, stop, speaking: guideSpeaking, isSupported: guideTtsReady } = useTTS();
+   const[activeStep, setActiveStep] = useState(null);
    
    useEffect(()=>{
      fetch('/database.json')
@@ -1207,7 +1263,7 @@ function CABIGuideTab(){
            {/* Add reference images for protocol section */}
            {!loading && database && (
              <div style={{marginTop:20}}>
-               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🔍 সごめんなさい načewskiprzed</div>
+               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🔍 প্রোটোকল সম্পর্কিত ছবি</div>
                <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
                  {getRelevantImages(database, "protocol").map((img, index)=>( 
                    <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
@@ -1255,7 +1311,17 @@ function CABIGuideTab(){
        )}
        {section==="nutrients"&&(
          <div>
-           <div style={{background:"#f0fdf4",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #bbf7d0"}}><div style={{fontWeight:700,fontSize:13,color:C.success,marginBottom:3}}>🧪 পুষ্টি উপাদান</div><div style={{fontSize:12,color:C.text,lineHeight:1.7}}>পুষ্টি অভাবের লক্ষণ প্রায়ই রোগের মতো দেখায়। CABI প্রোটোকলে এটি প্রথমেই বাদ দিতে হয়।</div></div>
+           <div style={{background:"#f0fdf4",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #bbf7d0"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:700,fontSize:13,color:C.success,marginBottom:3}}>🧪 পুষ্টি উপাদান</div>
+                <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>পুষ্টি অভাবের লক্ষণ প্রায়ই রোগের মতো দেখায়। CABI প্রোটোকলে এটি প্রথমেই বাদ দিতে হয়।</div>
+              </div>
+              {guideTtsReady && (
+                <button onClick={() => speak("পুষ্টি উপাদান। পুষ্টি অভাবের লক্ষণ প্রায়ই রোগের মতো দেখায়। সি এ বি আই প্রোটোকলে এটি প্রথমেই বাদ দিতে হয়।", { prependFriendly: true })} style={{ flexShrink:0, width:36, height:36, borderRadius:10, background:"#fff", border:"1.5px solid #bbf7d0", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:16 }}>🔊</button>
+              )}
+            </div>
+          </div>
            {CABI_GUIDE.nutrients.map((n,i)=>(
              <div key={i} style={{background:"#fff",borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${C.border}`,borderLeft:`4px solid ${n.color}`,boxShadow:C.shadow}}>
                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
@@ -1304,7 +1370,7 @@ function CABIGuideTab(){
            {/* Add reference images for IPM section */}
            {!loading && database && (
              <div style={{marginTop:20}}>
-               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ IPM পিরামিডের संदर्भ छवियां</div>
+               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ IPM পিরামিড সম্পর্কিত ছবি</div>
                <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
                  {getRelevantImages(database, "ipm").map((img, index)=>( 
                    <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
@@ -1355,7 +1421,7 @@ function CABIGuideTab(){
            {/* Add reference images for resistance section */}
            {!loading && database && (
              <div style={{marginTop:20}}>
-               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ PRC/IRAC রোটেশনের संदर्भ छवियां</div>
+               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ FRAC/IRAC রোটেশন সম্পর্কিত ছবি</div>
                <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
                  {getRelevantImages(database, "resistance").map((img, index)=>( 
                    <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
@@ -1963,9 +2029,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
         {activeTab==="home"&&<EnhancedHomeTab setActiveTab={setActiveTab} history={history} weather={weather} locationName={locationName}/>}
 
         {activeTab==="apps"&&(
-          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-            <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:3}}>🌐 আমাদের অন্য অ্যাপ</div>
-            <div style={{color:C.textMuted,fontSize:12,marginBottom:14}}>আরও কৃষি টুল ও শেখার প্ল্যাটফর্ম</div>
+          <div>
             <AppsHub/>
           </div>
         )}
