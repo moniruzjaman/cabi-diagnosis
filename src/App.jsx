@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { diagnoseOffline } from "./offline/index";
+import SymptomSpotter from "./games/SymptomSpotter";
+import CauseDetective from "./games/CauseDetective";
+import DiseaseTriangle from "./games/DiseaseTriangle";
+import FieldScout from "./games/FieldScout";
+import IPMCommander from "./games/IPMCommander";
 
 // ─── Global styles ────────────────────────────────────────────────────────────
 const GLOBAL_STYLE = `
@@ -1335,99 +1340,111 @@ function CABIGuideTab(){
 
 // ─── 🎮 GAME HUB ─────────────────────────────────────────────────────────────
 function GameHub(){
-  const GAMES=[
-    {
-      id:"dhan-doctor",
-      title:"ধানের ডাক্তার",
-      subtitle:"Dhan Doctor Simulation",
-      desc:"ধানের ৫টি প্রধান রোগ চিহ্নিত করুন এবং সঠিক চিকিৎসা দিন। বাস্তব মাঠের পরিস্থিতি থেকে শিখুন।",
-      icon:"🌾",
-      color:C.game2,
-      bg:"linear-gradient(135deg,#0c4a6e,#0891b2)",
-      tags:["ধান","রোগ নির্ণয়","IPM"],
-      difficulty:"মধ্যম",
-      duration:"১৫-২০ মিনিট",
-      src:"https://game-diagnosis.space.z.ai/",
-      badge:"🏆 ৩টি সিমুলেশন",
-    },
-    {
-      id:"smart-krishok",
-      title:"স্মার্ট কৃষক ৩.০",
-      subtitle:"Smart Farmer Decision Game",
-      desc:"কৃষি সিদ্ধান্ত গ্রহণের দক্ষতা বাড়ান। ফসল ব্যবস্থাপনা, সার প্রয়োগ ও বাজার দর বিশ্লেষণ।",
-      icon:"👨‍🌾",
-      color:C.game1,
-      bg:"linear-gradient(135deg,#4c1d95,#7c3aed)",
-      tags:["কৃষি সিদ্ধান্ত","অর্থনীতি","সার"],
-      difficulty:"কঠিন",
-      duration:"২০-৩০ মিনিট",
-      src:"https://game-diagnosis.space.z.ai/",
-      badge:"⭐ নতুন সংস্করণ",
-    },
-    {
-      id:"plant-clinic",
-      title:"প্ল্যান্ট ক্লিনিক",
-      subtitle:"Plant Clinic Simulation",
-      desc:"কৃষকের সমস্যা শুনুন, লক্ষণ বিশ্লেষণ করুন এবং বিশেষজ্ঞ পরামর্শ দিন। CABI প্রোটোকল অনুশীলন।",
-      icon:"🏥",
-      color:C.game3,
-      bg:"linear-gradient(135deg,#7c2d12,#ea580c)",
-      tags:["CABI","পরামর্শ","IPM"],
-      difficulty:"সহজ",
-      duration:"১০-১৫ মিনিট",
-      src:"https://game-diagnosis.space.z.ai/",
-      badge:"🌱 শুরু করুন",
-    },
+  const[activeGame,setActiveGame]=useState(null);
+
+  const CABI_GAMES=[
+    {id:"symptom-spotter",title:"লক্ষণ লক্ষ্য",en:"Symptom Spotter",step:1,icon:"👁️",color:"#2563eb",bg:"linear-gradient(135deg,#1e40af,#2563eb)",desc:"ফসলের লক্ষণ চিনুন — পাতার দাগ, রং ও আকৃতি থেকে রোগ শনাক্ত করুন",difficulty:"সহজ",duration:"৫-১০ মিনিট",Component:SymptomSpotter},
+    {id:"cause-detective",title:"কারণ খুঁজো",en:"Cause Detective",step:2,icon:"🔬",color:"#7c3aed",bg:"linear-gradient(135deg,#4c1d95,#7c3aed)",desc:"CABI বর্জন পদ্ধতি — ক্লু থেকে সঠিক কারণ নির্ণয় করুন",difficulty:"মধ্যম",duration:"১০-১৫ মিনিট",Component:CauseDetective},
+    {id:"disease-triangle",title:"রোগ ত্রিভুজ",en:"Disease Triangle",step:3,icon:"🔺",color:"#d97706",bg:"linear-gradient(135deg,#92400e,#d97706)",desc:"পোষক, রোগজীবাণু ও পরিবেশ — তিনটি উপাদান মেলান",difficulty:"মধ্যম",duration:"১০-১৫ মিনিট",Component:DiseaseTriangle},
+    {id:"field-scout",title:"মাঠ পরীক্ষক",en:"Field Scout",step:4,icon:"🧪",color:"#16a34a",bg:"linear-gradient(135deg,#065f46,#16a34a)",desc:"W-pattern স্যাম্পলিং ও ETL থ্রেশহোল্ড সিদ্ধান্ত",difficulty:"কঠিন",duration:"১০-১৫ মিনিট",Component:FieldScout},
+    {id:"ipm-commander",title:"IPM কমান্ডার",en:"IPM Commander",step:5,icon:"🌿",color:"#0891b2",bg:"linear-gradient(135deg,#0e7490,#0891b2)",desc:"IPM পিরামিড অনুসরণ করে সঠিক চিকিৎসা সিদ্ধান্ত নিন",difficulty:"কঠিন",duration:"১০-১৫ মিনিট",Component:IPMCommander},
   ];
+
+  const EXTERNAL_GAMES=[
+    {id:"dhan-doctor",title:"ধানের ডাক্তার",en:"Dhan Doctor Simulation",icon:"🌾",color:C.game2,bg:"linear-gradient(135deg,#0c4a6e,#0891b2)",desc:"ধানের ৫টি প্রধান রোগ চিহ্নিত করুন",difficulty:"মধ্যম",duration:"১৫-২০ মিনিট",src:"https://game-diagnosis.space.z.ai/"},
+    {id:"smart-krishok",title:"স্মার্ট কৃষক ৩.০",en:"Smart Farmer Decision Game",icon:"👨‍🌾",color:C.game1,bg:"linear-gradient(135deg,#4c1d95,#7c3aed)",desc:"কৃষি সিদ্ধান্ত গ্রহণের দক্ষতা বাড়ান",difficulty:"কঠিন",duration:"২০-৩০ মিনিট",src:"https://game-diagnosis.space.z.ai/"},
+    {id:"plant-clinic",title:"প্ল্যান্ট ক্লিনিক",en:"Plant Clinic Simulation",icon:"🏥",color:C.game3,bg:"linear-gradient(135deg,#7c2d12,#ea580c)",desc:"CABI প্রোটোকল অনুশীলন ও পরামর্শ দিন",difficulty:"সহজ",duration:"১০-১৫ মিনিট",src:"https://game-diagnosis.space.z.ai/"},
+  ];
+
+  if(activeGame){
+    const game=CABI_GAMES.find(g=>g.id===activeGame);
+    if(!game)return null;
+    const GameComponent=game.Component;
+    return(
+      <div style={{animation:"fadeIn .3s ease"}}>
+        <button onClick={()=>setActiveGame(null)} style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,background:"none",border:"none",cursor:"pointer",padding:0,color:C.primary,fontSize:13,fontWeight:600}}>
+          <span style={{fontSize:18}}>←</span> গেম হাবে ফিরুন
+        </button>
+        <GameComponent/>
+      </div>
+    );
+  }
 
   return(
     <div style={{animation:"fadeIn .3s ease",paddingBottom:20}}>
       {/* Section header */}
       <div style={{marginBottom:20}}>
         <div className="ud-headline" style={{fontWeight:800,fontSize:20,color:C.primaryDark,marginBottom:4}}>🎮 গেম হাব</div>
-        <div style={{fontSize:13,color:C.textLight}}>খেলার ছলে শিখুন — কৃষি সিদ্ধান্ত, রোগ নির্ণয় ও CABI প্রোটোকল</div>
+        <div style={{fontSize:13,color:C.textLight}}>CABI Plantwise ৫-ধাপ প্রোটোকল অনুসারে খেলুন ও শিখুন</div>
       </div>
 
-      {/* Game cards — vertical list, each card separate and spacious */}
-      <div style={{display:"flex",flexDirection:"column",gap:14}}>
-        {GAMES.map((game,i)=>(
+      {/* CABI Step Games — inline playable */}
+      <div style={{marginBottom:8,fontSize:11,color:C.primary,fontWeight:700,textTransform:"uppercase",letterSpacing:.6}}>📖 CABI প্রোটোকল গেম</div>
+      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:20}}>
+        {CABI_GAMES.map((game,i)=>(
+          <button
+            key={game.id}
+            onClick={()=>setActiveGame(game.id)}
+            style={{display:"flex",alignItems:"center",gap:14,background:"#fff",borderRadius:16,padding:"14px 16px",border:`1px solid ${C.border}`,boxShadow:C.shadow,cursor:"pointer",animation:`popIn .4s ease ${i*.06}s both`,transition:"all .2s ease",textAlign:"left",width:"100%"}}
+          >
+            <div style={{position:"relative",width:54,height:54,flexShrink:0}}>
+              <div style={{width:54,height:54,borderRadius:14,background:game.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:"0 4px 12px rgba(0,0,0,0.12)"}}>
+                {game.icon}
+              </div>
+              <div style={{position:"absolute",top:-4,right:-4,width:20,height:20,borderRadius:8,background:"#fff",border:`1.5px solid ${game.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:game.color,boxShadow:C.shadow}}>ধা.{game.step}</div>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:800,fontSize:14,color:C.text,marginBottom:1,lineHeight:1.3}}>{game.title}</div>
+              <div style={{fontSize:10.5,color:C.textMuted,marginBottom:5,lineHeight:1.4}}>{game.desc}</div>
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <span style={{fontSize:10,color:C.textLight}}>⚡ {game.difficulty}</span>
+                <span style={{fontSize:10,color:C.textLight}}>⏱ {game.duration}</span>
+              </div>
+            </div>
+            <div style={{flexShrink:0,width:38,height:38,borderRadius:12,background:`linear-gradient(135deg,${game.color},${game.color}bb)`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 16px rgba(0,0,0,0.15)"}}>
+              <span style={{color:"#fff",fontSize:16}}>▶</span>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* External simulation games */}
+      <div style={{marginBottom:8,fontSize:11,color:C.textLight,fontWeight:700,textTransform:"uppercase",letterSpacing:.6}}>🌐 সিমুলেশন গেম</div>
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {EXTERNAL_GAMES.map((game,i)=>(
           <a
             key={game.id}
             href={game.src}
             target="_blank"
             rel="noreferrer"
-            style={{display:"flex",alignItems:"center",gap:14,background:"#fff",borderRadius:16,padding:"16px 18px",border:`1px solid ${C.border}`,boxShadow:C.shadow,textDecoration:"none",animation:`popIn .4s ease ${i*.08}s both`,transition:"all .2s ease"}}
+            style={{display:"flex",alignItems:"center",gap:14,background:"#fff",borderRadius:16,padding:"14px 16px",border:`1px solid ${C.border}`,boxShadow:C.shadow,textDecoration:"none",animation:`popIn .4s ease ${(i+5)*.06}s both`,transition:"all .2s ease"}}
           >
-            {/* Game icon */}
             <div style={{width:54,height:54,borderRadius:14,background:game.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0,boxShadow:"0 4px 12px rgba(0,0,0,0.12)"}}>
               {game.icon}
             </div>
-            {/* Game info */}
             <div style={{flex:1,minWidth:0}}>
-              <div style={{fontWeight:800,fontSize:15,color:C.text,marginBottom:2,lineHeight:1.3}}>{game.title}</div>
-              <div style={{fontSize:11,color:C.textMuted,marginBottom:6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{game.subtitle}</div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+              <div style={{fontWeight:800,fontSize:14,color:C.text,marginBottom:1,lineHeight:1.3}}>{game.title}</div>
+              <div style={{fontSize:10.5,color:C.textMuted,marginBottom:5,lineHeight:1.4}}>{game.desc}</div>
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
                 <span style={{fontSize:10,color:C.textLight}}>⚡ {game.difficulty}</span>
                 <span style={{fontSize:10,color:C.textLight}}>⏱ {game.duration}</span>
-                {game.tags.slice(0,2).map(tag=><span key={tag} style={{background:C.bgMuted,borderRadius:12,padding:"1px 8px",fontSize:10,color:C.textMuted}}>{tag}</span>)}
               </div>
             </div>
-            {/* Play button */}
-            <div style={{flexShrink:0,width:40,height:40,borderRadius:12,background:`linear-gradient(135deg,${game.color},${game.color}cc)`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 16px rgba(0,0,0,0.15)"}}>
-              <span style={{color:"#fff",fontSize:18}}>↗</span>
+            <div style={{flexShrink:0,width:38,height:38,borderRadius:12,background:`linear-gradient(135deg,${game.color},${game.color}bb)`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 16px rgba(0,0,0,0.15)"}}>
+              <span style={{color:"#fff",fontSize:16}}>↗</span>
             </div>
           </a>
         ))}
       </div>
 
-      {/* Learning path — minimal */}
+      {/* Learning path */}
       <div style={{marginTop:20,padding:"12px 0",borderTop:`1px solid ${C.border}`}}>
-        <div style={{fontSize:11,color:C.textLight,fontWeight:700,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>📚 শেখার ক্রম</div>
-        <div style={{display:"flex",gap:6,alignItems:"center",fontSize:11,color:C.textMuted}}>
-          {["প্ল্যান্ট ক্লিনিক","ধানের ডাক্তার","স্মার্ট কৃষক"].map((name,i,arr)=>(
-            <span key={name} style={{display:"flex",alignItems:"center",gap:6}}>
-              <span style={{color:C.primary,fontWeight:700}}>{i+1}. {name}</span>
-              {i<arr.length-1&&<span style={{color:C.border}}>→</span>}
+        <div style={{fontSize:11,color:C.textLight,fontWeight:700,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>📚 CABI শেখার ক্রম</div>
+        <div style={{display:"flex",gap:4,alignItems:"center",fontSize:10.5,color:C.textMuted,flexWrap:"wrap"}}>
+          {CABI_GAMES.map((game,i,arr)=>(
+            <span key={game.id} style={{display:"flex",alignItems:"center",gap:4}}>
+              <span style={{display:"inline-flex",alignItems:"center",gap:3,background:`${game.color}15`,borderRadius:10,padding:"3px 8px",color:game.color,fontWeight:700}}>{game.icon} ধাপ {game.step}</span>
+              {i<arr.length-1&&<span style={{color:C.border,fontSize:12}}>→</span>}
             </span>
           ))}
         </div>
@@ -1821,11 +1838,11 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
   const navTabs=[
     {id:"home",label:"হোম",icon:"🏠"},
-    {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
-    {id:"apps",label:"অন্য অ্যাপ",icon:"🌐"},
     {id:"guide",label:"CABI গাইড",icon:"📖"},
-    {id:"library",label:"তথ্যভাণ্ডার",icon:"📚"},
     {id:"game",label:"গেম হাব",icon:"🎮"},
+    {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
+    {id:"library",label:"তথ্য ভান্ডার",icon:"📚"},
+    {id:"apps",label:"অ্যাপস",icon:"🌐"},
     {id:"history",label:"ইতিহাস",icon:"📋"},
   ];
   const legacyNavTabs=[
