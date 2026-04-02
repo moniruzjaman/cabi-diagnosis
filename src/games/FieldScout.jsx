@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { FIELD_SCOUT_IMAGES } from "./imageMap";
+import useTTS from "./useTTS";
+import SymptomImageGallery from "./SymptomImageGallery";
 
 /* ─────────────────── design tokens ─────────────────── */
 const C = {
@@ -186,6 +189,9 @@ export default function FieldScout() {
   const [bonusEarned, setBonusEarned] = useState(false);
   const [observedRate, setObservedRate] = useState(0);
 
+  // ── TTS ──
+  const { speak, stop, speaking, isSupported } = useTTS();
+
   // ── derived ──
   const scenario = SCENARIOS[round % SCENARIOS.length];
   const grid = gridData?.points ?? [];
@@ -213,6 +219,22 @@ export default function FieldScout() {
   useEffect(() => {
     if (score > highScore) persistHigh(score);
   }, [score, highScore, persistHigh]);
+
+  // ── auto-speak each round ──
+  useEffect(() => {
+    if (phase === "playing" && scenario && isSupported) {
+      speak(`${scenario.crop}। ${scenario.pest}। ইটিএল: ${scenario.etl}। মাঠ পরীক্ষা করুন।`);
+    }
+    return () => stop();
+  }, [round, phase]);
+
+  // ── speak result ──
+  useEffect(() => {
+    if (phase === "result" && scenario && isSupported) {
+      if (roundCorrect) speak("সঠিক সিদ্ধান্ত!");
+      else speak("ভুল সিদ্ধান্ত। আবার চেষ্টা করুন।");
+    }
+  }, [phase]);
 
   // ── handlers ──
   const startGame = useCallback(() => {
@@ -949,6 +971,30 @@ export default function FieldScout() {
             </div>
           </div>
         </div>
+
+        {/* Symptom Images */}
+        <SymptomImageGallery
+          images={FIELD_SCOUT_IMAGES[round % 6] || []}
+          label={scenario.pest}
+        />
+
+        {/* Audio helper */}
+        {isSupported && (
+          <button
+            onClick={() => speak(`${scenario.crop}। ${scenario.pest}। ইটিএল: ${scenario.etl}`)}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              width: "100%", padding: "10px 14px", borderRadius: 12,
+              border: `1.5px solid ${speaking ? C.success : C.border}`,
+              background: speaking ? "#f0fdf4" : C.bgMuted,
+              color: speaking ? C.success : C.textMuted,
+              fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 12,
+            }}
+          >
+            <span style={{ fontSize: 18 }}>🔊</span>
+            {speaking ? "শুনছি..." : "সমস্যা শুনুন"}
+          </button>
+        )}
 
         {/* ── Inspection Counter ── */}
         {subPhase === "inspecting" && (

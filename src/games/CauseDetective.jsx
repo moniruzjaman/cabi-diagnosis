@@ -1,4 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { CAUSE_DETECTIVE_IMAGES } from "./imageMap";
+import useTTS from "./useTTS";
+import SymptomImageGallery from "./SymptomImageGallery";
 
 /* ── Design Tokens ── */
 const C = {
@@ -195,6 +198,24 @@ export default function CauseDetective() {
 
   const round = ROUNDS[roundIdx];
   const allCluesRevealed = revealedClues.size === 5;
+
+  /* ── TTS ── */
+  const { speak, stop, speaking, isSupported } = useTTS();
+
+  /* ── Auto-speak symptom on new round ── */
+  useEffect(() => {
+    if (phase === "playing" && round && isSupported) {
+      speak(`${round.crop}। ${round.symptom}`);
+    }
+    return () => stop();
+  }, [roundIdx, phase]);
+
+  /* ── Speak explanation after correct answer ── */
+  useEffect(() => {
+    if (answered && round && isSupported) {
+      setTimeout(() => speak(round.explanation), 500);
+    }
+  }, [answered]);
 
   /* ── Actions ── */
   const startGame = useCallback(() => {
@@ -485,6 +506,30 @@ export default function CauseDetective() {
             <p style={styles.symptomText}>{round.symptom}</p>
           </div>
         </div>
+
+        {/* Symptom Images */}
+        <SymptomImageGallery 
+          images={CAUSE_DETECTIVE_IMAGES[roundIdx] || []} 
+          label={round.symptom}
+        />
+
+        {/* Audio helper */}
+        {isSupported && (
+          <button
+            onClick={() => speak(`${round.crop}। ${round.symptom}`)}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              width: "100%", padding: "10px 14px", borderRadius: 12,
+              border: `1.5px solid ${speaking ? C.success : C.border}`,
+              background: speaking ? "#f0fdf4" : C.bgMuted,
+              color: speaking ? C.success : C.textMuted,
+              fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 16,
+            }}
+          >
+            <span style={{ fontSize: 18 }}>🔊</span>
+            {speaking ? "শুনছি..." : "লক্ষণ শুনুন"}
+          </button>
+        )}
 
         {/* ── Clue Cards ── */}
         <div style={styles.sectionLabel}>

@@ -1,4 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { DISEASE_TRIANGLE_IMAGES } from "./imageMap";
+import useTTS from "./useTTS";
+import SymptomImageGallery from "./SymptomImageGallery";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -134,8 +137,27 @@ export default function DiseaseTriangle() {
   const [animKey, setAnimKey] = useState(0);
   const scrollRef = useRef(null);
 
+  const { speak, stop, speaking, isSupported } = useTTS();
+
   const round = ROUNDS[roundIdx];
   const totalRounds = ROUNDS.length;
+
+  // ── Auto-speak disease description for each round ──
+  useEffect(() => {
+    if (phase === "playing" && round && isSupported) {
+      speak(`রোগ: ${round.disease}। পোষক, রোগজীবাণু ও পরিবেশ — তিনটি সঠিক উপাদান বেছে নিন।`);
+    }
+    return () => stop();
+  }, [roundIdx, phase]);
+
+  // ── Speak result after submission ──
+  useEffect(() => {
+    if (submitted && isSupported && round) {
+      const correct = ["host", "pathogen", "environment"].filter(c => answers[c] === round[c].correct).length;
+      if (correct === 3) speak("চমৎকার! সব ঠিক আছে!");
+      else speak(`${correct}টি সঠিক। আবার চেষ্টা করুন।`);
+    }
+  }, [submitted]);
 
   // ── Shuffled options for the current round ──
   const options = useMemo(() => {
@@ -543,6 +565,30 @@ export default function DiseaseTriangle() {
             {round.risk}
           </div>
         </div>
+
+        {/* Symptom Images */}
+        <SymptomImageGallery 
+          images={DISEASE_TRIANGLE_IMAGES[round.disease] || []} 
+          label={round.disease}
+        />
+
+        {/* Audio helper */}
+        {isSupported && (
+          <button
+            onClick={() => speak(`রোগ: ${round.disease}। পোষক, রোগজীবাণু ও পরিবেশ বেছে নিন।`)}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              width: "100%", padding: "10px 14px", borderRadius: 12,
+              border: `1.5px solid ${speaking ? C.success : C.border}`,
+              background: speaking ? "#f0fdf4" : C.bgMuted,
+              color: speaking ? C.success : C.textMuted,
+              fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 14,
+            }}
+          >
+            <span style={{ fontSize: 18 }}>🔊</span>
+            {speaking ? "শুনছি..." : "রোগের বিবরণ শুনুন"}
+          </button>
+        )}
 
         {/* Mini triangle hint */}
         <div className="dt-fadeIn" style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>

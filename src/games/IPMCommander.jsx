@@ -1,4 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { IPM_COMMANDER_IMAGES } from "./imageMap";
+import useTTS from "./useTTS";
+import SymptomImageGallery from "./SymptomImageGallery";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -396,8 +399,27 @@ export default function IPMCommander() {
   const [highScore, setHighScore] = useState(loadHighScore);
   const [animateOut, setAnimateOut] = useState(false);
 
+  const { speak, stop, speaking, isSupported } = useTTS();
+
   const round = ROUNDS[roundIndex];
   const maxPossible = 60; // 4 × 10 + 20 bonus
+
+  // Auto-speak problem for each round
+  useEffect(() => {
+    if (phase === "playing" && round && isSupported) {
+      speak(`${round.crop}। ${round.problem}। আইপিএম পিরামিড অনুসারে সঠিক ক্রমে বেছে নিন।`);
+    }
+    return () => stop();
+  }, [roundIndex, phase]);
+
+  // Speak round result
+  useEffect(() => {
+    if (showRoundResult && isSupported) {
+      if (perfectOrder) speak("চমৎকার! পুরোপুরি সঠিক ক্রম!");
+      else if (chemicalFirst) speak("সাবধান! রাসায়নিক প্রথমে নেওয়া হয়েছে! প্রতিরোধ প্রথমে।");
+      else speak(`পয়েন্ট: ${roundScore}। আবার চেষ্টা করুন।`);
+    }
+  }, [showRoundResult]);
 
   // Shuffle cards when round changes
   useEffect(() => {
@@ -782,6 +804,34 @@ export default function IPMCommander() {
           </div>
         </div>
       </div>
+
+      {/* Symptom Images */}
+      <div style={{ padding: "8px 16px 0" }}>
+        <SymptomImageGallery
+          images={IPM_COMMANDER_IMAGES[round.problem] || []}
+          label={round.problem}
+        />
+      </div>
+
+      {/* Audio helper */}
+      {isSupported && (
+        <div style={{ padding: "4px 16px 0" }}>
+          <button
+            onClick={() => speak(`${round.crop}। ${round.problem}। আইপিএম পিরামিড অনুসারে সঠিক ক্রমে বেছে নিন।`)}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              width: "100%", padding: "10px 14px", borderRadius: 12,
+              border: `1.5px solid ${speaking ? C.success : C.border}`,
+              background: speaking ? "#f0fdf4" : C.bgMuted,
+              color: speaking ? C.success : C.textMuted,
+              fontSize: 13, fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            <span style={{ fontSize: 18 }}>🔊</span>
+            {speaking ? "শুনছি..." : "সমস্যা শুনুন"}
+          </button>
+        </div>
+      )}
 
       {/* IPM Pyramid (visual legend) */}
       <div style={{ padding: "10px 16px 0", animation: "ipmFadeIn .4s .1s ease both" }}>

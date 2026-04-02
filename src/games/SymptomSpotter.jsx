@@ -1,4 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { SYMPTOM_SPOTTER_IMAGES } from "./imageMap";
+import useTTS from "./useTTS";
+import SymptomImageGallery from "./SymptomImageGallery";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -254,6 +257,18 @@ export default function SymptomSpotter() {
   const currentQ = questions[qIdx] || null;
   const choices = useMemo(() => (currentQ ? getChoices(currentQ) : []), [currentQ]);
 
+  /* ── TTS for illiterate farmers ──────── */
+  const { speak, stop, speaking, isSupported } = useTTS();
+
+  /* ── auto-speak question on load ─────── */
+  useEffect(() => {
+    if (phase === "playing" && currentQ && isSupported) {
+      const text = `${currentQ.crop}। ${currentQ.symptom}। এই লক্ষণের কারণ কী?`;
+      speak(text);
+    }
+    return () => stop();
+  }, [qIdx, phase]);
+
   /* ── inject keyframes on mount ─────────── */
   useEffect(() => { injectStyles(); }, []);
 
@@ -276,6 +291,18 @@ export default function SymptomSpotter() {
     }, 1000);
     return clearTimer;
   }, [phase, qIdx, locked, clearTimer]);
+
+  /* ── speak result feedback ───────────── */
+  useEffect(() => {
+    if (locked && isSupported && answers.length > 0) {
+      const lastAnswer = answers[answers.length - 1];
+      if (lastAnswer.isCorrect) {
+        speak("সঠিক! খুব ভালো!");
+      } else {
+        speak(`ভুল। সঠিক উত্তর: ${currentQ.correct}`);
+      }
+    }
+  }, [locked]);
 
   /* ── handle timeout ────────────────────── */
   useEffect(() => {
@@ -448,6 +475,41 @@ export default function SymptomSpotter() {
               </div>
             </div>
           </div>
+
+          {/* Symptom Images */}
+          <SymptomImageGallery 
+            images={SYMPTOM_SPOTTER_IMAGES[currentQ.correct] || []} 
+            label={currentQ.symptom}
+          />
+
+          {/* Audio helper for illiterate farmers */}
+          {isSupported && (
+            <button
+              onClick={() => speak(`${currentQ.crop}। ${currentQ.symptom}। এই লক্ষণের কারণ কী?`)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                width: "100%",
+                padding: "10px 14px",
+                borderRadius: 12,
+                border: `1.5px solid ${speaking ? C.success : C.border}`,
+                background: speaking ? "#f0fdf4" : C.bgMuted,
+                color: speaking ? C.success : C.textMuted,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                marginBottom: 16,
+                fontFamily: "'Plus Jakarta Sans','Noto Sans Bengali',sans-serif",
+              }}
+            >
+              <span style={{ fontSize: 18, animation: speaking ? "ss-pulse-glow 0.6s ease-in-out infinite" : "none" }}>
+                🔊
+              </span>
+              {speaking ? "শুনছি..." : "লক্ষণ শুনুন (পড়ুন)"}
+            </button>
+          )}
 
           {/* question prompt */}
           <div style={{ fontSize: 15, color: C.textMuted, fontWeight: 600, marginBottom: 12, paddingLeft: 4 }}>
