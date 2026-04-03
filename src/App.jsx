@@ -150,7 +150,37 @@ const OTHER_APPS=[
   {name:"CIRDAP GreenLoop",url:"https://cirdap-greenloop3-0.vercel.app/",icon:"♻️",desc:"Climate and circular agriculture tools"},
 ];
 const LIBRARY_MEDIA={
-  videoUrl:"https://drive.google.com/file/d/1k8A7PSsVHiuPUY5i22wnlktyJESxMpBs/preview",
+  videoCategories:[
+    {
+      id:"intro",title:"🟢 পরিচিতি ও ওভারভিউ",desc:"অ্যাপ ও পদ্ধতি সম্পর্কে পরিচিতি",
+      videos:[
+        {id:"1GnzOWByC2cxpPfoetJGMMoXTA-N4Qk4y",title:"একজন উদ্ভিদ গোয়েন্দা হয়ে উঠুন",desc:"উদ্ভিদ গোয়েন্দা অ্যাপ কীভাবে কাজ করে এবং কৃষকের জন্য কেন গুরুত্বপূর্ণ",emoji:"🔍",size:"40.3 MB"},
+        {id:"1kSbwu6O3XicBgY-ZQ3sUOQbJq54U2Vel",title:"অ্যাপ ডাউনলোড ও ব্যবহার গাইড",desc:"ধাপে ধাপে অ্যাপ ইনস্টল ও ব্যবহার করার নিয়ম",emoji:"📲",size:"5 MB"},
+      ]
+    },
+    {
+      id:"diagnosis",title:"🔬 রোগ নির্ণয়",desc:"উদ্ভিদের রোগ চেনা ও নির্ণয় পদ্ধতি",
+      videos:[
+        {id:"1I5TTG0g7rZLrRT0f0b53gbB_pEXWaqfv",title:"উদ্ভিদ রোগ নির্ণয়",desc:"CABI ৫-ধাপ প্রোটোকল অনুসারে রোগ চিহ্নিতকরণ",emoji:"🩺",size:"38.8 MB"},
+        {id:"1oDpDeaHJqDUwfgMiGIkSTkoUvrG3tOxW",title:"Bacteria Diagnosis",desc:"ব্যাকটেরিয়াজনিত রোগ শনাক্তকরণ ও ব্যবস্থাপনা",emoji:"🦠",size:"3.7 MB"},
+        {id:"1p-22XcoIZmF41w5Ero2oLV_-Q9ninUgj",title:"পুষ্টি ঘাটতি চিহ্নিতকরণ",desc:"উদ্ভিদের পুষ্টি উপাদানের অভাব চেনার উপায়",emoji:"🌿",size:"8 MB"},
+      ]
+    },
+    {
+      id:"management",title:"📐 পরিচালনা ও পদ্ধতি",desc:"IPM পিরামিড, সিদ্ধান্ত পদ্ধতি ও নিরাপদ ফসল",
+      videos:[
+        {id:"1UYQnz5NE1vk3dn0ZmN2-AkivQk0fUMTS",title:"উদ্ভিদ স্বাস্থ্যের জাদুকরী পিরামিড",desc:"IPM পিরামিড অনুসারে উদ্ভিদ সুরক্ষা ব্যবস্থা",emoji:"🔺",size:"35.4 MB"},
+        {id:"1g4oUitcpdzQifZTIUbwjq2jlUPksOYw9",title:"স্মার্ট কৃষকের সিদ্ধান্ত পদ্ধতি",desc:"তথ্য ভিত্তিক সিদ্ধান্ত নেওয়ার কৌশল",emoji:"🧠",size:"9.5 MB"},
+        {id:"1-E6u_rnaCNDWbKap4etH3OkRuCcsN9Hu",title:"এক নিরাপদ ফসলের নিয়মাবলী",desc:"নিরাপদ ফসল উৎপাদনের সবুজ সার্টিফিকেট নিয়ম",emoji:"🛡️",size:"37.1 MB"},
+      ]
+    },
+    {
+      id:"pest",title:"🪲 পোকামাকড় ব্যবস্থাপনা",desc:"নির্দিষ্ট পোকামাকড় শনাক্তকরণ ও দমন",
+      videos:[
+        {id:"1k8A7PSsVHiuPUY5i22wnlktyJESxMpBs",title:"বাদামী গাছফড়িংয়ের রণকৌশল",desc:"BPH শনাক্তকরণ, ক্ষতি ও পরিবেশবান্ধব দমন পদ্ধতি",emoji:"🪲",size:"49.7 MB"},
+      ]
+    },
+  ],
   slides:[
     {title:"স্লাইড ১",id:"1TFMKiKOiQMneoZEn3PYN59JVXJspcz2X"},
     {title:"স্লাইড ২",id:"1ivvMxoVUCM1k9rl8bXpiZ7rLYg8RdMup"},
@@ -1017,9 +1047,9 @@ function LibrarySection(){
       <div style={{background:"#f8fafc",border:`1px dashed ${C.border}`,borderRadius:18,padding:16}}>
         <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:4}}>🎬 ভিডিও সেকশন</div>
         <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.7}}>
-          {LIBRARY_MEDIA.videoUrl?"উপরের ভিডিওটি দেখুন.":"এই ট্যাবের জন্য MP4 লিংক দেওয়া হয়নি, তাই ভিডিও স্লট প্রস্তুত রাখা হয়েছে."}
+          তথ্যভাণ্ডারে ভিডিও গাইড ট্যাবে ভিডিও দেখুন.
         </div>
-        {LIBRARY_MEDIA.videoUrl&&<div style={{marginTop:12}}><MediaFrame title="ভিডিও" src={LIBRARY_MEDIA.videoUrl} height={340}/></div>}
+        
       </div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         {sections.map(item=>(
@@ -1059,33 +1089,96 @@ function LibrarySection(){
     </div>
   );
 }
+function VideoGalleryCard({video,onPlay}){
+  return(
+    <div onClick={()=>onPlay(video)} style={{display:"flex",gap:14,alignItems:"center",padding:"14px 16px",background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,cursor:"pointer",transition:"all 0.2s ease",boxShadow:C.shadow}} className="video-card">
+      <div style={{width:52,height:52,borderRadius:14,background:"linear-gradient(135deg,"+C.primaryLight+","+C.primary+")",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{video.emoji}</div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontWeight:700,fontSize:14,color:C.text,lineHeight:1.3,marginBottom:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{video.title}</div>
+        <div style={{fontSize:11.5,color:C.textMuted,lineHeight:1.5,display:"-webkit-box",WebkitLineClamp:1,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{video.desc}</div>
+        <div style={{fontSize:10,color:C.textLight,marginTop:3}}>📦 {video.size}</div>
+      </div>
+      <div style={{width:36,height:36,borderRadius:50,background:"linear-gradient(135deg,"+C.accent+","+C.accentDark+")",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 12px rgba(245,158,11,0.3)"}}>
+        <span style={{color:"#fff",fontSize:14,marginLeft:2}}>▶</span>
+      </div>
+    </div>
+  );
+}
 function EnhancedLibrarySection(){
-  const[section,setSection]=useState("slides");
+  const[section,setSection]=useState("video");
   const[currentSlide,setCurrentSlide]=useState(0);
+  const[activeVideoCategory,setActiveVideoCategory]=useState("intro");
+  const[playingVideo,setPlayingVideo]=useState(null);
   const sections=[
-    {id:"slides",label:"স্লাইড ডেক",icon:"🖼️"},
-    {id:"read",label:"পড়ার ডকুমেন্ট",icon:"📖"},
-    {id:"audio",label:"অডিও পডকাস্ট",icon:"🎙️"},
+    {id:"video",label:"\u{1F3AC} \u09AD\u09BF\u09A1\u09BF\u0993 \u0997\u09BE\u0987\u09A1",icon:"\u{1F3AC}"},
+    {id:"slides",label:"\u09B8\u09CD\u09B2\u09BE\u0987\u09A1 \u09A1\u09C7\u0995",icon:"\u{1F5BC}\uFE0F"},
+    {id:"read",label:"\u09AA\u09A1\u09BC\u09BE\u09B0 \u09A1\u0995\u09C1\u09AE\u09C7\u09A8\u09CD\u099F",icon:"\u{1F4D6}"},
+    {id:"audio",label:"\u0985\u09A1\u09BF\u0993 \u09AA\u09A1\u0995\u09BE\u09B8\u09CD\u099F",icon:"\u{1F3A4}"},
   ];
   const slide=LIBRARY_MEDIA.slides[currentSlide];
+  const allVideos=LIBRARY_MEDIA.videoCategories||[];
+  const currentCategory=allVideos.find(c=>c.id===activeVideoCategory)||allVideos[0];
+  const totalVideos=allVideos.reduce((sum,c)=>sum+c.videos.length,0);
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
-      <div className="ud-editorial-shadow" style={{background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",border:`1px solid ${C.border}`,borderRadius:28,padding:18}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:12,flexWrap:"wrap",marginBottom:8}}>
-          <div>
-            <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",marginBottom:6}}>ভিডিও গাইড</div>
-            <div className="ud-headline" style={{fontWeight:800,fontSize:28,color:C.primaryDark,lineHeight:1.1}}>দেখে শিখুন, তারপর খুলুন স্লাইড ও ডকুমেন্ট</div>
+      {section==="video"&&playingVideo&&(
+        <div style={{display:"flex",flexDirection:"column",gap:12,animation:"fadeIn 0.3s ease"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:20}}>{playingVideo.emoji}</span>
+              <div className="ud-headline" style={{fontWeight:800,fontSize:16,color:C.primaryDark}}>{playingVideo.title}</div>
+            </div>
+            <button onClick={()=>setPlayingVideo(null)} style={{padding:"8px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",fontWeight:700,color:C.danger,fontSize:12}}>✕ বন্ধ করুন</button>
           </div>
-          <div style={{padding:"8px 12px",borderRadius:999,background:"#fff",border:`1px solid ${C.border}`,fontSize:12,fontWeight:700,color:C.primary}}>তথ্যভাণ্ডার</div>
+          <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6,padding:"0 4px"}}>{playingVideo.desc}</div>
+          <MediaFrame title={playingVideo.title} src={toDrivePreviewUrl(playingVideo.id)} height={420}/>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <a href={toDriveViewUrl(playingVideo.id)} target="_blank" rel="noreferrer" style={{padding:"10px 16px",borderRadius:14,border:`1px solid ${C.border}`,background:"#f0fdf4",textDecoration:"none",color:C.primary,fontWeight:700,fontSize:13}}>🔗 Drive এ খুলুন</a>
+            <a href={toDriveDownloadUrl(playingVideo.id)} target="_blank" rel="noreferrer" style={{padding:"10px 16px",borderRadius:14,border:`1px solid ${C.accent}`,background:"#fffbeb",textDecoration:"none",color:C.accentDark,fontWeight:700,fontSize:13}}>📥 ডাউনলোড</a>
+          </div>
         </div>
-        <div style={{fontSize:13,color:C.textMuted,lineHeight:1.7}}>
-          {LIBRARY_MEDIA.videoUrl?"উপরের ভিডিওটি দেখুন.":"এই ট্যাবের জন্য MP4 লিংক দেওয়া হয়নি, তাই ভিডিও স্লট প্রস্তুত রাখা হয়েছে."}
+      )}
+      {section==="video"&&!playingVideo&&(
+        <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn 0.3s ease"}}>
+          <div className="ud-editorial-shadow" style={{background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",border:`1px solid ${C.border}`,borderRadius:28,padding:18}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:12,flexWrap:"wrap",marginBottom:8}}>
+              <div>
+                <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",marginBottom:6}}>🎬 ভিডিও গাইড</div>
+                <div className="ud-headline" style={{fontWeight:800,fontSize:28,color:C.primaryDark,lineHeight:1.1}}>দেখে শিখুন</div>
+              </div>
+              <div style={{padding:"8px 14px",borderRadius:999,background:"#fff",border:`1px solid ${C.border}`,fontSize:12,fontWeight:700,color:C.primary}}>🎬 {totalVideos}টি ভিডিও</div>
+            </div>
+            <div style={{fontSize:13,color:C.textMuted,lineHeight:1.7}}>ক্যাটাগরি থেকে বেছে নিন ও ভিডিও দেখুন — রোগ নির্ণয় থেকে পোকামাকড় দমন পর্যন্ত সব কিছু</div>
+          </div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {allVideos.map(cat=>(
+              <button key={cat.id} onClick={()=>setActiveVideoCategory(cat.id)} style={{padding:"9px 14px",borderRadius:999,border:`1px solid ${activeVideoCategory===cat.id?C.primary:C.border}`,background:activeVideoCategory===cat.id?C.primary:"#fff",color:activeVideoCategory===cat.id?"#fff":C.text,fontWeight:700,cursor:"pointer",fontSize:12.5,transition:"all 0.2s ease"}}>{cat.title}</button>
+            ))}
+          </div>
+          {currentCategory&&(
+            <div style={{padding:"10px 14px",background:C.bgMuted,borderRadius:14,borderLeft:`4px solid ${C.primary}`}}>
+              <div style={{fontWeight:700,fontSize:13,color:C.primaryDark,marginBottom:2}}>{currentCategory.title}</div>
+              <div style={{fontSize:12,color:C.textMuted}}>{currentCategory.desc} — {currentCategory.videos.length}টি ভিডিও</div>
+            </div>
+          )}
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {currentCategory&&currentCategory.videos.map(video=>(
+              <VideoGalleryCard key={video.id} video={video} onPlay={setPlayingVideo}/>
+            ))}
+          </div>
+          <div style={{marginTop:4}}>
+            <div style={{fontWeight:700,fontSize:13,color:C.textMuted,marginBottom:10}}>⚡ সব ভিডিও একসাথে:</div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              {allVideos.flatMap(c=>c.videos).map(video=>(
+                <button key={video.id} onClick={()=>setPlayingVideo(video)} style={{padding:"7px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",fontSize:11.5,fontWeight:600,color:C.text,transition:"all 0.2s ease"}}>{video.emoji} {video.title.length>25?video.title.substring(0,25)+"…":video.title}</button>
+              ))}
+            </div>
+          </div>
         </div>
-        {LIBRARY_MEDIA.videoUrl&&<div style={{marginTop:12}}><MediaFrame title="ভিডিও" src={LIBRARY_MEDIA.videoUrl} height={340}/></div>}
-      </div>
+      )}
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         {sections.map(item=>(
-          <button key={item.id} onClick={()=>setSection(item.id)} className="ud-headline" style={{padding:"11px 16px",borderRadius:999,border:`1px solid ${section===item.id?C.primary:C.border}`,background:section===item.id?C.primary:"#fff",color:section===item.id?"#fff":C.text,fontWeight:700,cursor:"pointer"}}>{item.icon} {item.label}</button>
+          <button key={item.id} onClick={()=>{setSection(item.id);setPlayingVideo(null);}} className="ud-headline" style={{padding:"11px 16px",borderRadius:999,border:`1px solid ${section===item.id?C.primary:C.border}`,background:section===item.id?C.primary:"#fff",color:section===item.id?"#fff":C.text,fontWeight:700,cursor:"pointer"}}>{item.icon} {item.label}</button>
         ))}
       </div>
       {section==="slides"&&(
@@ -1108,7 +1201,7 @@ function EnhancedLibrarySection(){
           {LIBRARY_MEDIA.readings.map(item=>(
             <div key={item.id} style={{display:"flex",flexDirection:"column",gap:10}}>
               <MediaFrame title={item.title} src={toDrivePreviewUrl(item.id)} height={560}/>
-              <a href={toDriveViewUrl(item.id)} target="_blank" rel="noreferrer" style={{alignSelf:"flex-start",padding:"10px 14px",borderRadius:14,background:"#f0fdf4",border:`1px solid ${C.border}`,textDecoration:"none",color:C.primary,fontWeight:700}}>পূর্ণ স্ক্রিনে পড়ুন</a>
+              <a href={toDriveViewUrl(item.id)} target="_blank" rel="noreferrer" style={{alignSelf:"flex-start",padding:"10px 14px",borderRadius:14,border:`1px solid ${C.border}`,background:"#f0fdf4",textDecoration:"none",color:C.primary,fontWeight:700}}>পূর্ণ স্ক্রিনে পড়ুন</a>
             </div>
           ))}
         </div>
