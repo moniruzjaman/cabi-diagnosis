@@ -777,9 +777,9 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
   const { speak, stop, speaking, isSupported } = useTTS();
   
   const features = [
-    { icon: "🔬", title: "ছবি দিয়ে নির্ণয়", desc: "পাতার ছবি দিন, সিস্টেম ফসল আন্দাজ করবে ও সহজ বাংলায় রিপোর্ট দেখাবে। আবহাওয়া ও মৌসুমও বিবেচনায় নেবে।", tab: "diagnose", color: "#dc2626", bg: "#fef2f2" },
-    { icon: "📋", title: "CABI গাইড", desc: "CABI Plantwise ৫-ধাপ প্রোটোকল, ETL সীমা, পুষ্টি তথ্য ও IPM পিরামিড — সব এক জায়গায়।", tab: "guide", color: "#2563eb", bg: "#eff6ff" },
-    { icon: "🎮", title: "গেম হাব", desc: "৫টি ইন্টারেক্টিভ গেম খেলে CABI প্রোটোকল শিখুন! লক্ষণ চিহ্নিকরণ থেকে IPM সিদ্ধান্ত — সব গেমে আছে।", tab: "game", color: "#7c3aed", bg: "#faf5ff" },
+    { icon: "📋", title: "CABI গাইড", desc: "CABI Plantwise ৫-ধাপ রোগ নির্ণয় প্রোটোকল ধাপে ধাপে পড়ুন ও বুঝুন। ETL সীমা, পুষ্টি তথ্য ও IPM পিরামিড সহ।", tab: "guide", color: "#2563eb", bg: "#eff6ff" },
+    { icon: "🎮", title: "গেম হাব", desc: "৫টি ইন্টারেক্টিভ গেম খেলে CABI নির্ণয় প্রক্রিয়া চর্চা করুন! লক্ষণ চেনা থেকে IPM সিদ্ধান্ত — সব গেমে।", tab: "game", color: "#7c3aed", bg: "#faf5ff" },
+    { icon: "🔬", title: "ছবি দিয়ে নির্ণয়", desc: "গাইড ও গেমে যা শিখলেন, তা প্রয়োগ করুন। পাতার ছবি দিয়ে ফসলের সমস্যা চিহ্নিত করুন।", tab: "diagnose", color: "#dc2626", bg: "#fef2f2" },
     { icon: "📚", title: "তথ্যভাণ্ডার", desc: "ভিডিও গাইড, স্লাইড ডেক, পড়ার PDF ও অডিও পডকাস্ট — দেখে ও শুনে শিখুন।", tab: "library", color: "#0891b2", bg: "#ecfeff" },
     { icon: "🌐", title: "কৃষি অ্যাপস", desc: "Krishi AI, GAP Brinjal, CIRDAP GreenLoop — আরও সেবা একসাথে খুলুন।", tab: "apps", color: "#ea580c", bg: "#fff7ed" },
     { icon: "📋", title: "নির্ণয় ইতিহাস", desc: "আগের সব নির্ণয় রিপোর্ট দেখুন, ট্র্যাক করুন ফসলের স্বাস্থ্য পরিবর্তন।", tab: "history", color: "#16a34a", bg: "#f0fdf4" },
@@ -796,20 +796,20 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 999, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 700 }}>🌾 AI কৃষি সহকারী</span>
         </div>
         <div className="ud-headline" style={{ fontWeight: 800, fontSize: 32, lineHeight: 1.1, marginBottom: 8, letterSpacing: -0.8 }}>
-          পাতার ছবি থেকে<br />দ্রুত সমস্যা ধরুন
+          ধাপে ধাপে শিখুন<br />রোগ চিহ্নিত করতে
         </div>
         <div style={{ fontSize: 14, lineHeight: 1.8, opacity: .9, marginBottom: 16, maxWidth: 500 }}>
-          কৃষকের ভাষায় রোগ, পোকা, খাবারের ঘাটতি ও করণীয় একসাথে দেখুন। গেম খেলে শিখুন, ছবি দিয়ে নির্ণয় করুন।
+          CABI ৫-ধাপ প্রোটোকল অনুসারে ফসলের সমস্যা চেনার পদ্ধতি শিখুন। গাইড পড়ুন, গেম খেলে অনুশীলন করুন, তারপর নিজে নির্ণয় করুন।
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button onClick={() => setActiveTab("diagnose")} className="ud-headline" style={{ background: "#fff", color: C.primaryDark, border: "none", borderRadius: 999, padding: "12px 18px", fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 20px rgba(0,0,0,0.12)" }}>📸 ছবি দিয়ে শুরু</button>
+          <button onClick={() => setActiveTab("guide")} className="ud-headline" style={{ background: "#fff", color: C.primaryDark, border: "none", borderRadius: 999, padding: "12px 18px", fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 20px rgba(0,0,0,0.12)" }}>📖 CABI গাইড পড়ুন</button>
           <button onClick={() => setActiveTab("game")} className="ud-headline" style={{ background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.24)", borderRadius: 999, padding: "12px 18px", fontWeight: 700, cursor: "pointer" }}>🎮 গেম খেলুন</button>
         </div>
       </div>
 
       {/* Read aloud home intro */}
       {isSupported && (
-        <button onClick={() => speak("উদ্ভিদ গোয়েন্দায় স্বাগতম! আপনি ছবি দিয়ে রোগ নির্ণয় করতে পারবেন, CABI গাইড পড়তে পারবেন, গেম খেলে শিখতে পারবেন, আর তথ্যভাণ্ডার থেকেও জানতে পারবেন।", { prependFriendly: true })} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "10px 14px", borderRadius: 12, border: `1.5px solid ${speaking ? C.success : C.border}`, background: speaking ? "#f0fdf4" : C.bgMuted, color: speaking ? C.success : C.textMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", boxShadow: C.shadow }}>
+        <button onClick={() => speak("উদ্ভিদ গোয়েন্দায় স্বাগতম! এখানে আপনি ধাপে ধাপে শিখবেন কিভাবে ফসলের সমস্যা চেনেন। প্রথমে CABI গাইড পড়ুন, তারপর গেম খেলে চর্চা করুন, আর শেষে নিজে নির্ণয় করুন।", { prependFriendly: true })} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "10px 14px", borderRadius: 12, border: `1.5px solid ${speaking ? C.success : C.border}`, background: speaking ? "#f0fdf4" : C.bgMuted, color: speaking ? C.success : C.textMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", boxShadow: C.shadow }}>
           <span style={{ fontSize: 18 }}>🔊</span>
           {speaking ? "শুনছি..." : "হোম পেজ শুনুন"}
         </button>
@@ -852,7 +852,7 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
 
       {/* CABI Learning Path */}
       <div style={{ background: "linear-gradient(135deg,#f0fdf4,#ecfdf5)", border: `1px solid #bbf7d0`, borderRadius: 20, padding: 18 }}>
-        <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 10 }}>📚 CABI শেখার পথ</div>
+        <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 10 }}>📚 শেখার পথ: গাইড → গেম → নির্ণয়</div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {[
             { icon: "👁️", label: "লক্ষণ পর্যবেক্ষণ", color: "#2563eb" },
@@ -867,9 +867,14 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
             </span>
           ))}
         </div>
-        <button onClick={() => setActiveTab("game")} style={{ marginTop: 12, background: C.primary, color: "#fff", border: "none", borderRadius: 12, padding: "10px 16px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
-          🎮 গেম খেলে শিখুন
-        </button>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+          <button onClick={() => setActiveTab("guide")} style={{ background: C.primary, color: "#fff", border: "none", borderRadius: 12, padding: "10px 16px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
+            📖 গাইড পড়ুন
+          </button>
+          <button onClick={() => setActiveTab("game")} style={{ background: "rgba(0,96,40,0.08)", color: C.primaryDark, border: `1px solid ${C.border}`, borderRadius: 12, padding: "10px 16px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
+            🎮 গেমে চর্চা করুন
+          </button>
+        </div>
       </div>
 
       {/* Recent Reports */}
@@ -1336,9 +1341,19 @@ function CABIGuideTab(){
        {section==="protocol"&&(
          <div>
            <div className="ud-editorial-shadow" style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,borderRadius:24,padding:22,marginBottom:16,color:"#fff"}}>
-             <div style={{fontSize:24,marginBottom:8}}>🔬</div>
-             <div style={{fontWeight:800,fontSize:17,marginBottom:3}}>{CABI_GUIDE.protocol.title}</div>
-             <div style={{opacity:.8,fontSize:12}}>{CABI_GUIDE.protocol.subtitle}</div>
+             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
+               <div>
+                 <div style={{fontSize:24,marginBottom:8}}>🔬</div>
+                 <div style={{fontWeight:800,fontSize:17,marginBottom:3}}>{CABI_GUIDE.protocol.title}</div>
+                 <div style={{opacity:.8,fontSize:12}}>{CABI_GUIDE.protocol.subtitle}</div>
+               </div>
+               {guideTtsReady && (
+                 <button onClick={() => {
+                   const allSteps = CABI_GUIDE.protocol.steps.map(s => "ধাপ " + s.num + ": " + s.title + ". " + s.desc).join(". ");
+                   speak(CABI_GUIDE.protocol.title + ". " + allSteps, { prependFriendly: true });
+                 }} style={{flexShrink:0,width:38,height:38,borderRadius:10,background:"rgba(255,255,255,0.18)",border:"1.5px solid rgba(255,255,255,0.3)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18}}>🔊</button>
+               )}
+             </div>
            </div>
            {CABI_GUIDE.protocol.steps.map((step,i)=>(
              <div key={i} style={{background:"#fff",borderRadius:18,padding:18,marginBottom:12,border:`1px solid ${step.border}`,boxShadow:C.shadow,animation:`fadeIn .3s ease ${i*.05}s both`}}>
@@ -1348,6 +1363,9 @@ function CABIGuideTab(){
                    <div style={{fontWeight:800,fontSize:14,color:step.color}}>ধাপ {step.num}: {step.title}</div>
                    <div style={{fontSize:11,color:C.textMuted}}>{step.en}</div>
                  </div>
+                 {guideTtsReady && (
+                   <button onClick={() => speak("ধাপ " + step.num + ": " + step.title + ". " + step.desc, { prependFriendly: false })} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:step.bg,border:`1.5px solid ${step.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
+                 )}
                </div>
                <p style={{fontSize:13,color:C.text,lineHeight:1.7,marginBottom:10}}>{step.desc}</p>
                {step.points.map((pt,j)=><div key={j} style={{display:"flex",gap:8,fontSize:12,color:C.text,padding:"3px 0"}}><span style={{color:step.color,fontWeight:700,flexShrink:0}}>✓</span><span>{pt}</span></div>)}
@@ -1371,8 +1389,15 @@ function CABIGuideTab(){
        {section==="etl"&&(
          <div>
            <div style={{background:"#fffbeb",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #fcd34d"}}>
-             <div style={{fontWeight:700,fontSize:13,color:C.warning,marginBottom:3}}>📊 ETL কী?</div>
-             <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>ETL হলো সেই মাত্রা যখন কীটনাশক ব্যবহারের অর্থনৈতিক ন্যায্যতা থাকে। নিচে থাকলে প্রাকৃতিক নিয়ন্ত্রণই যথেষ্ট।</div>
+             <div style={{display:"flex",alignItems:"center",gap:10}}>
+               <div style={{flex:1}}>
+                 <div style={{fontWeight:700,fontSize:13,color:C.warning,marginBottom:3}}>📊 ETL কী?</div>
+                 <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>ETL হলো সেই মাত্রা যখন কীটনাশক ব্যবহারের অর্থনৈতিক ন্যায্যতা থাকে। নিচে থাকলে প্রাকৃতিক নিয়ন্ত্রণই যথেষ্ট।</div>
+               </div>
+               {guideTtsReady && (
+                 <button onClick={() => speak("ই টি এল হলো সেই মাত্রা যখন কীটনাশক ব্যবহারের অর্থনৈতিক ন্যায্যতা থাকে। নিচে থাকলে প্রাকৃতিক নিয়ন্ত্রণই যথেষ্ট।", { prependFriendly: true })} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:"#fff",border:"1.5px solid #fcd34d",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
+               )}
+             </div>
            </div>
            {CABI_GUIDE.etl.map((e,i)=>(
              <div key={i} style={{background:"#fff",borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
@@ -1437,7 +1462,7 @@ function CABIGuideTab(){
            {/* Add reference images for nutrients section */}
            {!loading && database && (
              <div style={{marginTop:20}}>
-               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ পুষ্টি-abnormalitetে σχετية छवियां</div>
+              <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ পুষ্টি অভাব সম্পর্কিত ছবি</div>
                <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
                  {getRelevantImages(database, "nutrients").map((img, index)=>( 
                    <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
@@ -1451,6 +1476,15 @@ function CABIGuideTab(){
        )}
        {section==="ipm"&&(
          <div>
+           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+             <div style={{fontWeight:700,fontSize:14,color:C.primaryDark}}>🌿 IPM পিরামিড — উদ্ভিদ সুরক্ষার পদ্ধতি</div>
+             {guideTtsReady && (
+               <button onClick={() => {
+                 const levels = CABI_GUIDE.ipm_pyramid.map(l => "লেভেল " + l.level + ": " + l.label).join(", ");
+                 speak("আই পি এম পিরামিড। উদ্ভিদ সুরক্ষার পদ্ধতি। " + levels + ".", { prependFriendly: true });
+               }} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:"#f0fdf4",border:"1.5px solid #bbf7d0",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
+             )}
+           </div>
            <div style={{display:"flex",gap:10,marginBottom:12}}>
              {[...CABI_GUIDE.ipm_pyramid].reverse().map((level,i)=>(
                <div key={i} style={{flex:1,minWidth:0,background:level.color+"15",borderRadius:12,padding:12,position:"relative"}}>
@@ -1478,8 +1512,15 @@ function CABIGuideTab(){
        {section==="resistance"&&(
          <div>
            <div style={{background:"#faf5ff",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #e9d5ff"}}>
-             <div style={{fontWeight:700,fontSize:13,color:"#7c3aed",marginBottom:3}}>🔄 PRC/IRAC রোটেশন গাইড</div>
-             <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>PRC ও IRAC gruppi ప్ర 따라 রাসায়নিকs ব্যবহার করে রোগ/পোকা-নিয়ন্ত্র ССР algunosprotocols</div>
+             <div style={{display:"flex",alignItems:"center",gap:10}}>
+               <div style={{flex:1}}>
+                 <div style={{fontWeight:700,fontSize:13,color:"#7c3aed",marginBottom:3}}>🔄 PRC/IRAC রোটেশন গাইড</div>
+                 <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>FRAC ও IRAC গ্রুপ অনুযায়ী ভিন্ন গোত্রের কীটনাশক পরিবর্তন করে ব্যবহার করুন। এতে রোগ ও পোকার রোধ ক্ষমতা কমে।</div>
+               </div>
+               {guideTtsReady && (
+                 <button onClick={() => speak("এফ আর এসি ও আই আর এ সি গ্রুপ অনুযায়ী ভিন্ন গোত্রের কীটনাশক পরিবর্তন করে ব্যবহার করুন। এতে রোগ ও পোকার রোধ ক্ষমতা কমে।", { prependFriendly: true })} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:"#fff",border:"1.5px solid #e9d5ff",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
+               )}
+             </div>
            </div>
            <div style={{display:"grid",gap:10,marginBottom:12}}>
              <div>
