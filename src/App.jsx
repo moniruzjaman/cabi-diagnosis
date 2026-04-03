@@ -18,35 +18,38 @@ const GLOBAL_STYLE = `
     --c-accent: #f59e0b;
     --c-accent-light: #fbbf24;
     --c-accent-dark: #d97706;
-    --c-bg: #f5fbf6;
+    --c-bg: #f4f6f8;
     --c-bg-card: #ffffff;
-    --c-bg-muted: #eff5f0;
-    --c-text: #171d1a;
-    --c-text-muted: #3f493f;
-    --c-text-light: #6f7a6e;
-    --c-border: #becabc;
+    --c-bg-muted: #f0f2f5;
+    --c-bg-header: #ffffff;
+    --c-bg-nav: #f0f2f5;
+    --c-text: #1a1d21;
+    --c-text-muted: #5f6672;
+    --c-text-light: #8e95a2;
+    --c-border: #e2e5ea;
     --c-border-focus: #1a7a3a;
     --c-success: #16a34a;
     --c-warning: #d97706;
     --c-danger: #dc2626;
     --c-blue: #2563eb;
-    --c-shadow: 0 8px 24px rgba(0,33,9,0.08);
-    --c-shadow-md: 0 16px 40px rgba(0,33,9,0.10);
-    --c-shadow-lg: 0 22px 60px rgba(0,33,9,0.14);
-    --c-scrollbar: #2d9d52;
+    --c-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --c-shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    --c-shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    --c-scrollbar: #c1c7cf;
     --c-font-sans: 'Inter', 'Noto Sans Bengali', sans-serif;
     --c-font-headline: 'Plus Jakarta Sans', 'Noto Sans Bengali', sans-serif;
-    --c-radius-sm: 8px;
+    --c-radius-sm: 10px;
     --c-radius-md: 14px;
-    --c-radius-lg: 20px;
-    --c-radius-xl: 28px;
+    --c-radius-lg: 18px;
+    --c-radius-xl: 24px;
     --c-transition: all 0.2s ease;
     --c-glow-color: rgba(26,122,58,0.3);
     --c-glow-color-strong: rgba(26,122,58,0.6);
+    --c-nav-height: 60px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{font-family:var(--c-font-sans);background:var(--c-bg);color:var(--c-text);overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+  body{font-family:var(--c-font-sans);background:var(--c-bg);color:var(--c-text);overflow-x:hidden;-webkit-tap-highlight-color:transparent;padding-bottom:calc(var(--c-nav-height) + 8px)}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
   @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -56,12 +59,20 @@ const GLOBAL_STYLE = `
   @keyframes popIn{0%{transform:scale(.85);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
   @keyframes glow{0%,100%{box-shadow:0 0 8px var(--c-glow-color)}50%{box-shadow:0 0 20px var(--c-glow-color-strong)}}
   @keyframes scan{0%{transform:translateY(-120px)}100%{transform:translateY(260px)}}
+  @keyframes leafFloat{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-4px) rotate(2deg)}75%{transform:translateY(2px) rotate(-1deg)}}
   ::-webkit-scrollbar{width:3px;height:3px}
   ::-webkit-scrollbar-thumb{background:var(--c-scrollbar);border-radius:4px}
   input,select,textarea,button{font-family:inherit}
   button:active{transform:scale(0.97)}
   .ud-headline{font-family:var(--c-font-headline)}
   .ud-editorial-shadow{box-shadow:var(--c-shadow-md)}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--c-bg-header);border-top:1px solid var(--c-border);display:flex;justify-content:space-around;align-items:center;height:var(--c-nav-height);padding:0 4px;box-shadow:0 -2px 12px rgba(0,0,0,0.06)}
+  .bottom-nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:1;padding:6px 4px;border:none;background:none;cursor:pointer;border-radius:12px;transition:all .2s;color:var(--c-text-light);font-size:10px;font-weight:500;position:relative}
+  .bottom-nav-item.active{color:var(--c-primary);font-weight:700}
+  .bottom-nav-item .nav-icon{font-size:22px;transition:transform .2s}
+  .bottom-nav-item.active .nav-icon{transform:scale(1.1)}
+  .bottom-nav-item.active::before{content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:32px;height:3px;background:var(--c-primary);border-radius:0 0 4px 4px}
+  .hero-leaf{position:absolute;font-size:80px;opacity:.07;animation:leafFloat 6s ease-in-out infinite}
 `;
 /* Reduced header/footer heights for better game visibility */
 const REDUCED_HEADER_HEIGHT = `60px`;
@@ -74,13 +85,14 @@ if(typeof document!=="undefined"&&!document.getElementById("ud-gs")){
 const C={
   primary:"#006028", primaryLight:"#1a7a3a", primaryDark:"#005322", primaryXDark:"#002109",
   accent:"#f59e0b", accentLight:"#fbbf24", accentDark:"#d97706",
-  bg:"#f5fbf6", bgCard:"#ffffff", bgMuted:"#eff5f0",
-  text:"#171d1a", textMuted:"#3f493f", textLight:"#6f7a6e",
-  border:"#becabc", borderFocus:"#1a7a3a",
+  bg:"#f4f6f8", bgCard:"#ffffff", bgMuted:"#f0f2f5", bgHeader:"#ffffff", bgNav:"#f0f2f5",
+  text:"#1a1d21", textMuted:"#5f6672", textLight:"#8e95a2",
+  border:"#e2e5ea", borderFocus:"#1a7a3a",
   success:"#16a34a", warning:"#d97706", danger:"#dc2626", blue:"#2563eb",
-  shadow:"0 8px 24px rgba(0,33,9,0.08)",
-  shadowMd:"0 16px 40px rgba(0,33,9,0.10)",
-  shadowLg:"0 22px 60px rgba(0,33,9,0.14)",
+  shadow:"0 2px 8px rgba(0,0,0,0.06)",
+  shadowMd:"0 4px 16px rgba(0,0,0,0.08)",
+  shadowLg:"0 8px 32px rgba(0,0,0,0.12)",
+  heroGradient:"linear-gradient(135deg, #006028 0%, #0a8c3f 50%, #16a34a 100%)",
   // game colors
   game1:"#7c3aed", game2:"#0891b2", game3:"#ea580c",
 };
@@ -775,121 +787,142 @@ function HomeTab({setActiveTab,history,weather,locationName}){
 }
 function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
   const { speak, stop, speaking, isSupported } = useTTS();
-  
-  const features = [
-    { icon: "📋", title: "CABI গাইড", desc: "CABI Plantwise ৫-ধাপ রোগ নির্ণয় প্রোটোকল ধাপে ধাপে পড়ুন ও বুঝুন। ETL সীমা, পুষ্টি তথ্য ও IPM পিরামিড সহ।", tab: "guide", color: "#2563eb", bg: "#eff6ff" },
-    { icon: "🎮", title: "গেম হাব", desc: "৫টি ইন্টারেক্টিভ গেম খেলে CABI নির্ণয় প্রক্রিয়া চর্চা করুন! লক্ষণ চেনা থেকে IPM সিদ্ধান্ত — সব গেমে।", tab: "game", color: "#7c3aed", bg: "#faf5ff" },
-    { icon: "🔬", title: "ছবি দিয়ে নির্ণয়", desc: "গাইড ও গেমে যা শিখলেন, তা প্রয়োগ করুন। পাতার ছবি দিয়ে ফসলের সমস্যা চিহ্নিত করুন।", tab: "diagnose", color: "#dc2626", bg: "#fef2f2" },
-    { icon: "📚", title: "তথ্যভাণ্ডার", desc: "ভিডিও গাইড, স্লাইড ডেক, পড়ার PDF ও অডিও পডকাস্ট — দেখে ও শুনে শিখুন।", tab: "library", color: "#0891b2", bg: "#ecfeff" },
-    { icon: "🌐", title: "কৃষি অ্যাপস", desc: "Krishi AI, GAP Brinjal, CIRDAP GreenLoop — আরও সেবা একসাথে খুলুন।", tab: "apps", color: "#ea580c", bg: "#fff7ed" },
-    { icon: "📋", title: "নির্ণয় ইতিহাস", desc: "আগের সব নির্ণয় রিপোর্ট দেখুন, ট্র্যাক করুন ফসলের স্বাস্থ্য পরিবর্তন।", tab: "history", color: "#16a34a", bg: "#f0fdf4" },
+  const risk = weather ? assessWeatherRisks(weather)[0] : null;
+  const season = getCurrentSeason();
+
+  const hubCards = [
+    { icon: "📖", title: "CABI গাইড", desc: "৫-ধাপ নির্ণয় প্রোটোকল", color: "#2563eb", bg: "#eff6ff", tab: "guide" },
+    { icon: "🎮", title: "গেম হাব", desc: "ইন্টারেক্টিভ শিখুন", color: "#7c3aed", bg: "#faf5ff", tab: "game" },
+    { icon: "🔍", title: "ছবি দিয়ে নির্ণয়", desc: "রোগ চিহ্নিত করুন", color: "#dc2626", bg: "#fef2f2", tab: "diagnose" },
+    { icon: "📚", title: "তথ্যভাণ্ডার", desc: "ভিডিও ও পড়ার উপকরণ", color: "#0891b2", bg: "#ecfeff", tab: "library" },
   ];
 
-  const risk = weather ? assessWeatherRisks(weather)[0] : null;
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16, animation: "fadeIn .3s ease" }}>
-      {/* Hero Section */}
-      <div className="ud-editorial-shadow" style={{ background: `linear-gradient(135deg,${C.primaryXDark},${C.primary},${C.primaryLight})`, borderRadius: 28, padding: "24px 20px", color: "#fff", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", right: -18, top: -20, fontSize: 130, opacity: .08 }}>🌿</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 999, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 700 }}>🌾 AI কৃষি সহকারী</span>
-        </div>
-        <div className="ud-headline" style={{ fontWeight: 800, fontSize: 32, lineHeight: 1.1, marginBottom: 8, letterSpacing: -0.8 }}>
-          ধাপে ধাপে শিখুন<br />রোগ চিহ্নিত করতে
-        </div>
-        <div style={{ fontSize: 14, lineHeight: 1.8, opacity: .9, marginBottom: 16, maxWidth: 500 }}>
-          CABI ৫-ধাপ প্রোটোকল অনুসারে ফসলের সমস্যা চেনার পদ্ধতি শিখুন। গাইড পড়ুন, গেম খেলে অনুশীলন করুন, তারপর নিজে নির্ণয় করুন।
-        </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button onClick={() => setActiveTab("guide")} className="ud-headline" style={{ background: "#fff", color: C.primaryDark, border: "none", borderRadius: 999, padding: "12px 18px", fontWeight: 800, cursor: "pointer", boxShadow: "0 8px 20px rgba(0,0,0,0.12)" }}>📖 CABI গাইড পড়ুন</button>
-          <button onClick={() => setActiveTab("game")} className="ud-headline" style={{ background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.24)", borderRadius: 999, padding: "12px 18px", fontWeight: 700, cursor: "pointer" }}>🎮 গেম খেলুন</button>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, animation: "fadeIn .3s ease", paddingBottom: 8 }}>
+
+      {/* ── Hero Banner ──────────────────────────────────────────── */}
+      <div style={{ background: C.heroGradient, borderRadius: 24, padding: "26px 22px", color: "#fff", position: "relative", overflow: "hidden", boxShadow: "0 8px 32px rgba(0,96,40,0.25)" }}>
+        <span className="hero-leaf" style={{right:-10,top:-15,fontSize:110}}>🍃</span>
+        <span className="hero-leaf" style={{left:-15,bottom:-20,fontSize:90,animationDelay:"2s"}}>🌿</span>
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 999, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", fontSize: 11, fontWeight: 600, marginBottom: 14 }}>
+            🌾 CABI Plantwise
+          </div>
+          <h1 className="ud-headline" style={{ fontWeight: 800, fontSize: 26, lineHeight: 1.2, marginBottom: 8, letterSpacing: -0.5 }}>
+            আপনার ফসলের সমস্যা<br/>চিনে নিন সহজে
+          </h1>
+          <p style={{ fontSize: 13.5, lineHeight: 1.7, opacity: .92, marginBottom: 18, maxWidth: 420 }}>
+            CABI ৫-ধাপ প্রোটোকল অনুসারে ধাপে ধাপে শিখুন ফসলের রোগ ও পোকা চেনার পদ্ধতি। গাইড পড়ুন, গেম খেলুন, তারপর নিজেই নির্ণয় করুন।
+          </p>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button onClick={() => setActiveTab("diagnose")} className="ud-headline" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: C.primaryDark, border: "none", borderRadius: 14, padding: "13px 20px", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", fontSize: 14 }}>
+              <span style={{fontSize:18}}>🔍</span> নির্ণয় শুরু করুন
+            </button>
+            <button onClick={() => setActiveTab("guide")} className="ud-headline" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.12)", color: "#fff", border: "1.5px solid rgba(255,255,255,0.3)", borderRadius: 14, padding: "13px 18px", fontWeight: 700, cursor: "pointer", fontSize: 13, backdropFilter: "blur(6px)" }}>
+              📖 গাইড পড়ুন
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Read aloud home intro */}
+      {/* ── Read aloud button ────────────────────────────────────── */}
       {isSupported && (
-        <button onClick={() => speak("উদ্ভিদ গোয়েন্দায় স্বাগতম! এখানে আপনি ধাপে ধাপে শিখবেন কিভাবে ফসলের সমস্যা চেনেন। প্রথমে CABI গাইড পড়ুন, তারপর গেম খেলে চর্চা করুন, আর শেষে নিজে নির্ণয় করুন।", { prependFriendly: true })} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "10px 14px", borderRadius: 12, border: `1.5px solid ${speaking ? C.success : C.border}`, background: speaking ? "#f0fdf4" : C.bgMuted, color: speaking ? C.success : C.textMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", boxShadow: C.shadow }}>
-          <span style={{ fontSize: 18 }}>🔊</span>
-          {speaking ? "শুনছি..." : "হোম পেজ শুনুন"}
+        <button onClick={() => { speaking ? stop() : speak("উদ্ভিদ গোয়েন্দায় স্বাগতম! এখানে আপনি ধাপে ধাপে শিখবেন কিভাবে ফসলের সমস্যা চেনেন। প্রথমে CABI গাইড পড়ুন, তারপর গেম খেলে চর্চা করুন, আর শেষে নিজে নির্ণয় করুন।", { prependFriendly: true }); }} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "10px 14px", borderRadius: 14, border: `1.5px solid ${speaking ? C.success : C.border}`, background: "#fff", color: speaking ? C.success : C.textMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", boxShadow: C.shadow }}>
+          <span style={{ fontSize: 18 }}>{speaking ? "⏹️" : "🔊"}</span>
+          {speaking ? "বন্ধ করুন" : "হোম পেজ শুনুন"}
         </button>
       )}
 
-      {/* Feature Cards Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
-        {features.map((feat, i) => (
-          <button key={feat.tab} onClick={() => setActiveTab(feat.tab)} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 20, padding: "18px 16px", textAlign: "left", cursor: "pointer", boxShadow: C.shadow, animation: `popIn .4s ease ${i * .05}s both`, display: "flex", gap: 14, alignItems: "flex-start", width: "100%" }}>
-            <div style={{ width: 48, height: 48, borderRadius: 14, background: feat.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, border: `1.5px solid ${feat.color}22` }}>
-              {feat.icon}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 4, lineHeight: 1.3 }}>{feat.title}</div>
-              <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.6, marginBottom: 8 }}>{feat.desc}</div>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, color: feat.color }}>
-                খুলুন <span style={{ fontSize: 13 }}>→</span>
+      {/* ── Local Conditions / Weather Card ──────────────────────── */}
+      <div style={{ background: "#fff", borderRadius: 18, padding: "18px 16px", boxShadow: C.shadow, border: `1px solid ${C.border}` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.text }}>🌦️ স্থানীয় অবস্থা</div>
+          <div style={{ fontSize: 12, color: C.textLight, fontWeight: 500 }}>{locationName || "অবস্থান নির্ণয় হচ্ছে..."}</div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+          <div style={{ textAlign: "center", padding: "12px 8px", borderRadius: 14, background: "linear-gradient(135deg, #eff6ff, #f0f9ff)" }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb", lineHeight: 1 }}>{weather ? weather.temp + "°" : "--"}</div>
+            <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>তাপমাত্রা</div>
+          </div>
+          <div style={{ textAlign: "center", padding: "12px 8px", borderRadius: 14, background: "linear-gradient(135deg, #f0fdf4, #ecfdf5)" }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "#16a34a", lineHeight: 1 }}>{weather ? weather.humidity + "%" : "--"}</div>
+            <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>আর্দ্রতা</div>
+          </div>
+          <div style={{ textAlign: "center", padding: "12px 8px", borderRadius: 14, background: "linear-gradient(135deg, #fefce8, #fef9c3)" }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "#d97706", lineHeight: 1 }}>{weather ? weather.rain24h + "mm" : "--"}</div>
+            <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>বৃষ্টি</div>
+          </div>
+        </div>
+        {risk && (
+          <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 12, background: risk.level === "high" ? "#fef2f2" : risk.level === "medium" ? "#fffbeb" : "#f0fdf4", border: `1px solid ${risk.level === "high" ? "#fecaca" : risk.level === "medium" ? "#fde68a" : "#bbf7d0"}`, fontSize: 12, fontWeight: 600, color: risk.level === "high" ? "#dc2626" : risk.level === "medium" ? "#d97706" : "#16a34a", display: "flex", alignItems: "center", gap: 6 }}>
+            {risk.icon} {risk.text}
+          </div>
+        )}
+        <div style={{ marginTop: 12, fontSize: 12, color: C.textLight, display: "flex", justifyContent: "space-between" }}>
+          <span>🗓️ {season.split("/")[0].trim()}</span>
+        </div>
+      </div>
+
+      {/* ── Knowledge Hub ────────────────────────────────────────── */}
+      <div>
+        <div className="ud-headline" style={{ fontWeight: 800, fontSize: 17, color: C.text, marginBottom: 12, paddingLeft: 2 }}>📚 জ্ঞান কেন্দ্র</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
+          {hubCards.map((card, i) => (
+            <button key={card.tab} onClick={() => setActiveTab(card.tab)} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 18, padding: "18px 14px", textAlign: "left", cursor: "pointer", boxShadow: C.shadow, animation: `popIn .4s ease ${i * .06}s both`, display: "flex", flexDirection: "column", gap: 10, width: "100%", transition: "box-shadow .2s" }}>
+              <div style={{ width: 44, height: 44, borderRadius: 13, background: card.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, border: `1.5px solid ${card.color}18` }}>
+                {card.icon}
               </div>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Quick Info Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
-        <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 20, padding: 16, boxShadow: C.shadow }}>
-          <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 4 }}>📍 আপনার এলাকা</div>
-          <div className="ud-headline" style={{ fontWeight: 800, fontSize: 17, color: C.text }}>{locationName || "অবস্থান সংগ্রহ হচ্ছে..."}</div>
-        </div>
-        <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 20, padding: 16, boxShadow: C.shadow }}>
-          <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 4 }}>🗓️ বর্তমান মৌসুম</div>
-          <div className="ud-headline" style={{ fontWeight: 800, fontSize: 17, color: C.text }}>{getCurrentSeason().split("/")[0].trim()}</div>
-        </div>
-        <div style={{ background: risk ? "linear-gradient(135deg,#fff,#eff6ff)" : "#fff", border: `1px solid ${C.border}`, borderRadius: 20, padding: 16, boxShadow: C.shadow }}>
-          <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 4 }}>🌦️ আজকের ঝুঁকি</div>
-          <div className="ud-headline" style={{ fontWeight: 800, fontSize: 15, color: C.text }}>{risk?.text || "আবহাওয়া আনা হচ্ছে..."}</div>
-          {weather && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>তাপমাত্রা {weather.temp}°C · আর্দ্রতা {weather.humidity}%</div>}
-        </div>
-      </div>
-
-      {/* CABI Learning Path */}
-      <div style={{ background: "linear-gradient(135deg,#f0fdf4,#ecfdf5)", border: `1px solid #bbf7d0`, borderRadius: 20, padding: 18 }}>
-        <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 10 }}>📚 শেখার পথ: গাইড → গেম → নির্ণয়</div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {[
-            { icon: "👁️", label: "লক্ষণ পর্যবেক্ষণ", color: "#2563eb" },
-            { icon: "🔬", label: "বর্জন পদ্ধতি", color: "#7c3aed" },
-            { icon: "🔺", label: "রোগ ত্রিভুজ", color: "#d97706" },
-            { icon: "🧪", label: "মাঠ নিশ্চিতকরণ", color: "#16a34a" },
-            { icon: "🌿", label: "IPM সিদ্ধান্ত", color: "#0891b2" },
-          ].map((step, i, arr) => (
-            <span key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#fff", borderRadius: 12, padding: "6px 12px", border: `1px solid ${step.color}33`, fontSize: 11, fontWeight: 700, color: step.color }}>{step.icon} {step.label}</span>
-              {i < arr.length - 1 && <span style={{ color: C.border, fontSize: 14 }}>→</span>}
-            </span>
+              <div>
+                <div className="ud-headline" style={{ fontWeight: 800, fontSize: 14.5, color: C.text, lineHeight: 1.3 }}>{card.title}</div>
+                <div style={{ fontSize: 11.5, color: C.textMuted, marginTop: 3, lineHeight: 1.4 }}>{card.desc}</div>
+              </div>
+            </button>
           ))}
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
-          <button onClick={() => setActiveTab("guide")} style={{ background: C.primary, color: "#fff", border: "none", borderRadius: 12, padding: "10px 16px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
-            📖 গাইড পড়ুন
-          </button>
-          <button onClick={() => setActiveTab("game")} style={{ background: "rgba(0,96,40,0.08)", color: C.primaryDark, border: `1px solid ${C.border}`, borderRadius: 12, padding: "10px 16px", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
-            🎮 গেমে চর্চা করুন
-          </button>
+      </div>
+
+      {/* ── Learning Path ────────────────────────────────────────── */}
+      <div style={{ background: "#fff", borderRadius: 18, padding: "18px 16px", boxShadow: C.shadow, border: `1px solid ${C.border}` }}>
+        <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.text, marginBottom: 14 }}>🎯 শেখার পথ</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 0, position: "relative" }}>
+          <div style={{ position: "absolute", left: 18, top: 28, bottom: 28, width: 2.5, background: `linear-gradient(to bottom, ${C.primary}, ${C.primaryLight}, ${C.accent})`, borderRadius: 4 }} />
+          {[
+            { step: "১", icon: "👁️", title: "পর্যবেক্ষণ", desc: "লক্ষণ ও লক্ষণ চিনুন", color: "#2563eb", bg: "#eff6ff", tab: "guide" },
+            { step: "২", icon: "🔬", title: "বর্জন পদ্ধতি", desc: "কারণ সংকুচিত করুন", color: "#7c3aed", bg: "#faf5ff", tab: "game" },
+            { step: "৩", icon: "🔺", title: "রোগ ত্রিভুজ", desc: "রোগের শর্ত বুঝুন", color: "#d97706", bg: "#fffbeb", tab: "game" },
+            { step: "৪", icon: "🧪", title: "নিশ্চিতকরণ", desc: "মাঠে যাচাই করুন", color: "#16a34a", bg: "#f0fdf4", tab: "guide" },
+            { step: "৫", icon: "🌿", title: "IPM সিদ্ধান্ত", desc: "ব্যবস্থাপনা পরিকল্পনা", color: "#0891b2", bg: "#ecfeff", tab: "library" },
+          ].map((item, i) => (
+            <button key={i} onClick={() => setActiveTab(item.tab)} style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 12px", border: "none", background: i % 2 === 0 ? "#fff" : C.bgMuted, cursor: "pointer", borderRadius: 14, width: "100%", textAlign: "left" }}>
+              <div style={{ position: "relative", zIndex: 1, width: 36, height: 36, borderRadius: "50%", background: item.bg, border: `2px solid ${item.color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>
+                {item.icon}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 13.5, color: C.text }}>{item.title}</div>
+                <div style={{ fontSize: 11.5, color: C.textMuted }}>{item.desc}</div>
+              </div>
+              <span style={{ fontSize: 14, color: C.textLight }}>›</span>
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Recent Reports */}
+      {/* ── Recent Activity ──────────────────────────────────────── */}
       {history.length > 0 && (
-        <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 24, padding: 18, boxShadow: C.shadow }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
-            <div className="ud-headline" style={{ fontWeight: 800, fontSize: 18, color: C.primaryDark }}>🕐 সাম্প্রতিক নির্ণয়</div>
-            <button onClick={() => setActiveTab("history")} style={{ background: "none", border: "none", color: C.primary, fontWeight: 700, cursor: "pointer", fontSize: 13 }}>সব দেখুন →</button>
+        <div style={{ background: "#fff", borderRadius: 18, padding: "18px 16px", boxShadow: C.shadow, border: `1px solid ${C.border}` }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.text }}>🕐 সাম্প্রতিক কার্যক্রম</div>
+            <button onClick={() => setActiveTab("history")} style={{ background: "none", border: "none", color: C.primary, fontWeight: 700, cursor: "pointer", fontSize: 12 }}>সব দেখুন →</button>
           </div>
-          <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
-            {[...history].reverse().slice(0, 4).map((item, index) => (
-              <div key={index} style={{ background: C.bgMuted, border: `1px solid ${C.border}`, borderRadius: 18, padding: 14, minWidth: 200, flexShrink: 0 }}>
-                <div className="ud-headline" style={{ fontWeight: 800, fontSize: 15, color: C.text, marginBottom: 4 }}>{item.crop?.split("/")[0]?.trim() || "ফসল"}</div>
-                <div style={{ fontSize: 11, color: C.textMuted }}>{item.district?.split("/")[0]?.trim() || "জেলা নেই"}</div>
-                <div style={{ fontSize: 11, color: C.textLight, marginTop: 6 }}>{item.date}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {[...history].reverse().slice(0, 3).map((item, index) => (
+              <div key={index} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px", borderRadius: 14, background: C.bgMuted, border: `1px solid ${C.border}` }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(135deg, ${C.primary}18, ${C.primaryLight}18)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🌿</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="ud-headline" style={{ fontWeight: 700, fontSize: 13.5, color: C.text, marginBottom: 2 }}>{item.crop?.split("/")[0]?.trim() || "ফসল"}</div>
+                  <div style={{ fontSize: 11, color: C.textMuted }}>{item.district?.split("/")[0]?.trim() || "জেলা নেই"} · {item.date}</div>
+                </div>
+                <span style={{ fontSize: 16, color: C.textLight }}>›</span>
               </div>
             ))}
           </div>
@@ -898,6 +931,7 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
     </div>
   );
 }
+
 function AppsHub(){
   const{ speak, stop, speaking: appsSpeaking, isSupported: appsTts } = useTTS();
   return(
@@ -2240,10 +2274,17 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
   const navTabs=[
     {id:"home",label:"হোম",icon:"🏠"},
+    {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
+    {id:"library",label:"ভান্ডার",icon:"📚"},
+    {id:"guide",label:"শিখুন",icon:"📖"},
+    {id:"more",label:"আরও",icon:"⋯"},
+  ];
+  const allTabs=[
+    {id:"home",label:"হোম",icon:"🏠"},
     {id:"guide",label:"CABI গাইড",icon:"📖"},
     {id:"game",label:"গেম হাব",icon:"🎮"},
-    {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
-    {id:"library",label:"তথ্য ভান্ডার",icon:"📚"},
+    {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
+    {id:"library",label:"তথ্যভান্ডার",icon:"📚"},
     {id:"apps",label:"অ্যাপস",icon:"🌐"},
     {id:"history",label:"ইতিহাস",icon:"📋"},
   ];
@@ -2266,7 +2307,11 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
             ?"Apps Hub"
             :activeTab==="history"
               ?"History"
-              :"Home";
+              :activeTab==="learn"
+                ?"Learn"
+                :activeTab==="more"
+                  ?"More"
+                  :"Home";
   const feedbackSummary=activeTab==="diagnose"&&result
     ?`${form.crop||"Unknown crop"} | ${form.district||locationName||"Unknown district"} | ${(result.bn||result.en||"").slice(0,160)}`
     :activeTab==="game"
@@ -2279,33 +2324,27 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
             ?"CABI training guide view"
             :activeTab==="history"
               ?`Saved reports: ${history.length}`
-              :"General app feedback";
+              :activeTab==="learn"
+                ?"Learn section: Guide + Games"
+                :activeTab==="more"
+                  ?"More section: Apps + History"
+                  :"General app feedback";
 
   return(
     <div style={{minHeight:"100svh",background:C.bg,width:"100%",display:"flex",flexDirection:"column"}}>
 
       {/* ══ HEADER ══════════════════════════════════════════════════════════ */}
-      <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,padding:isGameTab?"8px 14px 0":"12px 14px 0",position:"sticky",top:0,zIndex:100,boxShadow:C.shadowMd}}>
-        <div style={{maxWidth:1280,width:"100%",margin:"0 auto"}}>
-        {!isGameTab&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-          <div style={{width:40,height:40,borderRadius:11,overflow:"hidden",flexShrink:0,boxShadow:"0 2px 10px rgba(0,0,0,0.3)",animation:"glow 3s ease-in-out infinite"}}>
+      <div style={{background:C.bgHeader,padding:isGameTab?"8px 16px":"10px 16px",position:"sticky",top:0,zIndex:100,boxShadow:C.shadow,borderBottom:`1px solid ${C.border}`}}>
+        <div style={{maxWidth:1280,width:"100%",margin:"0 auto",display:"flex",alignItems:"center",gap:10}}>
+          {!isGameTab&&<div style={{width:36,height:36,borderRadius:10,overflow:"hidden",flexShrink:0}}>
             <img src="/cabi-logo.jpg" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-          </div>
+          </div>}
           <div style={{flex:1,minWidth:0}}>
-            <div style={{color:"#fff",fontWeight:800,fontSize:17,letterSpacing:-.5,lineHeight:1.1}}>উদ্ভিদ গোয়েন্দা</div>
-            <div style={{color:"rgba(255,255,255,0.65)",fontSize:10,letterSpacing:.2}}>Plant Detective · Bangladesh · CABI Plantwise</div>
+            <div className="ud-headline" style={{color:C.primary,fontWeight:800,fontSize:isGameTab?15:17,letterSpacing:-.5,lineHeight:1.1}}>উদ্ভিদ গোয়েন্দা</div>
+            {!isGameTab&&<div style={{color:C.textLight,fontSize:10,letterSpacing:.2}}>Plant Detective · CABI Plantwise</div>}
           </div>
-          {step===2&&result&&<button onClick={reset} style={{flexShrink:0,background:"rgba(255,255,255,0.15)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.3)",borderRadius:10,color:"#fff",padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>🔁 নতুন</button>}
+          {step===2&&result&&<button onClick={reset} style={{flexShrink:0,background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:10,color:C.text,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>🔁 নতুন</button>}
           {!isGameTab&&<ShareAndInstallBar/>}
-        </div>}
-        {/* Tab bar */}
-        <div style={{display:"flex",overflowX:"auto",scrollbarWidth:"none",gap:0,justifyContent:isGameTab?"center":"flex-start"}}>
-          {navTabs.map(t=>(
-            <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{flexShrink:0,padding:isGameTab?"11px 12px":"9px 11px",border:"none",cursor:"pointer",background:"none",color:activeTab===t.id?"#fff":"rgba(255,255,255,0.55)",borderBottom:`2.5px solid ${activeTab===t.id?"#fff":"transparent"}`,fontSize:isGameTab?12:11.5,fontWeight:activeTab===t.id?700:400,transition:"all .15s",whiteSpace:"nowrap",letterSpacing:.1}}>
-              {t.icon} {t.label}
-            </button>
-          ))}
-        </div>
         </div>
       </div>
 
@@ -2315,9 +2354,80 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
         {activeTab==="home"&&<EnhancedHomeTab setActiveTab={setActiveTab} history={history} weather={weather} locationName={locationName}/>}
 
+        {/* ── LEARN sub-view (Guide + Games) ────────────────────── */}
+        {activeTab==="learn"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
+            <div style={{background:"#fff",borderRadius:18,padding:20,boxShadow:C.shadow,border:`1px solid ${C.border}`,textAlign:"center"}}>
+              <div style={{fontSize:40,marginBottom:8}}>📖</div>
+              <h2 className="ud-headline" style={{fontWeight:800,fontSize:22,color:C.text,marginBottom:6}}>শিখুন ও অনুশীলন করুন</h2>
+              <p style={{fontSize:13,color:C.textMuted,lineHeight:1.6,marginBottom:16,maxWidth:400,marginLeft:"auto",marginRight:"auto"}}>
+                CABI প্রোটোকল ধাপে ধাপে পড়ুন, তারপর গেম খেলে দক্ষ হন।
+              </p>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:12}}>
+              <button onClick={()=>setActiveTab("guide")} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
+                <div style={{width:56,height:56,borderRadius:16,background:"#eff6ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #2563eb18"}}>📖</div>
+                <div>
+                  <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>CABI গাইড</div>
+                  <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>CABI Plantwise ৫-ধাপ রোগ নির্ণয় প্রোটোকল ধাপে ধাপে পড়ুন ও বুঝুন। ETL সীমা, পুষ্টি তথ্য ও IPM পিরামিড সহ।</div>
+                </div>
+                <div style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:12,fontWeight:700,color:"#2563eb",marginTop:4}}>
+                  গাইড পড়ুন <span style={{fontSize:14}}>→</span>
+                </div>
+              </button>
+              <button onClick={()=>setActiveTab("game")} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease .1s both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
+                <div style={{width:56,height:56,borderRadius:16,background:"#faf5ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #7c3aed18"}}>🎮</div>
+                <div>
+                  <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>গেম হাব</div>
+                  <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>৫টি ইন্টারেক্টিভ গেম খেলে CABI নির্ণয় প্রক্রিয়া চর্চা করুন! লক্ষণ চেনা থেকে IPM সিদ্ধান্ত — সব গেমে।</div>
+                </div>
+                <div style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:12,fontWeight:700,color:"#7c3aed",marginTop:4}}>
+                  গেম খেলুন <span style={{fontSize:14}}>→</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── MORE sub-view (Apps + History) ─────────────────────── */}
+        {activeTab==="more"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
+            <div style={{background:"#fff",borderRadius:18,padding:20,boxShadow:C.shadow,border:`1px solid ${C.border}`,textAlign:"center"}}>
+              <div style={{fontSize:40,marginBottom:8}}>⚙️</div>
+              <h2 className="ud-headline" style={{fontWeight:800,fontSize:22,color:C.text,marginBottom:6}}>আরও সেবা</h2>
+              <p style={{fontSize:13,color:C.textMuted,lineHeight:1.6,maxWidth:400,marginLeft:"auto",marginRight:"auto"}}>
+                অন্যান্য কৃষি অ্যাপস ও নির্ণয় ইতিহাস দেখুন।
+              </p>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:12}}>
+              <button onClick={()=>setActiveTab("apps")} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
+                <div style={{width:56,height:56,borderRadius:16,background:"#fff7ed",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #ea580c18"}}>🌐</div>
+                <div>
+                  <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>কৃষি অ্যাপস</div>
+                  <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>Krishi AI, GAP Brinjal, CIRDAP GreenLoop — আরও সেবা একসাথে খুলুন।</div>
+                </div>
+                <div style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:12,fontWeight:700,color:"#ea580c",marginTop:4}}>
+                  অ্যাপস দেখুন <span style={{fontSize:14}}>→</span>
+                </div>
+              </button>
+              <button onClick={()=>setActiveTab("history")} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease .1s both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
+                <div style={{width:56,height:56,borderRadius:16,background:"#f0fdf4",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #16a34a18"}}>📋</div>
+                <div>
+                  <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>নির্ণয় ইতিহাস</div>
+                  <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>আগের সব নির্ণয় রিপোর্ট দেখুন, ট্র্যাক করুন ফসলের স্বাস্থ্য পরিবর্তন।</div>
+                </div>
+                <div style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:12,fontWeight:700,color:"#16a34a",marginTop:4}}>
+                  ইতিহাস দেখুন <span style={{fontSize:14}}>→</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
         {activeTab==="apps"&&(
           <div>
             <AppsHub/>
+            <button onClick={()=>setActiveTab("more")} style={{marginTop:12,width:"100%",padding:"10px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600}}>← আরও পেজে ফিরুন</button>
           </div>
         )}
 
@@ -2603,18 +2713,19 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
         {/* ── GUIDE ────────────────────────────────────────────────── */}
         {activeTab==="guide"&&(
-          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadowMd}}>
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
               <div style={{width:42,height:42,borderRadius:11,overflow:"hidden",flexShrink:0}}><img src="/cabi-logo.jpg" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>
               <div><div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>CABI Plantwise গাইড</div><div style={{color:C.textMuted,fontSize:11}}>সম্পূর্ণ রোগ নির্ণয় প্রোটোকল</div></div>
             </div>
             <CABIGuideTab/>
+            <button onClick={()=>setActiveTab("learn")} style={{marginTop:12,width:"100%",padding:"10px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600}}>← শিখুন পেজে ফিরুন</button>
           </div>
         )}
 
         {/* ── LIBRARY ──────────────────────────────────────────────── */}
         {activeTab==="library"&&(
-          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadowMd}}>
             <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:3}}>📚 তথ্যভাণ্ডার</div>
             <div style={{color:C.textMuted,fontSize:12,marginBottom:14}}>পোকামাকড়, রোগ ও পুষ্টি অভাব</div>
             <EnhancedLibrarySection/>
@@ -2622,11 +2733,16 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
         )}
 
         {/* ── GAME HUB ─────────────────────────────────────────────── */}
-        {activeTab==="game"&&<GameHub/>}
+        {activeTab==="game"&&(
+          <div>
+            <GameHub/>
+            <button onClick={()=>setActiveTab("learn")} style={{marginTop:12,width:"100%",padding:"10px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600}}>← শিখুন পেজে ফিরুন</button>
+          </div>
+        )}
 
         {/* ── HISTORY ──────────────────────────────────────────────── */}
         {activeTab==="history"&&(
-          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:20,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadowMd}}>
             <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",marginBottom:6}}>History</div>
             <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:14}}>📋 নির্ণয়ের ইতিহাস</div>
             {history.length===0?(
@@ -2648,6 +2764,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   </div>
                 ))}
                 <button onClick={()=>{setHistory([]);try{localStorage.removeItem("ud-history");}catch{}}} style={{padding:"9px",borderRadius:10,border:"1px solid #fecaca",background:"#fef2f2",color:C.danger,cursor:"pointer",fontSize:12,fontWeight:600,marginTop:3}}>🗑️ সব ইতিহাস মুছুন</button>
+                <button onClick={()=>setActiveTab("more")} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600}}>← আরও পেজে ফিরুন</button>
               </div>
             )}
           </div>
@@ -2656,10 +2773,24 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       </div>
 
         {!isGameTab&&<FeedbackPanel context={feedbackContext} summary={feedbackSummary} userEmail={userEmail} onEmailChange={setUserEmail} visitorStats={visitorStats} visitorId={visitorId}/>}
-       {/* Footer - Optimized for better spacing */}
        {!isGameTab&&<div style={{textAlign:"center",padding:"8px 4px",color:C.textLight,fontSize:10,borderTop:`1px solid ${C.border}`,background:"#fff",letterSpacing:0.5}}>
          উদ্ভিদ গোয়েন্দা · CABI Plantwise · BRRI · BARI · DAE Bangladesh
        </div>}
+
+      {/* ══ BOTTOM NAVIGATION ═════════════════════════════════════ */}
+      {!isGameTab&&<nav className="bottom-nav">
+        {navTabs.map(t=>{
+          let isActive = activeTab === t.id;
+          if(t.id === "guide") isActive = isActive || activeTab === "game";
+          if(t.id === "more") isActive = activeTab === "apps" || activeTab === "history";
+          return (
+            <button key={t.id} onClick={()=>setActiveTab(t.id)} className={`bottom-nav-item ${isActive?"active":""}`}>
+              <span className="nav-icon">{t.icon}</span>
+              <span>{t.label}</span>
+            </button>
+          );
+        })}
+      </nav>}
     </div>
   );
 }
