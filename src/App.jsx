@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { Analytics } from '@vercel/analytics/react';
 import { diagnoseOffline } from "./offline/index";
 import SymptomSpotter from "./games/SymptomSpotter";
 import CauseDetective from "./games/CauseDetective";
@@ -2791,6 +2792,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           );
         })}
       </nav>}
+      <Analytics />
     </div>
   );
 }
