@@ -2273,10 +2273,10 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
   const chipSt={padding:"5px 12px",borderRadius:20,fontSize:12,cursor:"pointer",transition:"all .15s",flexShrink:0};
 
   const navTabs=[
-    {id:"home",label:"হোম",icon:"🏠"},
+    {id:"guide",label:"CABI গাইড",icon:"📖"},
+    {id:"game",label:"গেম হাব",icon:"🎮"},
     {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
     {id:"library",label:"ভান্ডার",icon:"📚"},
-    {id:"guide",label:"শিখুন",icon:"📖"},
     {id:"more",label:"আরও",icon:"⋯"},
   ];
   const allTabs=[
@@ -2336,13 +2336,15 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       {/* ══ HEADER ══════════════════════════════════════════════════════════ */}
       <div style={{background:C.bgHeader,padding:isGameTab?"8px 16px":"10px 16px",position:"sticky",top:0,zIndex:100,boxShadow:C.shadow,borderBottom:`1px solid ${C.border}`}}>
         <div style={{maxWidth:1280,width:"100%",margin:"0 auto",display:"flex",alignItems:"center",gap:10}}>
-          {!isGameTab&&<div style={{width:36,height:36,borderRadius:10,overflow:"hidden",flexShrink:0}}>
-            <img src="/cabi-logo.jpg" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-          </div>}
+          {/* Home icon button — quick navigate to home */}
+          <button onClick={()=>setActiveTab("home")} style={{flexShrink:0,width:36,height:36,borderRadius:10,overflow:"hidden",border:"none",cursor:"pointer",padding:0,display:"flex",alignItems:"center",justifyContent:"center",background:activeTab!=="home"?C.bgMuted:"transparent",transition:"background .2s"}} title="হোম">
+            <img src="/cabi-logo.jpg" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:10}}/>
+          </button>
           <div style={{flex:1,minWidth:0}}>
             <div className="ud-headline" style={{color:C.primary,fontWeight:800,fontSize:isGameTab?15:17,letterSpacing:-.5,lineHeight:1.1}}>উদ্ভিদ গোয়েন্দা</div>
             {!isGameTab&&<div style={{color:C.textLight,fontSize:10,letterSpacing:.2}}>Plant Detective · CABI Plantwise</div>}
           </div>
+          {activeTab!=="home"&&<button onClick={()=>setActiveTab("home")} style={{flexShrink:0,display:"flex",alignItems:"center",gap:4,background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:10,color:C.primary,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:700}}><span style={{fontSize:14}}>🏠</span><span style={{fontSize:11}}>হোম</span></button>}
           {step===2&&result&&<button onClick={reset} style={{flexShrink:0,background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:10,color:C.text,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>🔁 নতুন</button>}
           {!isGameTab&&<ShareAndInstallBar/>}
         </div>
@@ -2781,7 +2783,6 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       {!isGameTab&&<nav className="bottom-nav">
         {navTabs.map(t=>{
           let isActive = activeTab === t.id;
-          if(t.id === "guide") isActive = isActive || activeTab === "game";
           if(t.id === "more") isActive = activeTab === "apps" || activeTab === "history";
           return (
             <button key={t.id} onClick={()=>setActiveTab(t.id)} className={`bottom-nav-item ${isActive?"active":""}`}>
