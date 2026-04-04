@@ -1,7 +1,32 @@
 {
   "name": "cabi-diagnosis",
-  "version": "3.0.0",
-  "description": "Smart Agri EcoSystem - Bangladesh crop pest, disease and deficiency identification",
+  "version": "4.0.0",
+  "description": "উদ্ভিদ গোয়েন্দা (Plant Detective) — AI-powered CABI diagnostic process trainer for Bangladesh farmers, with interactive games, TTS accessibility, and modern mobile-first UI",
+  "license": "MIT",
+  "keywords": [
+    "cabi",
+    "plantwise",
+    "bangladesh",
+    "agriculture",
+    "diagnosis",
+    "pest",
+    "disease",
+    "crop",
+    "bangla",
+    "react",
+    "pwa",
+    "tts",
+    "farmer-education"
+  ],
+  "author": "Monir Uz Zaman",
+  "homepage": "https://github.com/moniruzjaman/cabi-diagnosis#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moniruzjaman/cabi-diagnosis.git"
+  },
+  "bugs": {
+    "url": "https://github.com/moniruzjaman/cabi-diagnosis/issues"
+  },
   "private": true,
   "type": "module",
   "scripts": {
