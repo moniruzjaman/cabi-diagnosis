@@ -1661,11 +1661,12 @@ function AwardCrest({ game }) {
 }
 
 
-// ─── Social Share + Install Bar ─────────────────────────────────────────
+// ─── Social Share + PWA Install Button ─────────────────────────────────
 function ShareAndInstallBar() {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [canInstall, setCanInstall] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const [shared, setShared] = useState(false);
   const APP_URL = "https://cabi-diagnosis.vercel.app";
   const SHARE_TEXT = "🌾 উদ্ভিদ গোয়েন্দা — কৃষকের সহজ রোগ নির্ণয় অ্যাপ! CABI Plantwise প্রোটোকল দিয়ে ফসলের রোগ চিনুন।";
@@ -1674,6 +1675,15 @@ function ShareAndInstallBar() {
   useEffect(() => {
     const handler = (e) => { e.preventDefault(); setInstallPrompt(e); setCanInstall(true); };
     window.addEventListener("beforeinstallprompt", handler);
+    // If app is already installed, never show install button
+    window.addEventListener("appinstalled", () => { setCanInstall(false); setInstallPrompt(null); setDismissed(true); });
+    // Check if already installed (standalone mode)
+    if (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone) {
+      setCanInstall(false);
+      setDismissed(true);
+    }
+    // Check localStorage for dismissed
+    try { if (localStorage.getItem("ud-install-dismissed")) setDismissed(true); } catch {}
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
@@ -1681,8 +1691,17 @@ function ShareAndInstallBar() {
     if (!installPrompt) return;
     installPrompt.prompt();
     const result = await installPrompt.userChoice;
-    if (result.outcome === "accepted") setCanInstall(false);
+    if (result.outcome === "accepted") {
+      setCanInstall(false);
+      setDismissed(true);
+      try { localStorage.setItem("ud-install-dismissed", "1"); } catch {}
+    }
     setInstallPrompt(null);
+  };
+
+  const handleDismiss = () => {
+    setDismissed(true);
+    try { localStorage.setItem("ud-install-dismissed", "1"); } catch {}
   };
 
   const handleNativeShare = async () => {
@@ -1705,32 +1724,43 @@ function ShareAndInstallBar() {
     { name: "Copy Link", icon: "📋", action: "copy" },
   ];
 
+  const showInstallBanner = canInstall && !dismissed;
+
   return (
-    <div style={{position:"relative"}}>
-      <div style={{display:"flex",gap:8}}>
-        {canInstall && (
-          <button onClick={handleInstall} style={{display:"flex",alignItems:"center",gap:5,padding:"7px 12px",borderRadius:10,border:"1px solid "+C.success,background:"#f0fdf4",color:C.success,fontSize:11,fontWeight:700,cursor:"pointer",boxShadow:C.shadow}}>
-            📲 ইন্সটল
-          </button>
-        )}
-        <button onClick={handleNativeShare} style={{display:"flex",alignItems:"center",gap:5,padding:"7px 12px",borderRadius:10,border:`1px solid ${shared?C.success:C.border}`,background:shared?"#f0fdf4":C.bgMuted,color:shared?C.success:C.textMuted,fontSize:11,fontWeight:700,cursor:"pointer",boxShadow:C.shadow}}>
-          {shared ? "✅ শেয়ার হয়েছে" : "📤 শেয়ার করুন"}
+    <div style={{position:"relative",display:"flex",alignItems:"center",gap:8}}>
+      {/* One-tap Install button — prominent green pill */}
+      {showInstallBanner && (
+        <button onClick={handleInstall} style={{display:"flex",alignItems:"center",gap:6,padding:"7px 14px",borderRadius:50,border:"none",background:"linear-gradient(135deg,#16a34a,#006028)",color:"#fff",fontSize:11,fontWeight:800,cursor:"pointer",boxShadow:"0 4px 14px rgba(0,96,40,0.35)",letterSpacing:0.3,animation:"popIn .4s ease",whiteSpace:"nowrap"}}>
+          <span style={{fontSize:16,lineHeight:1}}>📲</span> ইন্সটল করুন
         </button>
-      </div>
+      )}
+      {/* Dismiss install banner (tiny X) */}
+      {showInstallBanner && (
+        <button onClick={handleDismiss} style={{position:"absolute",top:-6,right:-6,width:18,height:18,borderRadius:"50%",border:"none",background:"#e5e7eb",color:"#6b7280",fontSize:11,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,padding:0,zIndex:1}}>✕</button>
+      )}
+      {/* Share button — always visible */}
+      <button onClick={handleNativeShare} style={{display:"flex",alignItems:"center",gap:5,padding:"7px 12px",borderRadius:50,border:`1px solid ${shared?C.success:C.border}`,background:shared?"#f0fdf4":"#fff",color:shared?C.success:C.textMuted,fontSize:11,fontWeight:700,cursor:"pointer",boxShadow:C.shadow,transition:"all .15s"}}>
+        {shared ? "✅" : "📤"} শেয়ার
+      </button>
+      {/* Share dropdown menu */}
       {showShareMenu && (
-        <div style={{position:"absolute",bottom:48,right:0,background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:8,boxShadow:C.shadowLg,zIndex:200,minWidth:180,animation:"popIn .2s ease"}}>
-          {shareLinks.map((link) => (
-            link.action === "copy" ? (
-              <button key={link.name} onClick={async () => { await navigator.clipboard.writeText(APP_URL); setShared(true); setShowShareMenu(false); setTimeout(() => setShared(false), 2000); }} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",border:"none",background:"none",cursor:"pointer",width:"100%",borderRadius:8,fontSize:12,color:C.text,fontWeight:600}}>
-                <span style={{fontSize:18}}>{link.icon}</span> {link.name}
-              </button>
-            ) : (
-              <a key={link.name} href={link.url} target="_blank" rel="noreferrer" onClick={() => setShowShareMenu(false)} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",textDecoration:"none",color:C.text,borderRadius:8,fontSize:12,fontWeight:600}}>
-                <span style={{fontSize:18}}>{link.icon}</span> {link.name}
-              </a>
-            )
-          ))}
-        </div>
+        <>
+          <div onClick={() => setShowShareMenu(false)} style={{position:"fixed",inset:0,zIndex:199}} />
+          <div style={{position:"absolute",top:44,right:0,background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:8,boxShadow:C.shadowLg,zIndex:200,minWidth:190,animation:"popIn .2s ease"}}>
+            <div style={{fontSize:11,color:C.textLight,fontWeight:700,padding:"4px 10px 8px",letterSpacing:.3}}>শেয়ার করুন</div>
+            {shareLinks.map((link) => (
+              link.action === "copy" ? (
+                <button key={link.name} onClick={async () => { await navigator.clipboard.writeText(APP_URL); setShared(true); setShowShareMenu(false); setTimeout(() => setShared(false), 2000); }} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 10px",border:"none",background:"none",cursor:"pointer",width:"100%",borderRadius:8,fontSize:12.5,color:C.text,fontWeight:600}}>
+                  <span style={{fontSize:18}}>{link.icon}</span> {link.name}
+                </button>
+              ) : (
+                <a key={link.name} href={link.url} target="_blank" rel="noreferrer" onClick={() => setShowShareMenu(false)} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 10px",textDecoration:"none",color:C.text,borderRadius:8,fontSize:12.5,fontWeight:600}}>
+                  <span style={{fontSize:18}}>{link.icon}</span> {link.name}
+                </a>
+              )
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
