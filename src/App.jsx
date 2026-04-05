@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { diagnoseOffline } from "./offline/index";
+import { Analytics } from "@vercel/analytics/react";
 import SymptomSpotter from "./games/SymptomSpotter";
 import CauseDetective from "./games/CauseDetective";
 import DiseaseTriangle from "./games/DiseaseTriangle";
@@ -2840,6 +2841,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           );
         })}
       </nav>}
+      <Analytics />
     </div>
   );
 }
