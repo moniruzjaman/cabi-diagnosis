@@ -39,7 +39,7 @@ expo-mobile/
 - **নাম:** আবু মো. মনিরুজ্জামান
 - **পদবি:** অতিরিক্ত উপপরিচালক (কৃষি)
 - **সংস্থা:** কৃষি সম্প্রসারণ অধিদপ্তর (DAE), কুড়িগ্রাম
-- **ইমেইল:** mithun.hstu@gmail.com
+- **ইমেইল:** support@krishiai.live
 - **ফোন:** +8801712663740
 - **GitHub:** github.com/moniruzjaman/cabi-diagnosis
 
