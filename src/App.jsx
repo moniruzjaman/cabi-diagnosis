@@ -2009,6 +2009,24 @@ const[activeTab,setActiveTab]=useState("home");
     }).catch(()=>{});
   },[visitorId,activeTab]);
 
+  // ─── Real-time presence heartbeat (Supabase) ──────────────────
+  useEffect(()=>{
+    if(!visitorId)return;
+    const isPwa=window.matchMedia?.("(display-mode: standalone)").matches||false;
+    const sendHeartbeat=()=>{
+      postJson("/api/presence",{visitorId,section:activeTab||"home",isPwa}).catch(()=>{});
+    };
+    sendHeartbeat();
+    const interval=setInterval(sendHeartbeat,30000);
+    const cleanup=()=>{
+      clearInterval(interval);
+      postJson("/api/presence",{visitorId,section:activeTab||"home",isPwa,_leave:true}).catch(()=>{});
+      fetch("/api/presence",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({visitorId})}).catch(()=>{});
+    };
+    window.addEventListener("beforeunload",cleanup);
+    return()=>{clearInterval(interval);window.removeEventListener("beforeunload",cleanup);cleanup();};
+  },[visitorId,activeTab]);
+
   useEffect(()=>{
     if(!pesticideDb||!result||!form.crop)return;
     const text=(result.bn+" "+result.en).toLowerCase();

@@ -1,0 +1,27 @@
+# Supabase configuration for উদ্ভিদ গোয়েন্দা (Plant Detective)
+# https://supabase.com/docs/guides/cli/config
+
+[project]
+id = ""  # Fill after: supabase link --project-ref <your-project-id>
+name = "cabi-diagnosis"
+
+[api]
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public"]
+
+[db]
+port = 54322
+
+[studio]
+port = 54323
+
+[auth]
+site_url = "https://cabi-diagnosis.vercel.app"
+additional_redirect_urls = []
+
+[auth.email]
+enable_signup = false
+
+[realtime]
+enabled = true

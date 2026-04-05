@@ -1,6 +1,6 @@
 // Live Analytics Dashboard — HTML page served at /api/dashboard
 // Visit: https://cabi-diagnosis.vercel.app/api/dashboard
-// Auto-refreshes every 30 seconds
+// Auto-refreshes every 10 seconds with real-time presence data
 
 import { readStore } from "./storage.js";
 
@@ -36,8 +36,30 @@ export default async function handler(req, res) {
     });
   }
 
+  // If presence JSON requested
+  if (req.query?.format === "presence") {
+    try {
+      const presenceRes = await fetch(`${req.headers["x-forwarded-host"] ? `https://${req.headers["x-forwarded-host"]}` : ""}/api/presence`);
+      const data = await presenceRes.json();
+      return res.status(200).json(data);
+    } catch {
+      return res.status(200).json({ onlineCount: 0, bySection: {}, recentVisitors: [] });
+    }
+  }
+
   // Otherwise serve the live dashboard HTML
   const store = await readStore();
+
+  // Fetch presence data
+  let presence = { onlineCount: 0, bySection: {}, recentVisitors: [], dailyStats: [], persistence: "none" };
+  try {
+    const baseUrl = req.headers["x-forwarded-host"]
+      ? `https://${req.headers["x-forwarded-host"]}`
+      : "";
+    const presenceRes = await fetch(`${baseUrl}/api/presence?days=7`);
+    presence = await presenceRes.json();
+  } catch {}
+
   const data = {
     totalVisits: store.totalVisits || 0,
     uniqueVisitors: store.uniqueVisitors || 0,
@@ -49,10 +71,6 @@ export default async function handler(req, res) {
   const visitors = Object.entries(data.visitors)
     .sort((a, b) => new Date(b[1].lastSeen) - new Date(a[1].lastSeen));
 
-  const activeVisitors = visitors.filter(
-    (v) => new Date(v[1].lastSeen) > new Date(Date.now() - 5 * 60 * 1000)
-  ).length;
-
   const todayVisitors = visitors.filter(
     (v) => new Date(v[1].lastSeen).toDateString() === new Date().toDateString()
   ).length;
@@ -60,6 +78,9 @@ export default async function handler(req, res) {
   const todayVisits = visitors
     .filter((v) => new Date(v[1].lastSeen).toDateString() === new Date().toDateString())
     .reduce((sum, v) => sum + (v[1].visits || 0), 0);
+
+  const onlineCount = presence.onlineCount || 0;
+  const bySection = presence.bySection || {};
 
   const sectionLabels = {
     home: "🏠 হোম",
@@ -91,6 +112,50 @@ export default async function handler(req, res) {
     )
     .join("");
 
+  const liveSectionRows = Object.entries(bySection)
+    .sort((a, b) => b[1] - a[1])
+    .map(
+      ([key, val]) => `
+      <tr>
+        <td style="padding:8px 14px;font-weight:600;">${sectionLabels[key] || key}</td>
+        <td style="padding:8px 14px;text-align:right;font-weight:700;color:#16a34a;">${val}</td>
+        <td style="padding:8px 14px;width:100px;">
+          <div style="background:#dcfce7;border-radius:4px;height:8px;overflow:hidden;">
+            <div style="background:#16a34a;height:100%;width:${onlineCount > 0 ? ((val / onlineCount) * 100) : 0}%;border-radius:4px;"></div>
+          </div>
+        </td>
+      </tr>`
+    )
+    .join("");
+
+  const recentPresenceRows = (presence.recentVisitors || [])
+    .slice(0, 15)
+    .map(
+      (v) => `
+    <tr>
+      <td style="padding:6px 14px;font-family:monospace;font-size:11px;color:#6b7280;">${v.visitorId}</td>
+      <td style="padding:6px 14px;font-size:12px;">${sectionLabels[v.section] || v.section}</td>
+      <td style="padding:6px 14px;font-size:11px;">${v.isPwa ? "📱" : "🌐"}</td>
+      <td style="padding:6px 14px;font-size:11px;">${v.country ? v.country.toUpperCase() : "-"}</td>
+      <td style="padding:6px 14px;font-size:11px;color:#16a34a;">● Active</td>
+    </tr>`
+    )
+    .join("");
+
+  const dailyRows = (presence.dailyStats || [])
+    .reverse()
+    .slice(0, 7)
+    .map(
+      (d) => `
+    <tr>
+      <td style="padding:8px 14px;font-weight:600;">${d.date}</td>
+      <td style="padding:8px 14px;text-align:right;">${d.uniqueVisitors}</td>
+      <td style="padding:8px 14px;text-align:right;">${d.totalVisits}</td>
+      <td style="padding:8px 14px;font-size:11px;">${Object.entries(d.sections || {}).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>`${sectionLabels[k]||k}: ${v}`).join(", ")}</td>
+    </tr>`
+    )
+    .join("");
+
   const recentRows = visitors.slice(0, 20).map(
     ([id, v]) => `
     <tr>
@@ -100,6 +165,8 @@ export default async function handler(req, res) {
       <td style="padding:8px 14px;font-size:12px;">${formatTimeAgo(v.lastSeen)}</td>
     </tr>`
   ).join("");
+
+  const persistenceLabel = presence.persistence === "supabase" ? "☁️ Supabase" : "💾 Local/Temp";
 
   const html = `<!DOCTYPE html>
 <html lang="bn">
@@ -113,16 +180,21 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f0f2f
 .header{background:linear-gradient(135deg,#006028,#004a1e);color:#fff;padding:24px;text-align:center}
 .header h1{font-size:22px;margin-bottom:4px}
 .header p{font-size:13px;opacity:.8}
-.container{max-width:900px;margin:20px auto;padding:0 16px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
-.stat-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);text-align:center}
-.stat-card .number{font-size:36px;font-weight:800;color:#006028;line-height:1.1}
-.stat-card .label{font-size:12px;color:#6b7280;margin-top:6px;font-weight:600}
+.container{max-width:960px;margin:20px auto;padding:0 16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.06);text-align:center}
+.stat-card .number{font-size:32px;font-weight:800;color:#006028;line-height:1.1}
+.stat-card .label{font-size:11px;color:#6b7280;margin-top:6px;font-weight:600}
 .stat-card.highlight{background:linear-gradient(135deg,#006028,#16a34a);color:#fff}
 .stat-card.highlight .number{color:#fff}
 .stat-card.highlight .label{color:rgba(255,255,255,.8)}
+.stat-card.online{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;animation:glow 3s infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(34,197,94,.3)}50%{box-shadow:0 0 30px rgba(34,197,94,.6)}}
+.stat-card.online .number{color:#fff}
+.stat-card.online .label{color:rgba(255,255,255,.8)}
 .card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:16px;overflow:hidden}
 .card h2{font-size:16px;color:#1a1a2e;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #f0f2f5}
+.card h2 .badge{font-size:10px;padding:2px 8px;border-radius:12px;background:#dcfce7;color:#16a34a;font-weight:700;vertical-align:middle;margin-left:8px}
 table{width:100%;border-collapse:collapse}
 th{text-align:left;padding:10px 14px;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;font-weight:700;border-bottom:1px solid #f0f2f5}
 td{border-bottom:1px solid #f9fafb;font-size:13px}
@@ -131,39 +203,66 @@ tr:hover{background:#f9fafb}
 .live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:6px;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .refresh-note{text-align:center;margin:12px 0;font-size:12px;color:#6b7280}
+.persistence-badge{display:inline-block;padding:3px 10px;border-radius:20px;background:#f0fdf4;border:1px solid #bbf7d0;font-size:11px;color:#16a34a;font-weight:600}
 </style>
 </head>
 <body>
 <div class="header">
   <h1>🌿 উদ্ভিদ গোয়েন্দা — Live Analytics</h1>
-  <p>Real-time user activity dashboard · Auto-refreshes every 30s</p>
+  <p>Real-time user activity dashboard · Auto-refreshes every 10s · <span class="persistence-badge">${persistenceLabel}</span></p>
 </div>
 <div class="container">
   <div class="stats">
-    <div class="stat-card highlight">
-      <div class="number"><span class="live-dot"></span>${activeVisitors}</div>
-      <div class="label">অনলাইন (এই মুহূর্তে)</div>
+    <div class="stat-card online">
+      <div class="number"><span class="live-dot"></span><span id="online-count">${onlineCount}</span></div>
+      <div class="label">🟢 এখন অনলাইন</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card highlight">
       <div class="number">${data.uniqueVisitors.toLocaleString()}</div>
-      <div class="label">মোট ইউজার</div>
+      <div class="label">👤 মোট ইউজার</div>
     </div>
     <div class="stat-card">
       <div class="number">${data.totalVisits.toLocaleString()}</div>
-      <div class="label">মোট ভিজিট</div>
+      <div class="label">👁️ মোট ভিজিট</div>
     </div>
     <div class="stat-card">
       <div class="number">${todayVisitors}</div>
-      <div class="label">আজকের ইউজার</div>
+      <div class="label">📅 আজকের ইউজার</div>
     </div>
     <div class="stat-card">
       <div class="number">${todayVisits}</div>
-      <div class="label">আজকের ভিজিট</div>
+      <div class="label">📅 আজকের ভিজিট</div>
     </div>
   </div>
 
   <div class="card">
-    <h2>📊 সেকশন অনুযায়ী ব্যবহার</h2>
+    <h2>🟢 এখন অনলাইন যারা আছেন <span class="badge">LIVE</span></h2>
+    <table>
+      <thead><tr><th>সেকশন</th><th style="text-align:right">জন</th><th style="width:100px"></th></tr></thead>
+      <tbody>${liveSectionRows || '<tr><td colspan="3" style="text-align:center;padding:20px;color:#9ca3af;">কেউ অনলাইন নেই</td></tr>'}</tbody>
+    </table>
+  </div>
+
+  ${recentPresenceRows ? `
+  <div class="card">
+    <h2>📡 সর্বশেষ সক্রিয় ইউজার <span class="badge">LIVE</span></h2>
+    <table>
+      <thead><tr><th>ভিজিটর</th><th>সেকশন</th><th>ধরন</th><th>দেশ</th><th>স্ট্যাটাস</th></tr></thead>
+      <tbody>${recentPresenceRows}</tbody>
+    </table>
+  </div>` : ""}
+
+  ${dailyRows ? `
+  <div class="card">
+    <h2>📊 দৈনিক পরিসংখ্যান (গত ৭ দিন)</h2>
+    <table>
+      <thead><tr><th>তারিখ</th><th style="text-align:right">ইউজার</th><th style="text-align:right">ভিজিট</th><th>শীর্ষ সেকশন</th></tr></thead>
+      <tbody>${dailyRows}</tbody>
+    </table>
+  </div>` : ""}
+
+  <div class="card">
+    <h2>📊 সেকশন অনুযায়ী ব্যবহার (সব সময়)</h2>
     <table>
       <thead><tr><th>সেকশন</th><th style="text-align:right">ভিজিট</th><th style="text-align:right">শতাংশ</th><th></th></tr></thead>
       <tbody>${sectionRows || '<tr><td colspan="4" style="text-align:center;padding:20px;color:#9ca3af;">এখনো কোনো ডেটা নেই</td></tr>'}</tbody>
@@ -178,15 +277,27 @@ tr:hover{background:#f9fafb}
     </table>
   </div>
 
-  <div class="refresh-note">🔄 ৩০ সেকেন্ড পর পর অটো-রিফ্রেশ · শেষ আপডেট: ${data.updatedAt ? new Date(data.updatedAt).toLocaleString("bn-BD") : "N/A"}</div>
+  <div class="refresh-note">🔄 ১০ সেকেন্ড পর পর অটো-রিফ্রেশ · শেষ আপডেট: ${data.updatedAt ? new Date(data.updatedAt).toLocaleString("bn-BD") : "N/A"}</div>
 </div>
 <div class="footer">
   উদ্ভিদ গোয়েন্দা · CABI Plantwise · DAE Bangladesh<br>
-  <a href="/api/dashboard?format=json" style="color:#006028;">JSON API</a> ·
+  <a href="/api/dashboard?format=json" style="color:#006028;">Analytics JSON</a> ·
+  <a href="/api/presence" style="color:#006028;">Presence JSON</a> ·
   <a href="/" style="color:#006028;">অ্যাপে ফিরুন</a>
 </div>
 <script>
-setTimeout(()=>{location.reload()},30000);
+// Auto-refresh online count every 10 seconds
+async function refreshPresence(){
+  try{
+    const r=await fetch('/api/presence?days=7');
+    const d=await r.json();
+    const el=document.getElementById('online-count');
+    if(el)el.textContent=d.onlineCount||0;
+  }catch{}
+}
+setInterval(refreshPresence,10000);
+// Full page refresh every 60 seconds
+setTimeout(()=>{location.reload()},60000);
 </script>
 </body>
 </html>`;
