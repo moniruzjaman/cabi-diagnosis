@@ -8,6 +8,7 @@ import { readStore } from "./storage.js";
 import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
 import { presenceLimiter } from "./_lib/rateLimit.js";
 import { parseBody, validateVisitorId, validateSection } from "./_lib/validation.js";
+import { requireSignedRequest } from "./_lib/requestSigning.js";
 
 const HEARTBEAT_WINDOW = 5; // minutes — users active if heartbeat within this window
 
@@ -173,11 +174,15 @@ export default async function handler(req, res) {
     return handleGet(req, res);
   }
   if (req.method === "POST") {
+    // Verify request signature on POST (prevents external API abuse)
+    if (requireSignedRequest(req, res)) return;
     // Rate limit POST (heartbeats)
     if (presenceLimiter(req, res)) return;
     return handlePost(req, res);
   }
   if (req.method === "DELETE") {
+    // Verify request signature on DELETE
+    if (requireSignedRequest(req, res)) return;
     return handleDelete(req, res);
   }
   return res.status(405).json({ error: "Method not allowed" });

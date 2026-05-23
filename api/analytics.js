@@ -2,6 +2,7 @@ import { readStore, writeStore } from "./storage.js";
 import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
 import { analyticsLimiter } from "./_lib/rateLimit.js";
 import { parseBody, validateVisitorId, validateSection } from "./_lib/validation.js";
+import { requireSignedRequest } from "./_lib/requestSigning.js";
 
 export default async function handler(req, res) {
   if (handleCORSPreflight(req, res, "GET, POST, OPTIONS")) return;
@@ -18,6 +19,9 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
+  // Verify request signature on POST (prevents external API abuse)
+  if (requireSignedRequest(req, res)) return;
 
   // Rate limiting on POST
   if (analyticsLimiter(req, res)) return;

@@ -7,6 +7,7 @@
 import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
 import { diagnoseLimiter } from "./_lib/rateLimit.js";
 import { parseBody, validateDiagnoseMessages } from "./_lib/validation.js";
+import { requireSignedRequest } from "./_lib/requestSigning.js";
 
 const REQUEST_TIMEOUT_MS = 30_000; // 30 second overall timeout
 
@@ -659,6 +660,9 @@ export default async function handler(req, res) {
   setCORSHeaders(req, res, "POST, OPTIONS");
 
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
+  // Verify request signature (prevents external API abuse)
+  if (requireSignedRequest(req, res)) return;
 
   // Rate limiting
   if (diagnoseLimiter(req, res)) return;

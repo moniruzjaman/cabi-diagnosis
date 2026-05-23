@@ -1,8 +1,15 @@
 /**
- * Quick health-check endpoint — tests each provider and returns results
- * Visit: https://your-app.vercel.app/api/test
+ * Admin-only health-check endpoint.
  *
- * SECURITY: No API key values are exposed — only "set" or "not set" status.
+ * SECURITY:
+ * - Requires ADMIN_SECRET env var passed as ?secret= query param
+ * - No API key values are ever exposed
+ * - Does NOT make live AI provider calls (prevents credit burning & info leakage)
+ * - Only checks if env vars are set
+ *
+ * Visit: https://your-app.vercel.app/api/test?secret=YOUR_ADMIN_SECRET
+ *
+ * If ADMIN_SECRET is not configured, this endpoint returns 403 in production.
  */
 
 import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
@@ -11,82 +18,37 @@ export default async function handler(req, res) {
   if (handleCORSPreflight(req, res, "GET, OPTIONS")) return;
   setCORSHeaders(req, res, "GET, OPTIONS");
 
-  const results = {};
+  if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
 
-  // Check env vars exist — do NOT expose any part of the key
-  results.env = {
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY ? "set" : "NOT SET",
-    GROQ_API_KEY: process.env.GROQ_API_KEY ? "set" : "NOT SET",
-    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY ? "set" : "NOT SET",
-    SUPABASE_URL: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL ? "set" : "NOT SET",
-  };
+  // Require admin secret in production
+  if (process.env.VERCEL) {
+    const adminSecret = process.env.ADMIN_SECRET;
+    const providedSecret = req.query?.secret || req.headers["x-admin-secret"];
 
-  // Test Gemini
-  if (process.env.GEMINI_API_KEY) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
-      const r = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: "Reply with just: OK" }] }],
-          generationConfig: { maxOutputTokens: 10 },
-        }),
+    if (!adminSecret) {
+      return res.status(403).json({
+        error: "ADMIN_SECRET not configured — endpoint disabled for security",
+        hint: "Set ADMIN_SECRET env var and pass it as ?secret= parameter",
       });
-      const d = await r.json();
-      results.gemini = r.ok ? `OK — ${d?.candidates?.[0]?.content?.parts?.[0]?.text}` : `FAILED — ${d?.error?.message?.slice(0, 80)}`;
-    } catch (e) {
-      results.gemini = `FAILED — ${e.message?.slice(0, 80)}`;
     }
-  } else {
-    results.gemini = "SKIPPED — key not set";
+
+    if (providedSecret !== adminSecret) {
+      return res.status(403).json({ error: "Invalid or missing admin secret" });
+    }
   }
 
-  // Test Groq
-  if (process.env.GROQ_API_KEY) {
-    try {
-      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
-        body: JSON.stringify({
-          model: "meta-llama/llama-4-scout-17b-16e-instruct",
-          max_tokens: 10,
-          messages: [{ role: "user", content: "Reply with just: OK" }],
-        }),
-      });
-      const d = await r.json();
-      results.groq = r.ok ? `OK — ${d?.choices?.[0]?.message?.content}` : `FAILED — ${d?.error?.message?.slice(0, 80)}`;
-    } catch (e) {
-      results.groq = `FAILED — ${e.message?.slice(0, 80)}`;
-    }
-  } else {
-    results.groq = "SKIPPED — key not set";
-  }
+  // Check env vars exist — do NOT expose any part of the key, NOT even which ones are set
+  // Just report overall system readiness
+  const aiReady = !!(process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY);
+  const dbReady = !!(process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY);
 
-  // Test OpenRouter
-  if (process.env.OPENROUTER_API_KEY) {
-    try {
-      const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "HTTP-Referer": "https://cabi-diagnosis.vercel.app",
-        },
-        body: JSON.stringify({
-          model: "qwen/qwen2.5-vl-72b-instruct:free",
-          max_tokens: 10,
-          messages: [{ role: "user", content: "Reply with just: OK" }],
-        }),
-      });
-      const d = await r.json();
-      results.openrouter = r.ok ? `OK — ${d?.choices?.[0]?.message?.content}` : `FAILED — ${d?.error?.message?.slice(0, 80)}`;
-    } catch (e) {
-      results.openrouter = `FAILED — ${e.message?.slice(0, 80)}`;
-    }
-  } else {
-    results.openrouter = "SKIPPED — key not set";
-  }
-
-  return res.status(200).json(results);
+  return res.status(200).json({
+    status: aiReady ? "operational" : "degraded",
+    timestamp: new Date().toISOString(),
+    checks: {
+      aiProviders: aiReady ? "configured" : "NOT CONFIGURED — at least one AI API key required",
+      database: dbReady ? "configured" : "not configured — analytics will use temp storage",
+    },
+    version: "4.0.0",
+  });
 }

@@ -310,13 +310,44 @@ function buildFeedbackMessage({context,rating,feedback,email,summary,visits}){
     `Visitor Count (this browser): ${visits||1}`,
   ].join("\n");
 }
+// ─── Secure API request helper with HMAC signing ──────────────────────────────
+// Fetches a signing token from the server and includes it in all API requests.
+// This prevents external callers from abusing API endpoints.
+let _signingToken = null;
+let _signingTokenExpiry = 0;
+
+async function getSigningToken() {
+  // Use cached token if still valid (refresh 5 min before expiry)
+  if (_signingToken && Date.now() < _signingTokenExpiry - 300000) return _signingToken;
+  try {
+    const res = await fetch("/api/signing-token");
+    const data = await res.json();
+    if (data.token) {
+      _signingToken = data.token;
+      _signingTokenExpiry = Date.now() + (data.expiresIn || 7200) * 1000;
+      return _signingToken;
+    }
+  } catch {}
+  return null;
+}
+
 async function postJson(url, payload){
+  const token = await getSigningToken();
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers["X-Request-Signature"] = token;
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
   });
   return res.json().catch(() => ({}));
+}
+
+async function signedFetch(url, options = {}) {
+  const token = await getSigningToken();
+  const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+  if (token) headers["X-Request-Signature"] = token;
+  return fetch(url, { ...options, headers });
 }
 
 // ─── CABI Guide data ──────────────────────────────────────────────────────────
@@ -2022,7 +2053,7 @@ const[activeTab,setActiveTab]=useState("home");
     const cleanup=()=>{
       clearInterval(interval);
       postJson("/api/presence",{visitorId,section:activeTab||"home",isPwa,_leave:true}).catch(()=>{});
-      fetch("/api/presence",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({visitorId})}).catch(()=>{});
+      signedFetch("/api/presence",{method:"DELETE",body:JSON.stringify({visitorId})}).catch(()=>{});
     };
     window.addEventListener("beforeunload",cleanup);
     return()=>{clearInterval(interval);window.removeEventListener("beforeunload",cleanup);cleanup();};
@@ -2082,7 +2113,7 @@ const[activeTab,setActiveTab]=useState("home");
   const detectCropFromImage=useCallback(async(base64,fileName="")=>{
     setAnalysingCrop(true);
     try{
-      const res=await fetch("/api/diagnose",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      const res=await signedFetch("/api/diagnose",{method:"POST",body:JSON.stringify({
         systemPrompt:CROP_DETECT_SYSTEM_PROMPT,
         messages:[{role:"user",content:[
           {type:"image",source:{type:"base64",media_type:"image/jpeg",data:base64}},
@@ -2266,13 +2297,12 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       text: `Crop:${form.crop}\nDistrict:${form.district||locationName||"N/A"}\nSeason:${form.season||"N/A"}\nGrowth:${form.growthStage||"N/A"}\nDuration:${form.duration||"N/A"}\nArea:${form.affectedArea||"N/A"}\nSymptoms:${form.symptoms}\n${imageBase64?"Photo attached.":"No photo."}\n${weatherPromptText(weather,locationName)}\n\nDiagnose using CABI Plantwise 5-step protocol. Use very simple Bangla for farmers. Avoid technical words unless you immediately explain them in plain language. Prefer short icon-led bullets and practical field actions.\n---BANGLA_SECTION---\n[Full Bangla]\n---END_BANGLA---\n---ENGLISH_SECTION---\n[Full English]\n---END_ENGLISH---`} 
     );
     try {
-      const res = await fetch("/api/diagnose", {
+      const res = await signedFetch("/api/diagnose", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          model: "claude-sonnet-4-20250514", 
-          max_tokens: 2000, 
-          messages: [{ role: "user", content: uc }] 
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 2000,
+          messages: [{ role: "user", content: uc }]
         })
       });
       const data = await res.json();

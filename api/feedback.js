@@ -3,6 +3,7 @@ import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
 import { feedbackLimiter } from "./_lib/rateLimit.js";
 import { parseBody, validateFeedback } from "./_lib/validation.js";
 import { escapeHtml, escapeHtmlWithBr, sanitizeEmail } from "./_lib/htmlEscape.js";
+import { requireSignedRequest } from "./_lib/requestSigning.js";
 
 const SUPPORT_EMAIL = "support@krishiai.live";
 
@@ -11,6 +12,9 @@ export default async function handler(req, res) {
   setCORSHeaders(req, res, "POST, OPTIONS");
 
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
+  // Verify request signature (prevents external API abuse)
+  if (requireSignedRequest(req, res)) return;
 
   // Rate limiting
   if (feedbackLimiter(req, res)) return;
