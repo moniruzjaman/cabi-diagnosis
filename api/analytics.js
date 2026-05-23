@@ -1,11 +1,11 @@
 import { readStore, writeStore } from "./storage.js";
+import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
+import { analyticsLimiter } from "./_lib/rateLimit.js";
+import { parseBody, validateVisitorId, validateSection } from "./_lib/validation.js";
 
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") return res.status(200).end();
+  if (handleCORSPreflight(req, res, "GET, POST, OPTIONS")) return;
+  setCORSHeaders(req, res, "GET, POST, OPTIONS");
 
   if (req.method === "GET") {
     const store = await readStore();
@@ -19,9 +19,14 @@ export default async function handler(req, res) {
 
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
-  const visitorId = String(body.visitorId || "").trim();
-  const section = String(body.section || "app").trim();
+  // Rate limiting on POST
+  if (analyticsLimiter(req, res)) return;
+
+  const body = parseBody(req);
+  if (!body) return res.status(400).json({ error: "Invalid JSON body" });
+
+  const visitorId = validateVisitorId(body.visitorId);
+  const section = validateSection(body.section);
 
   if (!visitorId) return res.status(400).json({ error: "visitorId is required" });
 

@@ -10,7 +10,7 @@ import useTTS from "./games/useTTS";
 
 // ─── Global styles ────────────────────────────────────────────────────────────
 const GLOBAL_STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+  /* Fonts loaded via <link> in index.html for faster rendering */
   :root {
     --c-primary: #006028;
     --c-primary-light: #1a7a3a;

@@ -4,6 +4,12 @@
  * System prompt: Full CABI Plantwise Ready Reckoner + Exclusion Logic embedded
  */
 
+import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
+import { diagnoseLimiter } from "./_lib/rateLimit.js";
+import { parseBody, validateDiagnoseMessages } from "./_lib/validation.js";
+
+const REQUEST_TIMEOUT_MS = 30_000; // 30 second overall timeout
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SYSTEM PROMPT — CABI READY RECKONER + EXCLUSION LOGIC (FULL)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -644,117 +650,104 @@ async function tryOpenRouter(messages, modelId, systemPrompt = SYSTEM_PROMPT, ex
   const resolvedModel = (data?.model || modelId).split("/").pop().replace(":free", "");
   const providerName = data?.provider ? ` via ${data.provider}` : "";
   return { text: data?.choices?.[0]?.message?.content || "No response.", provider: `OpenRouter / ${resolvedModel}${providerName}` };
-  return { text: data?.choices?.[0]?.message?.content || "No response.", provider: `OpenRouter / ${label} 🔀` };
 }
 
 // ─── Main Handler ─────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  // CORS
+  if (handleCORSPreflight(req, res, "POST, OPTIONS")) return;
+  setCORSHeaders(req, res, "POST, OPTIONS");
 
-  if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  let body;
-  try {
-    body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-  } catch {
-    return res.status(400).json({ error: "Invalid JSON body" });
+  // Rate limiting
+  if (diagnoseLimiter(req, res)) return;
+
+  // Parse body
+  const body = parseBody(req);
+  if (!body) return res.status(400).json({ error: "Invalid JSON body" });
+
+  // Validate and sanitize messages
+  const { messages: rawMessages, systemPrompt: customPrompt } = body || {};
+  const systemPrompt = customPrompt && typeof customPrompt === "string" && customPrompt.length <= 5000
+    ? customPrompt
+    : SYSTEM_PROMPT;
+
+  const validation = validateDiagnoseMessages(rawMessages || []);
+  if (!validation.valid) {
+    return res.status(400).json({ error: validation.error });
   }
+  const messages = validation.messages;
+  const imageAttached = validation.imageCount > 0;
 
-  const { messages, systemPrompt = SYSTEM_PROMPT } = body || {};
-  if (!messages?.length) return res.status(400).json({ error: "No messages provided" });
+  // Overall timeout wrapper
+  const withTimeout = (promise, label) =>
+    Promise.race([
+      promise,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`${label} timed out`)), REQUEST_TIMEOUT_MS)
+      ),
+    ]);
 
-  const imageAttached = hasImage(messages);
   const attempts = [];
+
+  // ─── 1. OpenRouter smart route (vision or text) ─────────────────────────
   try {
     const primaryModel = imageAttached ? OPENROUTER_VISION_MODELS[0] : OPENROUTER_TEXT_MODELS[0];
     const fallbackModels = imageAttached ? OPENROUTER_VISION_MODELS.slice(1) : OPENROUTER_TEXT_MODELS.slice(1);
-    const r = await tryOpenRouter(messages, primaryModel, systemPrompt, {
-      models: fallbackModels,
-      route: "fallback",
-      provider: {
-        allow_fallbacks: true,
-        sort: "throughput",
-      },
-    });
+    const r = await withTimeout(
+      tryOpenRouter(messages, primaryModel, systemPrompt, {
+        models: fallbackModels,
+        route: "fallback",
+        provider: { allow_fallbacks: true, sort: "throughput" },
+      }),
+      "OpenRouter"
+    );
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
   } catch (e) { attempts.push(`OpenRouter smart route: ${e.message}`); }
 
+  // ─── 2. Gemini 2.0 Flash (vision or text) ───────────────────────────────
   try {
-    const r = await tryGemini(messages, imageAttached, systemPrompt);
+    const r = await withTimeout(tryGemini(messages, imageAttached, systemPrompt), "Gemini");
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
   } catch (e) { attempts.push(`Gemini: ${e.message}`); }
 
+  // ─── 3. Groq Llama 4 Scout (text only) ──────────────────────────────────
   try {
-    const r = await tryGroq(messages, systemPrompt);
+    const r = await withTimeout(tryGroq(messages, systemPrompt), "Groq");
     return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
   } catch (e) { attempts.push(`Groq: ${e.message}`); }
 
+  // ─── 4. OpenRouter text-only fallback ───────────────────────────────────
   try {
-    const r = await tryOpenRouter(messages, OPENROUTER_TEXT_MODELS[0], systemPrompt, {
-      models: OPENROUTER_TEXT_MODELS.slice(1),
-      route: "fallback",
-      provider: {
-        allow_fallbacks: true,
-        sort: "throughput",
-      },
-    });
+    const r = await withTimeout(
+      tryOpenRouter(messages, OPENROUTER_TEXT_MODELS[0], systemPrompt, {
+        models: OPENROUTER_TEXT_MODELS.slice(1),
+        route: "fallback",
+        provider: { allow_fallbacks: true, sort: "throughput" },
+      }),
+      "OpenRouter text"
+    );
     const note = imageAttached
       ? "\n\n---\nProvisional response: this answer was generated from the text description after the vision path fell back."
       : "";
     return res.status(200).json({ content: [{ type: "text", text: r.text + note }], provider: r.provider, attempts });
   } catch (e) { attempts.push(`OpenRouter text: ${e.message}`); }
 
-  const fallbackText = buildEmergencyDiagnosis(messages, imageAttached);
-  return res.status(200).json({
-    content: [{ type: "text", text: fallbackText }],
-    provider: "Emergency CABI fallback",
-    attempts,
-  });
-
-  // 1. Gemini 2.0 Flash ──────────────────────────────────────────────────────
-  try {
-    const r = await tryGemini(messages, true, systemPrompt);
-    return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
-  } catch (e) { attempts.push(`Gemini: ${e.message}`); }
-
-  // 2. Groq Llama 4 Scout ───────────────────────────────────────────────────
-  try {
-    const r = await tryGroq(messages, systemPrompt);
-    return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
-  } catch (e) { attempts.push(`Groq: ${e.message}`); }
-
-  // 3. OpenRouter Qwen 2.5 VL ───────────────────────────────────────────────
-  try {
-    const r = await tryOpenRouter(messages, "qwen/qwen2.5-vl-72b-instruct:free", systemPrompt);
-    return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
-  } catch (e) { attempts.push(`OpenRouter Qwen: ${e.message}`); }
-
-  // 4. OpenRouter Llama 3.2 Vision ──────────────────────────────────────────
-  try {
-    const r = await tryOpenRouter(messages, "meta-llama/llama-3.2-11b-vision-instruct:free", systemPrompt);
-    return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
-  } catch (e) { attempts.push(`OpenRouter Llama: ${e.message}`); }
-
-  // 5. OpenRouter Phi-4 Multimodal ──────────────────────────────────────────
-  try {
-    const r = await tryOpenRouter(messages, "microsoft/phi-4-multimodal-instruct:free", systemPrompt);
-    return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
-  } catch (e) { attempts.push(`OpenRouter Phi4: ${e.message}`); }
-
-  // 6. Gemini text-only fallback ─────────────────────────────────────────────
+  // ─── 5. Gemini text-only fallback (only if image was attached) ──────────
   if (imageAttached) {
     try {
-      const r = await tryGemini(messages, false, systemPrompt);
+      const r = await withTimeout(tryGemini(messages, false, systemPrompt), "Gemini text");
       const note = "\n\n---\n⚠️ ছবি বিশ্লেষণ এই মুহূর্তে সম্ভব হয়নি। বর্ণনার ভিত্তিতে রোগ নির্ণয় করা হয়েছে।\n*(Image analysis unavailable. Diagnosis based on description only.)*";
       return res.status(200).json({ content: [{ type: "text", text: r.text + note }], provider: r.provider, attempts });
     } catch (e) { attempts.push(`Gemini text: ${e.message}`); }
   }
 
-  return res.status(503).json({
-    error: "সকল AI সেবা সাময়িকভাবে অনুপলব্ধ। অনুগ্রহ করে কিছুক্ষণ পরে আবার চেষ্টা করুন।\nAll AI providers temporarily unavailable. Please try again shortly.",
+  // ─── 6. Emergency offline-style fallback ────────────────────────────────
+  const fallbackText = buildEmergencyDiagnosis(messages, imageAttached);
+  return res.status(200).json({
+    content: [{ type: "text", text: fallbackText }],
+    provider: "Emergency CABI fallback",
     attempts,
   });
 }

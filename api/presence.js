@@ -3,7 +3,11 @@
 // GET  /api/presence  — Get current online users count & stats
 // DELETE /api/presence — Remove presence (on app close)
 
+import crypto from "crypto";
 import { readStore } from "./storage.js";
+import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
+import { presenceLimiter } from "./_lib/rateLimit.js";
+import { parseBody, validateVisitorId, validateSection } from "./_lib/validation.js";
 
 const HEARTBEAT_WINDOW = 5; // minutes — users active if heartbeat within this window
 
@@ -82,7 +86,6 @@ async function supabaseGetOnlineStats() {
   const baseUrl = getSupabaseUrl();
   const cutoff = new Date(Date.now() - HEARTBEAT_WINDOW * 60 * 1000).toISOString();
 
-  // Get active users in last 5 minutes
   const url = `${baseUrl}/rest/v1/presence_log?last_heartbeat=gte.${cutoff}&select=visitor_id,section,user_agent,is_pwa,last_heartbeat,country,created_at`;
   const res = await fetch(url, { headers: getSupabaseHeaders() });
   const rows = await res.json();
@@ -159,12 +162,9 @@ async function supabaseCleanup() {
 
 // ─── Main handler ──────────────────────────────────────────────────
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (handleCORSPreflight(req, res)) return;
+  setCORSHeaders(req, res);
   res.setHeader("Cache-Control", "no-store");
-
-  if (req.method === "OPTIONS") return res.status(200).end();
 
   // Periodically clean stale records (1 in 20 chance)
   if (Math.random() < 0.05) supabaseCleanup().catch(() => {});
@@ -173,6 +173,8 @@ export default async function handler(req, res) {
     return handleGet(req, res);
   }
   if (req.method === "POST") {
+    // Rate limit POST (heartbeats)
+    if (presenceLimiter(req, res)) return;
     return handlePost(req, res);
   }
   if (req.method === "DELETE") {
@@ -217,9 +219,11 @@ async function handleGet(req, res) {
 }
 
 async function handlePost(req, res) {
-  const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
-  const visitorId = String(body.visitorId || "").trim();
-  const section = String(body.section || "home").trim();
+  const body = parseBody(req);
+  if (!body) return res.status(400).json({ error: "Invalid JSON body" });
+
+  const visitorId = validateVisitorId(body.visitorId);
+  const section = validateSection(body.section);
 
   if (!visitorId) return res.status(400).json({ error: "visitorId is required" });
 
@@ -245,8 +249,11 @@ async function handlePost(req, res) {
 }
 
 async function handleDelete(req, res) {
-  const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
-  const visitorId = String(body.visitorId || req.query?.visitorId || "").trim();
+  const body = parseBody(req);
+  if (!body && req.query?.visitorId) {
+    // Support query param for DELETE
+  }
+  const visitorId = validateVisitorId(body?.visitorId || req.query?.visitorId);
 
   if (!visitorId) return res.status(400).json({ error: "visitorId is required" });
 

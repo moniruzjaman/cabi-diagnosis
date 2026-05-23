@@ -1,8 +1,9 @@
-// CABI Plant Detective — Service Worker v2
+// CABI Plant Detective — Service Worker v3
 // Network-first strategy ensures users always get the latest version
 // Cache is used as fallback when offline only
+// API responses are NEVER cached to prevent stale diagnostic results
 
-const CACHE_VERSION = 'cabi-v2-' + new Date().toISOString().slice(0, 10);
+const CACHE_VERSION = 'cabi-v3-' + new Date().toISOString().slice(0, 10);
 const PRECACHE_ASSETS = ["/", "/index.html", "/favicon.png", "/cabi-logo.png", "/favicon.svg", "/manifest.json"];
 
 // Install — precache essential shell assets, then activate immediately
@@ -29,6 +30,21 @@ self.addEventListener("fetch", (event) => {
 
   // Skip non-GET requests
   if (event.request.method !== "GET") return;
+
+  // ─── NEVER cache API requests ─────────────────────────────────────────
+  // API responses (diagnose, feedback, analytics, presence) must always be
+  // fresh. Stale diagnostic results could be harmful to farmers.
+  if (url.pathname.startsWith("/api/")) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => response)
+        .catch(() => new Response(JSON.stringify({ error: "Offline" }), {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        }))
+    );
+    return;
+  }
 
   // For navigation requests (HTML pages) — always network first
   if (event.request.mode === "navigate") {
@@ -59,20 +75,6 @@ self.addEventListener("fetch", (event) => {
           return response;
         });
       })
-    );
-    return;
-  }
-
-  // For API and data requests — network-first, short cache
-  if (url.pathname.startsWith("/api/")) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, clone));
-          return response;
-        })
-        .catch(() => caches.match(event.request))
     );
     return;
   }

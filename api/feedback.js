@@ -1,30 +1,41 @@
 import { appendFeedback, readStore } from "./storage.js";
+import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
+import { feedbackLimiter } from "./_lib/rateLimit.js";
+import { parseBody, validateFeedback } from "./_lib/validation.js";
+import { escapeHtml, escapeHtmlWithBr, sanitizeEmail } from "./_lib/htmlEscape.js";
 
 const SUPPORT_EMAIL = "support@krishiai.live";
 
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (handleCORSPreflight(req, res, "POST, OPTIONS")) return;
+  setCORSHeaders(req, res, "POST, OPTIONS");
 
-  if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
-  const item = {
-    context: body.context || "Unknown",
-    rating: body.rating || 0,
-    feedback: body.feedback || "",
-    email: body.email || "",
-    summary: body.summary || "",
-    visitorId: body.visitorId || "",
+  // Rate limiting
+  if (feedbackLimiter(req, res)) return;
+
+  const body = parseBody(req);
+  if (!body) return res.status(400).json({ error: "Invalid JSON body" });
+
+  // Validate and sanitize all feedback fields
+  const item = validateFeedback(body);
+  const safeEmail = sanitizeEmail(item.email);
+
+  const feedbackItem = {
+    context: item.context,
+    rating: item.rating,
+    feedback: item.feedback,
+    email: safeEmail,
+    summary: item.summary,
+    visitorId: item.visitorId,
     createdAt: new Date().toISOString(),
   };
 
-  await appendFeedback(item);
+  await appendFeedback(feedbackItem);
 
-  // Send email notification to support@krishiai.live (non-blocking)
-  sendEmailNotification(item).catch(() => {});
+  // Send email notification (non-blocking) — uses escaped HTML
+  sendEmailNotification({ ...feedbackItem, email: safeEmail }).catch(() => {});
 
   const store = await readStore();
 
@@ -43,7 +54,7 @@ export default async function handler(req, res) {
 async function sendEmailNotification(item) {
   if (!process.env.VERCEL) return; // Only send in production
 
-  const subject = `[উদ্ভিদ গোয়েন্দা] ${item.context} — ${getRatingLabel(item.rating)}`;
+  const subject = `[উদ্ভিদ গোয়েন্দা] ${escapeHtml(item.context)} — ${getRatingLabel(item.rating)}`;
 
   const htmlBody = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;border:1px solid #e5e7eb;border-radius:12px;">
@@ -52,13 +63,13 @@ async function sendEmailNotification(item) {
       </div>
       <div style="padding:20px;">
         <table style="width:100%;border-collapse:collapse;font-size:14px;">
-          <tr><td style="padding:8px 0;color:#6b7280;font-weight:600;width:120px;">Section</td><td style="padding:8px 0;">${item.context}</td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280;font-weight:600;width:120px;">Section</td><td style="padding:8px 0;">${escapeHtml(item.context)}</td></tr>
           <tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Rating</td><td style="padding:8px 0;">${"⭐".repeat(item.rating)}${"☆".repeat(5 - item.rating)} (${item.rating}/5)</td></tr>
-          ${item.email ? `<tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">User Email</td><td style="padding:8px 0;"><a href="mailto:${item.email}">${item.email}</a></td></tr>` : ""}
-          ${item.summary ? `<tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Summary</td><td style="padding:8px 0;">${item.summary}</td></tr>` : ""}
-          ${item.feedback ? `<tr><td style="padding:8px 0;color:#6b7280;font-weight:600;vertical-align:top;">Feedback</td><td style="padding:8px 0;background:#f9fafb;padding:12px;border-radius:8px;">${item.feedback.replace(/\n/g, "<br>")}</td></tr>` : ""}
-          <tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Time</td><td style="padding:8px 0;">${item.createdAt}</td></tr>
-          <tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Visitor</td><td style="padding:8px 0;font-family:monospace;font-size:12px;">${item.visitorId || "N/A"}</td></tr>
+          ${item.email ? `<tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">User Email</td><td style="padding:8px 0;"><a href="mailto:${escapeHtml(item.email)}">${escapeHtml(item.email)}</a></td></tr>` : ""}
+          ${item.summary ? `<tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Summary</td><td style="padding:8px 0;">${escapeHtml(item.summary)}</td></tr>` : ""}
+          ${item.feedback ? `<tr><td style="padding:8px 0;color:#6b7280;font-weight:600;vertical-align:top;">Feedback</td><td style="padding:8px 0;background:#f9fafb;padding:12px;border-radius:8px;">${escapeHtmlWithBr(item.feedback)}</td></tr>` : ""}
+          <tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Time</td><td style="padding:8px 0;">${escapeHtml(item.createdAt)}</td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Visitor</td><td style="padding:8px 0;font-family:monospace;font-size:12px;">${escapeHtml(item.visitorId) || "N/A"}</td></tr>
         </table>
       </div>
       <div style="padding:12px 20px;border-top:1px solid #e5e7eb;text-align:center;font-size:11px;color:#9ca3af;">
@@ -69,7 +80,6 @@ async function sendEmailNotification(item) {
   `;
 
   try {
-    // MailChannels — free email API on Vercel Edge
     await fetch("https://api.mailchannels.net/tx/v1/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -81,7 +91,6 @@ async function sendEmailNotification(item) {
       }),
     });
   } catch (err) {
-    // Silently fail — feedback is still stored in database
     console.error("Email notification failed:", err.message);
   }
 }
