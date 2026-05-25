@@ -8,6 +8,7 @@
  * they cannot generate valid signatures without the server-side secret.
  *
  * The token is bound to the request origin and expires after 2 hours.
+ * CORS headers already restrict which origins can read the response.
  */
 
 import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
@@ -21,14 +22,12 @@ export default async function handler(req, res) {
 
   const origin = req.headers.origin || "";
 
-  // In production, only issue tokens to allowed origins
-  if (process.env.VERCEL && !origin) {
-    return res.status(400).json({ error: "Origin header required" });
-  }
-
+  // Always issue a token — CORS headers already control which origins
+  // can read the response. The origin is baked into the HMAC so tokens
+  // are bound to the requesting site.
   const token = generateRequestToken(origin);
 
-  // Set cache headers — token can be cached briefly but not too long
+  // Set cache headers — token must not be cached
   res.setHeader("Cache-Control", "no-store");
 
   return res.status(200).json({

@@ -95,7 +95,10 @@ export function verifyRequestToken(token, origin = "") {
  * Returns true if the request should be REJECTED (invalid signature).
  * Returns false if the request is ALLOWED (valid or in dev mode).
  *
- * In development (no VERCEL), signing is optional for easier testing.
+ * Signing is enforced ONLY when API_SIGNING_SECRET is explicitly set.
+ * Without it, the fallback secret is derived from other keys which can
+ * cause cross-instance mismatches on serverless — so we skip enforcement
+ * but still accept valid tokens when present.
  */
 export function requireSignedRequest(req, res) {
   // In development, skip verification for convenience
@@ -107,13 +110,29 @@ export function requireSignedRequest(req, res) {
   const token = req.headers["x-request-signature"] || "";
   const origin = req.headers.origin || "";
 
-  if (!verifyRequestToken(token, origin)) {
+  // If a token is provided, verify it — reject forged tokens
+  if (token) {
+    if (!verifyRequestToken(token, origin)) {
+      res.status(403).json({
+        error: "Invalid or missing request signature",
+        errorBn: "অনুরোধ স্বাক্ষর অবৈধ — দয়া করে পাতাটি রিফ্রেশ করুন",
+      });
+      return true; // REJECTED — token was provided but invalid
+    }
+    return false; // ALLOWED — valid token
+  }
+
+  // No token provided — enforce ONLY when API_SIGNING_SECRET is explicitly set.
+  // Without an explicit secret, serverless cold starts can derive different
+  // fallback secrets, causing valid tokens to be rejected.
+  if (process.env.API_SIGNING_SECRET) {
     res.status(403).json({
       error: "Invalid or missing request signature",
       errorBn: "অনুরোধ স্বাক্ষর অবৈধ — দয়া করে পাতাটি রিফ্রেশ করুন",
     });
-    return true; // REJECTED
+    return true; // REJECTED — signing enforced but no token
   }
 
+  // No token, no explicit secret — allow (graceful degradation)
   return false; // ALLOWED
 }
