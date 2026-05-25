@@ -35,8 +35,17 @@ src/App.jsx.backup
 # AI agent directories (not part of the app, bloats repo)
 .agents/
 .claude/
+.continue/
+.qwen/
+.mcp.json
 skills/
 skills-lock.json
+
+# Supabase CLI temp files
+supabase/.temp/
+
+# Worklog (local dev artifact)
+worklog.md
 
 # Download directory (generated)
 download/
