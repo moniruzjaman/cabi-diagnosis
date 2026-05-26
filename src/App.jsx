@@ -2153,7 +2153,9 @@ const[activeTab,setActiveTab]=useState("home");
       const MAX=800;let{width:w,height:h}=img;
       if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
       const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
-      const base64=cv.toDataURL("image/jpeg",0.7).split(",")[1];
+      const dataUrl=cv.toDataURL("image/jpeg",0.7);
+      const base64=dataUrl.split(",")[1];
+      setImage(dataUrl);
       setImageBase64(base64);
       const cropFromName=guessCropFromText(file.name||"");
       if(cropFromName)setForm(f=>f.crop?f:{...f,crop:cropFromName});
