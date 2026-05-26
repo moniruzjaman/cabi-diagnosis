@@ -1,11 +1,20 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 import { diagnoseOffline } from "./offline/index";
-import SymptomSpotter from "./games/SymptomSpotter";
-import CauseDetective from "./games/CauseDetective";
-import DiseaseTriangle from "./games/DiseaseTriangle";
-import FieldScout from "./games/FieldScout";
-import IPMCommander from "./games/IPMCommander";
+import { lightThemeFull, darkThemeFull, getPreferredTheme } from './data/themes';
+import { CROP_CALENDAR, getCurrentRiskAlerts } from './data/cropCalendar';
+import { CROP_DISEASES, matchDiseasesBySymptoms } from './data/cropDiseases';
+import { translateBengaliToEnglish } from './data/bengaliKeywords';
+import CropCalendarComponent from './components/CropCalendar';
+import OnboardingFlow from './components/OnboardingFlow';
+import OutbreakList from './components/OutbreakList';
+import './styles/accessibility.css';
+
+const SymptomSpotter = React.lazy(() => import('./games/SymptomSpotter'));
+const CauseDetective = React.lazy(() => import('./games/CauseDetective'));
+const DiseaseTriangle = React.lazy(() => import('./games/DiseaseTriangle'));
+const FieldScout = React.lazy(() => import('./games/FieldScout'));
+const IPMCommander = React.lazy(() => import('./games/IPMCommander'));
 import useTTS from "./games/useTTS";
 
 // ─── Global styles ────────────────────────────────────────────────────────────
@@ -83,7 +92,9 @@ if(typeof document!=="undefined"&&!document.getElementById("ud-gs")){
 }
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-const C={
+// NOTE: C is now dynamic — set inside the main component based on darkMode state.
+// Static references to C outside the component (like SECTION_META) use the light theme defaults.
+const C_LIGHT={
   primary:"#006028", primaryLight:"#1a7a3a", primaryDark:"#005322", primaryXDark:"#002109",
   accent:"#f59e0b", accentLight:"#fbbf24", accentDark:"#d97706",
   bg:"#f4f6f8", bgCard:"#ffffff", bgMuted:"#f0f2f5", bgHeader:"#ffffff", bgNav:"#f0f2f5",
@@ -94,9 +105,11 @@ const C={
   shadowMd:"0 4px 16px rgba(0,0,0,0.08)",
   shadowLg:"0 8px 32px rgba(0,0,0,0.12)",
   heroGradient:"linear-gradient(135deg, #006028 0%, #0a8c3f 50%, #16a34a 100%)",
-  // game colors
   game1:"#7c3aed", game2:"#0891b2", game3:"#ea580c",
 };
+// Keep a module-level C for functions outside the component (renderTokens, SECTION_META, etc.)
+// This will be overridden inside the component with the dynamic version.
+const C = C_LIGHT;
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const QUICK_CROPS=[
@@ -1371,10 +1384,10 @@ function CABIGuideTab(){
    const sections=[{id:"protocol",label:"প্রোটোকল",icon:"📋"},{id:"etl",label:"ETL সীমা",icon:"📊"},{id:"nutrients",label:"পুষ্টি",icon:"🧪"},{id:"ipm",label:"IPM পিরামিড",icon:"🌿"},{id:"resistance",label:"প্রতিরোধ",icon:"🔄"}];
    const resistanceData={
      frac:[
-       {group:"FRAC 1 (MBC)",ai:"কার্বেন্ডাজিম, থিওফানেট",risk:"উচ্চ",rotate:"FRAC 3 বা 11 এর ساتھ"},
-       {group:"FRAC 3 (Triazole)",ai:"ট্রাইসাইক্লাজোল, হেক্সাকোনাজোল",risk:"মাঝারি",rotate:"FRAC 11 বা 7 এর ساتھ"},
+       {group:"FRAC 1 (MBC)",ai:"কার্বেন্ডাজিম, থিওফানেট",risk:"উচ্চ",rotate:"FRAC 3 বা 11 এর সাথে"},
+       {group:"FRAC 3 (Triazole)",ai:"ট্রাইসাইক্লাজোল, হেক্সাকোনাজোল",risk:"মাঝারি",rotate:"FRAC 11 বা 7 এর সাথে"},
        {group:"FRAC 4 (PA)",ai:"মেটালাক্সিল-এম",risk:"উচ্চ",rotate:"FRAC M3 (মানকোজেব) মিশিয়ে"},
-       {group:"FRAC 11 (Strobilurin)",ai:"আজোক্সিস্ট্রোবিন, ট্রাইফ্লোক্সিস্ট্রোবিন",risk:"উচ্চ",rotate:"FRAC 3 ساتھ, মৌসুমে ২ বার"},
+       {group:"FRAC 11 (Strobilurin)",ai:"আজোক্সিস্ট্রোবিন, ট্রাইফ্লোক্সিস্ট্রোবিন",risk:"উচ্চ",rotate:"FRAC 3 এর সাথে, মৌসুমে ২ বার"},
        {group:"FRAC M3 (Dithiocarbamate)",ai:"মানকোজেব, জিনেব",risk:"কম",rotate:"যেকোনো সিস্টেমিকের সাথে"},
      ],
       irac:[
@@ -1842,7 +1855,9 @@ function GameHub(){
         <button onClick={()=>setActiveGame(null)} style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,background:"none",border:"none",cursor:"pointer",padding:0,color:C.primary,fontSize:13,fontWeight:600}}>
           <span style={{fontSize:18}}>←</span> গেম হাবে ফিরুন
         </button>
-        <GameComponent/>
+        <React.Suspense fallback={<div style={{textAlign:'center',padding:40,color:C.textMuted}}>লোড হচ্ছে...</div>}>
+          <GameComponent/>
+        </React.Suspense>
       </div>
     );
   }
@@ -1976,8 +1991,9 @@ const[activeTab,setActiveTab]=useState("home");
   const[offlineDiagnosis,setOfflineDiagnosis]=useState(null);
   const[showMoreCrops,setShowMoreCrops]=useState(false);
   const[expandedGroup,setExpandedGroup]=useState(null);
-  const[image,setImage]=useState(null);
-  const[imageBase64,setImageBase64]=useState(null);
+  // Multi-image support (2-4 images)
+  const[images,setImages]=useState([]);       // array of data URLs for display
+  const[imageBase64s,setImageBase64s]=useState([]); // array of base64 for API
   const[result,setResult]=useState(null);
   const[showEnglish,setShowEnglish]=useState(false);
   const[provider,setProvider]=useState(null);
@@ -1987,6 +2003,12 @@ const[activeTab,setActiveTab]=useState("home");
   const[history,setHistory]=useState(()=>{try{return JSON.parse(localStorage.getItem("ud-history")||"[]");}catch{return[];}});
   const[pesticideDb,setPesticideDb]=useState(null);
   const[recommendedProducts,setRecommendedProducts]=useState([]);
+  // Structured AI output
+  const[structuredResult,setStructuredResult]=useState(null);
+  // Follow-up questions
+  const[followUpQuestion,setFollowUpQuestion]=useState('');
+  const[followUpAnswer,setFollowUpAnswer]=useState('');
+  const[followUpLoading,setFollowUpLoading]=useState(false);
 
   const fileRef=useRef();
   const recognitionRef=useRef(null);
@@ -2008,10 +2030,61 @@ const[activeTab,setActiveTab]=useState("home");
   const[visitorStats,setVisitorStats]=useState(()=>({visits:1,sections:{}}));
   const[visitorId,setVisitorId]=useState(()=>{try{return localStorage.getItem("ud-visitor-id")||"";}catch{return"";}});
 
+  // Dark mode
+  const[darkMode,setDarkMode]=useState(()=>{
+    try{
+      const stored=localStorage.getItem('ud-dark');
+      if(stored!==null) return stored==='true';
+      return getPreferredTheme()==='dark';
+    }catch{return false;}
+  });
+  const C=darkMode?darkThemeFull:lightThemeFull;
+
+  // Onboarding
+  const[showOnboarding,setShowOnboarding]=useState(()=>{
+    try{return !localStorage.getItem('ud-onboarded');}catch{return true;}
+  });
+  const handleOnboardingComplete=()=>{
+    setShowOnboarding(false);
+    try{localStorage.setItem('ud-onboarded','true');}catch{}
+  };
+
+  // Session ID for server-side history
+  const sessionId=useRef(`sid-${Date.now()}-${Math.random().toString(36).slice(2,8)}`).current;
+
   const galleryRef=useRef();
   const cameraRef=useRef();
   const isDesktop=viewportWidth>=1100;
   const isGameTab=activeTab==="game";
+
+  // Dark mode save preference
+  useEffect(()=>{
+    try{localStorage.setItem('ud-dark',String(darkMode));}catch{}
+    // Update CSS variables for dark mode
+    if(typeof document!=='undefined'){
+      document.documentElement.setAttribute('data-theme',darkMode?'dark':'light');
+    }
+  },[darkMode]);
+
+  // Load history from server on mount
+  useEffect(()=>{
+    fetch('/api/diagnoses?limit=50').then(r=>r.json()).then(data=>{
+      if(data.diagnoses&&data.diagnoses.length>0){
+        setHistory(prev=>{
+          const serverHistory=data.diagnoses.map(d=>({
+            crop:d.crop||'',
+            district:d.district||'',
+            date:d.createdAt?new Date(d.createdAt).toLocaleDateString('bn-BD'):'',
+            resultPreview:d.diseaseName||d.diseaseNameBn||'',
+            fromServer:true
+          }));
+          // Merge with localStorage history, deduplicating
+          const all=[...serverHistory,...prev.filter(h=>!h.fromServer)];
+          return all.slice(0,20);
+        });
+      }
+    }).catch(()=>{});
+  },[]);
 
   useEffect(()=>{fetch("/pesticides.json").then(r=>r.json()).then(d=>setPesticideDb(d)).catch(()=>{});},[]);
   useEffect(()=>{
@@ -2146,9 +2219,11 @@ const[activeTab,setActiveTab]=useState("home");
   },[]);
   const handleImageFile=(file)=>{
     if(!file)return;
+    if(images.length>=4)return; // max 4 images
     const objectUrl=URL.createObjectURL(file);
-    setImage(objectUrl);
     const img=new Image();
+    const labelIdx=images.length;
+    const IMAGE_LABELS=['সম্গ্র গাছ','পাতা সামনে','পাতা পেছনে','কাণ্ড/ডাল'];
     img.onload=()=>{
       try{
         const MAX=800;let{width:w,height:h}=img;
@@ -2156,18 +2231,22 @@ const[activeTab,setActiveTab]=useState("home");
         const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
         const dataUrl=cv.toDataURL("image/jpeg",0.7);
         const base64=dataUrl.split(",")[1];
-        setImage(dataUrl);
-        setImageBase64(base64);
+        setImages(prev=>[...prev,{url:dataUrl,label:IMAGE_LABELS[labelIdx]||`ছবি ${labelIdx+1}`}]);
+        setImageBase64s(prev=>[...prev,base64]);
         const cropFromName=guessCropFromText(file.name||"");
         if(cropFromName)setForm(f=>f.crop?f:{...f,crop:cropFromName});
-        else detectCropFromImage(base64,file.name);
+        else if(labelIdx===0) detectCropFromImage(base64,file.name);
       }catch(err){console.error("Image processing failed:",err);}
       URL.revokeObjectURL(objectUrl);
     };
-    img.onerror=()=>{console.error("Image load failed");URL.revokeObjectURL(objectUrl);setImage(null);setImageBase64(null);};
+    img.onerror=()=>{console.error("Image load failed");URL.revokeObjectURL(objectUrl);};
     img.src=objectUrl;
   };
   const handleImage=(e)=>{handleImageFile(e.target.files?.[0]);e.target.value="";};
+  const removeImage=(idx)=>{
+    setImages(prev=>prev.filter((_,i)=>i!==idx));
+    setImageBase64s(prev=>prev.filter((_,i)=>i!==idx));
+  };
 
 const handleSubmit=async()=>{
     if(!form.crop||!form.symptoms){setError("অনুগ্রহ করে ফসল এবং লক্ষণ উভয়ই পূরণ করুন।");return;}
@@ -2312,10 +2391,15 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
     
     // Online diagnosis (existing code)
     const uc = [];
-    if (imageBase64) uc.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: imageBase64 } });
+    // Send all images as separate content blocks with labels
+    imageBase64s.forEach((b64, idx) => {
+      const label = images[idx]?.label || `ছবি ${idx+1}`;
+      uc.push({ type: "text", text: `[${label}]` });
+      uc.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: b64 } });
+    });
     uc.push({ 
       type: "text", 
-      text: `Crop:${form.crop}\nDistrict:${form.district||locationName||"N/A"}\nSeason:${form.season||"N/A"}\nGrowth:${form.growthStage||"N/A"}\nDuration:${form.duration||"N/A"}\nArea:${form.affectedArea||"N/A"}\nSymptoms:${form.symptoms}\n${imageBase64?"Photo attached.":"No photo."}\n${weatherPromptText(weather,locationName)}\n\nDiagnose using CABI Plantwise 5-step protocol. Use very simple Bangla for farmers. Avoid technical words unless you immediately explain them in plain language. Prefer short icon-led bullets and practical field actions.\n---BANGLA_SECTION---\n[Full Bangla]\n---END_BANGLA---\n---ENGLISH_SECTION---\n[Full English]\n---END_ENGLISH---`} 
+      text: `Crop:${form.crop}\nDistrict:${form.district||locationName||"N/A"}\nSeason:${form.season||"N/A"}\nGrowth:${form.growthStage||"N/A"}\nDuration:${form.duration||"N/A"}\nArea:${form.affectedArea||"N/A"}\nSymptoms:${form.symptoms}\n${imageBase64s.length>0?`${imageBase64s.length} photo(s) attached.`:"No photo."}\n${weatherPromptText(weather,locationName)}\n\nDiagnose using CABI Plantwise 5-step protocol. Use very simple Bangla for farmers. Avoid technical words unless you immediately explain them in plain language. Prefer short icon-led bullets and practical field actions.\n---BANGLA_SECTION---\n[Full Bangla]\n---END_BANGLA---\n---ENGLISH_SECTION---\n[Full English]\n---END_ENGLISH---`} 
     );
     try {
       const res = await signedFetch("/api/diagnose", {
@@ -2333,11 +2417,35 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       const en = (raw.match(/---ENGLISH_SECTION---([\s\S]*?)---END_ENGLISH---/) || [])[1]?.trim() || "";
       setResult({ bn, en });
       setProvider(data.provider || null);
+      if (data.structured) setStructuredResult(data.structured);
       setStep(2);
       const entry = { crop: form.crop, district: form.district, date: new Date().toLocaleDateString("bn-BD"), resultPreview: bn.slice(0, 80) };
       const nh = [...history, entry].slice(-10);
       setHistory(nh);
       try { localStorage.setItem("ud-history", JSON.stringify(nh)); } catch {}
+      // Save to server
+      try {
+        const sig = await getSigningToken();
+        await fetch('/api/diagnoses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(sig ? { 'X-Request-Signature': sig } : {}) },
+          body: JSON.stringify({
+            session_id: sessionId,
+            crop: form.crop,
+            disease_name: data.structured?.disease_name,
+            disease_name_bn: data.structured?.disease_name_bn,
+            confidence: data.structured?.confidence,
+            severity: data.structured?.severity,
+            biotic_abiotic: data.structured?.biotic_abiotic,
+            provider: data.provider || null,
+            symptoms: form.symptoms,
+            recommendations: data.structured?.key_recommendations?.join('; '),
+            weather_snapshot: weather ? JSON.stringify(weather) : null,
+            district: form.district || locationName,
+            image_count: images.length
+          })
+        });
+      } catch(e) { /* non-critical, don't block */ }
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (err) {
       setError(`রোগ নির্ণয়ে সমস্যা: ${err.message}`);
@@ -2347,7 +2455,30 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
   };
 
   const stopSpeaking=()=>{window.speechSynthesis?.cancel();setIsSpeaking(false);};
-  const reset=()=>{setForm({crop:"",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""});setImage(null);setImageBase64(null);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setSeverity(null);setShowMoreCrops(false);setRecommendedProducts([]);stopSpeaking();};
+  const reset=()=>{setForm({crop:"",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""});setImages([]);setImageBase64s([]);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setSeverity(null);setShowMoreCrops(false);setRecommendedProducts([]);setStructuredResult(null);setFollowUpQuestion('');setFollowUpAnswer('');setFollowUpLoading(false);stopSpeaking();};
+
+  // Follow-up question handler
+  const handleFollowUp=async()=>{
+    if(!followUpQuestion.trim())return;
+    setFollowUpLoading(true);setFollowUpAnswer('');
+    try{
+      const uc=[];
+      imageBase64s.forEach((b64,idx)=>{
+        const label=images[idx]?.label||`ছবি ${idx+1}`;
+        uc.push({type:"text",text:`[${label}]`});
+        uc.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}});
+      });
+      uc.push({type:"text",text:`Previous diagnosis for ${form.crop}: ${(result?.bn||'').slice(0,500)}\n\nFollow-up question: ${followUpQuestion}\n\nAnswer in simple Bangla for farmers. Be concise and practical.`});
+      const res=await signedFetch("/api/diagnose",{method:"POST",body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,messages:[{role:"user",content:uc}]})});
+      const data=await res.json();
+      const ans=data.content?.map(b=>b.text||"").join("\n")||"";
+      setFollowUpAnswer(ans);
+    }catch(e){
+      setFollowUpAnswer('উত্তর দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+    }finally{
+      setFollowUpLoading(false);
+    }
+  };
 
   const startListening=()=>{
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;stopSpeaking();
@@ -2432,29 +2563,51 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
   return(
     <div style={{minHeight:"100svh",background:C.bg,width:"100%",display:"flex",flexDirection:"column"}}>
+      {/* Onboarding */}
+      {showOnboarding&&<OnboardingFlow onComplete={handleOnboardingComplete} C={C}/>}
+      {!showOnboarding&&(<>
 
       {/* ══ HEADER ══════════════════════════════════════════════════════════ */}
+      <a href="#main-content" className="skip-to-content">মূল বিষয়বস্তুতে যান</a>
       <div style={{background:C.bgHeader,padding:isGameTab?"8px 16px":"10px 16px",position:"sticky",top:0,zIndex:100,boxShadow:C.shadow,borderBottom:`1px solid ${C.border}`}}>
         <div style={{maxWidth:1280,width:"100%",margin:"0 auto",display:"flex",alignItems:"center",gap:10}}>
           {/* Home icon button — quick navigate to home */}
-          <button onClick={()=>setActiveTab("home")} style={{flexShrink:0,width:36,height:36,borderRadius:10,overflow:"hidden",border:"none",cursor:"pointer",padding:0,display:"flex",alignItems:"center",justifyContent:"center",background:activeTab!=="home"?C.bgMuted:"transparent",transition:"background .2s"}} title="হোম">
+          <button onClick={()=>setActiveTab("home")} aria-label="Home" style={{flexShrink:0,width:36,height:36,borderRadius:10,overflow:"hidden",border:"none",cursor:"pointer",padding:0,display:"flex",alignItems:"center",justifyContent:"center",background:activeTab!=="home"?C.bgMuted:"transparent",transition:"background .2s"}} title="হোম">
             <img src="/cabi-logo.jpg" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:10}}/>
           </button>
           <div style={{flex:1,minWidth:0}}>
             <div className="ud-headline" style={{color:C.primary,fontWeight:800,fontSize:isGameTab?15:17,letterSpacing:-.5,lineHeight:1.1}}>উদ্ভিদ গোয়েন্দা</div>
             {!isGameTab&&<div style={{color:C.textLight,fontSize:10,letterSpacing:.2}}>Plant Detective · CABI Plantwise</div>}
           </div>
-          {activeTab!=="home"&&<button onClick={()=>setActiveTab("home")} style={{flexShrink:0,display:"flex",alignItems:"center",gap:4,background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:10,color:C.primary,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:700}}><span style={{fontSize:14}}>🏠</span><span style={{fontSize:11}}>হোম</span></button>}
-          {step===2&&result&&<button onClick={reset} style={{flexShrink:0,background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:10,color:C.text,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>🔁 নতুন</button>}
+          {/* Dark mode toggle */}
+          <button onClick={()=>setDarkMode(d=>!d)} aria-label={darkMode?"Switch to light mode":"Switch to dark mode"} style={{flexShrink:0,width:36,height:36,borderRadius:10,border:`1px solid ${C.border}`,background:C.bgMuted,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            {darkMode?'☀️':'🌙'}
+          </button>
+          {activeTab!=="home"&&<button onClick={()=>setActiveTab("home")} aria-label="Go home" style={{flexShrink:0,display:"flex",alignItems:"center",gap:4,background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:10,color:C.primary,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:700}}><span style={{fontSize:14}}>🏠</span><span style={{fontSize:11}}>হোম</span></button>}
+          {step===2&&result&&<button onClick={reset} aria-label="New diagnosis" style={{flexShrink:0,background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:10,color:C.text,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>🔁 নতুন</button>}
           {!isGameTab&&<ShareAndInstallBar/>}
         </div>
       </div>
 
       {/* ══ CONTENT ═════════════════════════════════════════════════════════ */}
-      <div style={{flex:1,padding:activeTab==="game"?"10px 12px":"14px",overflowY:activeTab==="game"?"hidden":"auto",overflowX:"hidden"}}>
+      <div id="main-content" role="tabpanel" style={{flex:1,padding:activeTab==="game"?"10px 12px":"14px",overflowY:activeTab==="game"?"hidden":"auto",overflowX:"hidden"}}>
         <div style={{maxWidth:isDesktop?1280:1040,margin:"0 auto",width:"100%"}}>
 
         {activeTab==="home"&&<EnhancedHomeTab setActiveTab={setActiveTab} history={history} weather={weather} locationName={locationName}/>}
+        {activeTab==="home"&&(()=>{
+          const alerts=getCurrentRiskAlerts();
+          if(alerts.length===0)return null;
+          return(
+            <div style={{background:'#fef2f2',borderRadius:12,padding:12,marginBottom:10,border:'1px solid #fecaca'}}>
+              <div style={{fontWeight:700,fontSize:13,color:C.danger,marginBottom:6}}>⚠️ এই মৌসুমে ঝুঁকি</div>
+              {alerts.map((a,i)=>(
+                <div key={i} style={{fontSize:12,color:C.text,marginBottom:3}}>
+                  {a.icon} {a.crop}: {a.keyDiseases.join(', ')}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* ── LEARN sub-view (Guide + Games) ────────────────────── */}
         {activeTab==="learn"&&(
@@ -2494,15 +2647,25 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
         {/* ── MORE sub-view (Apps + History) ─────────────────────── */}
         {activeTab==="more"&&(
           <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
-            <div style={{background:"#fff",borderRadius:18,padding:20,boxShadow:C.shadow,border:`1px solid ${C.border}`,textAlign:"center"}}>
+            <div style={{background:C.bgCard,borderRadius:18,padding:20,boxShadow:C.shadow,border:`1px solid ${C.border}`,textAlign:"center"}}>
               <div style={{fontSize:40,marginBottom:8}}>⚙️</div>
               <h2 className="ud-headline" style={{fontWeight:800,fontSize:22,color:C.text,marginBottom:6}}>আরও সেবা</h2>
               <p style={{fontSize:13,color:C.textMuted,lineHeight:1.6,maxWidth:400,marginLeft:"auto",marginRight:"auto"}}>
                 অন্যান্য কৃষি অ্যাপস ও নির্ণয় ইতিহাস দেখুন।
               </p>
             </div>
+            {/* Crop Calendar */}
+            <div style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+              <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:8}}>📅 ফসল ক্যালেন্ডার</div>
+              <CropCalendarComponent C={C}/>
+            </div>
+            {/* Outbreak List */}
+            <div style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+              <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:8}}>🚨 রোগ প্রাদুর্ভাব</div>
+              <OutbreakList C={C} district={form.district||locationName}/>
+            </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:12}}>
-              <button onClick={()=>setActiveTab("apps")} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
+              <button onClick={()=>setActiveTab("apps")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
                 <div style={{width:56,height:56,borderRadius:16,background:"#fff7ed",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #ea580c18"}}>🌐</div>
                 <div>
                   <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>কৃষি অ্যাপস</div>
@@ -2512,7 +2675,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   অ্যাপস দেখুন <span style={{fontSize:14}}>→</span>
                 </div>
               </button>
-              <button onClick={()=>setActiveTab("history")} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease .1s both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
+              <button onClick={()=>setActiveTab("history")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease .1s both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
                 <div style={{width:56,height:56,borderRadius:16,background:"#f0fdf4",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #16a34a18"}}>📋</div>
                 <div>
                   <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>নির্ণয় ইতিহাস</div>
@@ -2566,7 +2729,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   </div>
                 </div>
                 {/* crop */}
-                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:10}}>🌱 ফসল নির্বাচন *</div>
                   {!form.crop&&!showMoreCrops&&<QuickCropRow onSelect={handleCropQuickSelect} selected={form.crop}/>}
                   {form.crop&&!showMoreCrops&&(
@@ -2686,54 +2849,54 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       </div>
                     </div>
                   ))}
-                  <textarea value={form.symptoms} onChange={e=>setForm(f=>({...f,symptoms:e.target.value}))} placeholder="বিস্তারিত লিখুন বা উপরে ট্যাপ করুন..." rows={3} style={{width:"100%",background:C.bgMuted,border:`1px solid ${isListening?C.danger:C.border}`,borderRadius:10,color:C.text,padding:"9px 12px",fontSize:13,outline:"none",resize:"vertical",marginTop:8,boxSizing:"border-box",lineHeight:1.6}}/>
+                  <textarea value={form.symptoms} onChange={e=>setForm(f=>({...f,symptoms:e.target.value}))} placeholder="বিস্তারিত লিখুন বা উপরে ট্যাপ করুন..." rows={3} aria-label="Symptoms description" style={{width:"100%",background:C.bgMuted,border:`1px solid ${isListening?C.danger:C.border}`,borderRadius:10,color:C.text,padding:"9px 12px",fontSize:13,outline:"none",resize:"vertical",marginTop:8,boxSizing:"border-box",lineHeight:1.6}}/>
                 </div>
 
                 {/* image */}
-                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <label style={labelSt}>📷 ছবি আপলোড (ঐচ্ছিক)</label>
                   <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
                   <input ref={galleryRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
                   <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{display:"none"}}/>
-                  {!image&&(
+                  {images.length===0&&(
                     <div style={{marginBottom:12}}>
                       <div style={{padding:"22px 16px",border:`2px dashed ${C.border}`,borderRadius:22,background:"linear-gradient(135deg,#eff5f0,#ffffff)",color:C.textMuted,fontSize:13,display:"flex",flexDirection:"column",alignItems:"center",gap:6,marginBottom:12}}>
                         <span style={{fontSize:34}}>📷</span>
                         <span className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.primaryDark}}>পাতার পরিষ্কার ছবি দিন</span>
                         <span style={{fontSize:11}}>JPG, PNG · সামনে থেকে তুলুন · AI বিশ্লেষণ করবে</span>
+                        <span style={{fontSize:10,color:C.textLight}}>একাধিক ছবি দিতে পারবেন (সর্বোচ্চ ৪টি)</span>
                       </div>
                       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:10}}>
-                        <button onClick={()=>cameraRef.current?.click()} className="ud-headline" style={{padding:"16px 14px",borderRadius:20,border:"none",background:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>📸 ক্যামেরা</button>
-                        <button onClick={()=>galleryRef.current?.click()} className="ud-headline" style={{padding:"16px 14px",borderRadius:20,border:`1px solid ${C.border}`,background:"#fff",color:C.primaryDark,cursor:"pointer",fontWeight:800,fontSize:15}}>🖼️ গ্যালারি</button>
+                        <button onClick={()=>cameraRef.current?.click()} className="ud-headline" aria-label="Take photo" style={{padding:"16px 14px",borderRadius:20,border:"none",background:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>📸 ক্যামেরা</button>
+                        <button onClick={()=>galleryRef.current?.click()} className="ud-headline" aria-label="Choose from gallery" style={{padding:"16px 14px",borderRadius:20,border:`1px solid ${C.border}`,background:C.bgCard,color:C.primaryDark,cursor:"pointer",fontWeight:800,fontSize:15}}>🖼️ গ্যালারি</button>
                       </div>
                     </div>
                   )}
-                  {image&&(
-                    <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:16,padding:"10px 12px",marginBottom:12}}>
-                      <div>
-                        <div className="ud-headline" style={{fontSize:16,color:C.success,fontWeight:800}}>✅ ছবি যুক্ত হয়েছে</div>
-                        <div style={{fontSize:11,color:C.textMuted}}>{analysingCrop?"ফসল চিনে দেখছে...":"AI বিশ্লেষণ প্রস্তুত"}</div>
+                  {images.length>0&&(
+                    <div>
+                      <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:16,padding:"10px 12px",marginBottom:8}}>
+                        <div>
+                          <div className="ud-headline" style={{fontSize:16,color:C.success,fontWeight:800}}>✅ {images.length}টি ছবি যুক্ত</div>
+                          <div style={{fontSize:11,color:C.textMuted}}>{analysingCrop?"ফসল চিনে দেখছে...":"AI বিশ্লেষণ প্রস্তুত"} · {images.length<4&&"আরও যোগ করতে পারবেন"}</div>
+                        </div>
+                        {images.length<4&&<button onClick={()=>galleryRef.current?.click()} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgCard,cursor:"pointer",fontWeight:700,flexShrink:0}}>+ আরও</button>}
                       </div>
-                      <button onClick={()=>galleryRef.current?.click()} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",fontWeight:700,flexShrink:0}}>অন্য ছবি</button>
-                    </div>
-                  )}
-                  {!image?(
-                    <button onClick={()=>fileRef.current.click()} style={{width:"100%",padding:"18px",border:`2px dashed ${C.border}`,borderRadius:12,background:C.bgMuted,cursor:"pointer",color:C.textMuted,fontSize:13,display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
-                      <span style={{fontSize:26}}>📁</span><span style={{fontWeight:600}}>ছবি বেছে নিন</span>
-                      <span style={{fontSize:11}}>JPG, PNG · AI বিশ্লেষণ করবে</span>
-                    </button>
-                  ):(
-                    <div style={{display:"flex",alignItems:"center",gap:12}}>
-                      <img src={image} alt="preview" style={{width:76,height:76,objectFit:"cover",borderRadius:12,border:`2px solid ${C.primary}`,flexShrink:0}}/>
-                      <div style={{flex:1}}><div style={{fontSize:13,color:C.success,fontWeight:700}}>✅ ছবি সংযুক্ত</div><div style={{fontSize:11,color:C.textMuted,marginTop:2}}>AI বিশ্লেষণ হবে</div></div>
-                      <button onClick={()=>{setImage(null);setImageBase64(null);}} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,color:C.danger,padding:"7px 10px",cursor:"pointer",fontSize:13}}>✕</button>
+                      <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:6,marginBottom:8}}>
+                        {images.map((img,idx)=>(
+                          <div key={idx} style={{flexShrink:0,position:"relative",width:90,height:90}}>
+                            <img src={img.url} alt={img.label} style={{width:90,height:90,objectFit:"cover",borderRadius:12,border:`2px solid ${C.primary}`}}/>
+                            <div style={{position:"absolute",bottom:0,left:0,right:0,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:9,textAlign:"center",padding:"2px 0",borderRadius:"0 0 10px 10px"}}>{img.label}</div>
+                            <button onClick={()=>removeImage(idx)} aria-label="Remove image" style={{position:"absolute",top:-4,right:-4,width:20,height:20,borderRadius:"50%",background:C.danger,color:"#fff",border:"none",cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
 
                 {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:"12px 14px",color:C.danger,marginBottom:10,fontSize:13}}>⚠️ {error}</div>}
 
-                <button onClick={handleSubmit} disabled={loading} style={{width:"100%",padding:"15px",borderRadius:14,border:"none",background:loading?C.border:`linear-gradient(135deg,${C.primaryXDark},${C.primaryLight})`,color:"#fff",fontWeight:800,fontSize:15,cursor:loading?"not-allowed":"pointer",boxShadow:loading?"none":`0 4px 20px ${C.primary}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:9,transition:"all .2s"}}>
+                <button onClick={handleSubmit} disabled={loading} aria-label="Submit diagnosis" style={{width:"100%",padding:"15px",borderRadius:14,border:"none",background:loading?C.border:`linear-gradient(135deg,${C.primaryXDark},${C.primaryLight})`,color:"#fff",fontWeight:800,fontSize:15,cursor:loading?"not-allowed":"pointer",boxShadow:loading?"none":`0 4px 20px ${C.primary}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:9,transition:"all .2s"}}>
                   {loading?<><span style={{display:"inline-block",animation:"spin 1s linear infinite",fontSize:17}}>⟳</span>বিশ্লেষণ হচ্ছে...</>:<><span style={{fontSize:18}}>🔍</span>রোগ নির্ণয় করুন</>}
                 </button>
               </div>
@@ -2750,13 +2913,28 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       <div style={{fontSize:13,color:C.textMuted,lineHeight:1.75}}>কোন সমস্যা বেশি মনে হচ্ছে, কী লক্ষণ দেখা গেছে, আর এখন কী করলে ক্ষতি কমবে তা নিচে কার্ড আকারে সাজানো আছে.</div>
                     </div>
                     <div style={{height:220,borderRadius:26,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      {image?<img src={image} alt="diagnosis preview" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>:<div style={{fontSize:64}}>🍃</div>}
+                      {images.length>0?<img src={images[0].url} alt="diagnosis preview" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>:<div style={{fontSize:64}}>🍃</div>}
                       <div style={{position:"absolute",inset:18,border:"2px solid rgba(255,255,255,0.7)",borderRadius:20}} />
                       <div style={{position:"absolute",top:18,right:18,padding:"7px 12px",borderRadius:999,background:"rgba(0,96,40,0.88)",color:"#fff",fontSize:11,fontWeight:800}}>বিশ্লেষণ শেষ</div>
+                      {/* Structured result badges */}
+                      {structuredResult&&(
+                        <div style={{position:"absolute",bottom:18,left:18,display:"flex",gap:6}}>
+                          {structuredResult.severity&&<span style={{padding:"4px 10px",borderRadius:999,background:structuredResult.severity==='severe'||structuredResult.severity==='high'?'rgba(220,38,38,0.9)':structuredResult.severity==='moderate'||structuredResult.severity==='medium'?'rgba(217,119,6,0.9)':'rgba(22,163,74,0.9)',color:"#fff",fontSize:10,fontWeight:800}}>{structuredResult.severity}</span>}
+                          {structuredResult.confidence&&<span style={{padding:"4px 10px",borderRadius:999,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,fontWeight:700}}>{structuredResult.confidence}</span>}
+                        </div>
+                      )}
                     </div>
                   </div>
+                  {/* Thumbnail strip of all images */}
+                  {images.length>1&&(
+                    <div style={{display:"flex",gap:6,marginTop:8}}>
+                      {images.map((img,idx)=>(
+                        <img key={idx} src={img.url} alt={img.label} style={{width:48,height:48,objectFit:"cover",borderRadius:8,border:`1.5px solid ${idx===0?C.primary:C.border}`}}/>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,flexWrap:"wrap"}}>
                     <div style={{width:38,height:38,borderRadius:10,background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>📋</div>
                     <div style={{flex:1}}>
@@ -2807,7 +2985,26 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 )}
 
                 <div style={{marginTop:10,padding:"10px 14px",background:"#fffbeb",border:"1px solid #fed7aa",borderRadius:12,color:C.warning,fontSize:12}}>⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।</div>
-                <button onClick={reset} style={{width:"100%",marginTop:10,padding:"13px",borderRadius:14,border:`1px solid ${C.border}`,background:"#fff",color:C.text,fontWeight:600,fontSize:14,cursor:"pointer",boxShadow:C.shadow}}>🔁 নতুন রোগ নির্ণয়</button>
+                <button onClick={reset} aria-label="Reset form" style={{width:"100%",marginTop:10,padding:"13px",borderRadius:14,border:`1px solid ${C.border}`,background:C.bgCard,color:C.text,fontWeight:600,fontSize:14,cursor:"pointer",boxShadow:C.shadow}}>🔁 নতুন রোগ নির্ণয়</button>
+
+                {/* Follow-up questions */}
+                <div style={{marginTop:10,padding:14,background:C.bgCard,borderRadius:16,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                  <div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:8}}>❓ আরও জিজ্ঞাসা</div>
+                  <div style={{display:'flex',gap:8}}>
+                    <input 
+                      value={followUpQuestion} 
+                      onChange={e=>setFollowUpQuestion(e.target.value)}
+                      onKeyDown={e=>{if(e.key==='Enter')handleFollowUp();}}
+                      placeholder="আপনার প্রশ্ন লিখুন..."
+                      aria-label="Follow-up question"
+                      style={{flex:1,padding:'10px 14px',borderRadius:12,border:`1px solid ${C.border}`,fontSize:13,color:C.text,background:C.bgMuted,outline:'none'}}
+                    />
+                    <button onClick={handleFollowUp} disabled={!followUpQuestion.trim()||followUpLoading} aria-label="Ask follow-up question" style={{padding:'10px 16px',borderRadius:12,border:'none',background:C.primary,color:'#fff',fontWeight:700,fontSize:13,cursor:!followUpQuestion.trim()||followUpLoading?'not-allowed':'pointer',opacity:!followUpQuestion.trim()||followUpLoading?0.6:1}}>
+                      {followUpLoading?'...':'প্রশ্ন করুন'}
+                    </button>
+                  </div>
+                  {followUpAnswer&&<div style={{marginTop:10,padding:12,background:C.bgMuted,borderRadius:12,fontSize:13,color:C.text,lineHeight:1.7}}>{renderInline(followUpAnswer)}</div>}
+                </div>
               </div>
             )}
           </div>
@@ -2880,18 +3077,19 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
        </div>}
 
       {/* ══ BOTTOM NAVIGATION ═════════════════════════════════════ */}
-      {!isGameTab&&<nav className="bottom-nav">
+      {!isGameTab&&<nav className="bottom-nav" aria-label="Main navigation">
         {navTabs.map(t=>{
           let isActive = activeTab === t.id;
           if(t.id === "more") isActive = activeTab === "apps" || activeTab === "history";
           return (
-            <button key={t.id} onClick={()=>setActiveTab(t.id)} className={`bottom-nav-item ${isActive?"active":""}`}>
+            <button key={t.id} onClick={()=>setActiveTab(t.id)} className={`bottom-nav-item ${isActive?"active":""}`} aria-label={`${t.label} tab`}>
               <span className="nav-icon">{t.icon}</span>
               <span>{t.label}</span>
             </button>
           );
         })}
       </nav>}
-      </div>
+      </>)}
+    </div>
   );
 }

@@ -422,6 +422,14 @@ CRITICAL RULES:
 - ALWAYS factor real-time weather data into Disease Triangle
 - If damage is below economic threshold, explicitly recommend "Do Nothing — Monitor"
 - Accuracy (correct group) > Precision (specific species) when uncertain
+
+STRUCTURED OUTPUT REQUIREMENT:
+At the very end of your response, after ---END_ENGLISH---, include a JSON block in this exact format:
+---JSON_SUMMARY---
+{"disease_name":"...","disease_name_bn":"...","confidence":"high|medium|low","severity":"mild|moderate|severe","biotic_abiotic":"biotic|abiotic","cause_type":"fungal|bacterial|viral|insect|nutrient|environmental|other","key_recommendations":["...","..."]}
+---END_JSON---
+
+This JSON block is mandatory. Fill in all fields based on your diagnosis. For key_recommendations, list the top 3 most important recommendations as short strings.
 `.trim();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -494,6 +502,30 @@ function extractPlainUserText(messages) {
       return m.content.filter((b) => b.type === "text" && b.text).map((b) => b.text);
     })
     .join("\n");
+}
+
+// ─── Structured JSON extraction ────────────────────────────────────
+function extractStructuredJson(text) {
+  try {
+    const marker = "---JSON_SUMMARY---";
+    const endMarker = "---END_JSON---";
+    const startIdx = text.indexOf(marker);
+    const endIdx = text.indexOf(endMarker);
+    if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) return null;
+    const jsonStr = text.slice(startIdx + marker.length, endIdx).trim();
+    return JSON.parse(jsonStr);
+  } catch {
+    return null;
+  }
+}
+
+function stripStructuredJson(text) {
+  const marker = "---JSON_SUMMARY---";
+  const endMarker = "---END_JSON---";
+  const startIdx = text.indexOf(marker);
+  const endIdx = text.indexOf(endMarker);
+  if (startIdx === -1 || endIdx === -1) return text;
+  return text.slice(0, startIdx).trim() + text.slice(endIdx + endMarker.length).trim();
 }
 
 function buildEmergencyDiagnosis(messages, imageAttached) {
@@ -585,10 +617,10 @@ async function tryGemini(messages, withVision = true, systemPrompt = SYSTEM_PROM
     generationConfig: { maxOutputTokens: 3000, temperature: 0.3 },
   };
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
 
@@ -707,19 +739,25 @@ export default async function handler(req, res) {
       }),
       "OpenRouter"
     );
-    return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
+    const structured = extractStructuredJson(r.text);
+    const cleanText = structured ? stripStructuredJson(r.text) : r.text;
+    return res.status(200).json({ content: [{ type: "text", text: cleanText }], structured, provider: r.provider, attempts });
   } catch (e) { attempts.push(`OpenRouter smart route: ${e.message}`); }
 
   // ─── 2. Gemini 2.0 Flash (vision or text) ───────────────────────────────
   try {
     const r = await withTimeout(tryGemini(messages, imageAttached, systemPrompt), "Gemini");
-    return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
+    const structured = extractStructuredJson(r.text);
+    const cleanText = structured ? stripStructuredJson(r.text) : r.text;
+    return res.status(200).json({ content: [{ type: "text", text: cleanText }], structured, provider: r.provider, attempts });
   } catch (e) { attempts.push(`Gemini: ${e.message}`); }
 
   // ─── 3. Groq Llama 4 Scout (text only) ──────────────────────────────────
   try {
     const r = await withTimeout(tryGroq(messages, systemPrompt), "Groq");
-    return res.status(200).json({ content: [{ type: "text", text: r.text }], provider: r.provider, attempts });
+    const structured = extractStructuredJson(r.text);
+    const cleanText = structured ? stripStructuredJson(r.text) : r.text;
+    return res.status(200).json({ content: [{ type: "text", text: cleanText }], structured, provider: r.provider, attempts });
   } catch (e) { attempts.push(`Groq: ${e.message}`); }
 
   // ─── 4. OpenRouter text-only fallback ───────────────────────────────────
@@ -735,7 +773,9 @@ export default async function handler(req, res) {
     const note = imageAttached
       ? "\n\n---\nProvisional response: this answer was generated from the text description after the vision path fell back."
       : "";
-    return res.status(200).json({ content: [{ type: "text", text: r.text + note }], provider: r.provider, attempts });
+    const structured = extractStructuredJson(r.text);
+    const cleanText = structured ? stripStructuredJson(r.text) : r.text;
+    return res.status(200).json({ content: [{ type: "text", text: cleanText + note }], structured, provider: r.provider, attempts });
   } catch (e) { attempts.push(`OpenRouter text: ${e.message}`); }
 
   // ─── 5. Gemini text-only fallback (only if image was attached) ──────────
@@ -743,7 +783,9 @@ export default async function handler(req, res) {
     try {
       const r = await withTimeout(tryGemini(messages, false, systemPrompt), "Gemini text");
       const note = "\n\n---\n⚠️ ছবি বিশ্লেষণ এই মুহূর্তে সম্ভব হয়নি। বর্ণনার ভিত্তিতে রোগ নির্ণয় করা হয়েছে।\n*(Image analysis unavailable. Diagnosis based on description only.)*";
-      return res.status(200).json({ content: [{ type: "text", text: r.text + note }], provider: r.provider, attempts });
+      const structured = extractStructuredJson(r.text);
+      const cleanText = structured ? stripStructuredJson(r.text) : r.text;
+      return res.status(200).json({ content: [{ type: "text", text: cleanText + note }], structured, provider: r.provider, attempts });
     } catch (e) { attempts.push(`Gemini text: ${e.message}`); }
   }
 

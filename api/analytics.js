@@ -3,19 +3,14 @@ import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
 import { analyticsLimiter } from "./_lib/rateLimit.js";
 import { parseBody, validateVisitorId, validateSection } from "./_lib/validation.js";
 import { requireSignedRequest } from "./_lib/requestSigning.js";
+import { getDiseaseStats, hasTurso } from "./_lib/turso.js";
 
 export default async function handler(req, res) {
   if (handleCORSPreflight(req, res, "GET, POST, OPTIONS")) return;
   setCORSHeaders(req, res, "GET, POST, OPTIONS");
 
   if (req.method === "GET") {
-    const store = await readStore();
-    return res.status(200).json({
-      totalVisits: store.totalVisits,
-      uniqueVisitors: store.uniqueVisitors,
-      sections: store.sections,
-      updatedAt: store.updatedAt,
-    });
+    return handleGet(req, res);
   }
 
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -56,4 +51,30 @@ export default async function handler(req, res) {
     updatedAt: store.updatedAt,
     persistence: (process.env.TURSO_DATABASE_URL) ? "turso" : (process.env.VERCEL ? "temporary-instance-storage" : "local-file-storage"),
   });
+}
+
+async function handleGet(req, res) {
+  const store = await readStore();
+
+  // Base analytics response
+  const response = {
+    totalVisits: store.totalVisits,
+    uniqueVisitors: store.uniqueVisitors,
+    sections: store.sections,
+    updatedAt: store.updatedAt,
+  };
+
+  // If disease stats requested and Turso is available
+  if (req.query?.disease === "true" && hasTurso()) {
+    try {
+      const days = Math.min(Math.max(parseInt(req.query?.days) || 30, 1), 365);
+      const diseaseStats = await getDiseaseStats(days);
+      response.diseaseStats = diseaseStats;
+    } catch (err) {
+      console.error("Analytics disease stats error:", err.message);
+      response.diseaseStats = { error: "Failed to fetch disease stats" };
+    }
+  }
+
+  return res.status(200).json(response);
 }

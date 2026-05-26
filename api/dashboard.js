@@ -5,6 +5,7 @@
 import { readStore } from "./storage.js";
 import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
 import { analyticsLimiter } from "./_lib/rateLimit.js";
+import { getDiseaseStats, getOutbreaks, hasTurso } from "./_lib/turso.js";
 
 export default async function handler(req, res) {
   if (handleCORSPreflight(req, res, "GET, OPTIONS")) return;
@@ -52,6 +53,46 @@ export default async function handler(req, res) {
     }
   }
 
+  // If disease stats JSON requested
+  if (req.query?.format === "disease") {
+    if (!hasTurso()) {
+      return res.status(200).json({ error: "Database not configured", diseaseStats: null });
+    }
+    try {
+      const days = Math.min(Math.max(parseInt(req.query?.days) || 30, 1), 365);
+      const diseaseStats = await getDiseaseStats(days);
+      return res.status(200).json({ diseaseStats, days });
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to fetch disease stats" });
+    }
+  }
+
+  // If outbreak heatmap JSON requested
+  if (req.query?.format === "outbreaks") {
+    if (!hasTurso()) {
+      return res.status(200).json({ error: "Database not configured", outbreaks: [] });
+    }
+    try {
+      const recentDays = Math.min(Math.max(parseInt(req.query?.days) || 30, 1), 365);
+      const outbreaks = await getOutbreaks({ recentDays, limit: 200 });
+      // Group by district for heatmap
+      const heatmap = {};
+      for (const o of outbreaks) {
+        const key = o.district;
+        if (!heatmap[key]) heatmap[key] = { district: key, crops: {}, total: 0 };
+        heatmap[key].total++;
+        heatmap[key].crops[o.crop] = (heatmap[key].crops[o.crop] || 0) + 1;
+      }
+      return res.status(200).json({
+        outbreaks: outbreaks.slice(0, 50),
+        heatmap: Object.values(heatmap).sort((a, b) => b.total - a.total),
+        recentDays,
+      });
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to fetch outbreaks" });
+    }
+  }
+
   // Otherwise serve the live dashboard HTML
   const store = await readStore();
 
@@ -64,6 +105,18 @@ export default async function handler(req, res) {
     const presenceRes = await fetch(`${baseUrl}/api/presence?days=7`);
     presence = await presenceRes.json();
   } catch {}
+
+  // Fetch disease stats data
+  let diseaseStats = null;
+  let outbreakData = null;
+  if (hasTurso()) {
+    try {
+      [diseaseStats, outbreakData] = await Promise.all([
+        getDiseaseStats(30),
+        getOutbreaks({ recentDays: 30, limit: 100 }),
+      ]);
+    } catch {}
+  }
 
   const data = {
     totalVisits: store.totalVisits || 0,
@@ -173,6 +226,65 @@ export default async function handler(req, res) {
 
   const persistenceLabel = presence.persistence === "turso" ? "☁️ Turso" : "💾 Local/Temp";
 
+  // Disease stats HTML sections
+  const topDiseaseRows = diseaseStats?.topDiseases?.length
+    ? diseaseStats.topDiseases.slice(0, 10).map((d) => `
+    <tr>
+      <td style="padding:8px 14px;font-weight:600;">${d.diseaseName}</td>
+      <td style="padding:8px 14px;text-align:right;font-weight:700;color:#006028;">${d.count}</td>
+    </tr>`).join("")
+    : '<tr><td colspan="2" style="text-align:center;padding:20px;color:#9ca3af;">কোনো রোগের তথ্য নেই</td></tr>';
+
+  const topCropRows = diseaseStats?.topCrops?.length
+    ? diseaseStats.topCrops.slice(0, 10).map((d) => `
+    <tr>
+      <td style="padding:8px 14px;font-weight:600;">${d.crop}</td>
+      <td style="padding:8px 14px;text-align:right;font-weight:700;color:#006028;">${d.count}</td>
+    </tr>`).join("")
+    : '<tr><td colspan="2" style="text-align:center;padding:20px;color:#9ca3af;">কোনো ফসলের তথ্য নেই</td></tr>';
+
+  const diseaseByDistrictRows = diseaseStats?.byDistrict?.length
+    ? diseaseStats.byDistrict.slice(0, 10).map((d) => `
+    <tr>
+      <td style="padding:8px 14px;font-weight:600;">${d.district}</td>
+      <td style="padding:8px 14px;text-align:right;font-weight:700;color:#006028;">${d.count}</td>
+    </tr>`).join("")
+    : '<tr><td colspan="2" style="text-align:center;padding:20px;color:#9ca3af;">কোনো জেলার তথ্য নেই</td></tr>';
+
+  const diseaseTrendRows = diseaseStats?.trend?.length
+    ? diseaseStats.trend.slice(-14).map((d) => `
+    <tr>
+      <td style="padding:8px 14px;font-weight:600;">${d.date}</td>
+      <td style="padding:8px 14px;text-align:right;">${d.count}</td>
+      <td style="padding:8px 14px;width:150px;">
+        <div style="background:#e5e7eb;border-radius:4px;height:8px;overflow:hidden;">
+          <div style="background:linear-gradient(90deg,#b91c1c,#ef4444);height:100%;width:${diseaseStats.trend.length > 0 ? Math.max((d.count / Math.max(...diseaseStats.trend.map(t => t.count), 1)) * 100, 2) : 0}%;border-radius:4px;"></div>
+        </div>
+      </td>
+    </tr>`).join("")
+    : '<tr><td colspan="3" style="text-align:center;padding:20px;color:#9ca3af;">কোনো ট্রেন্ড তথ্য নেই</td></tr>';
+
+  // Outbreak heatmap: group by district
+  const outbreakHeatmap = {};
+  if (outbreakData?.length) {
+    for (const o of outbreakData) {
+      const key = o.district;
+      if (!outbreakHeatmap[key]) outbreakHeatmap[key] = { district: key, diseases: {}, total: 0 };
+      outbreakHeatmap[key].total++;
+      outbreakHeatmap[key].diseases[o.diseaseName] = (outbreakHeatmap[key].diseases[o.diseaseName] || 0) + 1;
+    }
+  }
+  const outbreakHeatmapRows = Object.values(outbreakHeatmap).sort((a, b) => b.total - a.total).slice(0, 15).map((d) => `
+    <tr>
+      <td style="padding:8px 14px;font-weight:600;">${d.district}</td>
+      <td style="padding:8px 14px;text-align:right;font-weight:700;color:#b91c1c;">${d.total}</td>
+      <td style="padding:8px 14px;font-size:11px;">${Object.entries(d.diseases).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>`${k} (${v})`).join(", ")}</td>
+    </tr>`).join("") || '<tr><td colspan="3" style="text-align:center;padding:20px;color:#9ca3af;">কোনো প্রাদুর্ভাবের তথ্য নেই</td></tr>';
+
+  const bioticAbioticInfo = diseaseStats?.byBioticAbiotic
+    ? Object.entries(diseaseStats.byBioticAbiotic).map(([k, v]) => `${k}: ${v}`).join(" · ")
+    : "";
+
   const html = `<!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -193,6 +305,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f0f2f
 .stat-card.highlight{background:linear-gradient(135deg,#006028,#16a34a);color:#fff}
 .stat-card.highlight .number{color:#fff}
 .stat-card.highlight .label{color:rgba(255,255,255,.8)}
+.stat-card.warning{background:linear-gradient(135deg,#b91c1c,#ef4444);color:#fff}
+.stat-card.warning .number{color:#fff}
+.stat-card.warning .label{color:rgba(255,255,255,.8)}
 .stat-card.online{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;animation:glow 3s infinite}
 @keyframes glow{0%,100%{box-shadow:0 0 20px rgba(34,197,94,.3)}50%{box-shadow:0 0 30px rgba(34,197,94,.6)}}
 .stat-card.online .number{color:#fff}
@@ -238,6 +353,15 @@ tr:hover{background:#f9fafb}
       <div class="number">${todayVisits}</div>
       <div class="label">📅 আজকের ভিজিট</div>
     </div>
+    ${diseaseStats ? `
+    <div class="stat-card warning">
+      <div class="number">${diseaseStats.topDiseases?.length || 0}</div>
+      <div class="label">🦠 শনাক্ত রোগ (৩০ দিন)</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">${diseaseStats.trend?.reduce((s, t) => s + t.count, 0) || 0}</div>
+      <div class="label">🔬 মোট নির্ণয় (৩০ দিন)</div>
+    </div>` : ""}
   </div>
 
   <div class="card">
@@ -282,12 +406,58 @@ tr:hover{background:#f9fafb}
     </table>
   </div>
 
+  ${diseaseStats ? `
+  <div class="card">
+    <h2>🦠 সর্বোচ্চ রোগ (গত ৩০ দিন)${bioticAbioticInfo ? ` <span style="font-size:11px;color:#6b7280;">(${bioticAbioticInfo})</span>` : ""}</h2>
+    <table>
+      <thead><tr><th>রোগের নাম</th><th style="text-align:right">সংখ্যা</th></tr></thead>
+      <tbody>${topDiseaseRows}</tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>🌾 সর্বোচ্চ ফসল (গত ৩০ দিন)</h2>
+    <table>
+      <thead><tr><th>ফসল</th><th style="text-align:right">নির্ণয় সংখ্যা</th></tr></thead>
+      <tbody>${topCropRows}</tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>📍 জেলা অনুযায়ী রোগ (গত ৩০ দিন)</h2>
+    <table>
+      <thead><tr><th>জেলা</th><th style="text-align:right">নির্ণয় সংখ্যা</th></tr></thead>
+      <tbody>${diseaseByDistrictRows}</tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>📈 রোগ ট্রেন্ড (গত ১৪ দিন)</h2>
+    <table>
+      <thead><tr><th>তারিখ</th><th style="text-align:right">নির্ণয়</th><th></th></tr></thead>
+      <tbody>${diseaseTrendRows}</tbody>
+    </table>
+  </div>
+  ` : ""}
+
+  ${outbreakData?.length ? `
+  <div class="card">
+    <h2>🔥 প্রাদুর্ভাব হিটম্যাপ (গত ৩০ দিন) <span class="badge">OUTBREAK</span></h2>
+    <table>
+      <thead><tr><th>জেলা</th><th style="text-align:right">রিপোর্ট</th><th>শীর্ষ রোগ</th></tr></thead>
+      <tbody>${outbreakHeatmapRows}</tbody>
+    </table>
+  </div>
+  ` : ""}
+
   <div class="refresh-note">🔄 ১০ সেকেন্ড পর পর অটো-রিফ্রেশ · শেষ আপডেট: ${data.updatedAt ? new Date(data.updatedAt).toLocaleString("bn-BD") : "N/A"}</div>
 </div>
 <div class="footer">
   উদ্ভিদ গোয়েন্দা · CABI Plantwise · DAE Bangladesh<br>
   <a href="/api/dashboard?format=json" style="color:#006028;">Analytics JSON</a> ·
   <a href="/api/presence" style="color:#006028;">Presence JSON</a> ·
+  <a href="/api/dashboard?format=disease" style="color:#006028;">Disease Stats</a> ·
+  <a href="/api/dashboard?format=outbreaks" style="color:#006028;">Outbreak Heatmap</a> ·
   <a href="/" style="color:#006028;">অ্যাপে ফিরুন</a>
 </div>
 <script>

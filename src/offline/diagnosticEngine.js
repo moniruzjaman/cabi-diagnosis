@@ -1,5 +1,36 @@
 // Offline CABI Diagnostic Engine
 // Implements the CABI Plantwise methodology without requiring internet or external APIs
+// Supports Bengali symptom input via BENGALI_KEYWORD_MAP
+
+import { translateBengaliToEnglish, translateSymptomsToEnglish } from '../data/bengaliKeywords.js';
+import { matchDiseasesBySymptoms, estimateInoculumPressure, getVarietySusceptibility, resolveCropKey, CROP_DISEASES } from '../data/cropDiseases.js';
+
+/**
+ * Translates all symptom text fields to English keywords.
+ * Handles Bengali symptom values from the UI chips and free-text.
+ * @param {Object} symptoms - Observed symptoms from user (may contain Bengali)
+ * @returns {Object} - Symptoms with an added _englishText field for keyword matching
+ */
+function translateSymptoms(symptoms) {
+  const allValues = Object.values(symptoms).map(v => String(v || '')).filter(v => v && v !== 'N/A');
+  const englishText = translateSymptomsToEnglish(allValues);
+
+  // Also translate each individual field for fine-grained matching
+  const translated = {};
+  for (const [key, value] of Object.entries(symptoms)) {
+    if (value && String(value) !== 'N/A') {
+      translated[key] = translateBengaliToEnglish(String(value));
+    } else {
+      translated[key] = value;
+    }
+  }
+
+  return {
+    ...symptoms,
+    _englishText: englishText,
+    _translated: translated
+  };
+}
 
 /**
  * Extracts and processes symptoms to determine if issue is abiotic or biotic
@@ -26,7 +57,11 @@ function assessAbioticBiotic(symptoms) {
     "herbicide",
     "flooding",
     "salinity",
-    "pH toxicity"
+    "pH toxicity",
+    // Bengali-derived keywords
+    "flood water damage",
+    "drought stress",
+    "cold injury frost"
   ];
 
   const bioticIndicators = [
@@ -45,12 +80,21 @@ function assessAbioticBiotic(symptoms) {
     "frass",
     "cast skins",
     "eggs",
-    "symptoms appear asymmetrically"
+    "symptoms appear asymmetrically",
+    // Bengali-derived keywords
+    "insect visible pest",
+    "chewing marks",
+    "sticky honeydew",
+    "whitefly",
+    "spider mite"
   ];
 
   let abioticScore = 0;
   let bioticScore = 0;
-  const allText = Object.values(symptoms).join(' ').toLowerCase();
+
+  // Build combined text from both original (Bengali) and translated (English)
+  const translated = translateSymptoms(symptoms);
+  const allText = Object.values(symptoms).join(' ').toLowerCase() + ' ' + translated._englishText.toLowerCase();
 
   abioticIndicators.forEach(indicator => {
     if (allText.includes(indicator.toLowerCase())) abioticScore++;
@@ -67,6 +111,7 @@ function assessAbioticBiotic(symptoms) {
 
 /**
  * Applies CABI exclusion gates to narrow down potential causes
+ * Now supports Bengali symptom keywords via translation layer
  * @param {string} abioticBiotic - Result from assessAbioticBiotic
  * @param {Object} symptoms - Observed symptoms
  * @returns {Object} - Excluded causes and remaining suspects
@@ -74,7 +119,12 @@ function assessAbioticBiotic(symptoms) {
 function applyExclusionGates(abioticBiotic, symptoms) {
   const excluded = [];
   const suspects = [];
-  const allText = Object.values(symptoms).join(' ').toLowerCase();
+  const translated = translateSymptoms(symptoms);
+
+  // Build combined text from original + translated English keywords
+  const originalText = Object.values(symptoms).join(' ').toLowerCase();
+  const englishText = translated._englishText.toLowerCase();
+  const allText = originalText + ' ' + englishText;
 
   // If abiotic, we don't apply biotic gates
   if (abioticBiotic === "abiotic") {
@@ -93,7 +143,16 @@ function applyExclusionGates(abioticBiotic, symptoms) {
     "cast skins",
     "eggs",
     "webbing",
-    "stippling"
+    "stippling",
+    // Bengali-derived keywords that map to insect signs
+    "leaf roller insect",
+    "chewing marks insect",
+    "sticky honeydew",
+    "whitefly insect",
+    "spider mite webbing",
+    "soil insect grub",
+    "insect visible pest",
+    "stem borer holes hollow stem insect borer"
   ];
   
   let hasInsectSigns = false;
@@ -113,7 +172,10 @@ function applyExclusionGates(abioticBiotic, symptoms) {
     "ring spots",
     "chlorotic patterns following vein boundaries",
     "systemic distortion of young leaves",
-    "confined between veins" // interveinal = NOT virus
+    "confined between veins",
+    // Bengali-derived keywords
+    "leaf curling curl distortion crinkling",
+    "mosaic virus chlorotic patterns"
   ];
   
   let hasVirusSigns = false;
@@ -134,7 +196,10 @@ function applyExclusionGates(abioticBiotic, symptoms) {
   const bacteriaSigns = [
     "water-soaked margins",
     "bacterial ooze",
-    "sticky exudate"
+    "sticky exudate",
+    // Bengali-derived keywords
+    "water soaked oily",
+    "water soaked margins leaf edge yellow brown bacterial"
   ];
   
   let hasBacteriaSigns = false;
@@ -154,7 +219,10 @@ function applyExclusionGates(abioticBiotic, symptoms) {
     "black pycnidia",
     "pustules",
     "powdery coating",
-    "cottony growth"
+    "cottony growth",
+    // Bengali-derived keywords
+    "white powder mildew powdery coating",
+    "blast gray diamond lesions fungal"
   ];
   
   const oomyceteSigns = [
@@ -200,12 +268,14 @@ function applyExclusionGates(abioticBiotic, symptoms) {
 
 /**
  * Assesses disease triangle using host, pathogen, and environment factors
+ * Now uses crop-specific variety and inoculum data when available
  * @param {Object} hostInfo - Host susceptibility data
  * @param {Object} pathogenInfo - Pathogen pressure data
  * @param {Object} envInfo - Environmental data (temperature, humidity, rainfall)
+ * @param {string} cropInput - Crop name for database lookup (optional)
  * @returns {Object} - Disease triangle assessment with field observation guidance
  */
-function assessDiseaseTriangle(hostInfo, pathogenInfo, envInfo) {
+function assessDiseaseTriangle(hostInfo, pathogenInfo, envInfo, cropInput) {
    const assessment = {
      host: "",
      pathogen: "",
@@ -214,8 +284,18 @@ function assessDiseaseTriangle(hostInfo, pathogenInfo, envInfo) {
      fieldObservationGuidance: [] // New field to guide users on what observations to collect
    };
 
+   // Use crop-specific variety susceptibility if available
+   const effectiveVarietySusceptibility = cropInput
+     ? getVarietySusceptibility(cropInput, hostInfo.variety)
+     : (hostInfo.varietySusceptibility || "medium");
+
+   // Use season-based inoculum pressure if available
+   const effectiveInoculumPressure = cropInput && pathogenInfo.season
+     ? estimateInoculumPressure(cropInput, pathogenInfo.season)
+     : (pathogenInfo.inoculumPressure || "low");
+
    // Host assessment
-   if (hostInfo.varietySusceptibility === "high" || 
+   if (effectiveVarietySusceptibility === "high" || 
        hostInfo.growthStage === "seedling" || 
        hostInfo.growthStage === "vegetative") {
      assessment.host = "High susceptibility due to variety and growth stage";
@@ -227,7 +307,7 @@ function assessDiseaseTriangle(hostInfo, pathogenInfo, envInfo) {
    }
 
    // Pathogen assessment
-   if (pathogenInfo.inoculumPressure === "high" || 
+   if (effectiveInoculumPressure === "high" || 
        pathogenInfo.recentHistory === "present") {
      assessment.pathogen = "High pathogen pressure";
      if (assessment.riskLevel === "medium") assessment.riskLevel = "high";
@@ -334,11 +414,13 @@ function getFieldConfirmationMethods(suspects) {
    });
    
    return methods;
- }
+}
 
 /**
- * Generates IPM recommendations based on diagnosis
- * @param {Object} diagnosis - Diagnosis object with suspects, confidence, etc.
+ * Generates IPM recommendations based on diagnosis.
+ * When crop-specific diseases are matched, returns targeted recommendations.
+ * Falls back to generic IPM recommendations otherwise.
+ * @param {Object} diagnosis - Diagnosis object with suspects, confidence, cropDiseaseMatches, etc.
  * @returns {Object} - IPM recommendations
  */
 function generateIPMRecommendations(diagnosis) {
@@ -348,95 +430,223 @@ function generateIPMRecommendations(diagnosis) {
     chemical: [],
     prevention: []
   };
-  
-  // Cultural controls (highest priority)
-  recommendations.cultural.push("Use resistant varieties");
-  recommendations.cultural.push("Practice crop rotation");
-  recommendations.cultural.push("Maintain proper plant spacing");
-  recommendations.cultural.push("Ensure balanced fertilization");
-  recommendations.cultural.push("Use clean seed and planting material");
-  recommendations.cultural.push("Remove and destroy infected plant debris");
-  recommendations.cultural.push("Control weeds that may harbor pests");
-  
-  // Biological controls
-  recommendations.biological.push("Apply Trichoderma for fungal diseases");
-  recommendations.biological.push("Use Chitosan Oligosaccharide (COS) to activate plant immunity");
-  recommendations.biological.push("Conserve and enhance natural enemies");
-  recommendations.biological.push("Use neem oil or botanical extracts where appropriate");
-  
-  // Chemical controls (last resort)
-  if (diagnosis.confidence === "high" || diagnosis.confidence === "medium") {
-    diagnosis.suspects.forEach(suspect => {
-      switch (suspect) {
-        case "true fungi":
-          recommendations.chemical.push("Use propiconazole, tricyclazole, carbendazim, iprodione, or tebuconazole");
-          recommendations.chemical.push("FRAC rotation mandatory to prevent resistance");
-          break;
-          
-        case "oomycetes":
-          recommendations.chemical.push("Use metalaxyl, mancozeb, fosetyl-Al, or cymoxanil+mancozeb");
-          recommendations.chemical.push("Standard fungicides ineffective - use specific oomyceticides");
-          break;
-          
-        case "bacteria":
-          recommendations.chemical.push("Use copper oxychloride or copper hydroxide");
-          recommendations.chemical.push("Note: Antibiotics not recommended for plant use");
-          break;
-          
-        case "insects/mites":
-          recommendations.chemical.push("Rotate IRAC groups: Neonicotinoids → Organophosphates → Pyrethroids");
-          recommendations.chemical.push("Never use same group >2 consecutive sprays");
-          break;
-          
-        case "virus":
-          recommendations.chemical.push("No chemical cure - focus on vector control");
-          recommendations.chemical.push("Control insect vectors (whiteflies, leafhoppers, aphids)");
-          break;
-      }
-    });
-  } else {
-    recommendations.chemical.push("Chemical control not recommended without confirmed diagnosis");
+
+  // If we have specific disease matches, use their targeted recommendations
+  if (diagnosis.cropDiseaseMatches && diagnosis.cropDiseaseMatches.length > 0) {
+    const topMatch = diagnosis.cropDiseaseMatches[0];
+    const disease = topMatch.disease;
+
+    // Add disease-specific recommendations
+    if (disease.recommendations && disease.recommendations.length > 0) {
+      disease.recommendations.forEach(rec => {
+        // Classify recommendation into appropriate category based on content
+        const recLower = rec.toLowerCase();
+        if (recLower.includes('স্প্রে') || recLower.includes('প্রয়োগ') || recLower.includes('spray') ||
+            recLower.includes('কীটনাশক') || recLower.includes('ছত্রাকনাশক') || recLower.includes('ফাঙ্গিসাইড') ||
+            recLower.includes('মেটালাক্সিল') || recLower.includes('ম্যানকোজেব') || recLower.includes('কার্বেন্ডাজিম') ||
+            recLower.includes('কপার') || recLower.includes('ট্রাইসাইক্লাজোল') || recLower.includes('প্রোপিকোনাজোল') ||
+            recLower.includes('হেক্সাকোনাজোল') || recLower.includes('টেবুকোনাজোল') || recLower.includes('সালফার') ||
+            recLower.includes('ইমিডাক্লোপ্রিড') || recLower.includes('সাইপারমেথ্রিন') || recLower.includes('কার্বারিল') ||
+            recLower.includes('রিডোমিল') || recLower.includes('বোর্দো')) {
+          recommendations.chemical.push(rec);
+        } else if (recLower.includes('জাত') || recLower.includes('আবর্তন') || recLower.includes('দূরত্ব') ||
+                   recLower.includes('সার') || recLower.includes('সেচ') || recLower.includes('বীজ') ||
+                   recLower.includes('চাষ') || recLower.includes('বপন') || recLower.includes('ছাঁটাই') ||
+                   recLower.includes('পরিষ্কার') || recLower.includes('নিষ্কাশন') || recLower.includes('নার্সারি') ||
+                   recLower.includes('চারা') || recLower.includes('গভীর চাষ')) {
+          recommendations.cultural.push(rec);
+        } else if (recLower.includes('ট্রাইকো') || recLower.includes('নিম') || recLower.includes('ফেরোমন') ||
+                   recLower.includes('জৈব') || recLower.includes('বিউভেরিয়া') || recLower.includes('হলুদ ফাঁদ') ||
+                   recLower.includes('নেট') || recLower.includes('টিস্যু কালচার')) {
+          recommendations.biological.push(rec);
+        } else {
+          recommendations.cultural.push(rec);
+        }
+      });
+    }
+
+    // If we have multiple disease matches, add secondary recommendations
+    if (diagnosis.cropDiseaseMatches.length > 1) {
+      const secondMatch = diagnosis.cropDiseaseMatches[1];
+      recommendations.cultural.push(`বিকল্প রোগ "${secondMatch.disease.nameBn}" এর জন্যও পর্যবেক্ষণ করুন`);
+    }
+
+    // Add severity-based prevention
+    if (disease.severity === 'severe') {
+      recommendations.prevention.push(`"${disease.nameBn}" মারাত্মক — পরবর্তী মৌসুমে প্রতিরোধী জাত অবশ্যই লাগাবেন`);
+    }
   }
-  
-  // Prevention
-  recommendations.prevention.push("Monitor fields regularly for early detection");
-  recommendations.prevention.push("Use disease forecasting models where available");
-  recommendations.prevention.push("Implement quarantine measures for new planting material");
-  recommendations.prevention.push("Maintain field sanitation");
-  recommendations.prevention.push("Use reflective mulches to deter flying insects");
-  recommendations.prevention.push("Apply balanced fertilization to reduce susceptibility");
+
+  // Add generic cultural controls (always applicable)
+  if (recommendations.cultural.length === 0) {
+    recommendations.cultural.push("প্রতিরোধী জাত ব্যবহার করুন");
+    recommendations.cultural.push("ফসল আবর্তন করুন");
+    recommendations.cultural.push("সঠিক দূরত্বে চাষ করুন");
+    recommendations.cultural.push("সুষম সার প্রয়োগ করুন");
+    recommendations.cultural.push("সুস্থ বীজ ও চারা ব্যবহার করুন");
+    recommendations.cultural.push("আক্রান্ত গাছের অবশিষ্ট সরিয়ে পুড়ে ফেলুন");
+    recommendations.cultural.push("আগাছা পরিষ্কার রাখুন");
+  }
+
+  // Add generic biological controls if none from disease matches
+  if (recommendations.biological.length === 0) {
+    recommendations.biological.push("ট্রাইকোডার্মা প্রয়োগ করুন (ছত্রাকজনিত রোগে)");
+    recommendations.biological.push("নিম তেল বা উদ্ভিদজ নিষ্কর্ষ ব্যবহার করুন");
+    recommendations.biological.push("প্রাকৃতিক শত্রু সংরক্ষণ করুন");
+  }
+
+  // Add generic chemical controls if none from disease matches
+  if (recommendations.chemical.length === 0) {
+    if (diagnosis.confidence === "high" || diagnosis.confidence === "medium") {
+      diagnosis.suspects.forEach(suspect => {
+        switch (suspect) {
+          case "true fungi":
+            recommendations.chemical.push("প্রোপিকোনাজোল, ট্রাইসাইক্লাজোল, কার্বেন্ডাজিম বা টেবুকোনাজোল ব্যবহার করুন");
+            recommendations.chemical.push("FRAC গ্রুপ রোটেশন বাধ্যতামূলক (প্রতিরোধ ক্ষমতা রোধে)");
+            break;
+            
+          case "oomycetes":
+            recommendations.chemical.push("মেটালাক্সিল+মানকোজেব, ফোসেটাইল-এএল বা সাইমোক্সানিল+মানকোজেব ব্যবহার");
+            recommendations.chemical.push("সাধারণ ছত্রাকনাশক কাজ করবে না — নির্দিষ্ট ওমাইসিটসাইড দরকার");
+            break;
+            
+          case "bacteria":
+            recommendations.chemical.push("কপার অক্সিক্লোরাইড বা কপার হাইড্রোক্সাইড ব্যবহার করুন");
+            recommendations.chemical.push("নোট: উদ্ভিদে অ্যান্টিবায়োটিক ব্যবহার সুপারিশ করা হয় না");
+            break;
+            
+          case "insects/mites":
+            recommendations.chemical.push("IRAC গ্রুপ রোটেশন: নিওনিকোটিনয়েড → অর্গানোফসফেট → পাইরেথ্রয়েড");
+            recommendations.chemical.push("একই গ্রুপ ২ বারের বেশি স্প্রে করবেন না");
+            break;
+            
+          case "virus":
+            recommendations.chemical.push("ভাইরাসের রাসায়নিক চিকিৎসা নেই — বাহক নিয়ন্ত্রণে মনোযোগ দিন");
+            recommendations.chemical.push("সাদা মাছি, পাতাফড়িং ও জাব পোকা নিয়ন্ত্রণ করুন");
+            break;
+        }
+      });
+    } else {
+      recommendations.chemical.push("নিশ্চিত রোগ নির্ণয় ছাড়া রাসায়নিক নিয়ন্ত্রণ সুপারিশ করা হচ্ছে না");
+    }
+  }
+
+  // Add generic prevention
+  if (recommendations.prevention.length === 0) {
+    recommendations.prevention.push("নিয়মিত মাঠ পরিদর্শন করুন");
+    recommendations.prevention.push("রোগ পূর্বাভাস মডেল ব্যবহার করুন (যেখানে পাওয়া যায়)");
+    recommendations.prevention.push("নতুন চারা আনার সময় কোয়ারেন্টাইন মেনে চলুন");
+    recommendations.prevention.push("মাঠের পরিচ্ছন্নতা বজায় রাখুন");
+    recommendations.prevention.push("প্রতিফলক মাল্চ ব্যবহার করে উড়ন্ত পোকা দূর রাখুন");
+  }
+  recommendations.prevention.push("সুষম সার প্রয়োগ করে গাছের রোগ প্রতিরোধ ক্ষমতা বাড়ান");
   
   return recommendations;
 }
 
 /**
- * Main diagnostic function that orchestrates the offline diagnosis process
- * @param {Object} inputData - Contains symptoms, host info, pathogen info, env info
- * @returns {Object} - Complete diagnosis in CABI format
+ * Main diagnostic function that orchestrates the offline diagnosis process.
+ * Now supports Bengali symptom input and crop-specific disease matching.
+ * @param {Object} inputData - Contains symptoms, host info, pathogen info, env info, crop
+ * @returns {Object} - Complete diagnosis in CABI format with disease matches
  */
 function diagnoseOffline(inputData) {
-  const { symptoms, hostInfo = {}, pathogenInfo = {}, envInfo = {} } = inputData;
+  const { symptoms, hostInfo = {}, pathogenInfo = {}, envInfo = {}, crop } = inputData;
   
-  // Step 1: Abiotic vs Biotic assessment
+  // Step 1: Translate Bengali symptoms for the engine
+  const translatedSymptoms = translateSymptoms(symptoms);
+  
+  // Step 2: Abiotic vs Biotic assessment (uses Bengali-aware text)
   const abioticBiotic = assessAbioticBiotic(symptoms);
   
-  // Step 2: Apply exclusion gates
+  // Step 3: Apply exclusion gates (uses Bengali-aware text)
   const { excluded, suspects } = applyExclusionGates(abioticBiotic, symptoms);
   
-  // Step 3: Disease triangle assessment
-  const triangle = assessDiseaseTriangle(hostInfo, pathogenInfo, envInfo);
+  // Step 4: Crop-specific disease matching
+  let cropDiseaseMatches = [];
+  let cropKey = null;
+
+  if (crop) {
+    cropKey = resolveCropKey(crop);
+
+    if (cropKey && CROP_DISEASES[cropKey]) {
+      // Collect all symptom text (both Bengali original and translated English)
+      const allSymptomTexts = [];
+      for (const val of Object.values(symptoms)) {
+        if (val && String(val) !== 'N/A') {
+          // Split comma-separated or multi-line symptom strings
+          String(val).split(/[,;\n]+/).forEach(s => {
+            const trimmed = s.trim();
+            if (trimmed) allSymptomTexts.push(trimmed);
+          });
+        }
+      }
+
+      // Match against disease database
+      cropDiseaseMatches = matchDiseasesBySymptoms(crop, allSymptomTexts);
+
+      // Filter out zero-match results unless they all have zero
+      const nonZeroMatches = cropDiseaseMatches.filter(m => m.score > 0);
+      if (nonZeroMatches.length > 0) {
+        cropDiseaseMatches = nonZeroMatches;
+      }
+
+      // Enhance suspects based on disease cause type
+      cropDiseaseMatches.forEach(match => {
+        if (match.matchRatio >= 0.3 && match.disease.cause) {
+          const cause = match.disease.cause;
+          if (cause === 'fungal' && !suspects.some(s => s.includes('fungi'))) {
+            if (!excluded.includes('fungi/oomycetes')) {
+              suspects.push('fungal/oomycete (crop-specific match)');
+            }
+          }
+          if (cause === 'bacterial' && !suspects.includes('bacteria')) {
+            suspects.push('bacteria (crop-specific match)');
+          }
+          if (cause === 'viral' && !suspects.includes('virus')) {
+            suspects.push('virus (crop-specific match)');
+          }
+          if (cause === 'insect' && !suspects.includes('insects/mites')) {
+            suspects.push('insects/mites (crop-specific match)');
+          }
+        }
+      });
+    }
+  }
+
+  // Step 5: Disease triangle assessment (now crop-aware)
+  const triangle = assessDiseaseTriangle(hostInfo, pathogenInfo, envInfo, crop);
   
-  // Step 4: Field confirmation methods
+  // Step 6: Field confirmation methods
   const fieldMethods = getFieldConfirmationMethods(suspects);
   
-  // Step 5: Generate IPM recommendations
+  // Step 7: Generate IPM recommendations (now crop/disease-specific)
   const ipmRecommendations = generateIPMRecommendations({
     suspects: suspects,
-    confidence: suspects.length > 0 && excluded.length > 0 ? "medium" : "low"
+    confidence: suspects.length > 0 && excluded.length > 0 ? "medium" : "low",
+    cropDiseaseMatches: cropDiseaseMatches
   });
   
-  // Determine primary suspect
-  const primarySuspect = suspects.length > 0 ? suspects[0] : "No clear suspect - requires field observation";
+  // Determine primary suspect (prefer crop-specific match)
+  let primarySuspect;
+  let specificDisease = null;
+
+  if (cropDiseaseMatches.length > 0 && cropDiseaseMatches[0].matchRatio >= 0.2) {
+    const topMatch = cropDiseaseMatches[0];
+    specificDisease = {
+      name: topMatch.disease.name,
+      nameBn: topMatch.disease.nameBn,
+      cause: topMatch.disease.cause,
+      pathogen: topMatch.disease.pathogen,
+      severity: topMatch.disease.severity,
+      confidence: topMatch.matchRatio >= 0.5 ? 'high' : topMatch.matchRatio >= 0.3 ? 'medium' : 'low',
+      matchRatio: topMatch.matchRatio,
+      matchedSymptoms: topMatch.matchedSymptoms
+    };
+    primarySuspect = `${topMatch.disease.nameBn} (${topMatch.disease.name})`;
+  } else {
+    primarySuspect = suspects.length > 0 ? suspects[0] : "No clear suspect - requires field observation";
+  }
   
    // Build diagnosis object
    const diagnosis = {
@@ -444,15 +654,32 @@ function diagnoseOffline(inputData) {
      excluded,
      suspects,
      primarySuspect,
-     confidence: suspects.length > 0 ? 
-       (suspects.length === 1 && excluded.length >= 3 ? "high" : 
-        suspects.length <= 2 ? "medium" : "low") : "low",
+     specificDisease,
+     cropDiseaseMatches: cropDiseaseMatches.map(m => ({
+       name: m.disease.name,
+       nameBn: m.disease.nameBn,
+       cause: m.disease.cause,
+       pathogen: m.disease.pathogen,
+       severity: m.disease.severity,
+       season: m.disease.season,
+       score: m.score,
+       maxScore: m.maxScore,
+       matchRatio: m.matchRatio,
+       matchedSymptoms: m.matchedSymptoms,
+       recommendations: m.disease.recommendations
+     })),
+     confidence: specificDisease
+       ? specificDisease.confidence
+       : (suspects.length > 0 
+         ? (suspects.length === 1 && excluded.length >= 3 ? "high" : 
+            suspects.length <= 2 ? "medium" : "low") 
+         : "low"),
      diseaseTriangle: triangle,
      fieldConfirmation: fieldMethods,
      ipmRecommendations: ipmRecommendations,
-     economicThreshold: suspects.length > 0 ? 
-       "Assess: <5% leaf area damaged for most insects = no action needed" : 
-       "Monitor without treatment until cause is confirmed",
+     economicThreshold: suspects.length > 0 
+       ? "Assess: <5% leaf area damaged for most insects = no action needed" 
+       : "Monitor without treatment until cause is confirmed",
      recommendedFieldObservations: triangle.fieldObservationGuidance || [],
      timestamp: new Date().toISOString()
    };
@@ -467,5 +694,6 @@ export {
   applyExclusionGates,
   assessDiseaseTriangle,
   getFieldConfirmationMethods,
-  generateIPMRecommendations
+  generateIPMRecommendations,
+  translateSymptoms
 };

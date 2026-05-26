@@ -98,6 +98,55 @@ export async function ensureSchema() {
       CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback_entries(created_at)
     `);
 
+    // Diagnoses — stores each AI diagnosis result
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS diagnoses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id TEXT NOT NULL,
+        crop TEXT NOT NULL,
+        disease_name TEXT,
+        disease_name_bn TEXT,
+        confidence TEXT,
+        severity TEXT,
+        biotic_abiotic TEXT,
+        provider TEXT,
+        symptoms TEXT,
+        recommendations TEXT,
+        weather_snapshot TEXT,
+        district TEXT,
+        image_count INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now'))
+      )
+    `);
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_diagnoses_crop ON diagnoses(crop)
+    `);
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_diagnoses_district ON diagnoses(district)
+    `);
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_diagnoses_created ON diagnoses(created_at)
+    `);
+
+    // Outbreak reports — crowd-sourced disease outbreak tracking
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS outbreak_reports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        district TEXT NOT NULL,
+        crop TEXT NOT NULL,
+        disease_name TEXT NOT NULL,
+        reporter_hash TEXT,
+        confirmed INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now'))
+      )
+    `);
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_outbreaks_district ON outbreak_reports(district)
+    `);
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_outbreaks_crop ON outbreak_reports(crop)
+    `);
+
     // Ensure analytics row exists
     await db.execute(`
       INSERT OR IGNORE INTO analytics_state (id) VALUES ('main')
@@ -376,5 +425,224 @@ export async function cleanupStalePresence(maxAgeMinutes = 15) {
     });
   } catch (err) {
     console.error("Turso cleanupStalePresence error:", err.message);
+  }
+}
+
+// ─── Diagnoses helpers ──────────────────────────────────────────
+
+export async function saveDiagnosis(entry) {
+  const db = getTursoClient();
+  if (!db) return null;
+
+  try {
+    await ensureSchema();
+    const result = await db.execute({
+      sql: `INSERT INTO diagnoses (session_id, crop, disease_name, disease_name_bn, confidence, severity, biotic_abiotic, provider, symptoms, recommendations, weather_snapshot, district, image_count)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        entry.session_id || "",
+        entry.crop || "unknown",
+        entry.disease_name || null,
+        entry.disease_name_bn || null,
+        entry.confidence || null,
+        entry.severity || null,
+        entry.biotic_abiotic || null,
+        entry.provider || null,
+        entry.symptoms || null,
+        entry.recommendations || null,
+        entry.weather_snapshot || null,
+        entry.district || null,
+        entry.image_count || 0,
+      ],
+    });
+    return result.lastInsertRowid;
+  } catch (err) {
+    console.error("Turso saveDiagnosis error:", err.message);
+    return null;
+  }
+}
+
+export async function getDiagnoses(filters = {}) {
+  const db = getTursoClient();
+  if (!db) return [];
+
+  try {
+    await ensureSchema();
+    const { crop, district, dateFrom, dateTo, limit = 50 } = filters;
+    const conditions = [];
+    const args = [];
+
+    if (crop) {
+      conditions.push("crop = ?");
+      args.push(crop);
+    }
+    if (district) {
+      conditions.push("district = ?");
+      args.push(district);
+    }
+    if (dateFrom) {
+      conditions.push("created_at >= ?");
+      args.push(dateFrom);
+    }
+    if (dateTo) {
+      conditions.push("created_at <= ?");
+      args.push(dateTo);
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const safeLimit = Math.min(Math.max(Number(limit) || 50, 1), 500);
+
+    const result = await db.execute({
+      sql: `SELECT * FROM diagnoses ${where} ORDER BY created_at DESC LIMIT ?`,
+      args: [...args, safeLimit],
+    });
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      sessionId: row.session_id,
+      crop: row.crop,
+      diseaseName: row.disease_name,
+      diseaseNameBn: row.disease_name_bn,
+      confidence: row.confidence,
+      severity: row.severity,
+      bioticAbiotic: row.biotic_abiotic,
+      provider: row.provider,
+      symptoms: row.symptoms,
+      recommendations: row.recommendations,
+      weatherSnapshot: row.weather_snapshot,
+      district: row.district,
+      imageCount: row.image_count,
+      createdAt: row.created_at,
+    }));
+  } catch (err) {
+    console.error("Turso getDiagnoses error:", err.message);
+    return [];
+  }
+}
+
+// ─── Outbreak helpers ───────────────────────────────────────────
+
+export async function reportOutbreak(entry) {
+  const db = getTursoClient();
+  if (!db) return null;
+
+  try {
+    await ensureSchema();
+    const result = await db.execute({
+      sql: `INSERT INTO outbreak_reports (district, crop, disease_name, reporter_hash, confirmed)
+            VALUES (?, ?, ?, ?, ?)`,
+      args: [
+        entry.district || "unknown",
+        entry.crop || "unknown",
+        entry.disease_name || "unknown",
+        entry.reporter_hash || null,
+        entry.confirmed ? 1 : 0,
+      ],
+    });
+    return result.lastInsertRowid;
+  } catch (err) {
+    console.error("Turso reportOutbreak error:", err.message);
+    return null;
+  }
+}
+
+export async function getOutbreaks(filters = {}) {
+  const db = getTursoClient();
+  if (!db) return [];
+
+  try {
+    await ensureSchema();
+    const { district, crop, recentDays, limit = 50 } = filters;
+    const conditions = [];
+    const args = [];
+
+    if (district) {
+      conditions.push("district = ?");
+      args.push(district);
+    }
+    if (crop) {
+      conditions.push("crop = ?");
+      args.push(crop);
+    }
+    if (recentDays) {
+      const since = new Date(Date.now() - recentDays * 24 * 60 * 60 * 1000).toISOString();
+      conditions.push("created_at >= ?");
+      args.push(since);
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const safeLimit = Math.min(Math.max(Number(limit) || 50, 1), 500);
+
+    const result = await db.execute({
+      sql: `SELECT * FROM outbreak_reports ${where} ORDER BY created_at DESC LIMIT ?`,
+      args: [...args, safeLimit],
+    });
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      district: row.district,
+      crop: row.crop,
+      diseaseName: row.disease_name,
+      reporterHash: row.reporter_hash,
+      confirmed: !!row.confirmed,
+      createdAt: row.created_at,
+    }));
+  } catch (err) {
+    console.error("Turso getOutbreaks error:", err.message);
+    return [];
+  }
+}
+
+// ─── Disease statistics ─────────────────────────────────────────
+
+export async function getDiseaseStats(days = 30) {
+  const db = getTursoClient();
+  if (!db) return { topCrops: [], topDiseases: [], byDistrict: [], byBioticAbiotic: {}, trend: [] };
+
+  try {
+    await ensureSchema();
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+    // Top crops
+    const cropsResult = await db.execute({
+      sql: `SELECT crop, COUNT(*) as count FROM diagnoses WHERE created_at >= ? GROUP BY crop ORDER BY count DESC LIMIT 20`,
+      args: [since],
+    });
+
+    // Top diseases
+    const diseasesResult = await db.execute({
+      sql: `SELECT disease_name, COUNT(*) as count FROM diagnoses WHERE created_at >= ? AND disease_name IS NOT NULL GROUP BY disease_name ORDER BY count DESC LIMIT 20`,
+      args: [since],
+    });
+
+    // By district
+    const districtResult = await db.execute({
+      sql: `SELECT district, COUNT(*) as count FROM diagnoses WHERE created_at >= ? AND district IS NOT NULL GROUP BY district ORDER BY count DESC LIMIT 20`,
+      args: [since],
+    });
+
+    // Biotic vs abiotic
+    const bioticResult = await db.execute({
+      sql: `SELECT biotic_abiotic, COUNT(*) as count FROM diagnoses WHERE created_at >= ? AND biotic_abiotic IS NOT NULL GROUP BY biotic_abiotic`,
+      args: [since],
+    });
+
+    // Trend: daily counts
+    const trendResult = await db.execute({
+      sql: `SELECT date(created_at) as day, COUNT(*) as count FROM diagnoses WHERE created_at >= ? GROUP BY day ORDER BY day ASC`,
+      args: [since],
+    });
+
+    return {
+      topCrops: cropsResult.rows.map((r) => ({ crop: r.crop, count: Number(r.count) })),
+      topDiseases: diseasesResult.rows.map((r) => ({ diseaseName: r.disease_name, count: Number(r.count) })),
+      byDistrict: districtResult.rows.map((r) => ({ district: r.district, count: Number(r.count) })),
+      byBioticAbiotic: Object.fromEntries(bioticResult.rows.map((r) => [r.biotic_abiotic, Number(r.count)])),
+      trend: trendResult.rows.map((r) => ({ date: r.day, count: Number(r.count) })),
+      days,
+    };
+  } catch (err) {
+    console.error("Turso getDiseaseStats error:", err.message);
+    return { topCrops: [], topDiseases: [], byDistrict: [], byBioticAbiotic: {}, trend: [], days };
   }
 }
