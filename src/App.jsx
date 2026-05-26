@@ -2909,34 +2909,52 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
             {/* ── RESULT ──────────────────────────────────────────────── */}
             {step===2&&result&&(
               <div ref={resultRef} style={{animation:"slideUp .4s ease"}}>
-                <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:18,marginBottom:12,border:`1px solid ${C.border}`,overflow:"hidden"}}>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:18,alignItems:"center"}}>
-                    <div>
-                      <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",marginBottom:8}}>নির্ণয় সম্পন্ন</div>
-                      <div className="ud-headline" style={{fontWeight:800,fontSize:30,color:C.primaryDark,lineHeight:1.08,marginBottom:10}}>{form.crop?.split("/")[0]?.trim()||"ফসল"} এর জন্য সহজ রিপোর্ট</div>
-                      <div style={{fontSize:13,color:C.textMuted,lineHeight:1.75}}>কোন সমস্যা বেশি মনে হচ্ছে, কী লক্ষণ দেখা গেছে, আর এখন কী করলে ক্ষতি কমবে তা নিচে কার্ড আকারে সাজানো আছে.</div>
+                {/* Leaf Frame — image + info + upload */}
+                <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:28,padding:18,marginBottom:12,border:`1px solid ${C.border}`,overflow:"hidden"}}>
+                  <div style={{display:"flex",gap:16,alignItems:"stretch",flexWrap:"wrap"}}>
+                    {/* Left: Leaf frame with image picker */}
+                    <div style={{flex:"1 1 220px",maxWidth:320,minHeight:260,borderRadius:22,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+                      {/* Main image */}
+                      <div style={{flex:1,position:"relative",minHeight:180,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        {images.length>0?<img src={images[0].url} alt="diagnosis preview" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>:<div style={{fontSize:64}}>🍃</div>}
+                        <div style={{position:"absolute",inset:14,border:"2px solid rgba(255,255,255,0.7)",borderRadius:18,pointerEvents:'none'}} />
+                        <div style={{position:"absolute",top:14,right:14,padding:"5px 10px",borderRadius:999,background:"rgba(0,96,40,0.88)",color:"#fff",fontSize:10,fontWeight:800}}>বিশ্লেষণ শেষ</div>
+                        {/* Structured result badges */}
+                        {structuredResult&&(
+                          <div style={{position:"absolute",bottom:14,left:14,display:"flex",gap:5}}>
+                            {structuredResult.severity&&<span style={{padding:"3px 9px",borderRadius:999,background:structuredResult.severity==='severe'||structuredResult.severity==='high'?'rgba(220,38,38,0.9)':structuredResult.severity==='moderate'||structuredResult.severity==='medium'?'rgba(217,119,6,0.9)':'rgba(22,163,74,0.9)',color:"#fff",fontSize:9,fontWeight:800}}>{structuredResult.severity}</span>}
+                            {structuredResult.confidence&&<span style={{padding:"3px 9px",borderRadius:999,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:9,fontWeight:700}}>{structuredResult.confidence}</span>}
+                          </div>
+                        )}
+                      </div>
+                      {/* Thumbnail strip + add more inside leaf frame */}
+                      <div style={{padding:"8px 10px",display:"flex",alignItems:"center",gap:6,background:"rgba(255,255,255,0.6)",backdropFilter:"blur(6px)"}}>
+                        {images.map((img,idx)=>(
+                          <div key={idx} style={{position:"relative",flexShrink:0}}>
+                            <img src={img.url} alt={img.label} style={{width:40,height:40,objectFit:"cover",borderRadius:8,border:`2px solid ${idx===0?C.primary:C.border}`,cursor:"pointer"}}/>
+                            <button onClick={()=>removeImage(idx)} style={{position:"absolute",top:-3,right:-3,width:14,height:14,borderRadius:"50%",background:C.danger,color:"#fff",border:"none",cursor:"pointer",fontSize:8,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>✕</button>
+                          </div>
+                        ))}
+                        {images.length<4&&(
+                          <button onClick={()=>galleryRef.current?.click()} style={{width:40,height:40,borderRadius:8,border:`2px dashed ${C.primary}`,background:"rgba(255,255,255,0.5)",color:C.primary,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>+</button>
+                        )}
+                        <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
+                        <input ref={galleryRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
+                        <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{display:"none"}}/>
+                      </div>
                     </div>
-                    <div style={{height:220,borderRadius:26,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      {images.length>0?<img src={images[0].url} alt="diagnosis preview" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>:<div style={{fontSize:64}}>🍃</div>}
-                      <div style={{position:"absolute",inset:18,border:"2px solid rgba(255,255,255,0.7)",borderRadius:20}} />
-                      <div style={{position:"absolute",top:18,right:18,padding:"7px 12px",borderRadius:999,background:"rgba(0,96,40,0.88)",color:"#fff",fontSize:11,fontWeight:800}}>বিশ্লেষণ শেষ</div>
-                      {/* Structured result badges */}
-                      {structuredResult&&(
-                        <div style={{position:"absolute",bottom:18,left:18,display:"flex",gap:6}}>
-                          {structuredResult.severity&&<span style={{padding:"4px 10px",borderRadius:999,background:structuredResult.severity==='severe'||structuredResult.severity==='high'?'rgba(220,38,38,0.9)':structuredResult.severity==='moderate'||structuredResult.severity==='medium'?'rgba(217,119,6,0.9)':'rgba(22,163,74,0.9)',color:"#fff",fontSize:10,fontWeight:800}}>{structuredResult.severity}</span>}
-                          {structuredResult.confidence&&<span style={{padding:"4px 10px",borderRadius:999,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,fontWeight:700}}>{structuredResult.confidence}</span>}
-                        </div>
-                      )}
+                    {/* Right: Info */}
+                    <div style={{flex:"1 1 240px",display:"flex",flexDirection:"column",justifyContent:"center",gap:6}}>
+                      <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase"}}>নির্ণয় সম্পন্ন</div>
+                      <div className="ud-headline" style={{fontWeight:800,fontSize:26,color:C.primaryDark,lineHeight:1.1}}>{form.crop?.split("/")[0]?.trim()||"ফসল"} এর জন্য সহজ রিপোর্ট</div>
+                      <div style={{fontSize:13,color:C.textMuted,lineHeight:1.7}}>কোন সমস্যা বেশি মনে হচ্ছে, কী লক্ষণ দেখা গেছে, আর এখন কী করলে ক্ষতি কমবে তা নিচে কার্ড আকারে সাজানো আছে.</div>
+                      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>
+                        {form.district&&<span style={{fontSize:11,background:C.bgMuted,padding:"3px 8px",borderRadius:8,color:C.textMuted}}>📍 {form.district?.split("/")[0]?.trim()}</span>}
+                        {weather&&<span style={{fontSize:11,background:"#f0f9ff",padding:"3px 8px",borderRadius:8,color:"#0369a1"}}>🌡️{weather.temp}°C · 💧{weather.humidity}%</span>}
+                        {provider&&<span style={{fontSize:11,background:"#eff6ff",padding:"3px 8px",borderRadius:8,color:C.blue}}>🤖 {provider}</span>}
+                      </div>
                     </div>
                   </div>
-                  {/* Thumbnail strip of all images */}
-                  {images.length>1&&(
-                    <div style={{display:"flex",gap:6,marginTop:8}}>
-                      {images.map((img,idx)=>(
-                        <img key={idx} src={img.url} alt={img.label} style={{width:48,height:48,objectFit:"cover",borderRadius:8,border:`1.5px solid ${idx===0?C.primary:C.border}`}}/>
-                      ))}
-                    </div>
-                  )}
                 </div>
                 <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,flexWrap:"wrap"}}>
@@ -2991,13 +3009,36 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 <div style={{marginTop:10,padding:"10px 14px",background:"#fffbeb",border:"1px solid #fed7aa",borderRadius:12,color:C.warning,fontSize:12}}>⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।</div>
                 <button onClick={reset} aria-label="Reset form" style={{width:"100%",marginTop:10,padding:"13px",borderRadius:14,border:`1px solid ${C.border}`,background:C.bgCard,color:C.text,fontWeight:600,fontSize:14,cursor:"pointer",boxShadow:C.shadow}}>🔁 নতুন রোগ নির্ণয়</button>
 
-                {/* Follow-up questions */}
+                {/* Follow-up questions — dynamic based on diagnosis context */}
                 <div style={{marginTop:10,padding:14,background:C.bgCard,borderRadius:16,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:8}}>❓ আরও জিজ্ঞাসা</div>
                   <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:8}}>
-                    {['এটা কোন রোগ?','কী করলে ভালো হবে?','কোন কীটনাশক লাগবে?','অন্য ফসলেও ছড়াবে?','কতদিনে সারবে?'].map(q=>(
-                      <button key={q} onClick={()=>setFollowUpQuestion(q)} style={{padding:'5px 10px',borderRadius:20,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.text,fontSize:11,cursor:'pointer',fontWeight:600,transition:'all .15s'}}>{q}</button>
-                    ))}
+                    {(()=>{
+                      const qs=[];
+                      const crop=form.crop?.split('/')[0]?.trim()||'ফসল';
+                      const disease=structuredResult?.disease_name_bn||structuredResult?.disease_name||'';
+                      const cause=structuredResult?.cause_type||structuredResult?.biotic_abiotic||'';
+                      const sev=structuredResult?.severity||'';
+                      // Crop-specific questions
+                      qs.push(`${crop} এ আর কী সমস্যা হতে পারে?`);
+                      // Disease-specific questions
+                      if(disease)qs.push(`${disease} কিভাবে ছড়ায়?`);
+                      if(disease)qs.push(`${disease} কোন মাসে বেশি হয়?`);
+                      // Cause-specific questions
+                      if(cause==='fungal'||cause==='biotic')qs.push('কোন ছত্রাকনাশক লাগবে?');
+                      if(cause==='bacterial')qs.push('ব্যাকটেরিয়াল রোগে কী করব?');
+                      if(cause==='viral')qs.push('ভাইরাস রোগে কী করব?');
+                      if(cause==='insect')qs.push('কোন কীটনাশক সবচেয়ে কার্যকর?');
+                      if(cause==='nutritional')qs.push('কোন সার দিলে ভালো হবে?');
+                      // Severity-specific
+                      if(sev==='severe'||sev==='high')qs.push('এখনই কী করতে হবে?');
+                      if(sev==='moderate'||sev==='medium')qs.push('কতদিনে সারবে?');
+                      // General fallbacks
+                      if(qs.length<4){qs.push('অন্য ফসলেও ছড়াবে?');qs.push('পরবর্তী কী করব?');}
+                      return qs.slice(0,5).map(q=>(
+                        <button key={q} onClick={()=>setFollowUpQuestion(q)} style={{padding:'5px 10px',borderRadius:20,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.text,fontSize:11,cursor:'pointer',fontWeight:600,transition:'all .15s'}}>{q}</button>
+                      ));
+                    })()}
                   </div>
                   <div style={{display:'flex',gap:8}}>
                     <input 
