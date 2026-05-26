@@ -1986,7 +1986,7 @@ function GameHub(){
 export default function UdbhidGoenda(){
 const[activeTab,setActiveTab]=useState("home");
   const[step,setStep]=useState(1);
-  const[form,setForm]=useState({crop:"Rice / ধান, Tomato / টমেটো",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""});
+  const[form,setForm]=useState(()=>{try{const saved=JSON.parse(localStorage.getItem('ud-form')||'{}');return{crop:saved.crop||"",district:saved.district||"",season:saved.season||getCurrentSeason(),growthStage:saved.growthStage||"",symptoms:"",duration:saved.duration||"",affectedArea:saved.affectedArea||""};}catch{return{crop:"",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""};}});
   const[diagnosisMode,setDiagnosisMode]=useState("online"); // "online" or "offline"
   const[offlineDiagnosis,setOfflineDiagnosis]=useState(null);
   const[showMoreCrops,setShowMoreCrops]=useState(false);
@@ -2065,6 +2065,11 @@ const[activeTab,setActiveTab]=useState("home");
       document.documentElement.setAttribute('data-theme',darkMode?'dark':'light');
     }
   },[darkMode]);
+
+  // Persist form data (crop, district, season, duration, affectedArea) to localStorage
+  useEffect(()=>{
+    try{const toSave={crop:form.crop,district:form.district,season:form.season,growthStage:form.growthStage,duration:form.duration,affectedArea:form.affectedArea};localStorage.setItem('ud-form',JSON.stringify(toSave));}catch{}
+  },[form.crop,form.district,form.season,form.growthStage,form.duration,form.affectedArea]);
 
   // Load history from server on mount
   useEffect(()=>{
@@ -2455,7 +2460,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
   };
 
   const stopSpeaking=()=>{window.speechSynthesis?.cancel();setIsSpeaking(false);};
-  const reset=()=>{setForm({crop:"",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""});setImages([]);setImageBase64s([]);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setSeverity(null);setShowMoreCrops(false);setRecommendedProducts([]);setStructuredResult(null);setFollowUpQuestion('');setFollowUpAnswer('');setFollowUpLoading(false);stopSpeaking();};
+  const reset=()=>{setForm(f=>{const next={crop:"",district:f.district||"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:f.duration||"",affectedArea:f.affectedArea||""};try{localStorage.setItem('ud-form',JSON.stringify(next));}catch{}return next;});setImages([]);setImageBase64s([]);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setSeverity(null);setShowMoreCrops(false);setRecommendedProducts([]);setStructuredResult(null);setFollowUpQuestion('');setFollowUpAnswer('');setFollowUpLoading(false);stopSpeaking();};
 
   // Follow-up question handler
   const handleFollowUp=async()=>{
@@ -2463,18 +2468,17 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
     setFollowUpLoading(true);setFollowUpAnswer('');
     try{
       const uc=[];
-      imageBase64s.forEach((b64,idx)=>{
-        const label=images[idx]?.label||`ছবি ${idx+1}`;
-        uc.push({type:"text",text:`[${label}]`});
-        uc.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}});
-      });
-      uc.push({type:"text",text:`Previous diagnosis for ${form.crop}: ${(result?.bn||'').slice(0,500)}\n\nFollow-up question: ${followUpQuestion}\n\nAnswer in simple Bangla for farmers. Be concise and practical.`});
-      const res=await signedFetch("/api/diagnose",{method:"POST",body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,messages:[{role:"user",content:uc}]})});
+      // Include previous diagnosis context as text (no need to re-send images for follow-up)
+      const diagText=result?.bn||result?.en||'';
+      uc.push({type:"text",text:`I previously diagnosed a crop problem. Here is the diagnosis summary:\n\nCrop: ${form.crop}\nDistrict: ${form.district||locationName||'N/A'}\nDiagnosis result:\n${diagText.slice(0,800)}\n\nMy follow-up question: ${followUpQuestion}\n\nAnswer in simple Bangla for farmers. Be concise and practical. Focus only on the follow-up question. Do NOT repeat the entire diagnosis. Use short icon-led bullets.`});
+      const res=await signedFetch("/api/diagnose",{method:"POST",body:JSON.stringify({max_tokens:600,messages:[{role:"user",content:uc}]})});
+      if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error||`HTTP ${res.status}`);}
       const data=await res.json();
       const ans=data.content?.map(b=>b.text||"").join("\n")||"";
+      if(!ans.trim())throw new Error('Empty response');
       setFollowUpAnswer(ans);
     }catch(e){
-      setFollowUpAnswer('উত্তর দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+      setFollowUpAnswer(`উত্তর দিতে সমস্যা হয়েছে: ${e.message}। আবার চেষ্টা করুন।`);
     }finally{
       setFollowUpLoading(false);
     }
@@ -2575,9 +2579,9 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           <button onClick={()=>setActiveTab("home")} aria-label="Home" style={{flexShrink:0,width:36,height:36,borderRadius:10,overflow:"hidden",border:"none",cursor:"pointer",padding:0,display:"flex",alignItems:"center",justifyContent:"center",background:activeTab!=="home"?C.bgMuted:"transparent",transition:"background .2s"}} title="হোম">
             <img src="/cabi-logo.jpg" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:10}}/>
           </button>
-          <div style={{flex:1,minWidth:0}}>
-            <div className="ud-headline" style={{color:C.primary,fontWeight:800,fontSize:isGameTab?15:17,letterSpacing:-.5,lineHeight:1.1}}>উদ্ভিদ গোয়েন্দা</div>
-            {!isGameTab&&<div style={{color:C.textLight,fontSize:10,letterSpacing:.2}}>Plant Detective · CABI Plantwise</div>}
+          <div style={{flex:1,minWidth:0,display:'flex',alignItems:'baseline',gap:6,flexWrap:'wrap'}}>
+            <div className="ud-headline" style={{color:C.primary,fontWeight:800,fontSize:isGameTab?15:17,letterSpacing:-.5,lineHeight:1.2}}>উদ্ভিদ গোয়েন্দা</div>
+            {!isGameTab&&<span style={{color:C.textMuted,fontSize:10.5,letterSpacing:.2,fontWeight:500}}>Plant Detective · CABI Plantwise</span>}
           </div>
           {/* Dark mode toggle */}
           <button onClick={()=>setDarkMode(d=>!d)} aria-label={darkMode?"Switch to light mode":"Switch to dark mode"} style={{flexShrink:0,width:36,height:36,borderRadius:10,border:`1px solid ${C.border}`,background:C.bgMuted,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -2990,6 +2994,11 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 {/* Follow-up questions */}
                 <div style={{marginTop:10,padding:14,background:C.bgCard,borderRadius:16,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:8}}>❓ আরও জিজ্ঞাসা</div>
+                  <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:8}}>
+                    {['এটা কোন রোগ?','কী করলে ভালো হবে?','কোন কীটনাশক লাগবে?','অন্য ফসলেও ছড়াবে?','কতদিনে সারবে?'].map(q=>(
+                      <button key={q} onClick={()=>setFollowUpQuestion(q)} style={{padding:'5px 10px',borderRadius:20,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.text,fontSize:11,cursor:'pointer',fontWeight:600,transition:'all .15s'}}>{q}</button>
+                    ))}
+                  </div>
                   <div style={{display:'flex',gap:8}}>
                     <input 
                       value={followUpQuestion} 
@@ -2999,11 +3008,12 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       aria-label="Follow-up question"
                       style={{flex:1,padding:'10px 14px',borderRadius:12,border:`1px solid ${C.border}`,fontSize:13,color:C.text,background:C.bgMuted,outline:'none'}}
                     />
-                    <button onClick={handleFollowUp} disabled={!followUpQuestion.trim()||followUpLoading} aria-label="Ask follow-up question" style={{padding:'10px 16px',borderRadius:12,border:'none',background:C.primary,color:'#fff',fontWeight:700,fontSize:13,cursor:!followUpQuestion.trim()||followUpLoading?'not-allowed':'pointer',opacity:!followUpQuestion.trim()||followUpLoading?0.6:1}}>
-                      {followUpLoading?'...':'প্রশ্ন করুন'}
+                    <button onClick={handleFollowUp} disabled={!followUpQuestion.trim()||followUpLoading} aria-label="Ask follow-up question" style={{padding:'10px 16px',borderRadius:12,border:'none',background:C.primary,color:'#fff',fontWeight:700,fontSize:13,cursor:!followUpQuestion.trim()||followUpLoading?'not-allowed':'pointer',opacity:!followUpQuestion.trim()||followUpLoading?0.6:1,whiteSpace:'nowrap'}}>
+                      {followUpLoading?<>⟳ চলছে...</>:'প্রশ্ন করুন'}
                     </button>
                   </div>
-                  {followUpAnswer&&<div style={{marginTop:10,padding:12,background:C.bgMuted,borderRadius:12,fontSize:13,color:C.text,lineHeight:1.7}}>{renderInline(followUpAnswer)}</div>}
+                  {followUpLoading&&<div style={{marginTop:8,fontSize:12,color:C.textMuted}}>🤔 AI আপনার প্রশ্নের উত্তর দিচ্ছে...</div>}
+                  {followUpAnswer&&<div style={{marginTop:10,padding:14,background:C.bgMuted,borderRadius:12,fontSize:13,color:C.text,lineHeight:1.8,borderLeft:`3px solid ${C.primary}`}}>{renderInline(followUpAnswer)}</div>}
                 </div>
               </div>
             )}
