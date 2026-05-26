@@ -2579,9 +2579,9 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           <button onClick={()=>setActiveTab("home")} aria-label="Home" style={{flexShrink:0,width:36,height:36,borderRadius:10,overflow:"hidden",border:"none",cursor:"pointer",padding:0,display:"flex",alignItems:"center",justifyContent:"center",background:activeTab!=="home"?C.bgMuted:"transparent",transition:"background .2s"}} title="হোম">
             <img src="/cabi-logo.jpg" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:10}}/>
           </button>
-          <div style={{flex:1,minWidth:0,display:'flex',alignItems:'baseline',gap:6,flexWrap:'wrap'}}>
-            <div className="ud-headline" style={{color:C.primary,fontWeight:800,fontSize:isGameTab?15:17,letterSpacing:-.5,lineHeight:1.2}}>উদ্ভিদ গোয়েন্দা</div>
-            {!isGameTab&&<span style={{color:C.textMuted,fontSize:10.5,letterSpacing:.2,fontWeight:500}}>Plant Detective · CABI Plantwise</span>}
+          <div style={{flex:1,minWidth:0,display:'flex',alignItems:'center',gap:8,whiteSpace:'nowrap',overflow:'hidden'}}>
+            <div className="ud-headline" style={{color:C.primary,fontWeight:800,fontSize:isGameTab?15:17,letterSpacing:-.5,lineHeight:1.2,flexShrink:0}}>উদ্ভিদ গোয়েন্দা</div>
+            {!isGameTab&&<span style={{color:C.textMuted,fontSize:10.5,letterSpacing:.2,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis'}}>Plant Detective · CABI Plantwise</span>}
           </div>
           {/* Dark mode toggle */}
           <button onClick={()=>setDarkMode(d=>!d)} aria-label={darkMode?"Switch to light mode":"Switch to dark mode"} style={{flexShrink:0,width:36,height:36,borderRadius:10,border:`1px solid ${C.border}`,background:C.bgMuted,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -2709,26 +2709,70 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
             {step===1&&(
               <div>
+                {/* Leaf Frame Info Box with integrated image picker */}
                 <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:18,marginBottom:12,border:`1px solid ${C.border}`,overflow:"hidden"}}>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:18,alignItems:"center"}}>
-                    <div>
-                      <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",marginBottom:8}}>নতুন নির্ণয়</div>
-                      <div className="ud-headline" style={{fontWeight:800,fontSize:30,color:C.primaryDark,lineHeight:1.08,marginBottom:10}}>পাতার ছবি দিন, বাকি তথ্য সহজে পূরণ করুন</div>
-                      <div style={{fontSize:13,color:C.textMuted,lineHeight:1.75}}>ফসল, জেলা, মৌসুম, লক্ষণ আর ছবি একসাথে দিলে ফল বেশি ভালো আসে। ছবি থাকলে সিস্টেম নিজে ফসল ধরারও চেষ্টা করবে.</div>
-                    </div>
-                    <div style={{minHeight:240,borderRadius:26,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden"}}>
-                      <div style={{position:"absolute",inset:18,border:`2px solid ${C.primary}55`,borderRadius:20}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:18,alignItems:"stretch"}}>
+                    {/* Left: Leaf frame + image picker */}
+                    <div style={{minHeight:280,borderRadius:26,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+                      <div style={{position:"absolute",inset:18,border:`2px solid ${C.primary}55`,borderRadius:20,pointerEvents:'none'}}>
                         <div style={{position:"absolute",left:12,top:12,width:28,height:28,borderTop:`3px solid ${C.primary}`,borderLeft:`3px solid ${C.primary}`}} />
                         <div style={{position:"absolute",right:12,top:12,width:28,height:28,borderTop:`3px solid ${C.primary}`,borderRight:`3px solid ${C.primary}`}} />
                         <div style={{position:"absolute",left:12,bottom:12,width:28,height:28,borderBottom:`3px solid ${C.primary}`,borderLeft:`3px solid ${C.primary}`}} />
                         <div style={{position:"absolute",right:12,bottom:12,width:28,height:28,borderBottom:`3px solid ${C.primary}`,borderRight:`3px solid ${C.primary}`}} />
-                        <div style={{position:"absolute",left:18,right:18,height:2,background:"#9bf7a8",top:"22%",boxShadow:"0 0 18px rgba(26,122,58,0.55)",animation:"scan 3.2s linear infinite"}} />
+                        <div style={{position:"absolute",left:18,right:18,height:2,background:"#9bf7a8",top:"22%",boxShadow:"0 0 18px rgba(26,122,58,0.55)",animation:images.length===0?"scan 3.2s linear infinite":"none",opacity:images.length===0?1:0}} />
                       </div>
-                      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
-                        <div style={{fontSize:62}}>🍃</div>
-                        <div className="ud-headline" style={{fontWeight:800,fontSize:22,color:C.primaryDark}}>পাতা ফ্রেমের মাঝে রাখুন</div>
-                        <div style={{fontSize:12,color:C.textMuted}}>ভালো আলো থাকলে ফল বেশি নির্ভুল হয়</div>
+                      {/* Main image area */}
+                      <div style={{flex:1,position:"relative",display:"flex",alignItems:"center",justifyContent:"center",minHeight:160}}>
+                        {images.length>0?(
+                          <img src={images[0].url} alt="preview" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",borderRadius:"26px 26px 0 0"}}/>
+                        ):(
+                          <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,zIndex:1}}>
+                            <div style={{fontSize:62}}>🍃</div>
+                            <div className="ud-headline" style={{fontWeight:800,fontSize:22,color:C.primaryDark}}>পাতা ফ্রেমের মাঝে রাখুন</div>
+                            <div style={{fontSize:12,color:C.textMuted}}>ভালো আলো থাকলে ফল বেশি নির্ভুল হয়</div>
+                          </div>
+                        )}
+                        {images.length>0&&(
+                          <div style={{position:"absolute",top:14,right:14,padding:"5px 10px",borderRadius:999,background:"rgba(0,96,40,0.88)",color:"#fff",fontSize:10,fontWeight:800,zIndex:2}}>{images.length}টি ছবি</div>
+                        )}
                       </div>
+                      {/* Thumbnail strip + upload controls INSIDE leaf frame */}
+                      <div style={{padding:"8px 10px",display:"flex",alignItems:"center",gap:6,background:"rgba(255,255,255,0.7)",backdropFilter:"blur(6px)",borderRadius:"0 0 26px 26px"}}>
+                        <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
+                        <input ref={galleryRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
+                        <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{display:"none"}}/>
+                        {images.length===0?(
+                          <>
+                            <button onClick={()=>cameraRef.current?.click()} style={{flex:1,padding:"8px 6px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,color:"#fff",cursor:"pointer",fontWeight:700,fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>📸 ক্যামেরা</button>
+                            <button onClick={()=>galleryRef.current?.click()} style={{flex:1,padding:"8px 6px",borderRadius:12,border:`1px solid ${C.border}`,background:"rgba(255,255,255,0.8)",color:C.primaryDark,cursor:"pointer",fontWeight:700,fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>🖼️ গ্যালারি</button>
+                          </>
+                        ):(
+                          <>
+                            {images.map((img,idx)=>(
+                              <div key={idx} style={{position:"relative",flexShrink:0}}>
+                                <img src={img.url} alt={img.label} style={{width:40,height:40,objectFit:"cover",borderRadius:8,border:`2px solid ${idx===0?C.primary:C.border}`}}/>
+                                <button onClick={()=>removeImage(idx)} style={{position:"absolute",top:-3,right:-3,width:14,height:14,borderRadius:"50%",background:C.danger,color:"#fff",border:"none",cursor:"pointer",fontSize:8,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>✕</button>
+                              </div>
+                            ))}
+                            {images.length<4&&(
+                              <button onClick={()=>galleryRef.current?.click()} style={{width:40,height:40,borderRadius:8,border:`2px dashed ${C.primary}`,background:"rgba(255,255,255,0.5)",color:C.primary,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>+</button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    {/* Right: Info text + quick stats */}
+                    <div style={{display:"flex",flexDirection:"column",justifyContent:"center",gap:10}}>
+                      <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase"}}>নতুন নির্ণয়</div>
+                      <div className="ud-headline" style={{fontWeight:800,fontSize:28,color:C.primaryDark,lineHeight:1.08}}>পাতার ছবি দিন, বাকি তথ্য সহজে পূরণ করুন</div>
+                      <div style={{fontSize:13,color:C.textMuted,lineHeight:1.75}}>ফসল, জেলা, মৌসুম, লক্ষণ আর ছবি একসাথে দিলে ফল বেশি ভালো আসে। ছবি থাকলে সিস্টেম নিজে ফসল ধরারও চেষ্টা করবে.</div>
+                      {images.length>0&&(
+                        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                          <span style={{fontSize:11,background:"#f0fdf4",padding:"4px 9px",borderRadius:8,color:C.success,fontWeight:700}}>✅ {images.length}টি ছবি যুক্ত</span>
+                          {analysingCrop&&<span style={{fontSize:11,background:"#eff6ff",padding:"4px 9px",borderRadius:8,color:C.blue}}>🔍 ফসল চিনে দেখছে...</span>}
+                        </div>
+                      )}
+                      {form.crop&&<div style={{fontSize:11,background:C.bgMuted,padding:"4px 9px",borderRadius:8,color:C.textMuted,alignSelf:"flex-start"}}>🌱 {form.crop}</div>}
                     </div>
                   </div>
                 </div>
@@ -2856,47 +2900,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   <textarea value={form.symptoms} onChange={e=>setForm(f=>({...f,symptoms:e.target.value}))} placeholder="বিস্তারিত লিখুন বা উপরে ট্যাপ করুন..." rows={3} aria-label="Symptoms description" style={{width:"100%",background:C.bgMuted,border:`1px solid ${isListening?C.danger:C.border}`,borderRadius:10,color:C.text,padding:"9px 12px",fontSize:13,outline:"none",resize:"vertical",marginTop:8,boxSizing:"border-box",lineHeight:1.6}}/>
                 </div>
 
-                {/* image */}
-                <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:12,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-                  <label style={labelSt}>📷 ছবি আপলোড (ঐচ্ছিক)</label>
-                  <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
-                  <input ref={galleryRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
-                  <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{display:"none"}}/>
-                  {images.length===0&&(
-                    <div style={{marginBottom:12}}>
-                      <div style={{padding:"22px 16px",border:`2px dashed ${C.border}`,borderRadius:22,background:"linear-gradient(135deg,#eff5f0,#ffffff)",color:C.textMuted,fontSize:13,display:"flex",flexDirection:"column",alignItems:"center",gap:6,marginBottom:12}}>
-                        <span style={{fontSize:34}}>📷</span>
-                        <span className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.primaryDark}}>পাতার পরিষ্কার ছবি দিন</span>
-                        <span style={{fontSize:11}}>JPG, PNG · সামনে থেকে তুলুন · AI বিশ্লেষণ করবে</span>
-                        <span style={{fontSize:10,color:C.textLight}}>একাধিক ছবি দিতে পারবেন (সর্বোচ্চ ৪টি)</span>
-                      </div>
-                      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:10}}>
-                        <button onClick={()=>cameraRef.current?.click()} className="ud-headline" aria-label="Take photo" style={{padding:"16px 14px",borderRadius:20,border:"none",background:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,color:"#fff",cursor:"pointer",fontWeight:800,fontSize:15}}>📸 ক্যামেরা</button>
-                        <button onClick={()=>galleryRef.current?.click()} className="ud-headline" aria-label="Choose from gallery" style={{padding:"16px 14px",borderRadius:20,border:`1px solid ${C.border}`,background:C.bgCard,color:C.primaryDark,cursor:"pointer",fontWeight:800,fontSize:15}}>🖼️ গ্যালারি</button>
-                      </div>
-                    </div>
-                  )}
-                  {images.length>0&&(
-                    <div>
-                      <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:16,padding:"10px 12px",marginBottom:8}}>
-                        <div>
-                          <div className="ud-headline" style={{fontSize:16,color:C.success,fontWeight:800}}>✅ {images.length}টি ছবি যুক্ত</div>
-                          <div style={{fontSize:11,color:C.textMuted}}>{analysingCrop?"ফসল চিনে দেখছে...":"AI বিশ্লেষণ প্রস্তুত"} · {images.length<4&&"আরও যোগ করতে পারবেন"}</div>
-                        </div>
-                        {images.length<4&&<button onClick={()=>galleryRef.current?.click()} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgCard,cursor:"pointer",fontWeight:700,flexShrink:0}}>+ আরও</button>}
-                      </div>
-                      <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:6,marginBottom:8}}>
-                        {images.map((img,idx)=>(
-                          <div key={idx} style={{flexShrink:0,position:"relative",width:90,height:90}}>
-                            <img src={img.url} alt={img.label} style={{width:90,height:90,objectFit:"cover",borderRadius:12,border:`2px solid ${C.primary}`}}/>
-                            <div style={{position:"absolute",bottom:0,left:0,right:0,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:9,textAlign:"center",padding:"2px 0",borderRadius:"0 0 10px 10px"}}>{img.label}</div>
-                            <button onClick={()=>removeImage(idx)} aria-label="Remove image" style={{position:"absolute",top:-4,right:-4,width:20,height:20,borderRadius:"50%",background:C.danger,color:"#fff",border:"none",cursor:"pointer",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                {/* Image picker is now integrated inside the leaf frame info box above */}
 
                 {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:"12px 14px",color:C.danger,marginBottom:10,fontSize:13}}>⚠️ {error}</div>}
 
@@ -3009,37 +3013,111 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 <div style={{marginTop:10,padding:"10px 14px",background:"#fffbeb",border:"1px solid #fed7aa",borderRadius:12,color:C.warning,fontSize:12}}>⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।</div>
                 <button onClick={reset} aria-label="Reset form" style={{width:"100%",marginTop:10,padding:"13px",borderRadius:14,border:`1px solid ${C.border}`,background:C.bgCard,color:C.text,fontWeight:600,fontSize:14,cursor:"pointer",boxShadow:C.shadow}}>🔁 নতুন রোগ নির্ণয়</button>
 
-                {/* Follow-up questions — dynamic based on diagnosis context */}
-                <div style={{marginTop:10,padding:14,background:C.bgCard,borderRadius:16,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-                  <div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:8}}>❓ আরও জিজ্ঞাসা</div>
-                  <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:8}}>
+                {/* Follow-up questions — dynamic & context-aware */}
+                <div style={{marginTop:14,padding:16,background:C.bgCard,borderRadius:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                    <div style={{width:32,height:32,borderRadius:10,background:'linear-gradient(135deg,#eff6ff,#dbeafe)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>💬</div>
+                    <div>
+                      <div style={{fontWeight:800,fontSize:14,color:C.text}}>আরও জিজ্ঞাসা</div>
+                      <div style={{fontSize:10,color:C.textMuted}}>রোগ সম্পর্কে বিস্তারিত জানতে প্রশ্ন করুন</div>
+                    </div>
+                  </div>
+                  {/* Dynamic question chips — categorized */}
+                  <div style={{marginBottom:10}}>
                     {(()=>{
                       const qs=[];
                       const crop=form.crop?.split('/')[0]?.trim()||'ফসল';
                       const disease=structuredResult?.disease_name_bn||structuredResult?.disease_name||'';
                       const cause=structuredResult?.cause_type||structuredResult?.biotic_abiotic||'';
                       const sev=structuredResult?.severity||'';
-                      // Crop-specific questions
-                      qs.push(`${crop} এ আর কী সমস্যা হতে পারে?`);
-                      // Disease-specific questions
-                      if(disease)qs.push(`${disease} কিভাবে ছড়ায়?`);
-                      if(disease)qs.push(`${disease} কোন মাসে বেশি হয়?`);
-                      // Cause-specific questions
-                      if(cause==='fungal'||cause==='biotic')qs.push('কোন ছত্রাকনাশক লাগবে?');
-                      if(cause==='bacterial')qs.push('ব্যাকটেরিয়াল রোগে কী করব?');
-                      if(cause==='viral')qs.push('ভাইরাস রোগে কী করব?');
-                      if(cause==='insect')qs.push('কোন কীটনাশক সবচেয়ে কার্যকর?');
-                      if(cause==='nutritional')qs.push('কোন সার দিলে ভালো হবে?');
-                      // Severity-specific
-                      if(sev==='severe'||sev==='high')qs.push('এখনই কী করতে হবে?');
-                      if(sev==='moderate'||sev==='medium')qs.push('কতদিনে সারবে?');
-                      // General fallbacks
-                      if(qs.length<4){qs.push('অন্য ফসলেও ছড়াবে?');qs.push('পরবর্তী কী করব?');}
-                      return qs.slice(0,5).map(q=>(
-                        <button key={q} onClick={()=>setFollowUpQuestion(q)} style={{padding:'5px 10px',borderRadius:20,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.text,fontSize:11,cursor:'pointer',fontWeight:600,transition:'all .15s'}}>{q}</button>
-                      ));
+                      const conf=structuredResult?.confidence||'';
+                      const season=form.season||'';
+
+                      // 🔬 Disease-specific (highest priority)
+                      if(disease){
+                        qs.push({q:`${disease} কিভাবে ছড়ায়?`,cat:'disease'});
+                        qs.push({q:`${disease} কোন মাসে বেশি হয়?`,cat:'disease'});
+                        qs.push({q:`${disease} প্রতিরোধে কী করব?`,cat:'disease'});
+                        qs.push({q:`${disease} কোন জাত বেশি প্রতিরোধী?`,cat:'disease'});
+                      }
+                      // 💊 Cause/treatment-specific
+                      if(cause==='fungal'||cause==='biotic'){
+                        qs.push({q:'কোন ছত্রাকনাশক লাগবে ও কতদিন?',cat:'treatment'});
+                        qs.push({q:'ছত্রাকনাশক কখন স্প্রে করব?',cat:'treatment'});
+                      }
+                      if(cause==='bacterial'){
+                        qs.push({q:'ব্যাকটেরিয়াল রোগে কী করব?',cat:'treatment'});
+                        qs.push({q:'তামার ছত্রাকনাশক লাগবে কি?',cat:'treatment'});
+                      }
+                      if(cause==='viral'){
+                        qs.push({q:'ভাইরাস রোগে কী করব?',cat:'treatment'});
+                        qs.push({q:'ভাইরাস বাহক পোকা মারতে কী লাগবে?',cat:'treatment'});
+                      }
+                      if(cause==='insect'){
+                        qs.push({q:'কোন কীটনাশক সবচেয়ে কার্যকর?',cat:'treatment'});
+                        qs.push({q:'পোকা দমনে আইপিএম পদ্ধতি কী?',cat:'treatment'});
+                      }
+                      if(cause==='nutritional'){
+                        qs.push({q:'কোন সার দিলে ভালো হবে?',cat:'treatment'});
+                        qs.push({q:'সার কত পরিমাণ দিতে হবে?',cat:'treatment'});
+                      }
+                      // ⚠️ Severity-specific
+                      if(sev==='severe'||sev==='high'){
+                        qs.push({q:'এখনই কী করতে হবে?',cat:'severity'});
+                        qs.push({q:'ফসল বাঁচানো সম্ভব কি?',cat:'severity'});
+                        qs.push({q:'কতদিনে সমস্ত মাঠে ছড়াবে?',cat:'severity'});
+                      }
+                      if(sev==='moderate'||sev==='medium'){
+                        qs.push({q:'কতদিনে সারবে?',cat:'severity'});
+                        qs.push({q:'আংশিক ক্ষতি হলে কী করব?',cat:'severity'});
+                      }
+                      if(sev==='low'||sev==='mild'){
+                        qs.push({q:'সামান্য ক্ষতি — কী সতর্কতা দরকার?',cat:'severity'});
+                      }
+                      // 🌾 Crop-specific
+                      qs.push({q:`${crop} এ আর কী সমস্যা হতে পারে?`,cat:'crop'});
+                      // 🌡️ Season/weather context
+                      if(season)qs.push({q:`${season} এ এই রোগ কি সাধারণ?`,cat:'season'});
+                      if(weather&&weather.humidity>80)qs.push({q:'বেশি আর্দ্রতায় কী করণীয়?',cat:'season'});
+                      // 🛡️ Prevention & general
+                      if(qs.length<6){
+                        qs.push({q:'অন্য ফসলেও ছড়াবে?',cat:'general'});
+                        qs.push({q:'পরবর্তী মৌসুমে কী সতর্কতা নেব?',cat:'general'});
+                        qs.push({q:'DAE অফিসার কখন ডাকব?',cat:'general'});
+                      }
+
+                      // Group by category with icons
+                      const catMeta={
+                        disease:{icon:'🔬',label:'রোগ'},
+                        treatment:{icon:'💊',label:'চিকিৎসা'},
+                        severity:{icon:'⚠️',label:'তীব্রতা'},
+                        crop:{icon:'🌾',label:'ফসল'},
+                        season:{icon:'🌡️',label:'মৌসুম'},
+                        general:{icon:'💡',label:'সাধারণ'},
+                      };
+                      // Deduplicate by question text
+                      const seen=new Set();
+                      const unique=qs.filter(item=>{if(seen.has(item.q))return false;seen.add(item.q);return true;});
+                      // Group
+                      const groups={};
+                      unique.forEach(item=>{if(!groups[item.cat])groups[item.cat]=[];groups[item.cat].push(item.q);});
+
+                      return Object.entries(groups).map(([cat,items])=>{
+                        const meta=catMeta[cat]||{icon:'❓',label:cat};
+                        return(
+                          <div key={cat} style={{marginBottom:8}}>
+                            <div style={{fontSize:10,color:C.textLight,fontWeight:700,marginBottom:4,letterSpacing:.3,textTransform:'uppercase'}}>{meta.icon} {meta.label}</div>
+                            <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+                              {items.slice(0,3).map(q=>(
+                                <button key={q} onClick={()=>setFollowUpQuestion(q)} style={{padding:'5px 10px',borderRadius:20,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.text,fontSize:11,cursor:'pointer',fontWeight:600,transition:'all .15s'}} onMouseEnter={e=>{e.currentTarget.style.background='#f0fdf4';e.currentTarget.style.borderColor=C.primary;}} onMouseLeave={e=>{e.currentTarget.style.background=C.bgMuted;e.currentTarget.style.borderColor=C.border;}}>{q}</button>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      });
                     })()}
                   </div>
+                  {/* Input area */}
                   <div style={{display:'flex',gap:8}}>
                     <input 
                       value={followUpQuestion} 
@@ -3053,8 +3131,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       {followUpLoading?<>⟳ চলছে...</>:'প্রশ্ন করুন'}
                     </button>
                   </div>
-                  {followUpLoading&&<div style={{marginTop:8,fontSize:12,color:C.textMuted}}>🤔 AI আপনার প্রশ্নের উত্তর দিচ্ছে...</div>}
-                  {followUpAnswer&&<div style={{marginTop:10,padding:14,background:C.bgMuted,borderRadius:12,fontSize:13,color:C.text,lineHeight:1.8,borderLeft:`3px solid ${C.primary}`}}>{renderInline(followUpAnswer)}</div>}
+                  {followUpLoading&&<div style={{marginTop:8,fontSize:12,color:C.textMuted,display:'flex',alignItems:'center',gap:6}}><span style={{animation:'spin 1s linear infinite',display:'inline-block'}}>⟳</span> AI আপনার প্রশ্নের উত্তর দিচ্ছে...</div>}
+                  {followUpAnswer&&<div style={{marginTop:10,padding:14,background:C.bgMuted,borderRadius:12,fontSize:13,color:C.text,lineHeight:1.8,borderLeft:`3px solid ${C.primary}`,animation:'fadeIn .3s ease'}}>{renderInline(followUpAnswer)}</div>}
                 </div>
               </div>
             )}
