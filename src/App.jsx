@@ -2150,21 +2150,24 @@ const[activeTab,setActiveTab]=useState("home");
     setImage(objectUrl);
     const img=new Image();
     img.onload=()=>{
-      const MAX=800;let{width:w,height:h}=img;
-      if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
-      const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
-      const dataUrl=cv.toDataURL("image/jpeg",0.7);
-      const base64=dataUrl.split(",")[1];
-      setImage(dataUrl);
-      setImageBase64(base64);
-      const cropFromName=guessCropFromText(file.name||"");
-      if(cropFromName)setForm(f=>f.crop?f:{...f,crop:cropFromName});
-      else detectCropFromImage(base64,file.name);
+      try{
+        const MAX=800;let{width:w,height:h}=img;
+        if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
+        const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
+        const dataUrl=cv.toDataURL("image/jpeg",0.7);
+        const base64=dataUrl.split(",")[1];
+        setImage(dataUrl);
+        setImageBase64(base64);
+        const cropFromName=guessCropFromText(file.name||"");
+        if(cropFromName)setForm(f=>f.crop?f:{...f,crop:cropFromName});
+        else detectCropFromImage(base64,file.name);
+      }catch(err){console.error("Image processing failed:",err);}
       URL.revokeObjectURL(objectUrl);
     };
+    img.onerror=()=>{console.error("Image load failed");URL.revokeObjectURL(objectUrl);setImage(null);setImageBase64(null);};
     img.src=objectUrl;
   };
-  const handleImage=(e)=>handleImageFile(e.target.files?.[0]);
+  const handleImage=(e)=>{handleImageFile(e.target.files?.[0]);e.target.value="";};
 
 const handleSubmit=async()=>{
     if(!form.crop||!form.symptoms){setError("অনুগ্রহ করে ফসল এবং লক্ষণ উভয়ই পূরণ করুন।");return;}
@@ -2746,8 +2749,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       <div className="ud-headline" style={{fontWeight:800,fontSize:30,color:C.primaryDark,lineHeight:1.08,marginBottom:10}}>{form.crop?.split("/")[0]?.trim()||"ফসল"} এর জন্য সহজ রিপোর্ট</div>
                       <div style={{fontSize:13,color:C.textMuted,lineHeight:1.75}}>কোন সমস্যা বেশি মনে হচ্ছে, কী লক্ষণ দেখা গেছে, আর এখন কী করলে ক্ষতি কমবে তা নিচে কার্ড আকারে সাজানো আছে.</div>
                     </div>
-                    <div style={{minHeight:220,borderRadius:26,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      {image?<img src={image} alt="diagnosis preview" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<div style={{fontSize:64}}>🍃</div>}
+                    <div style={{height:220,borderRadius:26,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      {image?<img src={image} alt="diagnosis preview" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>:<div style={{fontSize:64}}>🍃</div>}
                       <div style={{position:"absolute",inset:18,border:"2px solid rgba(255,255,255,0.7)",borderRadius:20}} />
                       <div style={{position:"absolute",top:18,right:18,padding:"7px 12px",borderRadius:999,background:"rgba(0,96,40,0.88)",color:"#fff",fontSize:11,fontWeight:800}}>বিশ্লেষণ শেষ</div>
                     </div>
