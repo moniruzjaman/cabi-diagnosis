@@ -315,20 +315,36 @@ function buildFeedbackMessage({context,rating,feedback,email,summary,visits}){
 // This prevents external callers from abusing API endpoints.
 let _signingToken = null;
 let _signingTokenExpiry = 0;
+let _signingTokenPromise = null; // prevent concurrent fetches
 
 async function getSigningToken() {
   // Use cached token if still valid (refresh 5 min before expiry)
   if (_signingToken && Date.now() < _signingTokenExpiry - 300000) return _signingToken;
-  try {
-    const res = await fetch("/api/signing-token");
-    const data = await res.json();
-    if (data.token) {
-      _signingToken = data.token;
-      _signingTokenExpiry = Date.now() + (data.expiresIn || 7200) * 1000;
-      return _signingToken;
+
+  // Prevent concurrent fetches — reuse in-flight promise
+  if (_signingTokenPromise) return _signingTokenPromise;
+
+  _signingTokenPromise = (async () => {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch("/api/signing-token");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.token) {
+            _signingToken = data.token;
+            _signingTokenExpiry = Date.now() + (data.expiresIn || 7200) * 1000;
+            return _signingToken;
+          }
+        }
+      } catch {}
+      // Brief pause before retry
+      if (attempt === 0) await new Promise(r => setTimeout(r, 500));
     }
-  } catch {}
-  return null;
+    return null;
+  })();
+
+  _signingTokenPromise.finally(() => { _signingTokenPromise = null; });
+  return _signingTokenPromise;
 }
 
 async function postJson(url, payload){

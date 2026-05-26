@@ -78,13 +78,12 @@ export default async function handler(req, res) {
   if (process.env.VERCEL) {
     // Method 1: Valid signed request (same as other API routes)
     const signatureToken = req.headers["x-request-signature"] || "";
-    const origin = req.headers.origin || "";
 
     // Method 2: Admin secret via query param
     const adminSecret = getAdminSecret();
     const providedAdmin = req.query?.admin || req.headers["x-admin-secret"] || "";
 
-    const hasValidSignature = signatureToken && verifyRequestToken(signatureToken, origin);
+    const hasValidSignature = signatureToken && verifyRequestToken(signatureToken);
     const hasValidAdmin = providedAdmin && providedAdmin === adminSecret;
 
     if (!hasValidSignature && !hasValidAdmin) {

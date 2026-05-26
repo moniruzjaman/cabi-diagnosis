@@ -5,11 +5,11 @@
  * The signing secret is automatically derived from the Supabase
  * credentials that are already configured — NO extra env vars needed.
  *
- * The derived secret is:
- *   - Stable across serverless cold starts (same env vars = same secret)
- *   - Cryptographically strong (SHA-256 of combined credentials)
- *   - Never exposed to the frontend
- *   - Works without any manual configuration
+ * Token design:
+ *   - Tokens are NOT bound to origin (removes cross-request origin mismatch)
+ *   - CORS already validates which origins can call our endpoints
+ *   - Token proves: "I was issued by this server, within the last 2 hours"
+ *   - This is sufficient to block drive-by abuse from external sites
  *
  * Flow:
  *   1. Frontend calls /api/signing-token to get a signed token
@@ -31,14 +31,11 @@ let _cachedSecret = null;
  *   - They are server-only (never exposed to frontend)
  *   - They are long, high-entropy strings
  *
- * Falls back to a combination of any available API keys + app identifier.
- * In the absolute worst case (no env vars at all), uses a fixed salt
- * so the app still works in local development.
+ * Falls back to AI API keys, then to a fixed dev salt.
  */
 function getSigningSecret() {
   if (_cachedSecret) return _cachedSecret;
 
-  // Primary: derive from Supabase credentials (always present in production)
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || "";
 
@@ -50,7 +47,6 @@ function getSigningSecret() {
     return _cachedSecret;
   }
 
-  // Fallback: derive from AI API keys (stable across deploys)
   const keys = [
     process.env.GEMINI_API_KEY,
     process.env.GROQ_API_KEY,
@@ -65,7 +61,6 @@ function getSigningSecret() {
     return _cachedSecret;
   }
 
-  // Dev-only: no secrets available — use fixed salt (not secure but functional)
   _cachedSecret = crypto
     .createHash("sha256")
     .update("cabi-diagnosis-v4-dev-signing-key")
@@ -76,16 +71,18 @@ function getSigningSecret() {
 const TOKEN_VALIDITY_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 /**
- * Generates a signed token for the frontend to use.
+ * Generates a signed token for the frontend.
  * Format: <timestamp>.<hmac_hex>
+ *
+ * The token signs ONLY the timestamp — no origin binding.
+ * Origin validation is handled by CORS, not by the token.
  */
-export function generateRequestToken(origin = "") {
+export function generateRequestToken() {
   const secret = getSigningSecret();
   const timestamp = Date.now();
-  const payload = `${timestamp}.${origin}`;
   const signature = crypto
     .createHmac("sha256", secret)
-    .update(payload)
+    .update(`${timestamp}`)
     .digest("hex");
 
   return `${timestamp}.${signature}`;
@@ -94,13 +91,8 @@ export function generateRequestToken(origin = "") {
 /**
  * Verifies a request token from the frontend.
  * Returns true if valid, false otherwise.
- *
- * Checks:
- * - Token format is correct (timestamp.signature)
- * - Token hasn't expired (>2 hours old)
- * - HMAC signature matches (proves it was issued by our server)
  */
-export function verifyRequestToken(token, origin = "") {
+export function verifyRequestToken(token) {
   if (!token || typeof token !== "string") return false;
 
   const parts = token.split(".");
@@ -111,16 +103,15 @@ export function verifyRequestToken(token, origin = "") {
 
   if (isNaN(timestamp)) return false;
 
-  // Check expiry (2hr max, 1min clock skew allowed)
+  // Check expiry (2hr max, 1min clock skew)
   const age = Date.now() - timestamp;
   if (age > TOKEN_VALIDITY_MS || age < -60000) return false;
 
   // Verify HMAC
   const secret = getSigningSecret();
-  const payload = `${timestamp}.${origin}`;
   const expected = crypto
     .createHmac("sha256", secret)
-    .update(payload)
+    .update(`${timestamp}`)
     .digest("hex");
 
   // Constant-time comparison to prevent timing attacks
@@ -133,17 +124,11 @@ export function verifyRequestToken(token, origin = "") {
 
 /**
  * Middleware: Verify X-Request-Signature header on API requests.
- * Returns true if the request should be REJECTED (invalid signature).
- * Returns false if the request is ALLOWED (valid or in dev mode).
+ * Returns true if the request should be REJECTED (invalid/missing signature).
+ * Returns false if the request is ALLOWED.
  *
- * In production (VERCEL env set):
- *   - POST/DELETE requests must carry a valid signed token
- *   - GET/OPTIONS requests are allowed without signing
- *   - If no token is provided, request is rejected
- *   - If an invalid token is provided, request is rejected
- *
- * In development (no VERCEL env):
- *   - Signing is optional for easier local testing
+ * Production (VERCEL env): POST/DELETE must carry a valid signed token.
+ * Development: Signing is optional for easier local testing.
  */
 export function requireSignedRequest(req, res) {
   // In development, skip verification for convenience
@@ -153,25 +138,24 @@ export function requireSignedRequest(req, res) {
   if (req.method === "GET" || req.method === "OPTIONS") return false;
 
   const token = req.headers["x-request-signature"] || "";
-  const origin = req.headers.origin || "";
 
-  // No token provided — reject in production
+  // No token — reject
   if (!token) {
     res.status(403).json({
       error: "Invalid or missing request signature",
       errorBn: "অনুরোধ স্বাক্ষর অবৈধ — দয়া করে পাতাটি রিফ্রেশ করুন",
     });
-    return true; // REJECTED
+    return true;
   }
 
-  // Token provided — verify it
-  if (!verifyRequestToken(token, origin)) {
+  // Invalid token — reject
+  if (!verifyRequestToken(token)) {
     res.status(403).json({
       error: "Invalid or missing request signature",
       errorBn: "অনুরোধ স্বাক্ষর অবৈধ — দয়া করে পাতাটি রিফ্রেশ করুন",
     });
-    return true; // REJECTED — invalid token
+    return true;
   }
 
-  return false; // ALLOWED — valid token
+  return false; // ALLOWED
 }
