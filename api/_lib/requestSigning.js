@@ -2,7 +2,7 @@
  * HMAC Request Signing — Server-side verification.
  *
  * Prevents external callers from abusing API endpoints.
- * The signing secret is automatically derived from the Supabase
+ * The signing secret is automatically derived from the Turso
  * credentials that are already configured — NO extra env vars needed.
  *
  * Token design:
@@ -25,28 +25,25 @@ let _cachedSecret = null;
 /**
  * Derives a stable HMAC signing secret from existing environment variables.
  *
- * Uses SUPABASE_URL + SUPABASE_PUBLISHABLE_KEY as the base because:
- *   - They are always configured together in Vercel
- *   - They are stable (don't change between deploys)
- *   - They are server-only (never exposed to frontend)
- *   - They are long, high-entropy strings
- *
- * Falls back to AI API keys, then to a fixed dev salt.
+ * Priority: Turso → AI API keys → fixed dev salt.
+ * All sources are stable across serverless cold starts.
  */
 function getSigningSecret() {
   if (_cachedSecret) return _cachedSecret;
 
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-  const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || "";
+  // Primary: derive from Turso credentials
+  const tursoUrl = process.env.TURSO_DATABASE_URL || "";
+  const tursoToken = process.env.TURSO_AUTH_TOKEN || "";
 
-  if (supabaseUrl && supabaseKey) {
+  if (tursoUrl && tursoToken) {
     _cachedSecret = crypto
       .createHmac("sha256", "cabi-signing-v1")
-      .update(`${supabaseUrl}|${supabaseKey}`)
+      .update(`${tursoUrl}|${tursoToken}`)
       .digest("hex");
     return _cachedSecret;
   }
 
+  // Fallback: derive from AI API keys
   const keys = [
     process.env.GEMINI_API_KEY,
     process.env.GROQ_API_KEY,
@@ -61,6 +58,7 @@ function getSigningSecret() {
     return _cachedSecret;
   }
 
+  // Dev-only: fixed salt
   _cachedSecret = crypto
     .createHash("sha256")
     .update("cabi-diagnosis-v4-dev-signing-key")

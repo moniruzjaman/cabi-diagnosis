@@ -91,19 +91,21 @@ add_env_var "GEMINI_API_KEY" "Google Gemini API Key — https://aistudio.google.
 add_env_var "GROQ_API_KEY" "Groq API Key — https://console.groq.com/keys" "required"
 add_env_var "OPENROUTER_API_KEY" "OpenRouter API Key — https://openrouter.ai/keys" "required"
 
-# ═══ Supabase Configuration ═══
-echo -e "${GREEN}═══ Supabase Configuration ═══${NC}"
-echo -e "Required for persistent analytics, feedback storage, and online presence."
+# ═══ Turso Database ═══
+echo -e "${GREEN}═══ Turso Database ═══${NC}"
+echo -e "Required for persistent analytics, feedback, and presence tracking."
+echo -e "Free tier: 9GB storage, 1B reads/month, 25M writes/month."
+echo -e "Sign up at: https://turso.tech"
+echo -e "Quick setup: turso db create cabi-diagnosis && turso db tokens create cabi-diagnosis"
 echo ""
 
-add_env_var "SUPABASE_URL" "Supabase project URL (e.g., https://xxxx.supabase.co)" "required"
-add_env_var "SUPABASE_PUBLISHABLE_KEY" "Supabase anon/public key (server-side only)" "required"
-add_env_var "SUPABASE_SERVICE_ROLE_KEY" "Supabase service role key (admin access — optional)" "optional"
+add_env_var "TURSO_DATABASE_URL" "Turso DB URL (e.g. libsql://cabi-diagnosis-your-org.turso.io)" "required"
+add_env_var "TURSO_AUTH_TOKEN" "Turso auth token" "required"
 
-# ═══ Auto-Configured (No manual setup needed) ═══
+# ═══ Auto-Configured ═══
 echo -e "${GREEN}═══ Auto-Configured Security ═══${NC}"
-echo -e "${YELLOW}Request signing and admin secret are AUTO-DERIVED from your Supabase credentials.${NC}"
-echo -e "${YELLOW}No separate API_SIGNING_SECRET or ADMIN_SECRET needed.${NC}"
+echo -e "${YELLOW}Request signing and admin secret are AUTO-DERIVED from your Turso credentials.${NC}"
+echo -e "${YELLOW}No separate secrets needed — zero manual configuration.${NC}"
 echo ""
 
 # ═══ Summary ═══
@@ -115,12 +117,14 @@ echo -e "Required env vars (5):"
 echo -e "  ${GREEN}✓${NC} GEMINI_API_KEY"
 echo -e "  ${GREEN}✓${NC} GROQ_API_KEY"
 echo -e "  ${GREEN}✓${NC} OPENROUTER_API_KEY"
-echo -e "  ${GREEN}✓${NC} SUPABASE_URL"
-echo -e "  ${GREEN}✓${NC} SUPABASE_PUBLISHABLE_KEY"
+echo -e "  ${GREEN}✓${NC} TURSO_DATABASE_URL"
+echo -e "  ${GREEN}✓${NC} TURSO_AUTH_TOKEN"
 echo ""
 echo -e "Auto-configured (0):"
-echo -e "  ${YELLOW}→${NC} API_SIGNING_SECRET (auto-derived from Supabase)"
-echo -e "  ${YELLOW}→${NC} ADMIN_SECRET (auto-derived from Supabase)"
+echo -e "  ${YELLOW}→${NC} API_SIGNING_SECRET (auto-derived from Turso)"
+echo -e "  ${YELLOW}→${NC} ADMIN_SECRET (auto-derived from Turso)"
+echo ""
+echo -e "No more Supabase! Turso free tier has no project pausing or strict quotas."
 echo ""
 echo -e "Next steps:"
 echo -e "  1. Run: ${CYAN}vercel --prod${NC} to deploy"

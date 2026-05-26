@@ -9,9 +9,7 @@
  * - Does NOT make live AI provider calls (prevents credit burning & info leakage)
  * - Only checks if env vars are set
  *
- * The admin secret is auto-derived from your Supabase credentials:
- *   First 16 hex chars of HMAC-SHA256("cabi-admin-v1", SUPABASE_URL + "|" + SUPABASE_PUBLISHABLE_KEY)
- *
+ * The admin secret is auto-derived from your Turso credentials.
  * Visit: https://your-app.vercel.app/api/test (with signing token from the app)
  *    or: https://your-app.vercel.app/api/test?admin=YOUR_AUTO_DERIVED_SECRET
  */
@@ -24,26 +22,24 @@ import { verifyRequestToken } from "./_lib/requestSigning.js";
 let _cachedAdminSecret = null;
 
 /**
- * Auto-derives the admin secret from Supabase credentials.
+ * Auto-derives the admin secret from Turso credentials.
  * Same credentials already configured — no separate env var needed.
  */
 function getAdminSecret() {
   if (_cachedAdminSecret) return _cachedAdminSecret;
 
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-  const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || "";
+  const tursoUrl = process.env.TURSO_DATABASE_URL || "";
+  const tursoToken = process.env.TURSO_AUTH_TOKEN || "";
 
-  // Primary: derive from Supabase credentials (always configured in production)
-  if (supabaseUrl && supabaseKey) {
+  if (tursoUrl && tursoToken) {
     _cachedAdminSecret = crypto
       .createHmac("sha256", "cabi-admin-v1")
-      .update(`${supabaseUrl}|${supabaseKey}`)
+      .update(`${tursoUrl}|${tursoToken}`)
       .digest("hex")
-      .slice(0, 24); // 24 hex chars = 96 bits of entropy, plenty for admin access
+      .slice(0, 24);
     return _cachedAdminSecret;
   }
 
-  // Fallback: derive from AI API keys
   const keys = [
     process.env.GEMINI_API_KEY,
     process.env.GROQ_API_KEY,
@@ -59,7 +55,6 @@ function getAdminSecret() {
     return _cachedAdminSecret;
   }
 
-  // Dev-only: no secrets available
   _cachedAdminSecret = crypto
     .createHash("sha256")
     .update("cabi-diagnosis-v4-dev-admin-key")
@@ -76,10 +71,8 @@ export default async function handler(req, res) {
 
   // In production, require authentication
   if (process.env.VERCEL) {
-    // Method 1: Valid signed request (same as other API routes)
     const signatureToken = req.headers["x-request-signature"] || "";
 
-    // Method 2: Admin secret via query param
     const adminSecret = getAdminSecret();
     const providedAdmin = req.query?.admin || req.headers["x-admin-secret"] || "";
 
@@ -97,14 +90,14 @@ export default async function handler(req, res) {
 
   // Check env vars exist — do NOT expose any part of the key values
   const aiReady = !!(process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY);
-  const dbReady = !!(process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY);
+  const dbReady = !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN);
 
   return res.status(200).json({
     status: aiReady ? "operational" : "degraded",
     timestamp: new Date().toISOString(),
     checks: {
       aiProviders: aiReady ? "configured" : "NOT CONFIGURED — at least one AI API key required",
-      database: dbReady ? "configured" : "not configured — analytics will use temp storage",
+      database: dbReady ? "configured (turso)" : "not configured — analytics will use temp storage",
     },
     version: "4.0.0",
   });

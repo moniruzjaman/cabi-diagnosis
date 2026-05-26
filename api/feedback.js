@@ -46,8 +46,8 @@ export default async function handler(req, res) {
   return res.status(200).json({
     ok: true,
     count: Array.isArray(store.feedback) ? store.feedback.length : null,
-    persistence: (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)
-      ? "supabase-rls"
+    persistence: (process.env.TURSO_DATABASE_URL)
+      ? "turso"
       : process.env.VERCEL
         ? "temporary-instance-storage"
         : "local-file-storage"

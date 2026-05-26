@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     uptime: `${uptimeSeconds}s`,
     env: {
       VERCEL: !!process.env.VERCEL,
-      SUPABASE: !!(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL),
+      TURSO: !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN),
       // Only report whether keys exist, never their values or partial content
       AI_PROVIDERS_CONFIGURED: !!(
         process.env.GEMINI_API_KEY ||
