@@ -21,7 +21,7 @@ import path from "path";
 // ─── Singleton Turso client ────────────────────────────────────
 let _tursoClient = null;
 
-function hasTurso() {
+export function hasTurso() {
   return !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN);
 }
 

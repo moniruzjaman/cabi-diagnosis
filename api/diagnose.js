@@ -1,6 +1,6 @@
 /**
  * CABI Diagnosis — Smart Free Vision Waterfall Proxy
- * Providers: Gemini 2.5 Flash → OpenRouter Qwen-VL → Groq Llama4 Scout → DeepSeek R1 → Emergency
+ * Providers: Gemini 2.5 Flash → OpenRouter Qwen-VL → Groq Llama4 Scout → OR text → Gemini text → Emergency
  * System prompt: Full CABI Plantwise Ready Reckoner + Exclusion Logic embedded
  */
 
@@ -433,12 +433,6 @@ This JSON block is mandatory. Fill in all fields based on your diagnosis. For ke
 `.trim();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function hasImage(messages) {
-  return messages.some(
-    (m) => Array.isArray(m.content) && m.content.some((b) => b.type === "image")
-  );
-}
-
 function stripImages(messages) {
   return messages.map((m) => ({
     ...m,
@@ -491,7 +485,7 @@ const OPENROUTER_VISION_MODELS = [
 ];
 
 const OPENROUTER_TEXT_MODELS = [
-  "qwen/qwen2.5-vl-72b-instruct:free",
+  "qwen/qwen2.5-72b-instruct:free",
   "meta-llama/llama-3.2-11b-vision-instruct:free",
 ];
 
@@ -654,7 +648,7 @@ async function tryGroq(messages, systemPrompt = SYSTEM_PROMPT) {
   return { text: data?.choices?.[0]?.message?.content || "No response.", provider: "Groq Llama 4 Scout ⚡" };
 }
 
-// ─── Provider 3/4/5: OpenRouter ──────────────────────────────────────────────
+// ─── Provider: OpenRouter (used for both vision and text fallbacks) ──────────
 async function tryOpenRouter(messages, modelId, systemPrompt = SYSTEM_PROMPT, extraBody = {}) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY not set");
@@ -783,21 +777,35 @@ export default async function handler(req, res) {
     return res.status(200).json({ content: [{ type: "text", text: cleanText + note }], structured, provider: r.provider, attempts });
   } catch (e) { attempts.push(`OpenRouter text: ${e.message}`); }
 
-  // ─── 5. Gemini text-only fallback (only if image was attached) ──────────
-  if (imageAttached) {
-    try {
-      const r = await withTimeout(tryGemini(messages, false, systemPrompt), "Gemini text");
-      const note = "\n\n---\n⚠️ ছবি বিশ্লেষণ এই মুহূর্তে সম্ভব হয়নি। বর্ণনার ভিত্তিতে রোগ নির্ণয় করা হয়েছে।\n*(Image analysis unavailable. Diagnosis based on description only.)*";
-      const structured = extractStructuredJson(r.text);
-      const cleanText = structured ? stripStructuredJson(r.text) : r.text;
-      return res.status(200).json({ content: [{ type: "text", text: cleanText + note }], structured, provider: r.provider, attempts });
-    } catch (e) { attempts.push(`Gemini text: ${e.message}`); }
-  }
+  // ─── 5. Gemini text-only fallback (always try, even without images) ───
+  try {
+    const r = await withTimeout(tryGemini(messages, false, systemPrompt), "Gemini text");
+    const note = imageAttached
+      ? "\n\n---\n⚠️ ছবি বিশ্লেষণ এই মুহূর্তে সম্ভব হয়নি। বর্ণনার ভিত্তিতে রোগ নির্ণয় করা হয়েছে।\n*(Image analysis unavailable. Diagnosis based on description only.)*"
+      : "";
+    const structured = extractStructuredJson(r.text);
+    const cleanText = structured ? stripStructuredJson(r.text) : r.text;
+    return res.status(200).json({ content: [{ type: "text", text: cleanText + note }], structured, provider: r.provider, attempts });
+  } catch (e) { attempts.push(`Gemini text: ${e.message}`); }
 
   // ─── 6. Emergency offline-style fallback ────────────────────────────────
   const fallbackText = buildEmergencyDiagnosis(messages, imageAttached);
+  const emergencyStructured = {
+    disease_name: "Unknown — emergency fallback",
+    disease_name_bn: "অজানা — জরুরি বিকল্প বিশ্লেষণ",
+    confidence: "low",
+    severity: "moderate",
+    biotic_abiotic: "unknown",
+    cause_type: "other",
+    key_recommendations: [
+      "পাতার উল্টোপাশে পোকা/ডিম দেখুন",
+      "দাগ পানিভেজা কিনারা হলে ব্যাকটেরিয়া সন্দেহ করুন",
+      "DAAE কর্মকর্তাকে দেখান",
+    ],
+  };
   return res.status(200).json({
     content: [{ type: "text", text: fallbackText }],
+    structured: emergencyStructured,
     provider: "Emergency CABI fallback",
     attempts,
   });

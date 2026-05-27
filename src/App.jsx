@@ -2454,8 +2454,6 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       const res = await signedFetch("/api/diagnose", {
         method: "POST",
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 2000,
           messages: [{ role: "user", content: uc }]
         })
       });
@@ -2515,7 +2513,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       // Include previous diagnosis context as text (no need to re-send images for follow-up)
       const diagText=result?.bn||result?.en||'';
       uc.push({type:"text",text:`I previously diagnosed a crop problem. Here is the diagnosis summary:\n\nCrop: ${form.crop}\nDistrict: ${form.district||locationName||'N/A'}\nDiagnosis result:\n${diagText.slice(0,800)}\n\nMy follow-up question: ${followUpQuestion}\n\nAnswer in simple Bangla for farmers. Be concise and practical. Focus only on the follow-up question. Do NOT repeat the entire diagnosis. Use short icon-led bullets.`});
-      const res=await signedFetch("/api/diagnose",{method:"POST",body:JSON.stringify({max_tokens:600,messages:[{role:"user",content:uc}]})});
+      const res=await signedFetch("/api/diagnose",{method:"POST",body:JSON.stringify({messages:[{role:"user",content:uc}]})});
       if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.error||`HTTP ${res.status}`);}
       const data=await res.json();
       const ans=data.content?.map(b=>b.text||"").join("\n")||"";
