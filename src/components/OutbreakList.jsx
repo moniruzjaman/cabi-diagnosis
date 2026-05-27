@@ -65,7 +65,7 @@ function severityStyle(severity) {
   }
 }
 
-export default function OutbreakList({ C, district }) {
+export default function OutbreakList({ C, district, postJson }) {
   const [outbreaks, setOutbreaks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -149,16 +149,12 @@ export default function OutbreakList({ C, district }) {
     if (!reportData.crop || !reportData.disease) return;
     setSubmitting(true);
     try {
-      const res = await fetch('/api/outbreaks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...reportData,
-          reportedAt: new Date().toISOString(),
-          source: 'কৃষক রিপোর্ট',
-        }),
+      const data = await postJson('/api/outbreaks', {
+        ...reportData,
+        reportedAt: new Date().toISOString(),
+        source: 'কৃষক রিপোর্ট',
       });
-      if (res.ok) {
+      if (data && !data.error) {
         setShowReportForm(false);
         setReportData({ crop: '', disease: '', location: district || '', severity: 'medium', notes: '' });
         fetchOutbreaks(); // Refresh
