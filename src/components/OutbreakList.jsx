@@ -4,19 +4,13 @@ import { useState, useEffect, useCallback } from 'react';
  * OutbreakList Component
  *
  * Shows recent disease outbreak reports from the user's district.
- * Each item shows: crop icon, disease name, district, time ago, confirmed status.
- * Includes a "রিপোর্ট করুন" button to submit new reports.
- *
  * Props:
  *   C        — color tokens object
  *   district — user's district string (Bengali/English)
  *   postJson — signed API fetch helper (from App.jsx)
  *
- * API field mapping (turso.js getOutbreaks returns):
- *   { id, district, crop, diseaseName, reporterHash, confirmed (bool), createdAt }
- *
- * API POST expects:
- *   { district, crop, disease_name }
+ * API POST expects: { district, crop, disease_name }
+ * API GET returns:  { id, district, crop, diseaseName, confirmed (bool), createdAt }
  */
 
 function timeAgo(dateStr) {
@@ -37,18 +31,12 @@ function timeAgo(dateStr) {
   return `${Math.floor(days / 30)} মাস আগে`;
 }
 
-// Crop emoji lookup
 const CROP_ICONS = {
-  'ধান': '🌾', 'Rice': '🌾',
-  'পাট': '🌿', 'Jute': '🌿',
-  'আলু': '🥔', 'Potato': '🥔',
-  'টমেটো': '🍅', 'Tomato': '🍅',
-  'বেগুন': '🍆', 'Brinjal': '🍆',
-  'সরিষা': '🌼', 'Mustard': '🌼',
-  'কলা': '🍌', 'Banana': '🍌',
-  'আম': '🥭', 'Mango': '🥭',
-  'গম': '🌾', 'Wheat': '🌾',
-  'ভুট্টা': '🌽', 'Maize': '🌽',
+  'ধান': '🌾', 'Rice': '🌾', 'পাট': '🌿', 'Jute': '🌿',
+  'আলু': '🥔', 'Potato': '🥔', 'টমেটো': '🍅', 'Tomato': '🍅',
+  'বেগুন': '🍆', 'Brinjal': '🍆', 'সরিষা': '🌼', 'Mustard': '🌼',
+  'কলা': '🍌', 'Banana': '🍌', 'আম': '🥭', 'Mango': '🥭',
+  'গম': '🌾', 'Wheat': '🌾', 'ভুট্টা': '🌽', 'Maize': '🌽',
 };
 
 function getCropIcon(cropStr) {
@@ -59,7 +47,6 @@ function getCropIcon(cropStr) {
   return '🌱';
 }
 
-// Severity color coding — works for both API data and demo data
 function severityStyle(severity) {
   switch (severity) {
     case 'high': case 'উচ্চ': return { bg: '#fef2f2', color: '#dc2626', border: '#fecaca', label: 'উচ্চ' };
@@ -69,73 +56,26 @@ function severityStyle(severity) {
   }
 }
 
-/**
- * Normalize an outbreak item from either API format or demo format.
- * API returns: { id, district, crop, diseaseName, confirmed (bool), createdAt }
- * Demo uses:  { id, crop, disease, district, severity, confirmedCount, reportedAt, source }
- * We normalize to a common shape for rendering.
- */
+// Normalize both API format and demo fallback format to common shape
 function normalizeItem(item) {
   return {
     id: item.id,
     crop: item.crop || '',
-    // API uses diseaseName, demo uses disease
     diseaseName: item.diseaseName || item.disease || '',
     district: item.district || '',
-    // API uses createdAt, demo uses reportedAt
     createdAt: item.createdAt || item.reportedAt || '',
-    // API confirmed is boolean, demo uses confirmedCount (number)
     confirmed: item.confirmed === true || (typeof item.confirmedCount === 'number' && item.confirmedCount > 0),
     confirmedCount: item.confirmedCount || (item.confirmed === true ? 1 : 0),
-    // severity not stored in API, derive from confirmed count if available
     severity: item.severity || (item.confirmed === true ? 'high' : 'medium'),
-    // source not in API response
     source: item.source || 'কৃষক রিপোর্ট',
   };
 }
 
-// Fallback demo data for offline / dev mode
 const DEMO_OUTBREAKS = [
-  {
-    id: 'demo-1',
-    crop: 'ধান',
-    disease: 'ব্লাস্ট',
-    district: 'রাজশাহী',
-    severity: 'high',
-    confirmedCount: 12,
-    reportedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    source: 'কৃষক রিপোর্ট',
-  },
-  {
-    id: 'demo-2',
-    crop: 'আলু',
-    disease: 'লেট ব্লাইট',
-    district: 'বগুড়া',
-    severity: 'high',
-    confirmedCount: 8,
-    reportedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-    source: 'DAE নিশ্চিত',
-  },
-  {
-    id: 'demo-3',
-    crop: 'টমেটো',
-    disease: 'আর্লি ব্লাইট',
-    district: 'যশোর',
-    severity: 'medium',
-    confirmedCount: 5,
-    reportedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    source: 'কৃষক রিপোর্ট',
-  },
-  {
-    id: 'demo-4',
-    crop: 'সরিষা',
-    disease: 'অ্যালটারনেরিয়া ব্লাইট',
-    district: 'দিনাজপুর',
-    severity: 'low',
-    confirmedCount: 3,
-    reportedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    source: 'কৃষক রিপোর্ট',
-  },
+  { id: 'demo-1', crop: 'ধান', disease: 'ব্লাস্ট', district: 'রাজশাহী', severity: 'high', confirmedCount: 12, reportedAt: new Date(Date.now() - 2*60*60*1000).toISOString(), source: 'কৃষক রিপোর্ট' },
+  { id: 'demo-2', crop: 'আলু', disease: 'লেট ব্লাইট', district: 'বগুড়া', severity: 'high', confirmedCount: 8, reportedAt: new Date(Date.now() - 6*60*60*1000).toISOString(), source: 'DAE নিশ্চিত' },
+  { id: 'demo-3', crop: 'টমেটো', disease: 'আর্লি ব্লাইট', district: 'যশোর', severity: 'medium', confirmedCount: 5, reportedAt: new Date(Date.now() - 24*60*60*1000).toISOString(), source: 'কৃষক রিপোর্ট' },
+  { id: 'demo-4', crop: 'সরিষা', disease: 'অ্যালটারনেরিয়া ব্লাইট', district: 'দিনাজপুর', severity: 'low', confirmedCount: 3, reportedAt: new Date(Date.now() - 3*24*60*60*1000).toISOString(), source: 'কৃষক রিপোর্ট' },
 ];
 
 export default function OutbreakList({ C, district, postJson }) {
@@ -143,18 +83,11 @@ export default function OutbreakList({ C, district, postJson }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showReportForm, setShowReportForm] = useState(false);
-  const [reportData, setReportData] = useState({
-    crop: '',
-    disease_name: '',
-    severity: 'medium',
-    notes: '',
-  });
+  const [reportData, setReportData] = useState({ crop: '', disease_name: '', severity: 'medium', notes: '' });
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch outbreaks
   const fetchOutbreaks = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     try {
       const params = new URLSearchParams();
       if (district) params.set('district', district);
@@ -164,18 +97,12 @@ export default function OutbreakList({ C, district, postJson }) {
       setOutbreaks(Array.isArray(data) ? data : data.outbreaks || []);
     } catch (err) {
       setError(err.message);
-      // Fallback demo data for offline / dev mode
       setOutbreaks(DEMO_OUTBREAKS);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }, [district]);
 
-  useEffect(() => {
-    fetchOutbreaks();
-  }, [fetchOutbreaks]);
+  useEffect(() => { fetchOutbreaks(); }, [fetchOutbreaks]);
 
-  // Submit report — maps form fields to API-expected field names
   async function handleSubmitReport() {
     if (!reportData.crop || !reportData.disease_name) return;
     if (!postJson || typeof postJson !== 'function') return;
@@ -190,253 +117,82 @@ export default function OutbreakList({ C, district, postJson }) {
       if (data && !data.error) {
         setShowReportForm(false);
         setReportData({ crop: '', disease_name: '', severity: 'medium', notes: '' });
-        fetchOutbreaks(); // Refresh
+        fetchOutbreaks();
       }
-    } catch {
-      // Silently fail — still close form
-      setShowReportForm(false);
-    } finally {
-      setSubmitting(false);
-    }
+    } catch { setShowReportForm(false); }
+    finally { setSubmitting(false); }
   }
 
-  // ─── Report Form ──────────────────────────────────────────────────────────
   if (showReportForm) {
     return (
       <div style={{ animation: 'fadeIn .3s ease' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-          <button
-            onClick={() => setShowReportForm(false)}
-            style={{ background: 'none', border: 'none', color: C.primary, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
-          >
-            ← ফিরুন
-          </button>
+          <button onClick={() => setShowReportForm(false)} style={{ background: 'none', border: 'none', color: C.primary, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>← ফিরুন</button>
         </div>
-
-        <div style={{
-          background: C.bgCard, borderRadius: 16, padding: 18,
-          border: `1px solid ${C.border}`, boxShadow: C.shadow,
-        }}>
-          <div style={{ fontWeight: 800, fontSize: 15, color: C.primaryDark, marginBottom: 14 }}>
-            📢 রোগের প্রাদুর্ভাব রিপোর্ট করুন
-          </div>
-
-          {/* Crop */}
+        <div style={{ background: C.bgCard, borderRadius: 16, padding: 18, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
+          <div style={{ fontWeight: 800, fontSize: 15, color: C.primaryDark, marginBottom: 14 }}>📢 রোগের প্রাদুর্ভাব রিপোর্ট করুন</div>
           <label style={{ display: 'block', marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-              ফসলের নাম *
-            </div>
-            <input
-              type="text"
-              value={reportData.crop}
-              onChange={e => setReportData(prev => ({ ...prev, crop: e.target.value }))}
-              placeholder="যেমন: ধান, আলু, টমেটো"
-              style={{
-                width: '100%', padding: '10px 14px', borderRadius: 10,
-                border: `1.5px solid ${C.border}`, fontSize: 14, color: C.text,
-                background: C.bgMuted, outline: 'none',
-              }}
-            />
+            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>ফসলের নাম *</div>
+            <input type="text" value={reportData.crop} onChange={e => setReportData(prev => ({ ...prev, crop: e.target.value }))} placeholder="যেমন: ধান, আলু, টমেটো" style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, color: C.text, background: C.bgMuted, outline: 'none' }} />
           </label>
-
-          {/* Disease */}
           <label style={{ display: 'block', marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-              রোগের নাম *
-            </div>
-            <input
-              type="text"
-              value={reportData.disease_name}
-              onChange={e => setReportData(prev => ({ ...prev, disease_name: e.target.value }))}
-              placeholder="যেমন: ব্লাস্ট, লেট ব্লাইট"
-              style={{
-                width: '100%', padding: '10px 14px', borderRadius: 10,
-                border: `1.5px solid ${C.border}`, fontSize: 14, color: C.text,
-                background: C.bgMuted, outline: 'none',
-              }}
-            />
+            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>রোগের নাম *</div>
+            <input type="text" value={reportData.disease_name} onChange={e => setReportData(prev => ({ ...prev, disease_name: e.target.value }))} placeholder="যেমন: ব্লাস্ট, লেট ব্লাইট" style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, color: C.text, background: C.bgMuted, outline: 'none' }} />
           </label>
-
-          {/* Severity */}
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-              তীব্রতা
-            </div>
+            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>তীব্রতা</div>
             <div style={{ display: 'flex', gap: 8 }}>
-              {[
-                { key: 'low', label: 'কম', color: C.success },
-                { key: 'medium', label: 'মাঝারি', color: C.warning },
-                { key: 'high', label: 'উচ্চ', color: C.danger },
-              ].map(opt => (
-                <button
-                  key={opt.key}
-                  onClick={() => setReportData(prev => ({ ...prev, severity: opt.key }))}
-                  style={{
-                    flex: 1, padding: '9px', borderRadius: 10,
-                    border: `1.5px solid ${reportData.severity === opt.key ? opt.color : C.border}`,
-                    background: reportData.severity === opt.key ? opt.color + '15' : C.bgMuted,
-                    color: reportData.severity === opt.key ? opt.color : C.textMuted,
-                    fontSize: 13, fontWeight: reportData.severity === opt.key ? 700 : 500,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {opt.label}
-                </button>
+              {[{ key: 'low', label: 'কম', color: C.success }, { key: 'medium', label: 'মাঝারি', color: C.warning }, { key: 'high', label: 'উচ্চ', color: C.danger }].map(opt => (
+                <button key={opt.key} onClick={() => setReportData(prev => ({ ...prev, severity: opt.key }))} style={{ flex: 1, padding: '9px', borderRadius: 10, border: `1.5px solid ${reportData.severity === opt.key ? opt.color : C.border}`, background: reportData.severity === opt.key ? opt.color + '15' : C.bgMuted, color: reportData.severity === opt.key ? opt.color : C.textMuted, fontSize: 13, fontWeight: reportData.severity === opt.key ? 700 : 500, cursor: 'pointer' }}>{opt.label}</button>
               ))}
             </div>
           </div>
-
-          {/* Notes */}
           <label style={{ display: 'block', marginBottom: 14 }}>
-            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-              অতিরিক্ত তথ্য
-            </div>
-            <textarea
-              value={reportData.notes}
-              onChange={e => setReportData(prev => ({ ...prev, notes: e.target.value }))}
-              placeholder="আক্রান্ত এলাকার বিবরণ, ক্ষতির পরিমাণ..."
-              rows={3}
-              style={{
-                width: '100%', padding: '10px 14px', borderRadius: 10,
-                border: `1.5px solid ${C.border}`, fontSize: 13, color: C.text,
-                background: C.bgMuted, outline: 'none', resize: 'vertical',
-                fontFamily: 'inherit',
-              }}
-            />
+            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>অতিরিক্ত তথ্য</div>
+            <textarea value={reportData.notes} onChange={e => setReportData(prev => ({ ...prev, notes: e.target.value }))} placeholder="আক্রান্ত এলাকার বিবরণ..." rows={3} style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 13, color: C.text, background: C.bgMuted, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
           </label>
-
-          <button
-            onClick={handleSubmitReport}
-            disabled={!reportData.crop || !reportData.disease_name || submitting}
-            style={{
-              width: '100%', padding: '13px', borderRadius: 12,
-              border: 'none', background: C.primary, color: '#fff',
-              fontWeight: 700, fontSize: 14, cursor: submitting ? 'not-allowed' : 'pointer',
-              opacity: submitting ? 0.6 : 1,
-            }}
-          >
-            {submitting ? 'পাঠানো হচ্ছে...' : '📤 রিপোর্ট জমা দিন'}
-          </button>
+          <button onClick={handleSubmitReport} disabled={!reportData.crop || !reportData.disease_name || submitting} style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', background: C.primary, color: '#fff', fontWeight: 700, fontSize: 14, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.6 : 1 }}>{submitting ? 'পাঠানো হচ্ছে...' : '📤 রিপোর্ট জমা দিন'}</button>
         </div>
       </div>
     );
   }
 
-  // ─── List View ────────────────────────────────────────────────────────────
   return (
     <div>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <span style={{ fontSize: 20 }}>🔴</span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 800, fontSize: 16, color: C.text }}>
-            রোগের প্রাদুর্ভাব
-          </div>
-          <div style={{ fontSize: 12, color: C.textMuted }}>
-            Disease Outbreaks — {district || 'আপনার এলাকা'}
-          </div>
+          <div style={{ fontWeight: 800, fontSize: 16, color: C.text }}>রোগের প্রাদুর্ভাব</div>
+          <div style={{ fontSize: 12, color: C.textMuted }}>Disease Outbreaks — {district || 'আপনার এলাকা'}</div>
         </div>
-        <button
-          onClick={fetchOutbreaks}
-          style={{
-            background: C.bgMuted, border: `1px solid ${C.border}`, borderRadius: 8,
-            padding: '4px 10px', cursor: 'pointer', fontSize: 12, color: C.textMuted,
-          }}
-        >
-          🔄
-        </button>
+        <button onClick={fetchOutbreaks} style={{ background: C.bgMuted, border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontSize: 12, color: C.textMuted }}>🔄</button>
       </div>
+      <button onClick={() => setShowReportForm(true)} style={{ width: '100%', padding: '11px 16px', borderRadius: 12, border: `1.5px dashed ${C.primary}`, background: C.primary + '0a', color: C.primary, fontWeight: 700, fontSize: 13, cursor: 'pointer', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>📢 রিপোর্ট করুন</button>
 
-      {/* Report button */}
-      <button
-        onClick={() => setShowReportForm(true)}
-        style={{
-          width: '100%', padding: '11px 16px', borderRadius: 12,
-          border: `1.5px dashed ${C.primary}`, background: C.primary + '0a',
-          color: C.primary, fontWeight: 700, fontSize: 13, cursor: 'pointer',
-          marginBottom: 12, display: 'flex', alignItems: 'center',
-          justifyContent: 'center', gap: 6,
-        }}
-      >
-        📢 রিপোর্ট করুন
-      </button>
+      {loading && <div style={{ padding: '20px', textAlign: 'center', color: C.textMuted, fontSize: 13 }}><div style={{ fontSize: 24, marginBottom: 8, animation: 'pulse 1.5s infinite' }}>🔄</div>তথ্য লোড হচ্ছে...</div>}
+      {!loading && error && outbreaks.length === 0 && <div style={{ padding: '16px', borderRadius: 12, background: '#fff7ed', border: '1px solid #fed7aa', fontSize: 13, color: '#9a3412' }}>⚠️ তথ্য লোড করা যায়নি। ডেমো তথ্য দেখানো হচ্ছে।</div>}
 
-      {/* Loading state */}
-      {loading && (
-        <div style={{
-          padding: '20px', textAlign: 'center', color: C.textMuted, fontSize: 13,
-        }}>
-          <div style={{ fontSize: 24, marginBottom: 8, animation: 'pulse 1.5s infinite' }}>🔄</div>
-          তথ্য লোড হচ্ছে...
-        </div>
-      )}
-
-      {/* Error state */}
-      {!loading && error && outbreaks.length === 0 && (
-        <div style={{
-          padding: '16px', borderRadius: 12, background: '#fff7ed',
-          border: '1px solid #fed7aa', fontSize: 13, color: '#9a3412',
-        }}>
-          ⚠️ তথ্য লোড করা যায়নি। ডেমো তথ্য দেখানো হচ্ছে।
-        </div>
-      )}
-
-      {/* Outbreak list — uses normalizeItem() to handle both API and demo data */}
       {!loading && outbreaks.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {outbreaks.map((rawItem, index) => {
             const item = normalizeItem(rawItem);
             const sev = severityStyle(item.severity);
             return (
-              <div
-                key={item.id || index}
-                style={{
-                  background: C.bgCard, borderRadius: 14,
-                  border: `1px solid ${sev.border}`, overflow: 'hidden',
-                  boxShadow: C.shadow, animation: 'fadeIn .3s ease',
-                }}
-              >
-                {/* Top: severity banner */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '6px 14px', background: sev.bg,
-                  borderBottom: `1px solid ${sev.border}`,
-                }}>
-                  <span style={{
-                    width: 6, height: 6, borderRadius: '50%', background: sev.color,
-                  }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: sev.color, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                    {sev.label} ঝুঁকি
-                  </span>
-                  <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textLight }}>
-                    {item.source}
-                  </span>
+              <div key={item.id || index} style={{ background: C.bgCard, borderRadius: 14, border: `1px solid ${sev.border}`, overflow: 'hidden', boxShadow: C.shadow, animation: 'fadeIn .3s ease' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: sev.bg, borderBottom: `1px solid ${sev.border}` }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: sev.color }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: sev.color, textTransform: 'uppercase', letterSpacing: 0.5 }}>{sev.label} ঝুঁকি</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textLight }}>{item.source}</span>
                 </div>
-
-                {/* Content */}
                 <div style={{ padding: '12px 14px', display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <span style={{ fontSize: 24, flexShrink: 0 }}>
-                    {getCropIcon(item.crop)}
-                  </span>
+                  <span style={{ fontSize: 24, flexShrink: 0 }}>{getCropIcon(item.crop)}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: C.text }}>
-                      {item.diseaseName}
-                    </div>
-                    <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>
-                      {item.crop} • {item.district}
-                    </div>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: C.text }}>{item.diseaseName}</div>
+                    <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{item.crop} • {item.district}</div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 3,
-                      background: sev.bg, borderRadius: 8, padding: '3px 8px',
-                      fontSize: 12, fontWeight: 700, color: sev.color,
-                    }}>
-                      {item.confirmed ? '✓ নিশ্চিত' : `📊 ${item.confirmedCount}`}
-                    </div>
-                    <div style={{ fontSize: 10, color: C.textLight, marginTop: 3 }}>
-                      {timeAgo(item.createdAt)}
-                    </div>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: sev.bg, borderRadius: 8, padding: '3px 8px', fontSize: 12, fontWeight: 700, color: sev.color }}>{item.confirmed ? '✓ নিশ্চিত' : `📊 ${item.confirmedCount}`}</div>
+                    <div style={{ fontSize: 10, color: C.textLight, marginTop: 3 }}>{timeAgo(item.createdAt)}</div>
                   </div>
                 </div>
               </div>
@@ -445,19 +201,11 @@ export default function OutbreakList({ C, district, postJson }) {
         </div>
       )}
 
-      {/* Empty state */}
       {!loading && outbreaks.length === 0 && !error && (
-        <div style={{
-          padding: '24px', textAlign: 'center', borderRadius: 14,
-          background: C.bgCard, border: `1px solid ${C.border}`,
-        }}>
+        <div style={{ padding: '24px', textAlign: 'center', borderRadius: 14, background: C.bgCard, border: `1px solid ${C.border}` }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 4 }}>
-            কোনো প্রাদুর্ভাব নেই
-          </div>
-          <div style={{ fontSize: 12, color: C.textMuted }}>
-            আপনার এলাকায় বর্তমানে কোনো রোগের প্রাদুর্ভাব রিপোর্ট হয়নি
-          </div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 4 }}>কোনো প্রাদুর্ভাব নেই</div>
+          <div style={{ fontSize: 12, color: C.textMuted }}>আপনার এলাকায় বর্তমানে কোনো রোগের প্রাদুর্ভাব রিপোর্ট হয়নি</div>
         </div>
       )}
     </div>

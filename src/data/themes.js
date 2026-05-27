@@ -1,8 +1,7 @@
 /**
  * Dark Mode Theme System for CABI Plant Detective
  *
- * Provides light and dark theme tokens compatible with the existing C color object.
- * Usage: Import and merge into the C object or use with a ThemeContext.
+ * Tokens are aligned with C_LIGHT in App.jsx for visual consistency.
  */
 
 export const lightTheme = {
@@ -41,14 +40,8 @@ export const darkTheme = {
   blue: '#3b82f6',
 };
 
-/**
- * Extended light theme that maps to existing App.jsx C tokens
- * for a drop-in replacement when switching themes.
- */
 export const lightThemeFull = {
   ...lightTheme,
-  primaryLight: '#1a7a3a',
-  primaryDark: '#005322',
   primaryXDark: '#002109',
   accent: '#f59e0b',
   accentLight: '#fbbf24',
@@ -64,14 +57,8 @@ export const lightThemeFull = {
   game3: '#ea580c',
 };
 
-/**
- * Extended dark theme that maps to existing App.jsx C tokens
- * for a drop-in replacement when switching themes.
- */
 export const darkThemeFull = {
   ...darkTheme,
-  primaryLight: '#1a7a3a',
-  primaryDark: '#16a34a',
   primaryXDark: '#052e16',
   accent: '#f59e0b',
   accentLight: '#fbbf24',
@@ -87,23 +74,14 @@ export const darkThemeFull = {
   game3: '#f97316',
 };
 
-/**
- * Helper to get the current theme based on user preference.
- * Checks localStorage first, then system preference.
- */
 export function getPreferredTheme() {
   if (typeof window === 'undefined') return 'light';
   const stored = localStorage.getItem('cabi-theme');
   if (stored === 'dark' || stored === 'light') return stored;
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
   return 'light';
 }
 
-/**
- * Get the full theme object by name.
- */
 export function getTheme(name) {
   return name === 'dark' ? darkThemeFull : lightThemeFull;
 }
