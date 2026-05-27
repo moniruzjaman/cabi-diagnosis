@@ -59,7 +59,7 @@ const GLOBAL_STYLE = `
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{font-family:var(--c-font-sans);background:var(--c-bg);color:var(--c-text);overflow-x:hidden;-webkit-tap-highlight-color:transparent;padding-bottom:calc(var(--c-nav-height) + 8px)}
+  body{font-family:var(--c-font-sans);background:var(--c-bg);color:var(--c-text);overflow-x:hidden;-webkit-tap-highlight-color:transparent;padding-bottom:calc(var(--c-nav-height) + 8px);transition:background .3s ease,color .3s ease}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
   @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -70,13 +70,17 @@ const GLOBAL_STYLE = `
   @keyframes glow{0%,100%{box-shadow:0 0 8px var(--c-glow-color)}50%{box-shadow:0 0 20px var(--c-glow-color-strong)}}
   @keyframes scan{0%{transform:translateY(-120px)}100%{transform:translateY(260px)}}
   @keyframes leafFloat{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-4px) rotate(2deg)}75%{transform:translateY(2px) rotate(-1deg)}}
+  @keyframes successPulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,0.4)}70%{box-shadow:0 0 0 12px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+  @keyframes cardEnter{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
   ::-webkit-scrollbar{width:3px;height:3px}
   ::-webkit-scrollbar-thumb{background:var(--c-scrollbar);border-radius:4px}
   input,select,textarea,button{font-family:inherit}
   button:active{transform:scale(0.97)}
   .ud-headline{font-family:var(--c-font-headline)}
-  .ud-editorial-shadow{box-shadow:var(--c-shadow-md)}
-  .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--c-bg-header);border-top:1px solid var(--c-border);display:flex;justify-content:space-around;align-items:center;height:var(--c-nav-height);padding:0 4px;box-shadow:0 -2px 12px rgba(0,0,0,0.06)}
+  .ud-editorial-shadow{box-shadow:var(--c-shadow-md);transition:box-shadow .3s ease}
+  .ud-card{transition:transform .2s ease,box-shadow .2s ease,background .3s ease,border-color .3s ease}
+  .ud-card:hover{transform:translateY(-1px);box-shadow:var(--c-shadow-md)}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--c-bg-header);border-top:1px solid var(--c-border);display:flex;justify-content:space-around;align-items:center;height:var(--c-nav-height);padding:0 4px;box-shadow:0 -2px 12px rgba(0,0,0,0.06);transition:background .3s ease,border-color .3s ease}
   .bottom-nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:1;padding:6px 4px;border:none;background:none;cursor:pointer;border-radius:12px;transition:all .2s;color:var(--c-text-light);font-size:10px;font-weight:500;position:relative}
   .bottom-nav-item.active{color:var(--c-primary);font-weight:700}
   .bottom-nav-item .nav-icon{font-size:22px;transition:transform .2s}
@@ -2063,6 +2067,46 @@ const[activeTab,setActiveTab]=useState("home");
     // Update CSS variables for dark mode
     if(typeof document!=='undefined'){
       document.documentElement.setAttribute('data-theme',darkMode?'dark':'light');
+      const root=document.documentElement.style;
+      if(darkMode){
+        root.setProperty('--c-bg','#0f172a');
+        root.setProperty('--c-bg-card','#1e293b');
+        root.setProperty('--c-bg-muted','#334155');
+        root.setProperty('--c-bg-header','#1e293b');
+        root.setProperty('--c-bg-nav','#1e293b');
+        root.setProperty('--c-text','#e2e8f0');
+        root.setProperty('--c-text-muted','#94a3b8');
+        root.setProperty('--c-text-light','#94a3b8');
+        root.setProperty('--c-border','#475569');
+        root.setProperty('--c-primary','#22c55e');
+        root.setProperty('--c-primary-light','#4ade80');
+        root.setProperty('--c-primary-dark','#16a34a');
+        root.setProperty('--c-scrollbar','#475569');
+        root.setProperty('--c-shadow','0 2px 8px rgba(0,0,0,0.3)');
+        root.setProperty('--c-shadow-md','0 4px 16px rgba(0,0,0,0.3)');
+        root.setProperty('--c-shadow-lg','0 8px 32px rgba(0,0,0,0.4)');
+        root.setProperty('--c-glow-color','rgba(34,197,94,0.3)');
+        root.setProperty('--c-glow-color-strong','rgba(34,197,94,0.6)');
+      }else{
+        root.setProperty('--c-bg','#f4f6f8');
+        root.setProperty('--c-bg-card','#ffffff');
+        root.setProperty('--c-bg-muted','#f0f2f5');
+        root.setProperty('--c-bg-header','#ffffff');
+        root.setProperty('--c-bg-nav','#f0f2f5');
+        root.setProperty('--c-text','#1a1d21');
+        root.setProperty('--c-text-muted','#5f6672');
+        root.setProperty('--c-text-light','#8e95a2');
+        root.setProperty('--c-border','#e2e5ea');
+        root.setProperty('--c-primary','#006028');
+        root.setProperty('--c-primary-light','#1a7a3a');
+        root.setProperty('--c-primary-dark','#005322');
+        root.setProperty('--c-scrollbar','#c1c7cf');
+        root.setProperty('--c-shadow','0 2px 8px rgba(0,0,0,0.06)');
+        root.setProperty('--c-shadow-md','0 4px 16px rgba(0,0,0,0.08)');
+        root.setProperty('--c-shadow-lg','0 8px 32px rgba(0,0,0,0.12)');
+        root.setProperty('--c-glow-color','rgba(26,122,58,0.3)');
+        root.setProperty('--c-glow-color-strong','rgba(26,122,58,0.6)');
+      }
     }
   },[darkMode]);
 
@@ -2573,7 +2617,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
       {/* ══ HEADER ══════════════════════════════════════════════════════════ */}
       <a href="#main-content" className="skip-to-content">মূল বিষয়বস্তুতে যান</a>
-      <div style={{background:C.bgHeader,padding:isGameTab?"8px 16px":"10px 16px",position:"sticky",top:0,zIndex:100,boxShadow:C.shadow,borderBottom:`1px solid ${C.border}`}}>
+      <div style={{background:C.bgHeader,padding:isGameTab?"8px 16px":"10px 16px",position:"sticky",top:0,zIndex:100,boxShadow:C.shadow,borderBottom:`1px solid ${C.border}`,transition:"background .3s ease,border-color .3s ease"}}>
         <div style={{maxWidth:1280,width:"100%",margin:"0 auto",display:"flex",alignItems:"center",gap:10}}>
           {/* Home icon button — quick navigate to home */}
           <button onClick={()=>setActiveTab("home")} aria-label="Home" style={{flexShrink:0,width:36,height:36,borderRadius:10,overflow:"hidden",border:"none",cursor:"pointer",padding:0,display:"flex",alignItems:"center",justifyContent:"center",background:activeTab!=="home"?C.bgMuted:"transparent",transition:"background .2s"}} title="হোম">
@@ -2602,7 +2646,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           const alerts=getCurrentRiskAlerts();
           if(alerts.length===0)return null;
           return(
-            <div style={{background:'#fef2f2',borderRadius:12,padding:12,marginBottom:10,border:'1px solid #fecaca'}}>
+            <div style={{background:darkMode?"#450a0a":"#fef2f2",borderRadius:12,padding:12,marginBottom:10,border:darkMode?"1px solid #7f1d1d":"1px solid #fecaca"}}>
               <div style={{fontWeight:700,fontSize:13,color:C.danger,marginBottom:6}}>⚠️ এই মৌসুমে ঝুঁকি</div>
               {alerts.map((a,i)=>(
                 <div key={i} style={{fontSize:12,color:C.text,marginBottom:3}}>
@@ -2616,7 +2660,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
         {/* ── LEARN sub-view (Guide + Games) ────────────────────── */}
         {activeTab==="learn"&&(
           <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
-            <div style={{background:"#fff",borderRadius:18,padding:20,boxShadow:C.shadow,border:`1px solid ${C.border}`,textAlign:"center"}}>
+            <div style={{background:C.bgCard,borderRadius:18,padding:20,boxShadow:C.shadow,border:`1px solid ${C.border}`,textAlign:"center"}}>
               <div style={{fontSize:40,marginBottom:8}}>📖</div>
               <h2 className="ud-headline" style={{fontWeight:800,fontSize:22,color:C.text,marginBottom:6}}>শিখুন ও অনুশীলন করুন</h2>
               <p style={{fontSize:13,color:C.textMuted,lineHeight:1.6,marginBottom:16,maxWidth:400,marginLeft:"auto",marginRight:"auto"}}>
@@ -2624,8 +2668,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
               </p>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:12}}>
-              <button onClick={()=>setActiveTab("guide")} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
-                <div style={{width:56,height:56,borderRadius:16,background:"#eff6ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #2563eb18"}}>📖</div>
+              <button onClick={()=>setActiveTab("guide")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
+                <div style={{width:56,height:56,borderRadius:16,background:darkMode?"#1e3a5f":"#eff6ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #2563eb18"}}>📖</div>
                 <div>
                   <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>CABI গাইড</div>
                   <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>CABI Plantwise ৫-ধাপ রোগ নির্ণয় প্রোটোকল ধাপে ধাপে পড়ুন ও বুঝুন। ETL সীমা, পুষ্টি তথ্য ও IPM পিরামিড সহ।</div>
@@ -2634,8 +2678,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   গাইড পড়ুন <span style={{fontSize:14}}>→</span>
                 </div>
               </button>
-              <button onClick={()=>setActiveTab("game")} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease .1s both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
-                <div style={{width:56,height:56,borderRadius:16,background:"#faf5ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #7c3aed18"}}>🎮</div>
+              <button onClick={()=>setActiveTab("game")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease .1s both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
+                <div style={{width:56,height:56,borderRadius:16,background:darkMode?"#2e1065":"#faf5ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #7c3aed18"}}>🎮</div>
                 <div>
                   <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>গেম হাব</div>
                   <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>৫টি ইন্টারেক্টিভ গেম খেলে CABI নির্ণয় প্রক্রিয়া চর্চা করুন! লক্ষণ চেনা থেকে IPM সিদ্ধান্ত — সব গেমে।</div>
@@ -2680,7 +2724,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 </div>
               </button>
               <button onClick={()=>setActiveTab("history")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease .1s both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
-                <div style={{width:56,height:56,borderRadius:16,background:"#f0fdf4",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #16a34a18"}}>📋</div>
+                <div style={{width:56,height:56,borderRadius:16,background:darkMode?"#052e16":"#f0fdf4",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #16a34a18"}}>📋</div>
                 <div>
                   <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>নির্ণয় ইতিহাস</div>
                   <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>আগের সব নির্ণয় রিপোর্ট দেখুন, ট্র্যাক করুন ফসলের স্বাস্থ্য পরিবর্তন।</div>
@@ -2710,10 +2754,10 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
             {step===1&&(
               <div>
                 {/* Leaf Frame Info Box with integrated image picker */}
-                <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:28,padding:18,marginBottom:12,border:`1px solid ${C.border}`,overflow:"hidden"}}>
+                <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:28,padding:18,marginBottom:12,border:`1px solid ${C.border}`,overflow:"hidden"}}>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:18,alignItems:"stretch"}}>
                     {/* Left: Leaf frame + image picker */}
-                    <div style={{minHeight:280,borderRadius:26,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+                    <div style={{minHeight:280,borderRadius:26,background:darkMode?"linear-gradient(135deg,#052e16,#064e3b)":"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column"}}>
                       <div style={{position:"absolute",inset:18,border:`2px solid ${C.primary}55`,borderRadius:20,pointerEvents:'none'}}>
                         <div style={{position:"absolute",left:12,top:12,width:28,height:28,borderTop:`3px solid ${C.primary}`,borderLeft:`3px solid ${C.primary}`}} />
                         <div style={{position:"absolute",right:12,top:12,width:28,height:28,borderTop:`3px solid ${C.primary}`,borderRight:`3px solid ${C.primary}`}} />
@@ -2768,8 +2812,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       <div style={{fontSize:13,color:C.textMuted,lineHeight:1.75}}>ফসল, জেলা, মৌসুম, লক্ষণ আর ছবি একসাথে দিলে ফল বেশি ভালো আসে। ছবি থাকলে সিস্টেম নিজে ফসল ধরারও চেষ্টা করবে.</div>
                       {images.length>0&&(
                         <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                          <span style={{fontSize:11,background:"#f0fdf4",padding:"4px 9px",borderRadius:8,color:C.success,fontWeight:700}}>✅ {images.length}টি ছবি যুক্ত</span>
-                          {analysingCrop&&<span style={{fontSize:11,background:"#eff6ff",padding:"4px 9px",borderRadius:8,color:C.blue}}>🔍 ফসল চিনে দেখছে...</span>}
+                          <span style={{fontSize:11,background:darkMode?"#052e16":"#f0fdf4",padding:"4px 9px",borderRadius:8,color:C.success,fontWeight:700}}>✅ {images.length}টি ছবি যুক্ত</span>
+                          {analysingCrop&&<span style={{fontSize:11,background:darkMode?"#1e3a5f":"#eff6ff",padding:"4px 9px",borderRadius:8,color:C.blue}}>🔍 ফসল চিনে দেখছে...</span>}
                         </div>
                       )}
                       {form.crop&&<div style={{fontSize:11,background:C.bgMuted,padding:"4px 9px",borderRadius:8,color:C.textMuted,alignSelf:"flex-start"}}>🌱 {form.crop}</div>}
@@ -2777,13 +2821,13 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   </div>
                 </div>
                 {/* crop */}
-                <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                <div className="ud-card" style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:10}}>🌱 ফসল নির্বাচন *</div>
                   {!form.crop&&!showMoreCrops&&<QuickCropRow onSelect={handleCropQuickSelect} selected={form.crop}/>}
                   {form.crop&&!showMoreCrops&&(
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{background:"#f0fdf4",border:`1.5px solid ${C.primary}`,borderRadius:12,padding:"8px 14px",color:C.primaryDark,fontWeight:700,fontSize:13,flex:1}}>✅ {form.crop}</div>
-                      <button onClick={()=>{setForm(f=>({...f,crop:""}));setShowMoreCrops(false);}} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,color:C.danger,padding:"7px 12px",cursor:"pointer",fontSize:12,fontWeight:600}}>পরিবর্তন</button>
+                      <div style={{background:darkMode?"#052e16":"#f0fdf4",border:`1.5px solid ${C.primary}`,borderRadius:12,padding:"8px 14px",color:C.primaryDark,fontWeight:700,fontSize:13,flex:1}}>✅ {form.crop}</div>
+                      <button onClick={()=>{setForm(f=>({...f,crop:""}));setShowMoreCrops(false);}} style={{background:darkMode?"#450a0a":"#fef2f2",border:darkMode?"1px solid #7f1d1d":"1px solid #fecaca",borderRadius:10,color:C.danger,padding:"7px 12px",cursor:"pointer",fontSize:12,fontWeight:600}}>পরিবর্তন</button>
                     </div>
                   )}
                   {showMoreCrops&&(
@@ -2791,11 +2835,11 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       <button onClick={()=>setShowMoreCrops(false)} style={{background:"none",border:"none",color:C.primary,cursor:"pointer",fontSize:13,marginBottom:8,fontWeight:600}}>← ফিরুন</button>
                       {Object.keys(CROPS).map(group=>(
                         <div key={group} style={{marginBottom:7}}>
-                          <button onClick={()=>setExpandedGroup(expandedGroup===group?null:group)} style={{width:"100%",background:expandedGroup===group?"#f0fdf4":C.bgMuted,border:`1px solid ${expandedGroup===group?C.primary:C.border}`,borderRadius:10,padding:"8px 12px",color:C.text,cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:600}}>
+                          <button onClick={()=>setExpandedGroup(expandedGroup===group?null:group)} style={{width:"100%",background:expandedGroup===group?(darkMode?"#052e16":"#f0fdf4"):C.bgMuted,border:`1px solid ${expandedGroup===group?C.primary:C.border}`,borderRadius:10,padding:"8px 12px",color:C.text,cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:600}}>
                             {group} {expandedGroup===group?"▲":"▼"}
                           </button>
                           {expandedGroup===group&&(
-                            <div style={{background:"#fff",border:`1px solid ${C.border}`,borderTop:"none",borderRadius:"0 0 10px 10px",padding:7,maxHeight:190,overflowY:"auto"}}>
+                            <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderTop:"none",borderRadius:"0 0 10px 10px",padding:7,maxHeight:190,overflowY:"auto"}}>
                               {CROPS[group].map(crop=>(
                                 <div key={crop} onClick={()=>{handleCropQuickSelect(crop);setExpandedGroup(null);}} style={{padding:"6px 10px",cursor:"pointer",fontSize:12,color:C.text,borderRadius:7}} onMouseEnter={e=>e.currentTarget.style.background="#f0fdf4"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{crop}</div>
                               ))}
@@ -2841,7 +2885,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 </div>
 
                 {/* location/season */}
-                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                <div className="ud-card" style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
                     <div>
                       <label style={labelSt}>📍 জেলা {locationSource&&<span style={{color:C.blue,fontSize:9}}>(auto)</span>}</label>
@@ -2868,32 +2912,32 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 </div>
 
                 {/* duration */}
-                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                <div className="ud-card" style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <label style={labelSt}>⏱️ সমস্যার সময়কাল</label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                    {DURATION_CHIPS.map(chip=>{const a=form.duration===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,duration:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?"#f0fdf4":"#f8faf8",color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
+                    {DURATION_CHIPS.map(chip=>{const a=form.duration===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,duration:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?(darkMode?"#052e16":"#f0fdf4"):"#f8faf8",color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
                   </div>
                 </div>
 
                 {/* area */}
-                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                <div className="ud-card" style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <label style={labelSt}>🗺️ আক্রান্ত এলাকা</label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                    {AREA_CHIPS.map(chip=>{const a=form.affectedArea===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,affectedArea:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?"#f0fdf4":"#f8faf8",color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
+                    {AREA_CHIPS.map(chip=>{const a=form.affectedArea===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,affectedArea:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?(darkMode?"#052e16":"#f0fdf4"):"#f8faf8",color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
                   </div>
                 </div>
 
                 {/* symptoms */}
-                <div style={{background:"#fff",borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                <div className="ud-card" style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:9}}>
                     <label style={{...labelSt,marginBottom:0}}>🩺 লক্ষণ বর্ণনা *</label>
-                    {voiceSupported&&<button onClick={isListening?stopListening:startListening} style={{width:40,height:40,borderRadius:"50%",border:`2px solid ${isListening?C.danger:C.primary}`,background:isListening?"#fef2f2":"#f0fdf4",cursor:"pointer",fontSize:17,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isListening?<span style={{animation:"pulse 1s infinite"}}>⏹</span>:"🎙️"}</button>}
+                    {voiceSupported&&<button onClick={isListening?stopListening:startListening} style={{width:40,height:40,borderRadius:"50%",border:`2px solid ${isListening?C.danger:C.primary}`,background:isListening?(darkMode?"#450a0a":"#fef2f2"):(darkMode?"#052e16":"#f0fdf4"),cursor:"pointer",fontSize:17,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isListening?<span style={{animation:"pulse 1s infinite"}}>⏹</span>:"🎙️"}</button>}
                   </div>
                   {Object.entries(SYMPTOM_CHIPS).map(([group,chips])=>(
                     <div key={group} style={{marginBottom:9}}>
                       <div style={{color:C.textMuted,fontSize:10,fontWeight:700,marginBottom:5,textTransform:"uppercase",letterSpacing:.5}}>{group}</div>
                       <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-                        {chips.map(chip=>{const a=form.symptoms.includes(chip.value);return<button key={chip.label} onClick={()=>{if(a)setForm(f=>({...f,symptoms:f.symptoms.replace(chip.value,"").replace(/\n\n+/g,"\n").trim()}));else setForm(f=>({...f,symptoms:f.symptoms?f.symptoms.trimEnd()+"\n"+chip.value:chip.value}));}} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?"#f0fdf4":"#f8faf8",color:a?C.primaryDark:C.textMuted,fontWeight:a?700:400,fontSize:11}}>{a?"✓ ":""}{chip.label}</button>;})}
+                        {chips.map(chip=>{const a=form.symptoms.includes(chip.value);return<button key={chip.label} onClick={()=>{if(a)setForm(f=>({...f,symptoms:f.symptoms.replace(chip.value,"").replace(/\n\n+/g,"\n").trim()}));else setForm(f=>({...f,symptoms:f.symptoms?f.symptoms.trimEnd()+"\n"+chip.value:chip.value}));}} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?(darkMode?"#052e16":"#f0fdf4"):"#f8faf8",color:a?C.primaryDark:C.textMuted,fontWeight:a?700:400,fontSize:11}}>{a?"✓ ":""}{chip.label}</button>;})}
                       </div>
                     </div>
                   ))}
@@ -2902,7 +2946,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
                 {/* Image picker is now integrated inside the leaf frame info box above */}
 
-                {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:"12px 14px",color:C.danger,marginBottom:10,fontSize:13}}>⚠️ {error}</div>}
+                {error&&<div style={{background:darkMode?"#450a0a":"#fef2f2",border:darkMode?"1px solid #7f1d1d":"1px solid #fecaca",borderRadius:12,padding:"12px 14px",color:C.danger,marginBottom:10,fontSize:13}}>⚠️ {error}</div>}
 
                 <button onClick={handleSubmit} disabled={loading} aria-label="Submit diagnosis" style={{width:"100%",padding:"15px",borderRadius:14,border:"none",background:loading?C.border:`linear-gradient(135deg,${C.primaryXDark},${C.primaryLight})`,color:"#fff",fontWeight:800,fontSize:15,cursor:loading?"not-allowed":"pointer",boxShadow:loading?"none":`0 4px 20px ${C.primary}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:9,transition:"all .2s"}}>
                   {loading?<><span style={{display:"inline-block",animation:"spin 1s linear infinite",fontSize:17}}>⟳</span>বিশ্লেষণ হচ্ছে...</>:<><span style={{fontSize:18}}>🔍</span>রোগ নির্ণয় করুন</>}
@@ -2912,12 +2956,12 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
             {/* ── RESULT ──────────────────────────────────────────────── */}
             {step===2&&result&&(
-              <div ref={resultRef} style={{animation:"slideUp .4s ease"}}>
+              <div ref={resultRef} style={{animation:"slideUp .4s ease, cardEnter .5s ease"}}>
                 {/* Leaf Frame — image + info + upload */}
                 <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:28,padding:18,marginBottom:12,border:`1px solid ${C.border}`,overflow:"hidden"}}>
                   <div style={{display:"flex",gap:16,alignItems:"stretch",flexWrap:"wrap"}}>
                     {/* Left: Leaf frame with image picker */}
-                    <div style={{flex:"1 1 220px",maxWidth:320,minHeight:260,borderRadius:22,background:"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+                    <div style={{flex:"1 1 220px",maxWidth:320,minHeight:260,borderRadius:22,background:darkMode?"linear-gradient(135deg,#052e16,#064e3b)":"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column"}}>
                       {/* Main image */}
                       <div style={{flex:1,position:"relative",minHeight:180,display:"flex",alignItems:"center",justifyContent:"center"}}>
                         {images.length>0?<img src={images[0].url} alt="diagnosis preview" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>:<div style={{fontSize:64}}>🍃</div>}
@@ -2942,9 +2986,6 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                         {images.length<4&&(
                           <button onClick={()=>galleryRef.current?.click()} style={{width:40,height:40,borderRadius:8,border:`2px dashed ${C.primary}`,background:"rgba(255,255,255,0.5)",color:C.primary,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>+</button>
                         )}
-                        <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
-                        <input ref={galleryRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
-                        <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{display:"none"}}/>
                       </div>
                     </div>
                     {/* Right: Info */}
@@ -2954,28 +2995,28 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       <div style={{fontSize:13,color:C.textMuted,lineHeight:1.7}}>কোন সমস্যা বেশি মনে হচ্ছে, কী লক্ষণ দেখা গেছে, আর এখন কী করলে ক্ষতি কমবে তা নিচে কার্ড আকারে সাজানো আছে.</div>
                       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>
                         {form.district&&<span style={{fontSize:11,background:C.bgMuted,padding:"3px 8px",borderRadius:8,color:C.textMuted}}>📍 {form.district?.split("/")[0]?.trim()}</span>}
-                        {weather&&<span style={{fontSize:11,background:"#f0f9ff",padding:"3px 8px",borderRadius:8,color:"#0369a1"}}>🌡️{weather.temp}°C · 💧{weather.humidity}%</span>}
-                        {provider&&<span style={{fontSize:11,background:"#eff6ff",padding:"3px 8px",borderRadius:8,color:C.blue}}>🤖 {provider}</span>}
+                        {weather&&<span style={{fontSize:11,background:darkMode?"#1e3a5f":"#f0f9ff",padding:"3px 8px",borderRadius:8,color:darkMode?"#7dd3fc":"#0369a1"}}>🌡️{weather.temp}°C · 💧{weather.humidity}%</span>}
+                        {provider&&<span style={{fontSize:11,background:darkMode?"#1e3a5f":"#eff6ff",padding:"3px 8px",borderRadius:8,color:C.blue}}>🤖 {provider}</span>}
                       </div>
                     </div>
                   </div>
                 </div>
-                <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                <div className="ud-card" style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,flexWrap:"wrap"}}>
-                    <div style={{width:38,height:38,borderRadius:10,background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>📋</div>
+                    <div style={{width:38,height:38,borderRadius:10,background:darkMode?"linear-gradient(135deg,#052e16,#064e3b)":"linear-gradient(135deg,#f0fdf4,#dcfce7)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>📋</div>
                     <div style={{flex:1}}>
                       <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>রোগ নির্ণয় প্রতিবেদন</div>
                       <div style={{fontSize:11,color:C.textMuted}}>{form.crop?.split("/")[0]?.trim()} · {form.district?.split("/")[0]?.trim()||locationName}</div>
                     </div>
-                    {provider&&<span style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:20,padding:"3px 9px",color:C.blue,fontSize:10,fontWeight:700}}>{provider}</span>}
+                    {provider&&<span style={{background:darkMode?"#1e3a5f":"#eff6ff",border:darkMode?"1px solid #1e3a5f":"1px solid #bfdbfe",borderRadius:20,padding:"3px 9px",color:C.blue,fontSize:10,fontWeight:700}}>{provider}</span>}
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
                     <div style={{display:"flex",background:C.bgMuted,borderRadius:20,padding:3,gap:2}}>
                       <button onClick={()=>{setShowEnglish(false);stopSpeaking();}} style={{borderRadius:16,padding:"5px 14px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:!showEnglish?C.primary:"transparent",color:!showEnglish?"#fff":C.textMuted,transition:"all .2s"}}>বাংলা</button>
                       <button onClick={()=>{setShowEnglish(true);stopSpeaking();}} style={{borderRadius:16,padding:"5px 14px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:showEnglish?C.primary:"transparent",color:showEnglish?"#fff":C.textMuted,transition:"all .2s"}}>English</button>
                     </div>
-                    {ttsSupported&&<button onClick={()=>isSpeaking?stopSpeaking():speakResult(showEnglish?result.en:result.bn)} style={{width:36,height:36,borderRadius:"50%",border:`2px solid ${isSpeaking?C.warning:C.primary}`,background:isSpeaking?"#fffbeb":"#f0fdf4",cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isSpeaking?"⏹":"🔊"}</button>}
-                    {weather&&<span style={{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:20,padding:"3px 8px",color:"#0369a1",fontSize:10}}>🌡️{weather.temp}°C·💧{weather.humidity}%</span>}
+                    {ttsSupported&&<button onClick={()=>isSpeaking?stopSpeaking():speakResult(showEnglish?result.en:result.bn)} style={{width:36,height:36,borderRadius:"50%",border:`2px solid ${isSpeaking?C.warning:C.primary}`,background:isSpeaking?(darkMode?"#451a03":"#fffbeb"):(darkMode?"#052e16":"#f0fdf4"),cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isSpeaking?"⏹":"🔊"}</button>}
+                    {weather&&<span style={{background:darkMode?"#1e3a5f":"#f0f9ff",border:darkMode?"1px solid #1e3a5f":"1px solid #bae6fd",borderRadius:20,padding:"3px 8px",color:darkMode?"#7dd3fc":"#0369a1",fontSize:10}}>🌡️{weather.temp}°C·💧{weather.humidity}%</span>}
                   </div>
                 </div>
 
@@ -2984,12 +3025,12 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   if(!text)return<div style={{color:C.textMuted,textAlign:"center",padding:20}}>ফলাফল পাওয়া যায়নি।</div>;
                   const highlights=extractResultHighlights(text);
                   const sections=parseIntoSections(text);
-                  if(sections.length<=1&&!sections[0]?.title)return<div style={{background:"#fff",borderRadius:14,padding:16,color:C.text,fontSize:13.5,lineHeight:1.85,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>{renderInline(text)}</div>;
+                  if(sections.length<=1&&!sections[0]?.title)return<div style={{background:C.bgCard,borderRadius:14,padding:16,color:C.text,fontSize:13.5,lineHeight:1.85,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>{renderInline(text)}</div>;
                   if(highlights.length>0){
                     return<>
                       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10,marginBottom:10}}>
                         {highlights.map(item=>(
-                          <div key={item.label} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:14,boxShadow:C.shadow}}>
+                          <div key={item.label} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,boxShadow:C.shadow}}>
                             <div style={{fontSize:20,marginBottom:8}}>{item.icon}</div>
                             <div style={{fontSize:11,color:C.textMuted,marginBottom:4}}>{item.label}</div>
                             <div style={{fontWeight:700,fontSize:13,color:C.text,lineHeight:1.5}}>{item.value}</div>
@@ -3005,9 +3046,9 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 {recommendedProducts.length>0&&<ProductRecommendations products={recommendedProducts} crop={form.crop}/>}
 
                 {!severity?(
-                  <div style={{background:"#fff",borderRadius:16,padding:18,marginTop:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}><SeveritySurvey onSubmit={s=>setSeverity(s)}/></div>
+                  <div style={{background:C.bgCard,borderRadius:16,padding:18,marginTop:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}><SeveritySurvey onSubmit={s=>setSeverity(s)}/></div>
                 ):(
-                  <div style={{background:"#f0fdf4",borderRadius:12,padding:"11px 14px",marginTop:10,border:"1px solid #bbf7d0",fontSize:13,color:C.success,fontWeight:700}}>✅ তীব্রতা নথিভুক্ত: {severity}</div>
+                  <div style={{background:darkMode?"#052e16":"#f0fdf4",borderRadius:12,padding:"11px 14px",marginTop:10,border:"1px solid #bbf7d0",fontSize:13,color:C.success,fontWeight:700}}>✅ তীব্রতা নথিভুক্ত: {severity}</div>
                 )}
 
                 <div style={{marginTop:10,padding:"10px 14px",background:"#fffbeb",border:"1px solid #fed7aa",borderRadius:12,color:C.warning,fontSize:12}}>⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।</div>
@@ -3141,7 +3182,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
         {/* ── GUIDE ────────────────────────────────────────────────── */}
         {activeTab==="guide"&&(
-          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadowMd}}>
+          <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadowMd}}>
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
               <div style={{width:42,height:42,borderRadius:11,overflow:"hidden",flexShrink:0}}><img src="/cabi-logo.jpg" alt="CABI" style={{width:"100%",height:"100%",objectFit:"cover"}}/></div>
               <div><div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>CABI Plantwise গাইড</div><div style={{color:C.textMuted,fontSize:11}}>সম্পূর্ণ রোগ নির্ণয় প্রোটোকল</div></div>
@@ -3153,7 +3194,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
         {/* ── LIBRARY ──────────────────────────────────────────────── */}
         {activeTab==="library"&&(
-          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadowMd}}>
+          <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadowMd}}>
             <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:3}}>📚 তথ্যভাণ্ডার</div>
             <div style={{color:C.textMuted,fontSize:12,marginBottom:14}}>পোকামাকড়, রোগ ও পুষ্টি অভাব</div>
             <EnhancedLibrarySection/>
@@ -3170,7 +3211,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
         {/* ── HISTORY ──────────────────────────────────────────────── */}
         {activeTab==="history"&&(
-          <div className="ud-editorial-shadow" style={{background:"#fff",borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadowMd}}>
+          <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadowMd}}>
             <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",marginBottom:6}}>History</div>
             <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:14}}>📋 নির্ণয়ের ইতিহাস</div>
             {history.length===0?(
@@ -3185,13 +3226,13 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   <div key={i} style={{padding:"16px",background:C.bgMuted,borderRadius:20,border:`1px solid ${C.border}`,boxShadow:"0 6px 18px rgba(0,33,9,0.05)"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
                       <div className="ud-headline" style={{fontWeight:800,fontSize:17,color:C.text}}>{h.crop?.split("/")[0]?.trim()}</div>
-                      <span style={{background:"#dcfce7",color:"#166534",borderRadius:10,padding:"2px 9px",fontSize:11,fontWeight:700}}>সম্পন্ন</span>
+                      <span style={{background:darkMode?"#052e16":"#dcfce7",color:darkMode?"#4ade80":"#166534",borderRadius:10,padding:"2px 9px",fontSize:11,fontWeight:700}}>সম্পন্ন</span>
                     </div>
                     <div style={{color:C.textMuted,fontSize:11}}>📍 {h.district?.split("/")[0]?.trim()||"—"} · 📅 {h.date}</div>
                     {h.resultPreview&&<div style={{color:C.textLight,fontSize:12,marginTop:8,lineHeight:1.6,overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{h.resultPreview}...</div>}
                   </div>
                 ))}
-                <button onClick={()=>{setHistory([]);try{localStorage.removeItem("ud-history");}catch{}}} style={{padding:"9px",borderRadius:10,border:"1px solid #fecaca",background:"#fef2f2",color:C.danger,cursor:"pointer",fontSize:12,fontWeight:600,marginTop:3}}>🗑️ সব ইতিহাস মুছুন</button>
+                <button onClick={()=>{setHistory([]);try{localStorage.removeItem("ud-history");}catch{}}} style={{padding:"9px",borderRadius:10,border:darkMode?"1px solid #7f1d1d":"1px solid #fecaca",background:darkMode?"#450a0a":"#fef2f2",color:C.danger,cursor:"pointer",fontSize:12,fontWeight:600,marginTop:3}}>🗑️ সব ইতিহাস মুছুন</button>
                 <button onClick={()=>setActiveTab("more")} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600}}>← আরও পেজে ফিরুন</button>
               </div>
             )}
@@ -3201,7 +3242,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       </div>
 
         {!isGameTab&&<FeedbackPanel context={feedbackContext} summary={feedbackSummary} userEmail={userEmail} onEmailChange={setUserEmail} visitorStats={visitorStats} visitorId={visitorId}/>}
-       {!isGameTab&&<div style={{textAlign:"center",padding:"8px 4px",color:C.textLight,fontSize:10,borderTop:`1px solid ${C.border}`,background:"#fff",letterSpacing:0.5}}>
+       {!isGameTab&&<div style={{textAlign:"center",padding:"8px 4px",color:C.textLight,fontSize:10,borderTop:`1px solid ${C.border}`,background:C.bgHeader,letterSpacing:0.5}}>
          উদ্ভিদ গোয়েন্দা · CABI Plantwise · BRRI · BARI · DAE Bangladesh
        </div>}
 
