@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 
 import { diagnoseOffline } from "./offline/index";
 import { lightThemeFull, darkThemeFull, getPreferredTheme } from './data/themes';
-import { getCurrentRiskAlerts } from './data/cropCalendar';
+import { CROP_CALENDAR, getCurrentRiskAlerts } from './data/cropCalendar';
+import { CROP_DISEASES, matchDiseasesBySymptoms, resolveCropKey, getDiseasesForCrop, estimateInoculumPressure, getVarietySusceptibility } from './data/cropDiseases';
+import { translateBengaliToEnglish } from './data/bengaliKeywords';
 import CropCalendarComponent from './components/CropCalendar';
 import OnboardingFlow from './components/OnboardingFlow';
 import OutbreakList from './components/OutbreakList';
@@ -2285,19 +2287,21 @@ const handleSubmit=async()=>{
       try {
         // Prepare input data for offline diagnosis
         const inputData = {
+          crop: form.crop,
           symptoms: {
             leafSymptoms: form.symptoms,
             distribution: form.affectedArea || "N/A",
             progression: form.duration || "N/A",
-            signs: "N/A" // We could extract more specific signs from symptoms
+            signs: "N/A"
           },
           hostInfo: {
-            varietySusceptibility: "medium", // Default - could be improved
+            varietySusceptibility: getVarietySusceptibility(form.crop) || "medium",
             growthStage: form.growthStage || "N/A"
           },
           pathogenInfo: {
-            inoculumPressure: "low", // Default - could be improved
-            recentHistory: "none" // Default - could be improved
+            inoculumPressure: estimateInoculumPressure(form.crop, form.season) || "low",
+            season: form.season || "",
+            recentHistory: "none"
           },
           envInfo: weather ? {
             temp: weather.temp,
@@ -2318,6 +2322,13 @@ const handleSubmit=async()=>{
 
 ## ২. সম্ভাব্য রোগ / পোকার নাম
 **প্রাথমিক সন্দেহ:** ${offlineResult.primarySuspect}
+${offlineResult.specificDisease ? `**সনাক্ত রোগ:** ${offlineResult.specificDisease.nameBn} (${offlineResult.specificDisease.name})
+**কারণ:** ${offlineResult.specificDisease.cause === 'fungal' ? 'ছত্রাক' : offlineResult.specificDisease.cause === 'bacterial' ? 'ব্যাকটেরিয়া' : offlineResult.specificDisease.cause === 'viral' ? 'ভাইরাস' : offlineResult.specificDisease.cause === 'insect' ? 'পোকা' : offlineResult.specificDisease.cause}
+**রোগজীবাণু:** ${offlineResult.specificDisease.pathogen}
+**তীব্রতা:** ${offlineResult.specificDisease.severity === 'severe' ? 'মারাত্মক' : offlineResult.specificDisease.severity === 'moderate' ? 'মাঝারি' : 'হালকা'}
+**মিলের হার:** ${Math.round((offlineResult.specificDisease.matchRatio || 0) * 100)}%
+**মিলে যাওয়া লক্ষণ:** ${offlineResult.specificDisease.matchedSymptoms?.join(', ') || 'N/A'}` : ''}
+${offlineResult.cropDiseaseMatches?.length > 1 ? `**অন্যান্য সম্ভাব্য রোগ:** ${offlineResult.cropDiseaseMatches.slice(1, 4).map(m => `${m.nameBn} (${Math.round((m.matchRatio || 0) * 100)}%)`).join(' | ')}` : ''}
 **বিকল্প সন্দেহ (যদি থাকে):** ${offlineResult.suspects.slice(1,3).length > 0 ? offlineResult.suspects.slice(1,3).join(" ; ") : "না"}
 **আস্থার মাত্রা:** ${offlineResult.confidence}
 
@@ -2330,7 +2341,7 @@ const handleSubmit=async()=>{
 ${offlineResult.fieldConfirmation.map((method, idx) => `${idx+1}. ${method}`).join("\n")}
 
 ## ৫. তীব্রতা ও অর্থনৈতিক গুরুত্ব
-**ক্ষয়ক্ষতির মাত্রা:** মূল্যায়ন করতে필요
+**ক্ষয়ক্ষতির মাত্রা:** ${offlineResult.specificDisease?.severity === 'severe' ? 'মারাত্মক (দ্রুত ব্যবস্থা নিন)' : offlineResult.specificDisease?.severity === 'moderate' ? 'মাঝারি (সতর্কতা প্রয়োজন)' : offlineResult.specificDisease?.severity === 'low' ? 'হালকা' : offlineResult.diseaseTriangle?.riskLevel || 'মূল্যায়ন প্রয়োজন'}
 **অর্থনৈতিক থ্রেশহোল্ড:** ${offlineResult.economicThreshold}
 
 ## ৬. সমন্বিত বালাই ব্যবস্থাপনা (IPM)
@@ -2357,6 +2368,13 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
 ## 2. Probable Diagnosis
 **Primary suspect:** ${offlineResult.primarySuspect}
+${offlineResult.specificDisease ? `**Identified Disease:** ${offlineResult.specificDisease.nameBn} (${offlineResult.specificDisease.name})
+**Cause:** ${offlineResult.specificDisease.cause}
+**Pathogen:** ${offlineResult.specificDisease.pathogen}
+**Severity:** ${offlineResult.specificDisease.severity}
+**Match Ratio:** ${Math.round((offlineResult.specificDisease.matchRatio || 0) * 100)}%
+**Matched Symptoms:** ${offlineResult.specificDisease.matchedSymptoms?.join(', ') || 'N/A'}` : ''}
+${offlineResult.cropDiseaseMatches?.length > 1 ? `**Other Possible Diseases:** ${offlineResult.cropDiseaseMatches.slice(1, 4).map(m => `${m.nameBn} (${Math.round((m.matchRatio || 0) * 100)}%)`).join(' | ')}` : ''}
 **Differential diagnosis:** ${offlineResult.suspects.slice(1,3).length > 0 ? offlineResult.suspects.slice(1,3).join(" ; ") : "None"}
 **Confidence level:** ${offlineResult.confidence}
 
@@ -2370,7 +2388,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 ${offlineResult.fieldConfirmation.map((method, idx) => `${idx+1}. ${method}`).join("\n")}
 
 ## 5. Severity & Economic Importance
-**Damage level:** Assessment required
+**Damage level:** ${offlineResult.specificDisease?.severity || offlineResult.diseaseTriangle?.riskLevel || 'Assessment required'}
 **Economic threshold:** ${offlineResult.economicThreshold}
 
 ## 6. IPM Recommendations
@@ -2396,6 +2414,15 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           en: banglaText.split("---END_ENGLISH---")[1].replace("---ENGLISH_SECTION---", "").trim()
         });
         setProvider("Offline CABI Diagnostic Engine");
+        if (offlineResult.specificDisease) {
+          setStructuredResult({
+            disease: offlineResult.specificDisease.nameBn,
+            cause: offlineResult.specificDisease.cause,
+            severity: offlineResult.specificDisease.severity,
+            confidence: offlineResult.confidence,
+            crop: form.crop
+          });
+        }
         setStep(2);
         
         const entry = {
@@ -2863,6 +2890,22 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   </div>
                 </div>
 
+                {form.crop && (() => {
+                  const calEntry = CROP_CALENDAR.find(c => form.crop?.includes(c.crop) || form.crop?.includes(c.cropEn));
+                  if (!calEntry) return null;
+                  const currentMonth = new Date().getMonth() + 1;
+                  const activeSeason = calEntry.seasons.find(s => s.months.includes(currentMonth));
+                  if (!activeSeason) return null;
+                  return (
+                    <div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:12,padding:"10px 14px",marginBottom:10,fontSize:12}}>
+                      <div style={{fontWeight:700,color:"#92400e",marginBottom:4}}>📅 বর্তমান মৌসুম: {activeSeason.name} ({activeSeason.nameEn})</div>
+                      {activeSeason.riskPeriod && <div style={{color:"#b45309",marginBottom:3}}>⚠️ ঝুঁকির সময়: {activeSeason.riskPeriod}</div>}
+                      {activeSeason.keyDiseases?.length > 0 && <div style={{color:"#92400e"}}>🦠 প্রধান রোগ: {activeSeason.keyDiseases.join(", ")}</div>}
+                      {activeSeason.keyPests?.length > 0 && <div style={{color:"#92400e"}}>🐛 প্রধান পোকা: {activeSeason.keyPests.join(", ")}</div>}
+                    </div>
+                  );
+                })()}
+
                 {/* location/season */}
                 <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
@@ -2920,12 +2963,64 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       </div>
                     </div>
                   ))}
+                  {form.crop && (() => {
+                    const cropKey = resolveCropKey(form.crop);
+                    if (!cropKey || !CROP_DISEASES[cropKey]) return null;
+                    const allSymptoms = [...new Set(CROP_DISEASES[cropKey].diseases.flatMap(d => d.symptoms))];
+                    const existingValues = new Set(Object.values(SYMPTOM_CHIPS).flat().map(c => c.value));
+                    const cropSpecific = allSymptoms.filter(s => !existingValues.has(s));
+                    if (cropSpecific.length === 0) return null;
+                    return (
+                      <div style={{marginBottom:9}}>
+                        <div style={{color:C.primary,fontSize:10,fontWeight:700,marginBottom:5,textTransform:"uppercase",letterSpacing:.5}}>
+                          🌱 {CROP_DISEASES[cropKey].en || cropKey}-এর নির্দিষ্ট লক্ষণ
+                        </div>
+                        <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                          {cropSpecific.slice(0, 8).map((sym, i) => {
+                            const a = form.symptoms.includes(sym);
+                            return (
+                              <button key={i} onClick={() => {
+                                if (a) setForm(f => ({...f, symptoms: f.symptoms.replace(sym, "").replace(/\n\n+/g, "\n").trim()}));
+                                else setForm(f => ({...f, symptoms: f.symptoms ? f.symptoms.trimEnd() + "\n" + sym : sym}));
+                              }} style={{...chipSt, border:`1px solid ${a ? C.primary : C.border}`, background:a ? "#f0fdf4" : C.bgMuted, color:a ? C.primaryDark : C.textMuted, fontWeight:a ? 700 : 400, fontSize:11}}>
+                                {a ? "✓ " : ""}{sym}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
                   <textarea value={form.symptoms} onChange={e=>setForm(f=>({...f,symptoms:e.target.value}))} placeholder="বিস্তারিত লিখুন বা উপরে ট্যাপ করুন..." rows={3} aria-label="Symptoms description" style={{width:"100%",background:C.bgMuted,border:`1px solid ${isListening?C.danger:C.border}`,borderRadius:10,color:C.text,padding:"9px 12px",fontSize:13,outline:"none",resize:"vertical",marginTop:8,boxSizing:"border-box",lineHeight:1.6}}/>
                 </div>
 
                 {/* Image picker is now integrated inside the leaf frame info box above */}
 
                 {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:"12px 14px",color:C.danger,marginBottom:10,fontSize:13}}>⚠️ {error}</div>}
+
+                {form.crop && form.symptoms && (() => {
+                  const cropKey = resolveCropKey(form.crop);
+                  if (!cropKey) return null;
+                  const userSymptoms = form.symptoms.split('\n').filter(Boolean);
+                  if (userSymptoms.length === 0) return null;
+                  const matches = matchDiseasesBySymptoms(form.crop, userSymptoms);
+                  if (!matches || matches.length === 0) return null;
+                  return (
+                    <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                        <span style={{fontSize:16}}>🔬</span>
+                        <span style={{fontWeight:700,fontSize:13,color:C.primaryDark}}>সম্ভাব্য রোগ (প্রাথমিক)</span>
+                      </div>
+                      <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                        {matches.slice(0, 3).map((m, i) => (
+                          <span key={i} style={{background:i===0?"#f0fdf4":C.bgMuted,border:`1px solid ${i===0?"#bbf7d0":C.border}`,borderRadius:20,padding:"4px 10px",fontSize:11,fontWeight:i===0?700:500,color:i===0?C.primaryDark:C.text}}>
+                            {m.disease.nameBn} {Math.round((m.matchRatio||0)*100)}%
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <button onClick={handleSubmit} disabled={loading} aria-label="Submit diagnosis" style={{width:"100%",padding:"15px",borderRadius:14,border:"none",background:loading?C.border:`linear-gradient(135deg,${C.primaryXDark},${C.primaryLight})`,color:"#fff",fontWeight:800,fontSize:15,cursor:loading?"not-allowed":"pointer",boxShadow:loading?"none":`0 4px 20px ${C.primary}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:9,transition:"all .2s"}}>
                   {loading?<><span style={{display:"inline-block",animation:"spin 1s linear infinite",fontSize:17}}>⟳</span>বিশ্লেষণ হচ্ছে...</>:<><span style={{fontSize:18}}>🔍</span>রোগ নির্ণয় করুন</>}
