@@ -1,6 +1,6 @@
 /**
  * CABI Diagnosis — Smart Free Vision Waterfall Proxy
- * Providers: Gemini 2.0 Flash → Groq Llama4 Scout → OpenRouter Qwen/Llama/Phi4 → Gemini text
+ * Providers: Gemini 2.5 Flash → OpenRouter Qwen-VL → Groq Llama4 Scout → DeepSeek R1 → Emergency
  * System prompt: Full CABI Plantwise Ready Reckoner + Exclusion Logic embedded
  */
 
@@ -591,7 +591,7 @@ Capture clearer photos of the whole plant, front and back of leaves, and stem ba
 ---END_ENGLISH---`;
 }
 
-// ─── Provider 1: Google Gemini 2.0 Flash ─────────────────────────────────────
+// ─── Provider: Google Gemini 2.5 Flash ─────────────────────────────────────
 async function tryGemini(messages, withVision = true, systemPrompt = SYSTEM_PROMPT) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY not set");
@@ -617,7 +617,7 @@ async function tryGemini(messages, withVision = true, systemPrompt = SYSTEM_PROM
     generationConfig: { maxOutputTokens: 3000, temperature: 0.3 },
   };
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
@@ -628,7 +628,7 @@ async function tryGemini(messages, withVision = true, systemPrompt = SYSTEM_PROM
   if (!res.ok) throw new Error(data?.error?.message || `Gemini HTTP ${res.status}`);
 
   const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("\n") || "No response.";
-  return { text, provider: withVision ? "Google Gemini 2.0 Flash 👁️" : "Google Gemini 2.0 Flash (text)" };
+  return { text, provider: withVision ? "Google Gemini 2.5 Flash 👁️" : "Google Gemini 2.5 Flash (text)" };
 }
 
 // ─── Provider 2: Groq Llama 4 Scout ──────────────────────────────────────────
@@ -727,7 +727,20 @@ export default async function handler(req, res) {
 
   const attempts = [];
 
-  // ─── 1. OpenRouter smart route (vision or text) ─────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WATERFALL: Gemini 2.5 Flash → OpenRouter Qwen-VL → Groq Llama4 → OR text → Gemini text → Emergency
+  // Gemini is primary because it has the best free vision quality for agriculture.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // ─── 1. Gemini 2.5 Flash (best free vision model — primary) ────────────
+  try {
+    const r = await withTimeout(tryGemini(messages, imageAttached, systemPrompt), "Gemini 2.5 Flash");
+    const structured = extractStructuredJson(r.text);
+    const cleanText = structured ? stripStructuredJson(r.text) : r.text;
+    return res.status(200).json({ content: [{ type: "text", text: cleanText }], structured, provider: r.provider, attempts });
+  } catch (e) { attempts.push(`Gemini 2.5 Flash: ${e.message}`); }
+
+  // ─── 2. OpenRouter Qwen-VL smart route (vision or text) ────────────────
   try {
     const primaryModel = imageAttached ? OPENROUTER_VISION_MODELS[0] : OPENROUTER_TEXT_MODELS[0];
     const fallbackModels = imageAttached ? OPENROUTER_VISION_MODELS.slice(1) : OPENROUTER_TEXT_MODELS.slice(1);
@@ -744,15 +757,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ content: [{ type: "text", text: cleanText }], structured, provider: r.provider, attempts });
   } catch (e) { attempts.push(`OpenRouter smart route: ${e.message}`); }
 
-  // ─── 2. Gemini 2.0 Flash (vision or text) ───────────────────────────────
-  try {
-    const r = await withTimeout(tryGemini(messages, imageAttached, systemPrompt), "Gemini");
-    const structured = extractStructuredJson(r.text);
-    const cleanText = structured ? stripStructuredJson(r.text) : r.text;
-    return res.status(200).json({ content: [{ type: "text", text: cleanText }], structured, provider: r.provider, attempts });
-  } catch (e) { attempts.push(`Gemini: ${e.message}`); }
-
-  // ─── 3. Groq Llama 4 Scout (text only) ──────────────────────────────────
+  // ─── 3. Groq Llama 4 Scout (fast text, no vision) ──────────────────────
   try {
     const r = await withTimeout(tryGroq(messages, systemPrompt), "Groq");
     const structured = extractStructuredJson(r.text);
