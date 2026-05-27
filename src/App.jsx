@@ -2754,94 +2754,91 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
             {step===1&&(
               <div>
                 {/* Leaf Frame Info Box with integrated image picker */}
-                <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:28,padding:18,marginBottom:12,border:`1px solid ${C.border}`,overflow:"hidden"}}>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:18,alignItems:"stretch"}}>
+                <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:14,padding:16,marginBottom:10,border:`1px solid ${C.border}`,overflow:"hidden"}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:16,alignItems:"stretch"}}>
                     {/* Left: Leaf frame + image picker */}
-                    <div style={{minHeight:280,borderRadius:26,background:darkMode?"linear-gradient(135deg,#052e16,#064e3b)":"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column"}}>
-                      <div style={{position:"absolute",inset:18,border:`2px solid ${C.primary}55`,borderRadius:20,pointerEvents:'none'}}>
-                        <div style={{position:"absolute",left:12,top:12,width:28,height:28,borderTop:`3px solid ${C.primary}`,borderLeft:`3px solid ${C.primary}`}} />
-                        <div style={{position:"absolute",right:12,top:12,width:28,height:28,borderTop:`3px solid ${C.primary}`,borderRight:`3px solid ${C.primary}`}} />
-                        <div style={{position:"absolute",left:12,bottom:12,width:28,height:28,borderBottom:`3px solid ${C.primary}`,borderLeft:`3px solid ${C.primary}`}} />
-                        <div style={{position:"absolute",right:12,bottom:12,width:28,height:28,borderBottom:`3px solid ${C.primary}`,borderRight:`3px solid ${C.primary}`}} />
-                        <div style={{position:"absolute",left:18,right:18,height:2,background:"#9bf7a8",top:"22%",boxShadow:"0 0 18px rgba(26,122,58,0.55)",animation:images.length===0?"scan 3.2s linear infinite":"none",opacity:images.length===0?1:0}} />
+                    <div style={{minHeight:240,borderRadius:12,background:darkMode?"linear-gradient(135deg,#052e16,#064e3b)":"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+                      {/* Subtle corner frame — just a thin border inside */}
+                      <div style={{position:"absolute",inset:10,border:`1.5px solid ${C.primary}44`,borderRadius:10,pointerEvents:'none'}}>
+                        <div style={{position:"absolute",left:12,right:12,height:1.5,background:C.primaryLight,top:"50%",opacity:0.15}} />
                       </div>
                       {/* Main image area */}
-                      <div style={{flex:1,position:"relative",display:"flex",alignItems:"center",justifyContent:"center",minHeight:160}}>
+                      <div style={{flex:1,position:"relative",display:"flex",alignItems:"center",justifyContent:"center",minHeight:140}}>
                         {images.length>0?(
-                          <img src={images[0].url} alt="preview" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",borderRadius:"26px 26px 0 0"}}/>
+                          <img src={images[0].url} alt="preview" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",borderRadius:"12px 12px 0 0"}}/>
                         ):(
-                          <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,zIndex:1}}>
-                            <div style={{fontSize:62}}>🍃</div>
-                            <div className="ud-headline" style={{fontWeight:800,fontSize:22,color:C.primaryDark}}>পাতা ফ্রেমের মাঝে রাখুন</div>
-                            <div style={{fontSize:12,color:C.textMuted}}>ভালো আলো থাকলে ফল বেশি নির্ভুল হয়</div>
+                          <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,zIndex:1}}>
+                            <div style={{fontSize:52}}>🍃</div>
+                            <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.primaryDark}}>পাতা ফ্রেমের মাঝে রাখুন</div>
+                            <div style={{fontSize:11,color:C.textMuted}}>ভালো আলো থাকলে ফল বেশি নির্ভুল হয়</div>
                           </div>
                         )}
                         {images.length>0&&(
-                          <div style={{position:"absolute",top:14,right:14,padding:"5px 10px",borderRadius:999,background:"rgba(0,96,40,0.88)",color:"#fff",fontSize:10,fontWeight:800,zIndex:2}}>{images.length}টি ছবি</div>
+                          <div style={{position:"absolute",top:10,right:10,padding:"4px 8px",borderRadius:8,background:"rgba(0,0,0,0.55)",color:"#fff",fontSize:10,fontWeight:700,zIndex:2}}>{images.length}টি ছবি</div>
                         )}
                       </div>
                       {/* Thumbnail strip + upload controls INSIDE leaf frame */}
-                      <div style={{padding:"8px 10px",display:"flex",alignItems:"center",gap:6,background:"rgba(255,255,255,0.7)",backdropFilter:"blur(6px)",borderRadius:"0 0 26px 26px"}}>
+                      <div style={{padding:"7px 8px",display:"flex",alignItems:"center",gap:5,background:darkMode?"rgba(0,0,0,0.3)":"rgba(255,255,255,0.7)",backdropFilter:"blur(6px)",borderRadius:"0 0 12px 12px"}}>
                         <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
                         <input ref={galleryRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
                         <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{display:"none"}}/>
                         {images.length===0?(
                           <>
-                            <button onClick={()=>cameraRef.current?.click()} style={{flex:1,padding:"8px 6px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,color:"#fff",cursor:"pointer",fontWeight:700,fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>📸 ক্যামেরা</button>
-                            <button onClick={()=>galleryRef.current?.click()} style={{flex:1,padding:"8px 6px",borderRadius:12,border:`1px solid ${C.border}`,background:"rgba(255,255,255,0.8)",color:C.primaryDark,cursor:"pointer",fontWeight:700,fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>🖼️ গ্যালারি</button>
+                            <button onClick={()=>cameraRef.current?.click()} style={{flex:1,padding:"7px 4px",borderRadius:10,border:"none",background:C.primary,color:"#fff",cursor:"pointer",fontWeight:700,fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",gap:3}}>📸 ক্যামেরা</button>
+                            <button onClick={()=>galleryRef.current?.click()} style={{flex:1,padding:"7px 4px",borderRadius:10,border:`1px solid ${C.border}`,background:darkMode?"rgba(255,255,255,0.1)":"rgba(255,255,255,0.9)",color:C.primaryDark,cursor:"pointer",fontWeight:700,fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",gap:3}}>🖼️ গ্যালারি</button>
                           </>
                         ):(
                           <>
                             {images.map((img,idx)=>(
                               <div key={idx} style={{position:"relative",flexShrink:0}}>
-                                <img src={img.url} alt={img.label} style={{width:40,height:40,objectFit:"cover",borderRadius:8,border:`2px solid ${idx===0?C.primary:C.border}`}}/>
-                                <button onClick={()=>removeImage(idx)} style={{position:"absolute",top:-3,right:-3,width:14,height:14,borderRadius:"50%",background:C.danger,color:"#fff",border:"none",cursor:"pointer",fontSize:8,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>✕</button>
+                                <img src={img.url} alt={img.label} style={{width:36,height:36,objectFit:"cover",borderRadius:6,border:`2px solid ${idx===0?C.primary:"transparent"}`}}/>
+                                <button onClick={()=>removeImage(idx)} style={{position:"absolute",top:-2,right:-2,width:13,height:13,borderRadius:"50%",background:C.danger,color:"#fff",border:"none",cursor:"pointer",fontSize:7,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>✕</button>
                               </div>
                             ))}
                             {images.length<4&&(
-                              <button onClick={()=>galleryRef.current?.click()} style={{width:40,height:40,borderRadius:8,border:`2px dashed ${C.primary}`,background:"rgba(255,255,255,0.5)",color:C.primary,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>+</button>
+                              <button onClick={()=>galleryRef.current?.click()} style={{width:36,height:36,borderRadius:6,border:`1.5px dashed ${C.primary}66`,background:"transparent",color:C.primary,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>+</button>
                             )}
                           </>
                         )}
                       </div>
                     </div>
                     {/* Right: Info text + quick stats */}
-                    <div style={{display:"flex",flexDirection:"column",justifyContent:"center",gap:10}}>
-                      <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase"}}>নতুন নির্ণয়</div>
-                      <div className="ud-headline" style={{fontWeight:800,fontSize:28,color:C.primaryDark,lineHeight:1.08}}>পাতার ছবি দিন, বাকি তথ্য সহজে পূরণ করুন</div>
-                      <div style={{fontSize:13,color:C.textMuted,lineHeight:1.75}}>ফসল, জেলা, মৌসুম, লক্ষণ আর ছবি একসাথে দিলে ফল বেশি ভালো আসে। ছবি থাকলে সিস্টেম নিজে ফসল ধরারও চেষ্টা করবে.</div>
+                    <div style={{display:"flex",flexDirection:"column",justifyContent:"center",gap:8}}>
+                      <div style={{fontSize:10,color:C.primary,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>নতুন নির্ণয়</div>
+                      <div className="ud-headline" style={{fontWeight:800,fontSize:22,color:C.primaryDark,lineHeight:1.15}}>পাতার ছবি দিন, বাকি তথ্য পূরণ করুন</div>
+                      <div style={{fontSize:12,color:C.textMuted,lineHeight:1.6}}>ফসল, জেলা, মৌসুম, লক্ষণ আর ছবি একসাথে দিলে ফল ভালো আসে।</div>
                       {images.length>0&&(
-                        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                          <span style={{fontSize:11,background:darkMode?"#052e16":"#f0fdf4",padding:"4px 9px",borderRadius:8,color:C.success,fontWeight:700}}>✅ {images.length}টি ছবি যুক্ত</span>
-                          {analysingCrop&&<span style={{fontSize:11,background:darkMode?"#1e3a5f":"#eff6ff",padding:"4px 9px",borderRadius:8,color:C.blue}}>🔍 ফসল চিনে দেখছে...</span>}
+                        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                          <span style={{fontSize:10,background:darkMode?"#052e16":"#f0fdf4",padding:"3px 8px",borderRadius:6,color:C.success,fontWeight:600}}>✅ {images.length}টি ছবি</span>
+                          {analysingCrop&&<span style={{fontSize:10,background:darkMode?"#1e3a5f":"#eff6ff",padding:"3px 8px",borderRadius:6,color:C.blue}}>🔍 ফসল চিনে দেখছে...</span>}
                         </div>
                       )}
-                      {form.crop&&<div style={{fontSize:11,background:C.bgMuted,padding:"4px 9px",borderRadius:8,color:C.textMuted,alignSelf:"flex-start"}}>🌱 {form.crop}</div>}
+                      {form.crop&&<div style={{fontSize:10,background:C.bgMuted,padding:"3px 8px",borderRadius:6,color:C.textMuted,alignSelf:"flex-start"}}>🌱 {form.crop}</div>}
                     </div>
                   </div>
                 </div>
-                {/* crop */}
-                <div className="ud-card" style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                {/* crop + mode */}
+                <div className="ud-card" style={{background:C.bgCard,borderRadius:14,padding:14,marginBottom:8,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:10}}>🌱 ফসল নির্বাচন *</div>
                   {!form.crop&&!showMoreCrops&&<QuickCropRow onSelect={handleCropQuickSelect} selected={form.crop}/>}
                   {form.crop&&!showMoreCrops&&(
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{background:darkMode?"#052e16":"#f0fdf4",border:`1.5px solid ${C.primary}`,borderRadius:12,padding:"8px 14px",color:C.primaryDark,fontWeight:700,fontSize:13,flex:1}}>✅ {form.crop}</div>
-                      <button onClick={()=>{setForm(f=>({...f,crop:""}));setShowMoreCrops(false);}} style={{background:darkMode?"#450a0a":"#fef2f2",border:darkMode?"1px solid #7f1d1d":"1px solid #fecaca",borderRadius:10,color:C.danger,padding:"7px 12px",cursor:"pointer",fontSize:12,fontWeight:600}}>পরিবর্তন</button>
+                      <div style={{background:darkMode?"#052e16":"#f0fdf4",border:`1.5px solid ${C.primary}`,borderRadius:10,padding:"7px 12px",color:C.primaryDark,fontWeight:700,fontSize:13,flex:1}}>✅ {form.crop}</div>
+                      <button onClick={()=>{setForm(f=>({...f,crop:""}));setShowMoreCrops(false);}} style={{background:darkMode?"#450a0a":"#fef2f2",border:darkMode?"1px solid #7f1d1d":"1px solid #fecaca",borderRadius:10,color:C.danger,padding:"6px 10px",cursor:"pointer",fontSize:11,fontWeight:600}}>পরিবর্তন</button>
                     </div>
                   )}
                   {showMoreCrops&&(
                     <div>
-                      <button onClick={()=>setShowMoreCrops(false)} style={{background:"none",border:"none",color:C.primary,cursor:"pointer",fontSize:13,marginBottom:8,fontWeight:600}}>← ফিরুন</button>
+                      <button onClick={()=>setShowMoreCrops(false)} style={{background:"none",border:"none",color:C.primary,cursor:"pointer",fontSize:12,marginBottom:8,fontWeight:600}}>← ফিরুন</button>
                       {Object.keys(CROPS).map(group=>(
-                        <div key={group} style={{marginBottom:7}}>
-                          <button onClick={()=>setExpandedGroup(expandedGroup===group?null:group)} style={{width:"100%",background:expandedGroup===group?(darkMode?"#052e16":"#f0fdf4"):C.bgMuted,border:`1px solid ${expandedGroup===group?C.primary:C.border}`,borderRadius:10,padding:"8px 12px",color:C.text,cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:600}}>
+                        <div key={group} style={{marginBottom:6}}>
+                          <button onClick={()=>setExpandedGroup(expandedGroup===group?null:group)} style={{width:"100%",background:expandedGroup===group?(darkMode?"#052e16":"#f0fdf4"):C.bgMuted,border:`1px solid ${expandedGroup===group?C.primary:C.border}`,borderRadius:10,padding:"7px 10px",color:C.text,cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:600}}>
                             {group} {expandedGroup===group?"▲":"▼"}
                           </button>
                           {expandedGroup===group&&(
-                            <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderTop:"none",borderRadius:"0 0 10px 10px",padding:7,maxHeight:190,overflowY:"auto"}}>
+                            <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderTop:"none",borderRadius:"0 0 10px 10px",padding:6,maxHeight:180,overflowY:"auto"}}>
                               {CROPS[group].map(crop=>(
-                                <div key={crop} onClick={()=>{handleCropQuickSelect(crop);setExpandedGroup(null);}} style={{padding:"6px 10px",cursor:"pointer",fontSize:12,color:C.text,borderRadius:7}} onMouseEnter={e=>e.currentTarget.style.background="#f0fdf4"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{crop}</div>
+                                <div key={crop} onClick={()=>{handleCropQuickSelect(crop);setExpandedGroup(null);}} style={{padding:"5px 10px",cursor:"pointer",fontSize:12,color:C.text,borderRadius:6}} onMouseEnter={e=>e.currentTarget.style.background="#f0fdf4"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{crop}</div>
                               ))}
                             </div>
                           )}
@@ -2850,43 +2847,19 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                     </div>
                   )}
                   
-                  {/* Diagnosis Mode Toggle */}
-                  <div style={{marginTop:16,paddingTop:12,borderTop:`1px solid ${C.border}`}}>
-                    <div style={{fontWeight:600,fontSize:13,color:C.text,marginBottom:8}}>নিদান মোড</div>
-                    <div style={{display:"flex",alignItems:"center",gap:16}}>
-                      <div style={{display:"flex",alignItems:"center",gap:4}}>
-                        <label style={{cursor:"pointer",userSelect:"none"}}>
-                          <input
-                            type="radio"
-                            name="diagnosisMode"
-                            value="online"
-                            checked={diagnosisMode==="online"}
-                            onChange={(e)=>setDiagnosisMode(e.target.value)}
-                            style={{margin:0,width:16,height:16}}
-                          />
-                          <span style={{fontSize:11,color:C.text}}>Online (AI-based)</span>
-                        </label>
-                        <div style={{width:1}}></div>
-                        <label style={{cursor:"pointer",userSelect:"none"}}>
-                          <input
-                            type="radio"
-                            name="diagnosisMode"
-                            value="offline"
-                            checked={diagnosisMode==="offline"}
-                            onChange={(e)=>setDiagnosisMode(e.target.value)}
-                            style={{margin:0,width:16,height:16}}
-                          />
-                          <span style={{fontSize:11,color:C.text}}>Offline (Rule-based)</span>
-                        </label>
-                      </div>
+                  {/* Diagnosis Mode — pill toggle */}
+                  <div style={{marginTop:12,paddingTop:10,borderTop:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:11,color:C.textMuted,fontWeight:600}}>নিদান মোড</span>
+                    <div style={{display:"flex",background:C.bgMuted,borderRadius:8,padding:2,gap:1}}>
+                      <button onClick={()=>setDiagnosisMode("online")} style={{padding:"4px 10px",borderRadius:7,border:"none",cursor:"pointer",fontSize:10,fontWeight:700,background:diagnosisMode==="online"?C.primary:"transparent",color:diagnosisMode==="online"?"#fff":C.textMuted,transition:"all .15s"}}>🌐 Online</button>
+                      <button onClick={()=>setDiagnosisMode("offline")} style={{padding:"4px 10px",borderRadius:7,border:"none",cursor:"pointer",fontSize:10,fontWeight:700,background:diagnosisMode==="offline"?C.primary:"transparent",color:diagnosisMode==="offline"?"#fff":C.textMuted,transition:"all .15s"}}>📴 Offline</button>
                     </div>
-                  
                   </div>
                 </div>
 
-                {/* location/season */}
-                <div className="ud-card" style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+                {/* location/season/growth — unified card */}
+                <div className="ud-card" style={{background:C.bgCard,borderRadius:14,padding:14,marginBottom:8,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
                     <div>
                       <label style={labelSt}>📍 জেলা {locationSource&&<span style={{color:C.blue,fontSize:9}}>(auto)</span>}</label>
                       <select value={form.district} onChange={e=>setForm(f=>({...f,district:e.target.value}))} style={selSt}>
@@ -2911,37 +2884,37 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   </div>
                 </div>
 
-                {/* duration */}
-                <div className="ud-card" style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-                  <label style={labelSt}>⏱️ সমস্যার সময়কাল</label>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                    {DURATION_CHIPS.map(chip=>{const a=form.duration===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,duration:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?(darkMode?"#052e16":"#f0fdf4"):"#f8faf8",color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
+                {/* duration + area — merged into one compact card */}
+                <div className="ud-card" style={{background:C.bgCard,borderRadius:14,padding:14,marginBottom:8,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                  <div style={{marginBottom:10}}>
+                    <label style={labelSt}>⏱️ সমস্যার সময়কাল</label>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                      {DURATION_CHIPS.map(chip=>{const a=form.duration===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,duration:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?(darkMode?"#052e16":"#f0fdf4"):C.bgMuted,color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
+                    </div>
                   </div>
-                </div>
-
-                {/* area */}
-                <div className="ud-card" style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-                  <label style={labelSt}>🗺️ আক্রান্ত এলাকা</label>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                    {AREA_CHIPS.map(chip=>{const a=form.affectedArea===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,affectedArea:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?(darkMode?"#052e16":"#f0fdf4"):"#f8faf8",color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
+                  <div style={{paddingTop:10,borderTop:`1px solid ${C.border}`}}>
+                    <label style={labelSt}>🗺️ আক্রান্ত এলাকা</label>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                      {AREA_CHIPS.map(chip=>{const a=form.affectedArea===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,affectedArea:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?(darkMode?"#052e16":"#f0fdf4"):C.bgMuted,color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
+                    </div>
                   </div>
                 </div>
 
                 {/* symptoms */}
-                <div className="ud-card" style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:9}}>
+                <div className="ud-card" style={{background:C.bgCard,borderRadius:14,padding:14,marginBottom:8,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
                     <label style={{...labelSt,marginBottom:0}}>🩺 লক্ষণ বর্ণনা *</label>
-                    {voiceSupported&&<button onClick={isListening?stopListening:startListening} style={{width:40,height:40,borderRadius:"50%",border:`2px solid ${isListening?C.danger:C.primary}`,background:isListening?(darkMode?"#450a0a":"#fef2f2"):(darkMode?"#052e16":"#f0fdf4"),cursor:"pointer",fontSize:17,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isListening?<span style={{animation:"pulse 1s infinite"}}>⏹</span>:"🎙️"}</button>}
+                    {voiceSupported&&<button onClick={isListening?stopListening:startListening} style={{width:36,height:36,borderRadius:"50%",border:`2px solid ${isListening?C.danger:C.primary}`,background:isListening?(darkMode?"#450a0a":"#fef2f2"):(darkMode?"#052e16":"#f0fdf4"),cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isListening?<span style={{animation:"pulse 1s infinite"}}>⏹</span>:"🎙️"}</button>}
                   </div>
                   {Object.entries(SYMPTOM_CHIPS).map(([group,chips])=>(
-                    <div key={group} style={{marginBottom:9}}>
-                      <div style={{color:C.textMuted,fontSize:10,fontWeight:700,marginBottom:5,textTransform:"uppercase",letterSpacing:.5}}>{group}</div>
-                      <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-                        {chips.map(chip=>{const a=form.symptoms.includes(chip.value);return<button key={chip.label} onClick={()=>{if(a)setForm(f=>({...f,symptoms:f.symptoms.replace(chip.value,"").replace(/\n\n+/g,"\n").trim()}));else setForm(f=>({...f,symptoms:f.symptoms?f.symptoms.trimEnd()+"\n"+chip.value:chip.value}));}} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?(darkMode?"#052e16":"#f0fdf4"):"#f8faf8",color:a?C.primaryDark:C.textMuted,fontWeight:a?700:400,fontSize:11}}>{a?"✓ ":""}{chip.label}</button>;})}
+                    <div key={group} style={{marginBottom:8}}>
+                      <div style={{color:C.textMuted,fontSize:10,fontWeight:700,marginBottom:4,textTransform:"uppercase",letterSpacing:.5}}>{group}</div>
+                      <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                        {chips.map(chip=>{const a=form.symptoms.includes(chip.value);return<button key={chip.label} onClick={()=>{if(a)setForm(f=>({...f,symptoms:f.symptoms.replace(chip.value,"").replace(/\n\n+/g,"\n").trim()}));else setForm(f=>({...f,symptoms:f.symptoms?f.symptoms.trimEnd()+"\n"+chip.value:chip.value}));}} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?(darkMode?"#052e16":"#f0fdf4"):C.bgMuted,color:a?C.primaryDark:C.textMuted,fontWeight:a?700:400,fontSize:11}}>{a?"✓ ":""}{chip.label}</button>;})}
                       </div>
                     </div>
                   ))}
-                  <textarea value={form.symptoms} onChange={e=>setForm(f=>({...f,symptoms:e.target.value}))} placeholder="বিস্তারিত লিখুন বা উপরে ট্যাপ করুন..." rows={3} aria-label="Symptoms description" style={{width:"100%",background:C.bgMuted,border:`1px solid ${isListening?C.danger:C.border}`,borderRadius:10,color:C.text,padding:"9px 12px",fontSize:13,outline:"none",resize:"vertical",marginTop:8,boxSizing:"border-box",lineHeight:1.6}}/>
+                  <textarea value={form.symptoms} onChange={e=>setForm(f=>({...f,symptoms:e.target.value}))} placeholder="বিস্তারিত লিখুন বা উপরে ট্যাপ করুন..." rows={3} aria-label="Symptoms description" style={{width:"100%",background:C.bgMuted,border:`1px solid ${isListening?C.danger:C.border}`,borderRadius:10,color:C.text,padding:"8px 10px",fontSize:13,outline:"none",resize:"vertical",marginTop:6,boxSizing:"border-box",lineHeight:1.6}}/>
                 </div>
 
                 {/* Image picker is now integrated inside the leaf frame info box above */}
@@ -2957,66 +2930,55 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
             {/* ── RESULT ──────────────────────────────────────────────── */}
             {step===2&&result&&(
               <div ref={resultRef} style={{animation:"slideUp .4s ease, cardEnter .5s ease"}}>
-                {/* Leaf Frame — image + info + upload */}
-                <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:28,padding:18,marginBottom:12,border:`1px solid ${C.border}`,overflow:"hidden"}}>
-                  <div style={{display:"flex",gap:16,alignItems:"stretch",flexWrap:"wrap"}}>
-                    {/* Left: Leaf frame with image picker */}
-                    <div style={{flex:"1 1 220px",maxWidth:320,minHeight:260,borderRadius:22,background:darkMode?"linear-gradient(135deg,#052e16,#064e3b)":"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+                {/* Leaf Frame — image + info + report controls */}
+                <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:14,padding:16,marginBottom:10,border:`1px solid ${C.border}`,overflow:"hidden"}}>
+                  <div style={{display:"flex",gap:14,alignItems:"stretch",flexWrap:"wrap"}}>
+                    {/* Left: Leaf frame with image */}
+                    <div style={{flex:"1 1 200px",maxWidth:280,minHeight:220,borderRadius:10,background:darkMode?"linear-gradient(135deg,#052e16,#064e3b)":"linear-gradient(135deg,#d2e9d0,#f5fbf6)",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column"}}>
                       {/* Main image */}
-                      <div style={{flex:1,position:"relative",minHeight:180,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                        {images.length>0?<img src={images[0].url} alt="diagnosis preview" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>:<div style={{fontSize:64}}>🍃</div>}
-                        <div style={{position:"absolute",inset:14,border:"2px solid rgba(255,255,255,0.7)",borderRadius:18,pointerEvents:'none'}} />
-                        <div style={{position:"absolute",top:14,right:14,padding:"5px 10px",borderRadius:999,background:"rgba(0,96,40,0.88)",color:"#fff",fontSize:10,fontWeight:800}}>বিশ্লেষণ শেষ</div>
+                      <div style={{flex:1,position:"relative",minHeight:160,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        {images.length>0?<img src={images[0].url} alt="diagnosis preview" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>:<div style={{fontSize:52}}>🍃</div>}
+                        <div style={{position:"absolute",inset:10,border:"1.5px solid rgba(255,255,255,0.5)",borderRadius:8,pointerEvents:'none'}} />
+                        <div style={{position:"absolute",top:10,right:10,padding:"4px 8px",borderRadius:6,background:"rgba(0,0,0,0.55)",color:"#fff",fontSize:9,fontWeight:700}}>বিশ্লেষণ শেষ</div>
                         {/* Structured result badges */}
                         {structuredResult&&(
-                          <div style={{position:"absolute",bottom:14,left:14,display:"flex",gap:5}}>
-                            {structuredResult.severity&&<span style={{padding:"3px 9px",borderRadius:999,background:structuredResult.severity==='severe'||structuredResult.severity==='high'?'rgba(220,38,38,0.9)':structuredResult.severity==='moderate'||structuredResult.severity==='medium'?'rgba(217,119,6,0.9)':'rgba(22,163,74,0.9)',color:"#fff",fontSize:9,fontWeight:800}}>{structuredResult.severity}</span>}
-                            {structuredResult.confidence&&<span style={{padding:"3px 9px",borderRadius:999,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:9,fontWeight:700}}>{structuredResult.confidence}</span>}
+                          <div style={{position:"absolute",bottom:10,left:10,display:"flex",gap:4}}>
+                            {structuredResult.severity&&<span style={{padding:"2px 7px",borderRadius:6,background:structuredResult.severity==='severe'||structuredResult.severity==='high'?'rgba(220,38,38,0.9)':structuredResult.severity==='moderate'||structuredResult.severity==='medium'?'rgba(217,119,6,0.9)':'rgba(22,163,74,0.9)',color:"#fff",fontSize:9,fontWeight:700}}>{structuredResult.severity}</span>}
+                            {structuredResult.confidence&&<span style={{padding:"2px 7px",borderRadius:6,background:"rgba(0,0,0,0.55)",color:"#fff",fontSize:9,fontWeight:600}}>{structuredResult.confidence}</span>}
                           </div>
                         )}
                       </div>
-                      {/* Thumbnail strip + add more inside leaf frame */}
-                      <div style={{padding:"8px 10px",display:"flex",alignItems:"center",gap:6,background:"rgba(255,255,255,0.6)",backdropFilter:"blur(6px)"}}>
+                      {/* Thumbnail strip + add more */}
+                      <div style={{padding:"6px 8px",display:"flex",alignItems:"center",gap:4,background:darkMode?"rgba(0,0,0,0.3)":"rgba(255,255,255,0.6)",backdropFilter:"blur(6px)"}}>
                         {images.map((img,idx)=>(
                           <div key={idx} style={{position:"relative",flexShrink:0}}>
-                            <img src={img.url} alt={img.label} style={{width:40,height:40,objectFit:"cover",borderRadius:8,border:`2px solid ${idx===0?C.primary:C.border}`,cursor:"pointer"}}/>
-                            <button onClick={()=>removeImage(idx)} style={{position:"absolute",top:-3,right:-3,width:14,height:14,borderRadius:"50%",background:C.danger,color:"#fff",border:"none",cursor:"pointer",fontSize:8,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>✕</button>
+                            <img src={img.url} alt={img.label} style={{width:34,height:34,objectFit:"cover",borderRadius:6,border:`2px solid ${idx===0?C.primary:"transparent"}`,cursor:"pointer"}}/>
+                            <button onClick={()=>removeImage(idx)} style={{position:"absolute",top:-2,right:-2,width:12,height:12,borderRadius:"50%",background:C.danger,color:"#fff",border:"none",cursor:"pointer",fontSize:7,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>✕</button>
                           </div>
                         ))}
                         {images.length<4&&(
-                          <button onClick={()=>galleryRef.current?.click()} style={{width:40,height:40,borderRadius:8,border:`2px dashed ${C.primary}`,background:"rgba(255,255,255,0.5)",color:C.primary,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>+</button>
+                          <button onClick={()=>galleryRef.current?.click()} style={{width:34,height:34,borderRadius:6,border:`1.5px dashed ${C.primary}66`,background:"transparent",color:C.primary,cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>+</button>
                         )}
                       </div>
                     </div>
-                    {/* Right: Info */}
-                    <div style={{flex:"1 1 240px",display:"flex",flexDirection:"column",justifyContent:"center",gap:6}}>
-                      <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase"}}>নির্ণয় সম্পন্ন</div>
-                      <div className="ud-headline" style={{fontWeight:800,fontSize:26,color:C.primaryDark,lineHeight:1.1}}>{form.crop?.split("/")[0]?.trim()||"ফসল"} এর জন্য সহজ রিপোর্ট</div>
-                      <div style={{fontSize:13,color:C.textMuted,lineHeight:1.7}}>কোন সমস্যা বেশি মনে হচ্ছে, কী লক্ষণ দেখা গেছে, আর এখন কী করলে ক্ষতি কমবে তা নিচে কার্ড আকারে সাজানো আছে.</div>
-                      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>
-                        {form.district&&<span style={{fontSize:11,background:C.bgMuted,padding:"3px 8px",borderRadius:8,color:C.textMuted}}>📍 {form.district?.split("/")[0]?.trim()}</span>}
-                        {weather&&<span style={{fontSize:11,background:darkMode?"#1e3a5f":"#f0f9ff",padding:"3px 8px",borderRadius:8,color:darkMode?"#7dd3fc":"#0369a1"}}>🌡️{weather.temp}°C · 💧{weather.humidity}%</span>}
-                        {provider&&<span style={{fontSize:11,background:darkMode?"#1e3a5f":"#eff6ff",padding:"3px 8px",borderRadius:8,color:C.blue}}>🤖 {provider}</span>}
+                    {/* Right: Info + controls — merged report header */}
+                    <div style={{flex:"1 1 220px",display:"flex",flexDirection:"column",justifyContent:"center",gap:6}}>
+                      <div style={{fontSize:10,color:C.primary,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>নির্ণয় সম্পন্ন</div>
+                      <div className="ud-headline" style={{fontWeight:800,fontSize:20,color:C.primaryDark,lineHeight:1.15}}>{form.crop?.split("/")[0]?.trim()||"ফসল"} এর জন্য সহজ রিপোর্ট</div>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
+                        {form.district&&<span style={{fontSize:10,background:C.bgMuted,padding:"2px 7px",borderRadius:5,color:C.textMuted}}>📍 {form.district?.split("/")[0]?.trim()}</span>}
+                        {weather&&<span style={{fontSize:10,background:darkMode?"#1e3a5f":"#f0f9ff",padding:"2px 7px",borderRadius:5,color:darkMode?"#7dd3fc":"#0369a1"}}>🌡️{weather.temp}°C · 💧{weather.humidity}%</span>}
+                        {provider&&<span style={{fontSize:10,background:darkMode?"#1e3a5f":"#eff6ff",padding:"2px 7px",borderRadius:5,color:C.blue}}>🤖 {provider}</span>}
+                      </div>
+                      {/* Language + TTS — inline */}
+                      <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4,flexWrap:"wrap"}}>
+                        <div style={{display:"flex",background:C.bgMuted,borderRadius:8,padding:2,gap:1}}>
+                          <button onClick={()=>{setShowEnglish(false);stopSpeaking();}} style={{borderRadius:7,padding:"3px 10px",border:"none",cursor:"pointer",fontSize:10,fontWeight:700,background:!showEnglish?C.primary:"transparent",color:!showEnglish?"#fff":C.textMuted,transition:"all .15s"}}>বাংলা</button>
+                          <button onClick={()=>{setShowEnglish(true);stopSpeaking();}} style={{borderRadius:7,padding:"3px 10px",border:"none",cursor:"pointer",fontSize:10,fontWeight:700,background:showEnglish?C.primary:"transparent",color:showEnglish?"#fff":C.textMuted,transition:"all .15s"}}>English</button>
+                        </div>
+                        {ttsSupported&&<button onClick={()=>isSpeaking?stopSpeaking():speakResult(showEnglish?result.en:result.bn)} style={{width:30,height:30,borderRadius:"50%",border:`1.5px solid ${isSpeaking?C.warning:C.primary}`,background:isSpeaking?(darkMode?"#451a03":"#fffbeb"):(darkMode?"#052e16":"#f0fdf4"),cursor:"pointer",fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isSpeaking?"⏹":"🔊"}</button>}
                       </div>
                     </div>
-                  </div>
-                </div>
-                <div className="ud-card" style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,flexWrap:"wrap"}}>
-                    <div style={{width:38,height:38,borderRadius:10,background:darkMode?"linear-gradient(135deg,#052e16,#064e3b)":"linear-gradient(135deg,#f0fdf4,#dcfce7)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>📋</div>
-                    <div style={{flex:1}}>
-                      <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>রোগ নির্ণয় প্রতিবেদন</div>
-                      <div style={{fontSize:11,color:C.textMuted}}>{form.crop?.split("/")[0]?.trim()} · {form.district?.split("/")[0]?.trim()||locationName}</div>
-                    </div>
-                    {provider&&<span style={{background:darkMode?"#1e3a5f":"#eff6ff",border:darkMode?"1px solid #1e3a5f":"1px solid #bfdbfe",borderRadius:20,padding:"3px 9px",color:C.blue,fontSize:10,fontWeight:700}}>{provider}</span>}
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
-                    <div style={{display:"flex",background:C.bgMuted,borderRadius:20,padding:3,gap:2}}>
-                      <button onClick={()=>{setShowEnglish(false);stopSpeaking();}} style={{borderRadius:16,padding:"5px 14px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:!showEnglish?C.primary:"transparent",color:!showEnglish?"#fff":C.textMuted,transition:"all .2s"}}>বাংলা</button>
-                      <button onClick={()=>{setShowEnglish(true);stopSpeaking();}} style={{borderRadius:16,padding:"5px 14px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:showEnglish?C.primary:"transparent",color:showEnglish?"#fff":C.textMuted,transition:"all .2s"}}>English</button>
-                    </div>
-                    {ttsSupported&&<button onClick={()=>isSpeaking?stopSpeaking():speakResult(showEnglish?result.en:result.bn)} style={{width:36,height:36,borderRadius:"50%",border:`2px solid ${isSpeaking?C.warning:C.primary}`,background:isSpeaking?(darkMode?"#451a03":"#fffbeb"):(darkMode?"#052e16":"#f0fdf4"),cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isSpeaking?"⏹":"🔊"}</button>}
-                    {weather&&<span style={{background:darkMode?"#1e3a5f":"#f0f9ff",border:darkMode?"1px solid #1e3a5f":"1px solid #bae6fd",borderRadius:20,padding:"3px 8px",color:darkMode?"#7dd3fc":"#0369a1",fontSize:10}}>🌡️{weather.temp}°C·💧{weather.humidity}%</span>}
                   </div>
                 </div>
 
@@ -3048,14 +3010,14 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 {!severity?(
                   <div style={{background:C.bgCard,borderRadius:16,padding:18,marginTop:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}><SeveritySurvey onSubmit={s=>setSeverity(s)}/></div>
                 ):(
-                  <div style={{background:darkMode?"#052e16":"#f0fdf4",borderRadius:12,padding:"11px 14px",marginTop:10,border:"1px solid #bbf7d0",fontSize:13,color:C.success,fontWeight:700}}>✅ তীব্রতা নথিভুক্ত: {severity}</div>
+                  <div style={{background:darkMode?"#052e16":"#f0fdf4",borderRadius:10,padding:"9px 12px",marginTop:8,border:darkMode?"1px solid #166534":"1px solid #bbf7d0",fontSize:12,color:C.success,fontWeight:700}}>✅ তীব্রতা নথিভুক্ত: {severity}</div>
                 )}
 
-                <div style={{marginTop:10,padding:"10px 14px",background:"#fffbeb",border:"1px solid #fed7aa",borderRadius:12,color:C.warning,fontSize:12}}>⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।</div>
-                <button onClick={reset} aria-label="Reset form" style={{width:"100%",marginTop:10,padding:"13px",borderRadius:14,border:`1px solid ${C.border}`,background:C.bgCard,color:C.text,fontWeight:600,fontSize:14,cursor:"pointer",boxShadow:C.shadow}}>🔁 নতুন রোগ নির্ণয়</button>
+                <div style={{marginTop:8,padding:"8px 12px",background:darkMode?"#451a03":"#fffbeb",border:darkMode?"1px solid #78350f":"1px solid #fed7aa",borderRadius:10,color:C.warning,fontSize:11}}>⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।</div>
+                <button onClick={reset} aria-label="Reset form" style={{width:"100%",marginTop:8,padding:"12px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bgCard,color:C.text,fontWeight:600,fontSize:13,cursor:"pointer",boxShadow:C.shadow}}>🔁 নতুন রোগ নির্ণয়</button>
 
                 {/* Follow-up questions — dynamic & context-aware */}
-                <div style={{marginTop:14,padding:16,background:C.bgCard,borderRadius:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                <div style={{marginTop:12,padding:14,background:C.bgCard,borderRadius:14,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
                     <div style={{width:32,height:32,borderRadius:10,background:'linear-gradient(135deg,#eff6ff,#dbeafe)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>💬</div>
                     <div>
