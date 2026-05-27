@@ -755,7 +755,7 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,vis
   };
   const mailto=`mailto:?subject=${encodeURIComponent(`Udbhid Goenda feedback - ${context}`)}&body=${encodeURIComponent(payload)}`;
   return(
-    <div className="ud-editorial-shadow" style={{marginTop:16,background:"linear-gradient(135deg,#ffffff,#eff5f0)",border:`1px solid ${C.border}`,borderRadius:28,padding:18,boxShadow:C.shadow}}>
+    <div style={{padding:18}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap",marginBottom:10}}>
         <div>
           <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>⭐ রেটিং ও মতামত</div>
@@ -785,6 +785,19 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,vis
         <a href={mailto} onClick={()=>{saveFeedback();}} style={{padding:"10px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#f0fdf4",color:C.primary,textDecoration:"none",fontWeight:700}}>✉️ ক্লিকে পাঠান</a>
         {status&&<div style={{padding:"10px 0",fontSize:12,color:C.textMuted}}>{status}</div>}
       </div>
+    </div>
+  );
+}
+function CollapsibleFeedback(props){
+  const[open,setOpen]=useState(false);
+  return(
+    <div style={{marginTop:12,border:`1px solid ${C.border}`,borderRadius:28,overflow:"hidden",boxShadow:C.shadow}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"14px 18px",background:open?"linear-gradient(135deg,#ffffff,#eff5f0)":"linear-gradient(135deg,#ffffff,#f0f5f3)",border:"none",cursor:"pointer",textAlign:"left"}}>
+        <span style={{fontSize:18}}>⭐</span>
+        <span style={{flex:1,fontWeight:800,fontSize:15,color:C.primaryDark}}>রেটিং ও মতামত</span>
+        <span style={{fontSize:12,color:C.textMuted}}>{open?"▲":"▼"}</span>
+      </button>
+      {open&&<FeedbackPanel {...props}/>}
     </div>
   );
 }
@@ -2997,18 +3010,16 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                           </div>
                         ))}
                       </div>
-                      {sections.map((sec,i)=><SectionCard key={i} title={sec.title} bodyLines={sec.body} defaultOpen={i<3}/>)}
+                      {sections.map((sec,i)=><SectionCard key={i} title={sec.title} bodyLines={sec.body} defaultOpen={i>0&&i<4}/>)}
                     </>;
                   }
-                  return sections.map((sec,i)=><SectionCard key={i} title={sec.title} bodyLines={sec.body} defaultOpen={i<3}/>);
+                  return sections.map((sec,i)=><SectionCard key={i} title={sec.title} bodyLines={sec.body} defaultOpen={i>0&&i<4}/>);
                 })()}
 
                 {recommendedProducts.length>0&&<ProductRecommendations products={recommendedProducts} crop={form.crop}/>}
 
-                {!severity?(
-                  <div style={{background:C.bgCard,borderRadius:16,padding:18,marginTop:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}><SeveritySurvey onSubmit={s=>setSeverity(s)}/></div>
-                ):(
-                  <div style={{background:darkMode?"#052e16":"#f0fdf4",borderRadius:10,padding:"9px 12px",marginTop:8,border:darkMode?"1px solid #166534":"1px solid #bbf7d0",fontSize:12,color:C.success,fontWeight:700}}>✅ তীব্রতা নথিভুক্ত: {severity}</div>
+                {form.affectedArea&&(
+                  <div style={{background:darkMode?"#052e16":"#f0fdf4",borderRadius:10,padding:"9px 12px",marginTop:8,border:darkMode?"1px solid #166534":"1px solid #bbf7d0",fontSize:12,color:C.success,fontWeight:700}}>🗺️ আক্রান্ত এলাকা: {form.affectedArea}</div>
                 )}
 
                 <div style={{marginTop:8,padding:"8px 12px",background:darkMode?"#451a03":"#fffbeb",border:darkMode?"1px solid #78350f":"1px solid #fed7aa",borderRadius:10,color:C.warning,fontSize:11}}>⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।</div>
@@ -3201,7 +3212,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
         </div>
       </div>
 
-        {!isGameTab&&<FeedbackPanel context={feedbackContext} summary={feedbackSummary} userEmail={userEmail} onEmailChange={setUserEmail} visitorStats={visitorStats} visitorId={visitorId}/>}
+        {!isGameTab&&<CollapsibleFeedback context={feedbackContext} summary={feedbackSummary} userEmail={userEmail} onEmailChange={setUserEmail} visitorStats={visitorStats} visitorId={visitorId}/>}
        {!isGameTab&&<div style={{textAlign:"center",padding:"8px 4px",color:C.textLight,fontSize:10,borderTop:`1px solid ${C.border}`,background:C.bgHeader,letterSpacing:0.5}}>
          উদ্ভিদ গোয়েন্দা · CABI Plantwise · BRRI · BARI · DAE Bangladesh
        </div>}
