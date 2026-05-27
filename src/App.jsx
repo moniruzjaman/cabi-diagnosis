@@ -2,9 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 
 import { diagnoseOffline } from "./offline/index";
 import { lightThemeFull, darkThemeFull, getPreferredTheme } from './data/themes';
-import { CROP_CALENDAR, getCurrentRiskAlerts } from './data/cropCalendar';
-import { CROP_DISEASES, matchDiseasesBySymptoms } from './data/cropDiseases';
-import { translateBengaliToEnglish } from './data/bengaliKeywords';
+import { getCurrentRiskAlerts } from './data/cropCalendar';
+
 import CropCalendarComponent from './components/CropCalendar';
 import OnboardingFlow from './components/OnboardingFlow';
 import OutbreakList from './components/OutbreakList';

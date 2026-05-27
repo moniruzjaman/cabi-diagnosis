@@ -73,7 +73,6 @@ export const BENGALI_KEYWORD_MAP = {
   'শীষ চিটা': 'ear head drying chaffy',
   'শীষ সাদা': 'white head dead panicle',
   'পোকা দেখা': 'insect visible pest',
-  'পাতায় ছিদ্র': 'holes chewing marks insect',
   'পিঁপড়া/মধুরস': 'sticky honeydew ants aphid',
   'গাছ নেতিয়ে': 'wilting',
   'গাছ মরছে': 'plant death dieback',

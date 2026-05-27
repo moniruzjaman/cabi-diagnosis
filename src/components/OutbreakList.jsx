@@ -3,16 +3,20 @@ import { useState, useEffect, useCallback } from 'react';
 /**
  * OutbreakList Component
  *
- * A simple list-based component showing recent disease outbreak reports
- * from the user's district. Each item shows: crop icon, disease name,
- * district, time ago, confirmed count. Includes a "রিপোর্ট করুন" button.
+ * Shows recent disease outbreak reports from the user's district.
+ * Each item shows: crop icon, disease name, district, time ago, confirmed status.
+ * Includes a "রিপোর্ট করুন" button to submit new reports.
  *
  * Props:
- *   C       — color tokens object
+ *   C        — color tokens object
  *   district — user's district string (Bengali/English)
+ *   postJson — signed API fetch helper (from App.jsx)
  *
- * Uses fetch to /api/outbreaks
- * Inline styles matching the app's design language.
+ * API field mapping (turso.js getOutbreaks returns):
+ *   { id, district, crop, diseaseName, reporterHash, confirmed (bool), createdAt }
+ *
+ * API POST expects:
+ *   { district, crop, disease_name }
  */
 
 function timeAgo(dateStr) {
@@ -55,7 +59,7 @@ function getCropIcon(cropStr) {
   return '🌱';
 }
 
-// Severity color coding
+// Severity color coding — works for both API data and demo data
 function severityStyle(severity) {
   switch (severity) {
     case 'high': case 'উচ্চ': return { bg: '#fef2f2', color: '#dc2626', border: '#fecaca', label: 'উচ্চ' };
@@ -65,6 +69,75 @@ function severityStyle(severity) {
   }
 }
 
+/**
+ * Normalize an outbreak item from either API format or demo format.
+ * API returns: { id, district, crop, diseaseName, confirmed (bool), createdAt }
+ * Demo uses:  { id, crop, disease, district, severity, confirmedCount, reportedAt, source }
+ * We normalize to a common shape for rendering.
+ */
+function normalizeItem(item) {
+  return {
+    id: item.id,
+    crop: item.crop || '',
+    // API uses diseaseName, demo uses disease
+    diseaseName: item.diseaseName || item.disease || '',
+    district: item.district || '',
+    // API uses createdAt, demo uses reportedAt
+    createdAt: item.createdAt || item.reportedAt || '',
+    // API confirmed is boolean, demo uses confirmedCount (number)
+    confirmed: item.confirmed === true || (typeof item.confirmedCount === 'number' && item.confirmedCount > 0),
+    confirmedCount: item.confirmedCount || (item.confirmed === true ? 1 : 0),
+    // severity not stored in API, derive from confirmed count if available
+    severity: item.severity || (item.confirmed === true ? 'high' : 'medium'),
+    // source not in API response
+    source: item.source || 'কৃষক রিপোর্ট',
+  };
+}
+
+// Fallback demo data for offline / dev mode
+const DEMO_OUTBREAKS = [
+  {
+    id: 'demo-1',
+    crop: 'ধান',
+    disease: 'ব্লাস্ট',
+    district: 'রাজশাহী',
+    severity: 'high',
+    confirmedCount: 12,
+    reportedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    source: 'কৃষক রিপোর্ট',
+  },
+  {
+    id: 'demo-2',
+    crop: 'আলু',
+    disease: 'লেট ব্লাইট',
+    district: 'বগুড়া',
+    severity: 'high',
+    confirmedCount: 8,
+    reportedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+    source: 'DAE নিশ্চিত',
+  },
+  {
+    id: 'demo-3',
+    crop: 'টমেটো',
+    disease: 'আর্লি ব্লাইট',
+    district: 'যশোর',
+    severity: 'medium',
+    confirmedCount: 5,
+    reportedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    source: 'কৃষক রিপোর্ট',
+  },
+  {
+    id: 'demo-4',
+    crop: 'সরিষা',
+    disease: 'অ্যালটারনেরিয়া ব্লাইট',
+    district: 'দিনাজপুর',
+    severity: 'low',
+    confirmedCount: 3,
+    reportedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    source: 'কৃষক রিপোর্ট',
+  },
+];
+
 export default function OutbreakList({ C, district, postJson }) {
   const [outbreaks, setOutbreaks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,8 +145,7 @@ export default function OutbreakList({ C, district, postJson }) {
   const [showReportForm, setShowReportForm] = useState(false);
   const [reportData, setReportData] = useState({
     crop: '',
-    disease: '',
-    location: district || '',
+    disease_name: '',
     severity: 'medium',
     notes: '',
   });
@@ -93,48 +165,7 @@ export default function OutbreakList({ C, district, postJson }) {
     } catch (err) {
       setError(err.message);
       // Fallback demo data for offline / dev mode
-      setOutbreaks([
-        {
-          id: 'demo-1',
-          crop: 'ধান',
-          disease: 'ব্লাস্ট',
-          district: district || 'রাজশাহী',
-          severity: 'high',
-          confirmedCount: 12,
-          reportedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          source: 'কৃষক রিপোর্ট',
-        },
-        {
-          id: 'demo-2',
-          crop: 'আলু',
-          disease: 'লেট ব্লাইট',
-          district: district || 'বগুড়া',
-          severity: 'high',
-          confirmedCount: 8,
-          reportedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-          source: 'DAE নিশ্চিত',
-        },
-        {
-          id: 'demo-3',
-          crop: 'টমেটো',
-          disease: 'আর্লি ব্লাইট',
-          district: district || 'যশোর',
-          severity: 'medium',
-          confirmedCount: 5,
-          reportedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          source: 'কৃষক রিপোর্ট',
-        },
-        {
-          id: 'demo-4',
-          crop: 'সরিষা',
-          disease: 'অ্যালটারনেরিয়া ব্লাইট',
-          district: district || 'দিনাজপুর',
-          severity: 'low',
-          confirmedCount: 3,
-          reportedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-          source: 'কৃষক রিপোর্ট',
-        },
-      ]);
+      setOutbreaks(DEMO_OUTBREAKS);
     } finally {
       setLoading(false);
     }
@@ -144,19 +175,21 @@ export default function OutbreakList({ C, district, postJson }) {
     fetchOutbreaks();
   }, [fetchOutbreaks]);
 
-  // Submit report
+  // Submit report — maps form fields to API-expected field names
   async function handleSubmitReport() {
-    if (!reportData.crop || !reportData.disease) return;
+    if (!reportData.crop || !reportData.disease_name) return;
+    if (!postJson || typeof postJson !== 'function') return;
     setSubmitting(true);
     try {
       const data = await postJson('/api/outbreaks', {
-        ...reportData,
-        reportedAt: new Date().toISOString(),
-        source: 'কৃষক রিপোর্ট',
+        district: district || 'অজানা',
+        crop: reportData.crop,
+        disease_name: reportData.disease_name,
+        confirmed: false,
       });
       if (data && !data.error) {
         setShowReportForm(false);
-        setReportData({ crop: '', disease: '', location: district || '', severity: 'medium', notes: '' });
+        setReportData({ crop: '', disease_name: '', severity: 'medium', notes: '' });
         fetchOutbreaks(); // Refresh
       }
     } catch {
@@ -213,8 +246,8 @@ export default function OutbreakList({ C, district, postJson }) {
             </div>
             <input
               type="text"
-              value={reportData.disease}
-              onChange={e => setReportData(prev => ({ ...prev, disease: e.target.value }))}
+              value={reportData.disease_name}
+              onChange={e => setReportData(prev => ({ ...prev, disease_name: e.target.value }))}
               placeholder="যেমন: ব্লাস্ট, লেট ব্লাইট"
               style={{
                 width: '100%', padding: '10px 14px', borderRadius: 10,
@@ -274,7 +307,7 @@ export default function OutbreakList({ C, district, postJson }) {
 
           <button
             onClick={handleSubmitReport}
-            disabled={!reportData.crop || !reportData.disease || submitting}
+            disabled={!reportData.crop || !reportData.disease_name || submitting}
             style={{
               width: '100%', padding: '13px', borderRadius: 12,
               border: 'none', background: C.primary, color: '#fff',
@@ -348,10 +381,11 @@ export default function OutbreakList({ C, district, postJson }) {
         </div>
       )}
 
-      {/* Outbreak list */}
+      {/* Outbreak list — uses normalizeItem() to handle both API and demo data */}
       {!loading && outbreaks.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {outbreaks.map((item, index) => {
+          {outbreaks.map((rawItem, index) => {
+            const item = normalizeItem(rawItem);
             const sev = severityStyle(item.severity);
             return (
               <div
@@ -386,7 +420,7 @@ export default function OutbreakList({ C, district, postJson }) {
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14, color: C.text }}>
-                      {item.disease}
+                      {item.diseaseName}
                     </div>
                     <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>
                       {item.crop} • {item.district}
@@ -398,10 +432,10 @@ export default function OutbreakList({ C, district, postJson }) {
                       background: sev.bg, borderRadius: 8, padding: '3px 8px',
                       fontSize: 12, fontWeight: 700, color: sev.color,
                     }}>
-                      ✓ {item.confirmedCount}
+                      {item.confirmed ? '✓ নিশ্চিত' : `📊 ${item.confirmedCount}`}
                     </div>
                     <div style={{ fontSize: 10, color: C.textLight, marginTop: 3 }}>
-                      {timeAgo(item.reportedAt)}
+                      {timeAgo(item.createdAt)}
                     </div>
                   </div>
                 </div>
