@@ -119,37 +119,12 @@ const testData5 = {
   }
 };
 
-console.log("Testing offline diagnosis engine...");
-console.log("================================");
-
-console.log("\nTest 1: Suspected Nitrogen Deficiency (English)");
+// Run tests — results available via return values
 const result1 = diagnoseOffline(testData1);
-console.log("Result:", JSON.stringify(result1, null, 2));
-
-console.log("\nTest 2: Suspected Fungal Disease (English)");
 const result2 = diagnoseOffline(testData2);
-console.log("Result:", JSON.stringify(result2, null, 2));
-
-console.log("\nTest 3: Bengali Rice Blast Symptoms");
 const result3 = diagnoseOffline(testData3);
-console.log("Primary Suspect:", result3.primarySuspect);
-console.log("Specific Disease:", result3.specificDisease);
-console.log("Crop Disease Matches:", result3.cropDiseaseMatches?.length || 0);
-console.log("Confidence:", result3.confidence);
-console.log("Excluded:", result3.excluded);
-console.log("Suspects:", result3.suspects);
-
-console.log("\nTest 4: Bengali Tomato Bacterial Wilt Symptoms");
 const result4 = diagnoseOffline(testData4);
-console.log("Primary Suspect:", result4.primarySuspect);
-console.log("Specific Disease:", result4.specificDisease);
-console.log("Crop Disease Matches:", result4.cropDiseaseMatches?.length || 0);
-console.log("Confidence:", result4.confidence);
-
-console.log("\nTest 5: Bengali + English Crop Name (Potato)");
 const result5 = diagnoseOffline(testData5);
-console.log("Primary Suspect:", result5.primarySuspect);
-console.log("Specific Disease:", result5.specificDisease);
-console.log("Crop Disease Matches:", result5.cropDiseaseMatches?.length || 0);
 
-console.log("\nTest completed.");
+// Export for programmatic use
+export { result1, result2, result3, result4, result5 };

@@ -2,6 +2,7 @@
  * Dark Mode Theme System for CABI Plant Detective
  *
  * Tokens are aligned with C_LIGHT in App.jsx for visual consistency.
+ * Includes tinted backgrounds and borders for dark-mode compatibility.
  */
 
 export const lightTheme = {
@@ -40,6 +41,67 @@ export const darkTheme = {
   blue: '#3b82f6',
 };
 
+// ─── Tinted backgrounds & borders for dark-mode compatibility ─────────────────
+// Light theme uses soft pastels; dark theme uses deep muted tones.
+
+const lightTints = {
+  bgDanger: '#fef2f2',
+  bgSuccess: '#f0fdf4',
+  bgWarning: '#fffbeb',
+  bgInfo: '#eff6ff',
+  bgBlue: '#f0f9ff',
+  bgPurple: '#faf5ff',
+  bgTeal: '#ecfeff',
+  bgOrange: '#fff7ed',
+  borderDanger: '#fecaca',
+  borderSuccess: '#bbf7d0',
+  borderWarning: '#fcd34d',
+  borderInfo: '#bfdbfe',
+  borderBlue: '#bae6fd',
+  borderPurple: '#e9d5ff',
+  borderTeal: '#a5f3fc',
+  borderOrange: '#fed7aa',
+  badgeSuccess: '#dcfce7',
+  badgeWarning: '#fef3c7',
+  textSuccess: '#14532d',
+  textDanger: '#991b1b',
+  textWarning: '#92400e',
+  textInfo: '#1e40af',
+  textBlue: '#0369a1',
+  textPurple: '#6b21a8',
+  textTeal: '#155e75',
+  textOrange: '#9a3412',
+};
+
+const darkTints = {
+  bgDanger: '#450a0a',
+  bgSuccess: '#052e16',
+  bgWarning: '#451a03',
+  bgInfo: '#172554',
+  bgBlue: '#0c4a6e',
+  bgPurple: '#3b0764',
+  bgTeal: '#134e4a',
+  bgOrange: '#431407',
+  borderDanger: '#7f1d1d',
+  borderSuccess: '#166534',
+  borderWarning: '#92400e',
+  borderInfo: '#1e40af',
+  borderBlue: '#075985',
+  borderPurple: '#7e22ce',
+  borderTeal: '#0f766e',
+  borderOrange: '#c2410c',
+  badgeSuccess: '#166534',
+  badgeWarning: '#92400e',
+  textSuccess: '#4ade80',
+  textDanger: '#fca5a5',
+  textWarning: '#fcd34d',
+  textInfo: '#93c5fd',
+  textBlue: '#7dd3fc',
+  textPurple: '#c084fc',
+  textTeal: '#5eead4',
+  textOrange: '#fb923c',
+};
+
 export const lightThemeFull = {
   ...lightTheme,
   primaryXDark: '#002109',
@@ -55,6 +117,7 @@ export const lightThemeFull = {
   game1: '#7c3aed',
   game2: '#0891b2',
   game3: '#ea580c',
+  ...lightTints,
 };
 
 export const darkThemeFull = {
@@ -72,6 +135,7 @@ export const darkThemeFull = {
   game1: '#8b5cf6',
   game2: '#06b6d4',
   game3: '#f97316',
+  ...darkTints,
 };
 
 export function getPreferredTheme() {

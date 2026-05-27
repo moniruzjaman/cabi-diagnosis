@@ -106,6 +106,14 @@ const C_LIGHT={
   shadowLg:"0 8px 32px rgba(0,0,0,0.12)",
   heroGradient:"linear-gradient(135deg, #006028 0%, #0a8c3f 50%, #16a34a 100%)",
   game1:"#7c3aed", game2:"#0891b2", game3:"#ea580c",
+  // Tinted backgrounds — dark-mode compatible
+  bgDanger:"#fef2f2", bgSuccess:"#f0fdf4", bgWarning:"#fffbeb", bgInfo:"#eff6ff",
+  bgBlue:"#f0f9ff", bgPurple:"#faf5ff", bgTeal:"#ecfeff", bgOrange:"#fff7ed",
+  borderDanger:"#fecaca", borderSuccess:"#bbf7d0", borderWarning:"#fcd34d", borderInfo:"#bfdbfe",
+  borderBlue:"#bae6fd", borderPurple:"#e9d5ff", borderTeal:"#a5f3fc", borderOrange:"#fed7aa",
+  badgeSuccess:"#dcfce7", badgeWarning:"#fef3c7",
+  textSuccess:"#14532d", textDanger:"#991b1b", textWarning:"#92400e", textInfo:"#1e40af",
+  textBlue:"#0369a1", textPurple:"#6b21a8", textTeal:"#155e75", textOrange:"#9a3412",
 };
 // Dynamic theme bridge — main component updates C on every render
 // so renderTokens, SectionCard, InfoRow etc. automatically get the correct theme.
@@ -385,11 +393,11 @@ const CABI_GUIDE={
   protocol:{
     title:"CABI Plantwise রোগ নির্ণয় প্রোটোকল",subtitle:"5-Step Diagnostic Framework",
     steps:[
-      {num:"১",icon:"👁️",title:"লক্ষণ পর্যবেক্ষণ",en:"Observe Symptoms",color:"#2563eb",bg:"#eff6ff",border:"#bfdbfe",desc:"ফসলের পাতা, কান্ড, ফুল ও ফলে বাহ্যিক লক্ষণ পর্যবেক্ষণ করুন।",points:["পাতার উপরে ও নিচে পরীক্ষা করুন","দাগের আকার, রং ও সীমানা লক্ষ্য করুন","পোকার উপস্থিতি বা মলের চিহ্ন খুঁজুন","আক্রান্ত গাছের বয়স নির্ধারণ করুন","সুস্থ গাছের সাথে তুলনা করুন"]},
-      {num:"২",icon:"🔬",title:"CABI বর্জন পদ্ধতি",en:"CABI Exclusion",color:"#7c3aed",bg:"#faf5ff",border:"#e9d5ff",desc:"সম্ভাব্য কারণগুলো একে একে বাদ দিন।",points:["অপুষ্টি: N হলে পুরনো পাতা, Fe হলে নতুন পাতা হলুদ","পোকা: ছিদ্র, কামড়ের দাগ, পোকা বা ডিম দেখুন","ছত্রাক: দাগের গঠন, স্পোর লক্ষ্য করুন","ব্যাকটেরিয়া: পানিভেজা দাগ, দুর্গন্ধ","ভাইরাস: মোজেইক, বিকৃতি, বামনতা"]},
-      {num:"৩",icon:"🔺",title:"রোগ ত্রিভুজ",en:"Disease Triangle",color:"#d97706",bg:"#fffbeb",border:"#fcd34d",desc:"রোগের জন্য তিনটি উপাদান একসাথে থাকতে হয়।",points:["পোষক: ফসলের প্রতিরোধ ক্ষমতা কম","রোগজীবাণু: ছত্রাক/ব্যাকটেরিয়া/ভাইরাস","পরিবেশ: তাপমাত্রা, আর্দ্রতা, বৃষ্টি","সময়: তিনটি একসাথে থাকলেই রোগ","যেকোনো একটি বদলালে নিয়ন্ত্রণ সম্ভব"]},
-      {num:"৪",icon:"🧪",title:"মাঠ নিশ্চিতকরণ",en:"Field Confirmation",color:"#16a34a",bg:"#f0fdf4",border:"#bbf7d0",desc:"নমুনা সংগ্রহের মাধ্যমে প্রাথমিক নির্ণয় নিশ্চিত করুন।",points:["W-pattern-এ ১০টি স্থান থেকে নমুনা নিন","আক্রান্তের হার (%) গণনা করুন","ETL-এর সাথে তুলনা করুন","৩-৫ দিন রোগের অগ্রগতি দেখুন","DAE ল্যাবে নমুনা পাঠান প্রয়োজনে"]},
-      {num:"৫",icon:"🌿",title:"IPM সিদ্ধান্ত",en:"IPM Decision",color:"#0891b2",bg:"#ecfeff",border:"#a5f3fc",desc:"IPM পিরামিড: প্রতিরোধ → সাংস্কৃতিক → জৈব → রাসায়নিক।",points:["প্রতিরোধী জাত ব্যবহার করুন","সুষম সার, সেচ, পরিষ্কার মাঠ","জৈব: ট্রাইকোকার্ড, নিম তেল","ETL অতিক্রমে সঠিক কীটনাশক","FRAC/IRAC রোটেশন মেনে চলুন"]},
+      {num:"১",icon:"👁️",title:"লক্ষণ পর্যবেক্ষণ",en:"Observe Symptoms",color:"#2563eb",bgKey:"bgInfo",borderKey:"borderInfo",desc:"ফসলের পাতা, কান্ড, ফুল ও ফলে বাহ্যিক লক্ষণ পর্যবেক্ষণ করুন।",points:["পাতার উপরে ও নিচে পরীক্ষা করুন","দাগের আকার, রং ও সীমানা লক্ষ্য করুন","পোকার উপস্থিতি বা মলের চিহ্ন খুঁজুন","আক্রান্ত গাছের বয়স নির্ধারণ করুন","সুস্থ গাছের সাথে তুলনা করুন"]},
+      {num:"২",icon:"🔬",title:"CABI বর্জন পদ্ধতি",en:"CABI Exclusion",color:"#7c3aed",bgKey:"bgPurple",borderKey:"borderPurple",desc:"সম্ভাব্য কারণগুলো একে একে বাদ দিন।",points:["অপুষ্টি: N হলে পুরনো পাতা, Fe হলে নতুন পাতা হলুদ","পোকা: ছিদ্র, কামড়ের দাগ, পোকা বা ডিম দেখুন","ছত্রাক: দাগের গঠন, স্পোর লক্ষ্য করুন","ব্যাকটেরিয়া: পানিভেজা দাগ, দুর্গন্ধ","ভাইরাস: মোজেইক, বিকৃতি, বামনতা"]},
+      {num:"৩",icon:"🔺",title:"রোগ ত্রিভুজ",en:"Disease Triangle",color:"#d97706",bgKey:"bgWarning",borderKey:"borderWarning",desc:"রোগের জন্য তিনটি উপাদান একসাথে থাকতে হয়।",points:["পোষক: ফসলের প্রতিরোধ ক্ষমতা কম","রোগজীবাণু: ছত্রাক/ব্যাকটেরিয়া/ভাইরাস","পরিবেশ: তাপমাত্রা, আর্দ্রতা, বৃষ্টি","সময়: তিনটি একসাথে থাকলেই রোগ","যেকোনো একটি বদলালে নিয়ন্ত্রণ সম্ভব"]},
+      {num:"৪",icon:"🧪",title:"মাঠ নিশ্চিতকরণ",en:"Field Confirmation",color:"#16a34a",bgKey:"bgSuccess",borderKey:"borderSuccess",desc:"নমুনা সংগ্রহের মাধ্যমে প্রাথমিক নির্ণয় নিশ্চিত করুন।",points:["W-pattern-এ ১০টি স্থান থেকে নমুনা নিন","আক্রান্তের হার (%) গণনা করুন","ETL-এর সাথে তুলনা করুন","৩-৫ দিন রোগের অগ্রগতি দেখুন","DAE ল্যাবে নমুনা পাঠান প্রয়োজনে"]},
+      {num:"৫",icon:"🌿",title:"IPM সিদ্ধান্ত",en:"IPM Decision",color:"#0891b2",bgKey:"bgTeal",borderKey:"borderTeal",desc:"IPM পিরামিড: প্রতিরোধ → সাংস্কৃতিক → জৈব → রাসায়নিক।",points:["প্রতিরোধী জাত ব্যবহার করুন","সুষম সার, সেচ, পরিষ্কার মাঠ","জৈব: ট্রাইকোকার্ড, নিম তেল","ETL অতিক্রমে সঠিক কীটনাশক","FRAC/IRAC রোটেশন মেনে চলুন"]},
     ]
   },
   etl:[
@@ -494,23 +502,23 @@ function parseIntoSections(text){
   return sections;
 }
 const SECTION_META_KEYS={
-  "সম্ভাব্য":{icon:"🦠",colorKey:"danger",bg:"#fef2f2",border:"#fecaca"},
-  "Diagnosis":{icon:"🦠",colorKey:"danger",bg:"#fef2f2",border:"#fecaca"},
-  "CABI":{icon:"🔬",colorKey:"blue",bg:"#eff6ff",border:"#bfdbfe"},
-  "Exclusion":{icon:"🔬",colorKey:"blue",bg:"#eff6ff",border:"#bfdbfe"},
-  "IPM":{icon:"🌿",colorKey:"success",bg:"#f0fdf4",border:"#bbf7d0"},
-  "সমন্বিত":{icon:"🌿",colorKey:"success",bg:"#f0fdf4",border:"#bbf7d0"},
-  "তীব্রতা":{icon:"📊",colorKey:"warning",bg:"#fffbeb",border:"#fed7aa"},
-  "Severity":{icon:"📊",colorKey:"warning",bg:"#fffbeb",border:"#fed7aa"},
-  "প্রতিরোধ":{icon:"🛡️",colorKey:"purple",bg:"#faf5ff",border:"#e9d5ff"},
-  "Prevention":{icon:"🛡️",colorKey:"purple",bg:"#faf5ff",border:"#e9d5ff"},
-  "DAE":{icon:"📞",colorKey:"teal",bg:"#ecfeff",border:"#a5f3fc"},
-  "Consult":{icon:"📞",colorKey:"teal",bg:"#ecfeff",border:"#a5f3fc"},
-  "মাঠে":{icon:"🧪",colorKey:"greenDark",bg:"#ecfdf5",border:"#a7f3d0"},
-  "Field":{icon:"🧪",colorKey:"greenDark",bg:"#ecfdf5",border:"#a7f3d0"},
+  "সম্ভাব্য":{icon:"🦠",colorKey:"danger",bgKey:"bgDanger",borderKey:"borderDanger"},
+  "Diagnosis":{icon:"🦠",colorKey:"danger",bgKey:"bgDanger",borderKey:"borderDanger"},
+  "CABI":{icon:"🔬",colorKey:"blue",bgKey:"bgInfo",borderKey:"borderInfo"},
+  "Exclusion":{icon:"🔬",colorKey:"blue",bgKey:"bgInfo",borderKey:"borderInfo"},
+  "IPM":{icon:"🌿",colorKey:"success",bgKey:"bgSuccess",borderKey:"borderSuccess"},
+  "সমন্বিত":{icon:"🌿",colorKey:"success",bgKey:"bgSuccess",borderKey:"borderSuccess"},
+  "তীব্রতা":{icon:"📊",colorKey:"warning",bgKey:"bgWarning",borderKey:"borderWarning"},
+  "Severity":{icon:"📊",colorKey:"warning",bgKey:"bgWarning",borderKey:"borderWarning"},
+  "প্রতিরোধ":{icon:"🛡️",colorKey:"purple",bgKey:"bgPurple",borderKey:"borderPurple"},
+  "Prevention":{icon:"🛡️",colorKey:"purple",bgKey:"bgPurple",borderKey:"borderPurple"},
+  "DAE":{icon:"📞",colorKey:"teal",bgKey:"bgTeal",borderKey:"borderTeal"},
+  "Consult":{icon:"📞",colorKey:"teal",bgKey:"bgTeal",borderKey:"borderTeal"},
+  "মাঠে":{icon:"🧪",colorKey:"greenDark",bgKey:"bgSuccess",borderKey:"borderSuccess"},
+  "Field":{icon:"🧪",colorKey:"greenDark",bgKey:"bgSuccess",borderKey:"borderSuccess"},
 };
 const _SECTION_META_COLORS={danger:"#dc2626",blue:"#2563eb",success:"#16a34a",warning:"#d97706",purple:"#7c3aed",teal:"#0891b2",greenDark:"#065f46"};
-function getSectionMeta(){const out={};for(const[k,v]of Object.entries(SECTION_META_KEYS)){out[k]={icon:v.icon,color:C[v.colorKey]||_SECTION_META_COLORS[v.colorKey],bg:v.bg,border:v.border};}return out;}
+function getSectionMeta(){const out={};for(const[k,v]of Object.entries(SECTION_META_KEYS)){out[k]={icon:v.icon,color:C[v.colorKey]||_SECTION_META_COLORS[v.colorKey],bg:C[v.bgKey]||C.bgMuted,border:C[v.borderKey]||C.border};}return out;}
 function getMeta(t){for(const[k,v]of Object.entries(getSectionMeta()))if((t||"").includes(k))return v;return{icon:"📄",color:C.text,bg:C.bgMuted,border:C.border};}
 function SectionCard({title,bodyLines,defaultOpen}){
   const[open,setOpen]=useState(defaultOpen!==false);
@@ -546,7 +554,7 @@ function SprayingWidget({weather,weatherLoading}){
   if(weatherLoading||!weather)return null;
   const spray=getSprayingCondition(weather);
   return(
-    <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:spray.ok?"#f0fdf4":"#fff7ed",border:`1px solid ${spray.ok?"#bbf7d0":"#fed7aa"}`,borderRadius:14,marginBottom:12}}>
+    <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:spray.ok?C.bgSuccess:C.bgOrange,border:`1px solid ${spray.ok?C.borderSuccess:C.borderOrange}`,borderRadius:14,marginBottom:12}}>
       <span style={{fontSize:20}}>{spray.ok?"✅":"⚠️"}</span>
       <div style={{flex:1}}>
         <div style={{fontWeight:700,fontSize:12,color:spray.ok?C.success:C.warning}}>স্প্রে: {spray.ok?"অনুকূল":"প্রতিকূল"}</div>
@@ -559,14 +567,14 @@ function SprayingWidget({weather,weatherLoading}){
 function WeatherBar({weather,weatherLoading,locationName,locationSource,onRefresh}){
   const risks=assessWeatherRisks(weather);const top=risks[0];
   return(
-    <div style={{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:14,overflow:"hidden",marginBottom:12}}>
+    <div style={{background:C.bgBlue,border:`1px solid ${C.borderBlue}`,borderRadius:14,overflow:"hidden",marginBottom:12}}>
       <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 14px",background:"linear-gradient(90deg,#0ea5e9,#0284c7)",color:"#fff"}}>
         <span style={{fontSize:15}}>🌦️</span>
         <span style={{fontWeight:700,fontSize:12}}>আবহাওয়া {locationSource==="gps"?"📍":"🌐"}</span>
         {locationName&&<span style={{fontSize:11,opacity:.85,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>— {locationName}</span>}
         <button onClick={onRefresh} style={{marginLeft:"auto",background:"rgba(255,255,255,0.2)",border:"none",borderRadius:8,color:"#fff",padding:"2px 10px",cursor:"pointer",fontSize:11,flexShrink:0}}>🔄</button>
       </div>
-      {weatherLoading&&!weather&&<div style={{padding:"10px 14px",color:"#0369a1",fontSize:12}}>⏳ আবহাওয়া সংগ্রহ...</div>}
+      {weatherLoading&&!weather&&<div style={{padding:"10px 14px",color:C.textBlue,fontSize:12}}>⏳ আবহাওয়া সংগ্রহ...</div>}
       {weather&&(
         <div style={{padding:"8px 14px"}}>
           <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:5}}>
@@ -587,7 +595,7 @@ function QuickCropRow({onSelect,selected}){
         const active=(selected||"").includes(crop.en);
         return(
           <button key={crop.id} onClick={()=>onSelect(crop.en+" / "+crop.label)} style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"none",border:"none",cursor:"pointer",padding:"2px 4px"}}>
-            <div style={{width:54,height:54,borderRadius:"50%",border:`2.5px solid ${active?crop.color:C.border}`,background:active?crop.color+"18":"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,transition:"all .2s",boxShadow:active?`0 0 0 3px ${crop.color}33`:"none"}}>{crop.emoji}</div>
+            <div style={{width:54,height:54,borderRadius:"50%",border:`2.5px solid ${active?crop.color:C.border}`,background:active?crop.color+"18":C.bgCard,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,transition:"all .2s",boxShadow:active?`0 0 0 3px ${crop.color}33`:"none"}}>{crop.emoji}</div>
             <span style={{fontSize:10,color:active?C.primaryDark:C.textMuted,fontWeight:active?700:400,whiteSpace:"nowrap"}}>{crop.label}</span>
           </button>
         );
@@ -606,13 +614,13 @@ function DiagnosisHistory({history,onLoad}){
       <div style={{fontSize:11,color:C.textMuted,fontWeight:700,marginBottom:7,textTransform:"uppercase",letterSpacing:.5}}>📋 সাম্প্রতিক নির্ণয়</div>
       <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
         {[...history].reverse().slice(0,4).map((h,i)=>(
-          <button key={i} onClick={()=>onLoad(h)} style={{flexShrink:0,padding:"7px 12px",borderRadius:20,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",gap:7,boxShadow:C.shadow}}>
+          <button key={i} onClick={()=>onLoad(h)} style={{flexShrink:0,padding:"7px 12px",borderRadius:20,border:`1px solid ${C.border}`,background:C.bgCard,cursor:"pointer",display:"flex",alignItems:"center",gap:7,boxShadow:C.shadow}}>
             <span style={{fontSize:16}}>🌾</span>
             <div style={{textAlign:"left"}}>
               <div style={{fontWeight:700,fontSize:11,color:C.text}}>{h.crop?.split("/")[0]?.trim()||"Unknown"}</div>
               <div style={{color:C.textMuted,fontSize:10}}>{h.date}</div>
             </div>
-            <span style={{background:"#dcfce7",color:"#166534",borderRadius:10,padding:"1px 7px",fontSize:9,fontWeight:700}}>✓</span>
+            <span style={{background:C.badgeSuccess,color:C.textSuccess,borderRadius:10,padding:"1px 7px",fontSize:9,fontWeight:700}}>✓</span>
           </button>
         ))}
       </div>
@@ -627,7 +635,7 @@ function SeveritySurvey({onSubmit}){
       <div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:12}}>📊 কতটুকু মাঠ আক্রান্ত?</div>
       <div style={{display:"flex",flexDirection:"column",gap:7}}>
         {options.map(opt=>(
-          <button key={opt} onClick={()=>setSelected(opt)} style={{padding:"11px 14px",borderRadius:12,border:`1.5px solid ${selected===opt?C.primary:C.border}`,background:selected===opt?"#f0fdf4":"#fff",cursor:"pointer",textAlign:"left",fontSize:13,color:C.text,display:"flex",alignItems:"center",gap:10,transition:"all .15s"}}>
+          <button key={opt} onClick={()=>setSelected(opt)} style={{padding:"11px 14px",borderRadius:12,border:`1.5px solid ${selected===opt?C.primary:C.border}`,background:selected===opt?C.bgSuccess:C.bgCard,cursor:"pointer",textAlign:"left",fontSize:13,color:C.text,display:"flex",alignItems:"center",gap:10,transition:"all .15s"}}>
             <div style={{width:18,height:18,borderRadius:"50%",border:`2px solid ${selected===opt?C.primary:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
               {selected===opt&&<div style={{width:8,height:8,borderRadius:"50%",background:C.primary}}/>}
             </div>
@@ -644,19 +652,19 @@ function SeveritySurvey({onSubmit}){
 function ProductRecommendations({products,crop}){
   const[selected,setSelected]=useState(null);
   const typeColor=(t)=>({
-    insecticide:{bg:"#fef3c7",border:"#fcd34d",color:"#92400e",label:"কীটনাশক"},
-    fungicide:{bg:"#eff6ff",border:"#bfdbfe",color:"#1e40af",label:"ছত্রাকনাশক"},
-    herbicide:{bg:"#fdf4ff",border:"#e9d5ff",color:"#6b21a8",label:"আগাছানাশক"},
-    acaricide:{bg:"#fff7ed",border:"#fed7aa",color:"#9a3412",label:"মাকড়নাশক"},
-    bactericide:{bg:"#ecfdf5",border:"#a7f3d0",color:"#065f46",label:"ব্যাকটেরিয়ানাশক"},
-    trap:{bg:"#f0f9ff",border:"#bae6fd",color:"#0c4a6e",label:"ফাঁদ"},
-    biocontrol:{bg:"#f0fdf4",border:"#bbf7d0",color:"#14532d",label:"জৈব নিয়ন্ত্রণ"},
-    biofungicide:{bg:"#f0fdf4",border:"#bbf7d0",color:"#14532d",label:"জৈব ছত্রাকনাশক"},
-    bioinsecticide:{bg:"#f0fdf4",border:"#bbf7d0",color:"#14532d",label:"জৈব কীটনাশক"},
-    botanical:{bg:"#fefce8",border:"#fef08a",color:"#713f12",label:"উদ্ভিজ্জ"},
-    fertilizer:{bg:"#ecfdf5",border:"#a7f3d0",color:"#065f46",label:"সার"},
-    soil_amendment:{bg:"#fafaf9",border:"#d6d3d1",color:"#292524",label:"মাটি সংশোধন"},
-    pgr:{bg:"#fdf2f8",border:"#f5d0fe",color:"#701a75",label:"বৃদ্ধি নিয়ন্ত্রক"},
+    insecticide:{bg:C.badgeWarning,border:C.borderWarning,color:C.textWarning,label:"কীটনাশক"},
+    fungicide:{bg:C.bgInfo,border:C.borderInfo,color:C.textInfo,label:"ছত্রাকনাশক"},
+    herbicide:{bg:C.bgPurple,border:C.borderPurple,color:C.textPurple,label:"আগাছানাশক"},
+    acaricide:{bg:C.bgOrange,border:C.borderOrange,color:C.textOrange,label:"মাকড়নাশক"},
+    bactericide:{bg:C.bgSuccess,border:C.borderSuccess,color:C.textSuccess,label:"ব্যাকটেরিয়ানাশক"},
+    trap:{bg:C.bgBlue,border:C.borderBlue,color:C.textBlue,label:"ফাঁদ"},
+    biocontrol:{bg:C.bgSuccess,border:C.borderSuccess,color:C.textSuccess,label:"জৈব নিয়ন্ত্রণ"},
+    biofungicide:{bg:C.bgSuccess,border:C.borderSuccess,color:C.textSuccess,label:"জৈব ছত্রাকনাশক"},
+    bioinsecticide:{bg:C.bgSuccess,border:C.borderSuccess,color:C.textSuccess,label:"জৈব কীটনাশক"},
+    botanical:{bg:C.bgWarning,border:C.borderWarning,color:C.textWarning,label:"উদ্ভিজ্জ"},
+    fertilizer:{bg:C.bgSuccess,border:C.borderSuccess,color:C.textSuccess,label:"সার"},
+    soil_amendment:{bg:C.bgMuted,border:C.border,color:C.text,label:"মাটি সংশোধন"},
+    pgr:{bg:C.bgPurple,border:C.borderPurple,color:C.textPurple,label:"বৃদ্ধি নিয়ন্ত্রক"},
   }[t]||{bg:C.bgMuted,border:C.border,color:C.text,label:t});
   const isBio=(t)=>["trap","biocontrol","bioinsecticide","biofungicide","botanical"].includes(t);
   if(selected){
@@ -679,9 +687,9 @@ function ProductRecommendations({products,crop}){
           <InfoRow icon="📅" label="PHI (ফসল কাটার আগে)" val={`${selected.phi_days} দিন`}/>
           <InfoRow icon="🔬" label="প্রয়োগ পদ্ধতি" val={selected.method}/>
         </div>
-        {selected.ipm_note&&<div style={{marginTop:10,background:"#f0fdf4",borderRadius:10,padding:10}}><div style={{fontWeight:700,fontSize:11,color:C.success,marginBottom:3}}>🌿 IPM পরামর্শ</div><div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{selected.ipm_note}</div></div>}
-        <div style={{marginTop:8,background:"#fffbeb",borderRadius:10,padding:10}}><div style={{fontWeight:700,fontSize:11,color:C.warning,marginBottom:3}}>⚠️ সতর্কতা</div><div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{selected.caution_bn||selected.caution}</div></div>
-        <div style={{marginTop:10,padding:"8px 12px",background:"#fef2f2",borderRadius:8,fontSize:11,color:C.danger}}>⚠️ শুধুমাত্র একটি পণ্য ব্যবহার করুন। DAE কর্মকর্তার পরামর্শ নিন।</div>
+        {selected.ipm_note&&<div style={{marginTop:10,background:C.bgSuccess,borderRadius:10,padding:10}}><div style={{fontWeight:700,fontSize:11,color:C.success,marginBottom:3}}>🌿 IPM পরামর্শ</div><div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{selected.ipm_note}</div></div>}
+        <div style={{marginTop:8,background:C.bgWarning,borderRadius:10,padding:10}}><div style={{fontWeight:700,fontSize:11,color:C.warning,marginBottom:3}}>⚠️ সতর্কতা</div><div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{selected.caution_bn||selected.caution}</div></div>
+        <div style={{marginTop:10,padding:"8px 12px",background:C.bgDanger,borderRadius:8,fontSize:11,color:C.danger}}>⚠️ শুধুমাত্র একটি পণ্য ব্যবহার করুন। DAE কর্মকর্তার পরামর্শ নিন।</div>
       </div>
     );
   }
@@ -694,7 +702,7 @@ function ProductRecommendations({products,crop}){
           <div style={{fontSize:10,color:C.textMuted}}>{crop?.split("/")[0]?.trim()} · DAE নিবন্ধিত</div>
         </div>
       </div>
-      <div style={{background:"#fffbeb",border:"1px solid #fed7aa",borderRadius:8,padding:"7px 10px",marginBottom:10,fontSize:11,color:C.warning,fontWeight:600}}>⚠️ শুধুমাত্র একটি পণ্য বেছে নিন</div>
+      <div style={{background:C.bgWarning,border:`1px solid ${C.borderWarning}`,borderRadius:8,padding:"7px 10px",marginBottom:10,fontSize:11,color:C.warning,fontWeight:600}}>⚠️ শুধুমাত্র একটি পণ্য বেছে নিন</div>
       <div style={{display:"flex",flexDirection:"column",gap:7}}>
         {products.map((p,i)=>{
           const tc=typeColor(p.type);
@@ -706,8 +714,8 @@ function ProductRecommendations({products,crop}){
                 <div style={{color:C.textMuted,fontSize:11,marginTop:1}}>{p.active_ingredient?.split(" ").slice(0,4).join(" ")}</div>
                 <div style={{display:"flex",gap:5,marginTop:4,flexWrap:"wrap"}}>
                   <span style={{background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>{tc.label}</span>
-                  <span style={{background:"#f0fdf4",border:"1px solid #bbf7d0",color:"#065f46",borderRadius:10,padding:"1px 7px",fontSize:10}}>PHI:{p.phi_days}d</span>
-                  {isBio(p.type)&&<span style={{background:"#ecfdf5",border:"1px solid #a7f3d0",color:"#065f46",borderRadius:10,padding:"1px 7px",fontSize:10}}>🌿IPM</span>}
+                  <span style={{background:C.bgSuccess,border:`1px solid ${C.borderSuccess}`,color:C.textSuccess,borderRadius:10,padding:"1px 7px",fontSize:10}}>PHI:{p.phi_days}d</span>
+                  {isBio(p.type)&&<span style={{background:C.bgSuccess,border:`1px solid ${C.borderSuccess}`,color:C.textSuccess,borderRadius:10,padding:"1px 7px",fontSize:10}}>🌿IPM</span>}
                 </div>
               </div>
               <span style={{color:C.textLight,fontSize:16,flexShrink:0}}>›</span>
@@ -754,7 +762,7 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,vis
   };
   const mailto=`mailto:?subject=${encodeURIComponent(`Udbhid Goenda feedback - ${context}`)}&body=${encodeURIComponent(payload)}`;
   return(
-    <div className="ud-editorial-shadow" style={{marginTop:16,background:"linear-gradient(135deg,#ffffff,#eff5f0)",border:`1px solid ${C.border}`,borderRadius:28,padding:18,boxShadow:C.shadow}}>
+    <div className="ud-editorial-shadow" style={{marginTop:16,background:`linear-gradient(135deg,${C.bgCard},${C.bgMuted})`,border:`1px solid ${C.border}`,borderRadius:28,padding:18,boxShadow:C.shadow}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap",marginBottom:10}}>
         <div>
           <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>⭐ রেটিং ও মতামত</div>
@@ -764,14 +772,14 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,vis
       </div>
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
         {[1,2,3,4,5].map(star=>(
-          <button key={star} onClick={()=>setRating(star)} style={{width:44,height:44,borderRadius:14,border:`1px solid ${rating>=star?"#fbbf24":C.border}`,background:rating>=star?"#fffbeb":"#fff",cursor:"pointer",fontSize:22}}>
+          <button key={star} onClick={()=>setRating(star)} style={{width:44,height:44,borderRadius:14,border:`1px solid ${rating>=star?"#fbbf24":C.border}`,background:rating>=star?C.bgWarning:C.bgCard,cursor:"pointer",fontSize:22}}>
             {rating>=star?"★":"☆"}
           </button>
         ))}
       </div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
         {quickNotes.map(note=>(
-          <button key={note} onClick={()=>setFeedback(prev=>prev?`${prev}${prev.includes(note)?"":"; "+note}`:note)} style={{padding:"7px 10px",borderRadius:999,border:`1px solid ${C.border}`,background:"#f8faf8",cursor:"pointer",fontSize:11}}>
+          <button key={note} onClick={()=>setFeedback(prev=>prev?`${prev}${prev.includes(note)?"":"; "+note}`:note)} style={{padding:"7px 10px",borderRadius:999,border:`1px solid ${C.border}`,background:C.bgMuted,cursor:"pointer",fontSize:11}}>
             {note}
           </button>
         ))}
@@ -781,7 +789,7 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,vis
       <div style={{fontSize:11,color:C.textLight,marginBottom:12}}>ব্রাউজার নিরাপত্তার কারণে ইমেইল সরাসরি পড়া যায় না। তবে `autocomplete=email` দেওয়া আছে, তাই সেভ করা ইমেইল থাকলে ব্রাউজার নিজে সাজেস্ট/অটোফিল করতে পারবে.</div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         <button onClick={handleCopy} style={{padding:"10px 14px",borderRadius:12,border:"none",background:C.primary,color:"#fff",fontWeight:700,cursor:"pointer"}}>📋 কপি করুন</button>
-        <a href={mailto} onClick={()=>{saveFeedback();}} style={{padding:"10px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#f0fdf4",color:C.primary,textDecoration:"none",fontWeight:700}}>✉️ ক্লিকে পাঠান</a>
+        <a href={mailto} onClick={()=>{saveFeedback();}} style={{padding:"10px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgSuccess,color:C.primary,textDecoration:"none",fontWeight:700}}>✉️ ক্লিকে পাঠান</a>
         {status&&<div style={{padding:"10px 0",fontSize:12,color:C.textMuted}}>{status}</div>}
       </div>
     </div>
@@ -801,7 +809,7 @@ function HomeTab({setActiveTab,history,weather,locationName}){
           <div style={{fontWeight:800,fontSize:28,lineHeight:1.15,marginBottom:8}}>উদ্ভিদ গোয়েন্দা</div>
           <div style={{fontSize:14,lineHeight:1.7,opacity:.92,marginBottom:14}}>কৃষকের জন্য সহজ রোগ-পোকা সহায়তা। ছবি, অবস্থান, মৌসুম আর মাঠের লক্ষণ মিলিয়ে রিপোর্ট দেখুন.</div>
           <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-            <button onClick={()=>setActiveTab("diagnose")} style={{background:"#fff",color:C.primaryDark,border:"none",borderRadius:14,padding:"10px 16px",fontWeight:800,cursor:"pointer"}}>🔬 এখনই নির্ণয়</button>
+            <button onClick={()=>setActiveTab("diagnose")} style={{background:C.bgCard,color:C.primaryDark,border:"none",borderRadius:14,padding:"10px 16px",fontWeight:800,cursor:"pointer"}}>🔬 এখনই নির্ণয়</button>
             <button onClick={()=>setActiveTab("library")} style={{background:"rgba(255,255,255,0.14)",color:"#fff",border:"1px solid rgba(255,255,255,0.28)",borderRadius:14,padding:"10px 16px",fontWeight:700,cursor:"pointer"}}>📚 শেখার ঘর</button>
           </div>
         </div>
@@ -855,10 +863,10 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
   const season = getCurrentSeason();
 
   const hubCards = [
-    { icon: "📖", title: "CABI গাইড", desc: "৫-ধাপ নির্ণয় প্রোটোকল", color: "#2563eb", bg: "#eff6ff", tab: "guide" },
-    { icon: "🎮", title: "গেম হাব", desc: "ইন্টারেক্টিভ শিখুন", color: "#7c3aed", bg: "#faf5ff", tab: "game" },
-    { icon: "🔍", title: "ছবি দিয়ে নির্ণয়", desc: "রোগ চিহ্নিত করুন", color: "#dc2626", bg: "#fef2f2", tab: "diagnose" },
-    { icon: "📚", title: "তথ্যভাণ্ডার", desc: "ভিডিও ও পড়ার উপকরণ", color: "#0891b2", bg: "#ecfeff", tab: "library" },
+    { icon: "📖", title: "CABI গাইড", desc: "৫-ধাপ নির্ণয় প্রোটোকল", color: "#2563eb", bg: C.bgInfo, tab: "guide" },
+    { icon: "🎮", title: "গেম হাব", desc: "ইন্টারেক্টিভ শিখুন", color: "#7c3aed", bg: C.bgPurple, tab: "game" },
+    { icon: "🔍", title: "ছবি দিয়ে নির্ণয়", desc: "রোগ চিহ্নিত করুন", color: "#dc2626", bg: C.bgDanger, tab: "diagnose" },
+    { icon: "📚", title: "তথ্যভাণ্ডার", desc: "ভিডিও ও পড়ার উপকরণ", color: "#0891b2", bg: C.bgTeal, tab: "library" },
   ];
 
   return (
@@ -879,7 +887,7 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
             CABI ৫-ধাপ প্রোটোকল অনুসারে ধাপে ধাপে শিখুন ফসলের রোগ ও পোকা চেনার পদ্ধতি। গাইড পড়ুন, গেম খেলুন, তারপর নিজেই নির্ণয় করুন।
           </p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <button onClick={() => setActiveTab("diagnose")} className="ud-headline" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: C.primaryDark, border: "none", borderRadius: 14, padding: "13px 20px", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", fontSize: 14 }}>
+            <button onClick={() => setActiveTab("diagnose")} className="ud-headline" style={{ display: "inline-flex", alignItems: "center", gap: 8, background:C.bgCard, color: C.primaryDark, border: "none", borderRadius: 14, padding: "13px 20px", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", fontSize: 14 }}>
               <span style={{fontSize:18}}>🔍</span> নির্ণয় শুরু করুন
             </button>
             <button onClick={() => setActiveTab("guide")} className="ud-headline" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.12)", color: "#fff", border: "1.5px solid rgba(255,255,255,0.3)", borderRadius: 14, padding: "13px 18px", fontWeight: 700, cursor: "pointer", fontSize: 13, backdropFilter: "blur(6px)" }}>
@@ -891,34 +899,34 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
 
       {/* ── Read aloud button ────────────────────────────────────── */}
       {isSupported && (
-        <button onClick={() => { speaking ? stop() : speak("উদ্ভিদ গোয়েন্দায় স্বাগতম! এখানে আপনি ধাপে ধাপে শিখবেন কিভাবে ফসলের সমস্যা চেনেন। প্রথমে CABI গাইড পড়ুন, তারপর গেম খেলে চর্চা করুন, আর শেষে নিজে নির্ণয় করুন।", { prependFriendly: true }); }} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "10px 14px", borderRadius: 14, border: `1.5px solid ${speaking ? C.success : C.border}`, background: "#fff", color: speaking ? C.success : C.textMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", boxShadow: C.shadow }}>
+        <button onClick={() => { speaking ? stop() : speak("উদ্ভিদ গোয়েন্দায় স্বাগতম! এখানে আপনি ধাপে ধাপে শিখবেন কিভাবে ফসলের সমস্যা চেনেন। প্রথমে CABI গাইড পড়ুন, তারপর গেম খেলে চর্চা করুন, আর শেষে নিজে নির্ণয় করুন।", { prependFriendly: true }); }} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "10px 14px", borderRadius: 14, border: `1.5px solid ${speaking ? C.success : C.border}`, background:C.bgCard, color: speaking ? C.success : C.textMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", boxShadow: C.shadow }}>
           <span style={{ fontSize: 18 }}>{speaking ? "⏹️" : "🔊"}</span>
           {speaking ? "বন্ধ করুন" : "হোম পেজ শুনুন"}
         </button>
       )}
 
       {/* ── Local Conditions / Weather Card ──────────────────────── */}
-      <div style={{ background: "#fff", borderRadius: 18, padding: "18px 16px", boxShadow: C.shadow, border: `1px solid ${C.border}` }}>
+      <div style={{ background:C.bgCard, borderRadius: 18, padding: "18px 16px", boxShadow: C.shadow, border: `1px solid ${C.border}` }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
           <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.text }}>🌦️ স্থানীয় অবস্থা</div>
           <div style={{ fontSize: 12, color: C.textLight, fontWeight: 500 }}>{locationName || "অবস্থান নির্ণয় হচ্ছে..."}</div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-          <div style={{ textAlign: "center", padding: "12px 8px", borderRadius: 14, background: "linear-gradient(135deg, #eff6ff, #f0f9ff)" }}>
+          <div style={{ textAlign: "center", padding: "12px 8px", borderRadius: 14, background: `linear-gradient(135deg, ${C.bgInfo}, ${C.bgBlue})` }}>
             <div style={{ fontSize: 28, fontWeight: 800, color: "#2563eb", lineHeight: 1 }}>{weather ? weather.temp + "°" : "--"}</div>
             <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>তাপমাত্রা</div>
           </div>
-          <div style={{ textAlign: "center", padding: "12px 8px", borderRadius: 14, background: "linear-gradient(135deg, #f0fdf4, #ecfdf5)" }}>
+          <div style={{ textAlign: "center", padding: "12px 8px", borderRadius: 14, background: `linear-gradient(135deg, ${C.bgSuccess}, ${C.bgMuted})` }}>
             <div style={{ fontSize: 28, fontWeight: 800, color: "#16a34a", lineHeight: 1 }}>{weather ? weather.humidity + "%" : "--"}</div>
             <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>আর্দ্রতা</div>
           </div>
-          <div style={{ textAlign: "center", padding: "12px 8px", borderRadius: 14, background: "linear-gradient(135deg, #fefce8, #fef9c3)" }}>
+          <div style={{ textAlign: "center", padding: "12px 8px", borderRadius: 14, background: `linear-gradient(135deg, ${C.bgWarning}, ${C.bgMuted})` }}>
             <div style={{ fontSize: 28, fontWeight: 800, color: "#d97706", lineHeight: 1 }}>{weather ? weather.rain24h + "mm" : "--"}</div>
             <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>বৃষ্টি</div>
           </div>
         </div>
         {risk && (
-          <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 12, background: risk.level === "high" ? "#fef2f2" : risk.level === "medium" ? "#fffbeb" : "#f0fdf4", border: `1px solid ${risk.level === "high" ? "#fecaca" : risk.level === "medium" ? "#fde68a" : "#bbf7d0"}`, fontSize: 12, fontWeight: 600, color: risk.level === "high" ? "#dc2626" : risk.level === "medium" ? "#d97706" : "#16a34a", display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 12, background: risk.level === "high" ? C.bgDanger : risk.level === "medium" ? C.bgWarning : C.bgSuccess, border: `1px solid ${risk.level === "high" ? C.borderDanger : risk.level === "medium" ? C.borderWarning : C.borderSuccess}`, fontSize: 12, fontWeight: 600, color: risk.level === "high" ? C.danger : risk.level === "medium" ? C.warning : C.success, display: "flex", alignItems: "center", gap: 6 }}>
             {risk.icon} {risk.text}
           </div>
         )}
@@ -932,7 +940,7 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
         <div className="ud-headline" style={{ fontWeight: 800, fontSize: 17, color: C.text, marginBottom: 12, paddingLeft: 2 }}>📚 জ্ঞান কেন্দ্র</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
           {hubCards.map((card, i) => (
-            <button key={card.tab} onClick={() => setActiveTab(card.tab)} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 18, padding: "18px 14px", textAlign: "left", cursor: "pointer", boxShadow: C.shadow, animation: `popIn .4s ease ${i * .06}s both`, display: "flex", flexDirection: "column", gap: 10, width: "100%", transition: "box-shadow .2s" }}>
+            <button key={card.tab} onClick={() => setActiveTab(card.tab)} style={{ background:C.bgCard, border: `1px solid ${C.border}`, borderRadius: 18, padding: "18px 14px", textAlign: "left", cursor: "pointer", boxShadow: C.shadow, animation: `popIn .4s ease ${i * .06}s both`, display: "flex", flexDirection: "column", gap: 10, width: "100%", transition: "box-shadow .2s" }}>
               <div style={{ width: 44, height: 44, borderRadius: 13, background: card.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, border: `1.5px solid ${card.color}18` }}>
                 {card.icon}
               </div>
@@ -946,18 +954,18 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
       </div>
 
       {/* ── Learning Path ────────────────────────────────────────── */}
-      <div style={{ background: "#fff", borderRadius: 18, padding: "18px 16px", boxShadow: C.shadow, border: `1px solid ${C.border}` }}>
+      <div style={{ background:C.bgCard, borderRadius: 18, padding: "18px 16px", boxShadow: C.shadow, border: `1px solid ${C.border}` }}>
         <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.text, marginBottom: 14 }}>🎯 শেখার পথ</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 0, position: "relative" }}>
           <div style={{ position: "absolute", left: 18, top: 28, bottom: 28, width: 2.5, background: `linear-gradient(to bottom, ${C.primary}, ${C.primaryLight}, ${C.accent})`, borderRadius: 4 }} />
           {[
-            { step: "১", icon: "👁️", title: "পর্যবেক্ষণ", desc: "লক্ষণ ও লক্ষণ চিনুন", color: "#2563eb", bg: "#eff6ff", tab: "guide" },
-            { step: "২", icon: "🔬", title: "বর্জন পদ্ধতি", desc: "কারণ সংকুচিত করুন", color: "#7c3aed", bg: "#faf5ff", tab: "game" },
-            { step: "৩", icon: "🔺", title: "রোগ ত্রিভুজ", desc: "রোগের শর্ত বুঝুন", color: "#d97706", bg: "#fffbeb", tab: "game" },
-            { step: "৪", icon: "🧪", title: "নিশ্চিতকরণ", desc: "মাঠে যাচাই করুন", color: "#16a34a", bg: "#f0fdf4", tab: "guide" },
-            { step: "৫", icon: "🌿", title: "IPM সিদ্ধান্ত", desc: "ব্যবস্থাপনা পরিকল্পনা", color: "#0891b2", bg: "#ecfeff", tab: "library" },
+            { step: "১", icon: "👁️", title: "পর্যবেক্ষণ", desc: "লক্ষণ ও লক্ষণ চিনুন", color: "#2563eb", bg: C.bgInfo, tab: "guide" },
+            { step: "২", icon: "🔬", title: "বর্জন পদ্ধতি", desc: "কারণ সংকুচিত করুন", color: "#7c3aed", bg: C.bgPurple, tab: "game" },
+            { step: "৩", icon: "🔺", title: "রোগ ত্রিভুজ", desc: "রোগের শর্ত বুঝুন", color: "#d97706", bg: C.bgWarning, tab: "game" },
+            { step: "৪", icon: "🧪", title: "নিশ্চিতকরণ", desc: "মাঠে যাচাই করুন", color: "#16a34a", bg: C.bgSuccess, tab: "guide" },
+            { step: "৫", icon: "🌿", title: "IPM সিদ্ধান্ত", desc: "ব্যবস্থাপনা পরিকল্পনা", color: "#0891b2", bg: C.bgTeal, tab: "library" },
           ].map((item, i) => (
-            <button key={i} onClick={() => setActiveTab(item.tab)} style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 12px", border: "none", background: i % 2 === 0 ? "#fff" : C.bgMuted, cursor: "pointer", borderRadius: 14, width: "100%", textAlign: "left" }}>
+            <button key={i} onClick={() => setActiveTab(item.tab)} style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 12px", border: "none", background:i % 2 === 0 ? C.bgCard : C.bgMuted, cursor: "pointer", borderRadius: 14, width: "100%", textAlign: "left" }}>
               <div style={{ position: "relative", zIndex: 1, width: 36, height: 36, borderRadius: "50%", background: item.bg, border: `2px solid ${item.color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>
                 {item.icon}
               </div>
@@ -973,7 +981,7 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
 
       {/* ── Recent Activity ──────────────────────────────────────── */}
       {history.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: 18, padding: "18px 16px", boxShadow: C.shadow, border: `1px solid ${C.border}` }}>
+        <div style={{ background:C.bgCard, borderRadius: 18, padding: "18px 16px", boxShadow: C.shadow, border: `1px solid ${C.border}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.text }}>🕐 সাম্প্রতিক কার্যক্রম</div>
             <button onClick={() => setActiveTab("history")} style={{ background: "none", border: "none", color: C.primary, fontWeight: 700, cursor: "pointer", fontSize: 12 }}>সব দেখুন →</button>
@@ -1029,17 +1037,17 @@ function AppsHub(){
 
       {/* Quick Info Cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:16}}>
-        <div style={{background:"#f0fdf4",borderRadius:14,padding:14,textAlign:"center"}}>
+        <div style={{background:C.bgSuccess,borderRadius:14,padding:14,textAlign:"center"}}>
           <div style={{fontSize:24,marginBottom:6}}>🔬</div>
           <div style={{fontWeight:700,fontSize:12,color:C.primaryDark}}>CABI প্রোটোকল</div>
           <div style={{fontSize:10,color:C.textMuted,marginTop:4}}>৫-ধাপ নির্ণয়</div>
         </div>
-        <div style={{background:"#eff6ff",borderRadius:14,padding:14,textAlign:"center"}}>
+        <div style={{background:C.bgInfo,borderRadius:14,padding:14,textAlign:"center"}}>
           <div style={{fontSize:24,marginBottom:6}}>🎮</div>
           <div style={{fontWeight:700,fontSize:12,color:"#1d4ed8"}}>গেম হাব</div>
           <div style={{fontSize:10,color:C.textMuted,marginTop:4}}>৫টি শেখার গেম</div>
         </div>
-        <div style={{background:"#faf5ff",borderRadius:14,padding:14,textAlign:"center"}}>
+        <div style={{background:C.bgPurple,borderRadius:14,padding:14,textAlign:"center"}}>
           <div style={{fontSize:24,marginBottom:6}}>📚</div>
           <div style={{fontWeight:700,fontSize:12,color:"#7c3aed"}}>তথ্য ভান্ডার</div>
           <div style={{fontSize:10,color:C.textMuted,marginTop:4}}>ভিডিও, পিডিএফ, অডিও</div>
@@ -1114,7 +1122,7 @@ function AudioPodcastCard({title,id}){
     <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:18,padding:16,boxShadow:C.shadow}}>
       <audio ref={audioRef} preload="metadata" src={toDriveDownloadUrl(id)} />
       <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-        <div style={{width:46,height:46,borderRadius:14,background:"#ecfeff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>🎙️</div>
+        <div style={{width:46,height:46,borderRadius:14,background:C.bgTeal,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>🎙️</div>
         <div style={{flex:1}}>
           <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>{title}</div>
           <div style={{fontSize:11,color:C.textMuted}}>Google Drive podcast</div>
@@ -1129,9 +1137,9 @@ function AudioPodcastCard({title,id}){
         <span>{formatTime(duration)}</span>
       </div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        <button onClick={()=>skip(-10)} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer"}}>⏪ 10s</button>
-        <button onClick={()=>skip(10)} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer"}}>10s ⏩</button>
-        <a href={toDriveViewUrl(id)} target="_blank" rel="noreferrer" style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:"#f0fdf4",cursor:"pointer",textDecoration:"none",color:C.primary,fontWeight:700}}>Drive লিংক</a>
+        <button onClick={()=>skip(-10)} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgCard,cursor:"pointer"}}>⏪ 10s</button>
+        <button onClick={()=>skip(10)} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgCard,cursor:"pointer"}}>10s ⏩</button>
+        <a href={toDriveViewUrl(id)} target="_blank" rel="noreferrer" style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgSuccess,cursor:"pointer",textDecoration:"none",color:C.primary,fontWeight:700}}>Drive লিংক</a>
       </div>
     </div>
   );
@@ -1156,20 +1164,20 @@ function LibrarySection(){
       </div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         {sections.map(item=>(
-          <button key={item.id} onClick={()=>setSection(item.id)} style={{padding:"9px 14px",borderRadius:999,border:`1px solid ${section===item.id?C.primary:C.border}`,background:section===item.id?C.primary:"#fff",color:section===item.id?"#fff":C.text,fontWeight:700,cursor:"pointer"}}>{item.icon} {item.label}</button>
+          <button key={item.id} onClick={()=>setSection(item.id)} style={{padding:"9px 14px",borderRadius:999,border:`1px solid ${section===item.id?C.primary:C.border}`,background:section===item.id?C.primary:C.bgCard,color:section===item.id?"#fff":C.text,fontWeight:700,cursor:"pointer"}}>{item.icon} {item.label}</button>
         ))}
       </div>
       {section==="slides"&&(
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
             {LIBRARY_MEDIA.slides.map((item,index)=>(
-              <button key={item.id} onClick={()=>setCurrentSlide(index)} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${currentSlide===index?C.primary:C.border}`,background:currentSlide===index?"#f0fdf4":"#fff",color:currentSlide===index?C.primaryDark:C.text,cursor:"pointer",fontWeight:700}}>📄 {index+1}</button>
+              <button key={item.id} onClick={()=>setCurrentSlide(index)} style={{padding:"8px 12px",borderRadius:12,border:`1px solid ${currentSlide===index?C.primary:C.border}`,background:currentSlide===index?C.bgSuccess:C.bgCard,color:currentSlide===index?C.primaryDark:C.text,cursor:"pointer",fontWeight:700}}>📄 {index+1}</button>
             ))}
           </div>
           <div style={{display:"flex",justifyContent:"space-between",gap:8,flexWrap:"wrap"}}>
-            <button onClick={()=>setCurrentSlide(s=>Math.max(0,s-1))} disabled={currentSlide===0} style={{padding:"9px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer"}}>← আগেরটি</button>
-            <a href={toDriveViewUrl(slide.id)} target="_blank" rel="noreferrer" style={{padding:"9px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#f0fdf4",textDecoration:"none",color:C.primary,fontWeight:700}}>Drive এ খুলুন</a>
-            <button onClick={()=>setCurrentSlide(s=>Math.min(LIBRARY_MEDIA.slides.length-1,s+1))} disabled={currentSlide===LIBRARY_MEDIA.slides.length-1} style={{padding:"9px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer"}}>পরেরটি →</button>
+            <button onClick={()=>setCurrentSlide(s=>Math.max(0,s-1))} disabled={currentSlide===0} style={{padding:"9px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgCard,cursor:"pointer"}}>← আগেরটি</button>
+            <a href={toDriveViewUrl(slide.id)} target="_blank" rel="noreferrer" style={{padding:"9px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgSuccess,textDecoration:"none",color:C.primary,fontWeight:700}}>Drive এ খুলুন</a>
+            <button onClick={()=>setCurrentSlide(s=>Math.min(LIBRARY_MEDIA.slides.length-1,s+1))} disabled={currentSlide===LIBRARY_MEDIA.slides.length-1} style={{padding:"9px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgCard,cursor:"pointer"}}>পরেরটি →</button>
           </div>
           <MediaFrame title={slide.title} src={toDrivePreviewUrl(slide.id)} height={620}/>
         </div>
@@ -1179,7 +1187,7 @@ function LibrarySection(){
           {LIBRARY_MEDIA.readings.map(item=>(
             <div key={item.id} style={{display:"flex",flexDirection:"column",gap:10}}>
               <MediaFrame title={item.title} src={toDrivePreviewUrl(item.id)} height={560}/>
-              <a href={toDriveViewUrl(item.id)} target="_blank" rel="noreferrer" style={{alignSelf:"flex-start",padding:"9px 14px",borderRadius:12,background:"#f0fdf4",border:`1px solid ${C.border}`,textDecoration:"none",color:C.primary,fontWeight:700}}>পূর্ণ স্ক্রিনে পড়ুন</a>
+              <a href={toDriveViewUrl(item.id)} target="_blank" rel="noreferrer" style={{alignSelf:"flex-start",padding:"9px 14px",borderRadius:12,background:C.bgSuccess,border:`1px solid ${C.border}`,textDecoration:"none",color:C.primary,fontWeight:700}}>পূর্ণ স্ক্রিনে পড়ুন</a>
             </div>
           ))}
         </div>
@@ -1231,13 +1239,13 @@ function EnhancedLibrarySection(){
               <span style={{fontSize:20}}>{playingVideo.emoji}</span>
               <div className="ud-headline" style={{fontWeight:800,fontSize:16,color:C.primaryDark}}>{playingVideo.title}</div>
             </div>
-            <button onClick={()=>setPlayingVideo(null)} style={{padding:"8px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",fontWeight:700,color:C.danger,fontSize:12}}>✕ বন্ধ করুন</button>
+            <button onClick={()=>setPlayingVideo(null)} style={{padding:"8px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgCard,cursor:"pointer",fontWeight:700,color:C.danger,fontSize:12}}>✕ বন্ধ করুন</button>
           </div>
           <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6,padding:"0 4px"}}>{playingVideo.desc}</div>
           <MediaFrame title={playingVideo.title} src={toDrivePreviewUrl(playingVideo.id)} height={420}/>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            <a href={toDriveViewUrl(playingVideo.id)} target="_blank" rel="noreferrer" style={{padding:"10px 16px",borderRadius:14,border:`1px solid ${C.border}`,background:"#f0fdf4",textDecoration:"none",color:C.primary,fontWeight:700,fontSize:13}}>🔗 Drive এ খুলুন</a>
-            <a href={toDriveDownloadUrl(playingVideo.id)} target="_blank" rel="noreferrer" style={{padding:"10px 16px",borderRadius:14,border:`1px solid ${C.accent}`,background:"#fffbeb",textDecoration:"none",color:C.accentDark,fontWeight:700,fontSize:13}}>📥 ডাউনলোড</a>
+            <a href={toDriveViewUrl(playingVideo.id)} target="_blank" rel="noreferrer" style={{padding:"10px 16px",borderRadius:14,border:`1px solid ${C.border}`,background:C.bgSuccess,textDecoration:"none",color:C.primary,fontWeight:700,fontSize:13}}>🔗 Drive এ খুলুন</a>
+            <a href={toDriveDownloadUrl(playingVideo.id)} target="_blank" rel="noreferrer" style={{padding:"10px 16px",borderRadius:14,border:`1px solid ${C.accent}`,background:C.bgWarning,textDecoration:"none",color:C.accentDark,fontWeight:700,fontSize:13}}>📥 ডাউনলোড</a>
           </div>
         </div>
       )}
@@ -1249,13 +1257,13 @@ function EnhancedLibrarySection(){
                 <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",marginBottom:6}}>🎬 ভিডিও গাইড</div>
                 <div className="ud-headline" style={{fontWeight:800,fontSize:28,color:C.primaryDark,lineHeight:1.1}}>দেখে শিখুন</div>
               </div>
-              <div style={{padding:"8px 14px",borderRadius:999,background:"#fff",border:`1px solid ${C.border}`,fontSize:12,fontWeight:700,color:C.primary}}>🎬 {totalVideos}টি ভিডিও</div>
+              <div style={{padding:"8px 14px",borderRadius:999,background:C.bgCard,border:`1px solid ${C.border}`,fontSize:12,fontWeight:700,color:C.primary}}>🎬 {totalVideos}টি ভিডিও</div>
             </div>
             <div style={{fontSize:13,color:C.textMuted,lineHeight:1.7}}>ক্যাটাগরি থেকে বেছে নিন ও ভিডিও দেখুন — রোগ নির্ণয় থেকে পোকামাকড় দমন পর্যন্ত সব কিছু</div>
           </div>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             {allVideos.map(cat=>(
-              <button key={cat.id} onClick={()=>setActiveVideoCategory(cat.id)} style={{padding:"9px 14px",borderRadius:999,border:`1px solid ${activeVideoCategory===cat.id?C.primary:C.border}`,background:activeVideoCategory===cat.id?C.primary:"#fff",color:activeVideoCategory===cat.id?"#fff":C.text,fontWeight:700,cursor:"pointer",fontSize:12.5,transition:"all 0.2s ease"}}>{cat.title}</button>
+              <button key={cat.id} onClick={()=>setActiveVideoCategory(cat.id)} style={{padding:"9px 14px",borderRadius:999,border:`1px solid ${activeVideoCategory===cat.id?C.primary:C.border}`,background:activeVideoCategory===cat.id?C.primary:C.bgCard,color:activeVideoCategory===cat.id?"#fff":C.text,fontWeight:700,cursor:"pointer",fontSize:12.5,transition:"all 0.2s ease"}}>{cat.title}</button>
             ))}
           </div>
           {currentCategory&&(
@@ -1273,7 +1281,7 @@ function EnhancedLibrarySection(){
             <div style={{fontWeight:700,fontSize:13,color:C.textMuted,marginBottom:10}}>⚡ সব ভিডিও একসাথে:</div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
               {allVideos.flatMap(c=>c.videos).map(video=>(
-                <button key={video.id} onClick={()=>setPlayingVideo(video)} style={{padding:"7px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer",fontSize:11.5,fontWeight:600,color:C.text,transition:"all 0.2s ease"}}>{video.emoji} {video.title.length>25?video.title.substring(0,25)+"…":video.title}</button>
+                <button key={video.id} onClick={()=>setPlayingVideo(video)} style={{padding:"7px 12px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgCard,cursor:"pointer",fontSize:11.5,fontWeight:600,color:C.text,transition:"all 0.2s ease"}}>{video.emoji} {video.title.length>25?video.title.substring(0,25)+"…":video.title}</button>
               ))}
             </div>
           </div>
@@ -1281,20 +1289,20 @@ function EnhancedLibrarySection(){
       )}
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         {sections.map(item=>(
-          <button key={item.id} onClick={()=>{setSection(item.id);setPlayingVideo(null);}} className="ud-headline" style={{padding:"11px 16px",borderRadius:999,border:`1px solid ${section===item.id?C.primary:C.border}`,background:section===item.id?C.primary:"#fff",color:section===item.id?"#fff":C.text,fontWeight:700,cursor:"pointer"}}>{item.icon} {item.label}</button>
+          <button key={item.id} onClick={()=>{setSection(item.id);setPlayingVideo(null);}} className="ud-headline" style={{padding:"11px 16px",borderRadius:999,border:`1px solid ${section===item.id?C.primary:C.border}`,background:section===item.id?C.primary:C.bgCard,color:section===item.id?"#fff":C.text,fontWeight:700,cursor:"pointer"}}>{item.icon} {item.label}</button>
         ))}
       </div>
       {section==="slides"&&(
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
             {LIBRARY_MEDIA.slides.map((item,index)=>(
-              <button key={item.id} onClick={()=>setCurrentSlide(index)} style={{padding:"8px 12px",borderRadius:14,border:`1px solid ${currentSlide===index?C.primary:C.border}`,background:currentSlide===index?"#f0fdf4":"#fff",color:currentSlide===index?C.primaryDark:C.text,cursor:"pointer",fontWeight:700}}>📄 {index+1}</button>
+              <button key={item.id} onClick={()=>setCurrentSlide(index)} style={{padding:"8px 12px",borderRadius:14,border:`1px solid ${currentSlide===index?C.primary:C.border}`,background:currentSlide===index?C.bgSuccess:C.bgCard,color:currentSlide===index?C.primaryDark:C.text,cursor:"pointer",fontWeight:700}}>📄 {index+1}</button>
             ))}
           </div>
           <div style={{display:"flex",justifyContent:"space-between",gap:8,flexWrap:"wrap"}}>
-            <button onClick={()=>setCurrentSlide(s=>Math.max(0,s-1))} disabled={currentSlide===0} style={{padding:"10px 14px",borderRadius:14,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer"}}>← আগেরটি</button>
-            <a href={toDriveViewUrl(slide.id)} target="_blank" rel="noreferrer" style={{padding:"10px 14px",borderRadius:14,border:`1px solid ${C.border}`,background:"#f0fdf4",textDecoration:"none",color:C.primary,fontWeight:700}}>Drive এ খুলুন</a>
-            <button onClick={()=>setCurrentSlide(s=>Math.min(LIBRARY_MEDIA.slides.length-1,s+1))} disabled={currentSlide===LIBRARY_MEDIA.slides.length-1} style={{padding:"10px 14px",borderRadius:14,border:`1px solid ${C.border}`,background:"#fff",cursor:"pointer"}}>পরেরটি →</button>
+            <button onClick={()=>setCurrentSlide(s=>Math.max(0,s-1))} disabled={currentSlide===0} style={{padding:"10px 14px",borderRadius:14,border:`1px solid ${C.border}`,background:C.bgCard,cursor:"pointer"}}>← আগেরটি</button>
+            <a href={toDriveViewUrl(slide.id)} target="_blank" rel="noreferrer" style={{padding:"10px 14px",borderRadius:14,border:`1px solid ${C.border}`,background:C.bgSuccess,textDecoration:"none",color:C.primary,fontWeight:700}}>Drive এ খুলুন</a>
+            <button onClick={()=>setCurrentSlide(s=>Math.min(LIBRARY_MEDIA.slides.length-1,s+1))} disabled={currentSlide===LIBRARY_MEDIA.slides.length-1} style={{padding:"10px 14px",borderRadius:14,border:`1px solid ${C.border}`,background:C.bgCard,cursor:"pointer"}}>পরেরটি →</button>
           </div>
           <MediaFrame title={slide.title} src={toDrivePreviewUrl(slide.id)} height={640}/>
         </div>
@@ -1304,7 +1312,7 @@ function EnhancedLibrarySection(){
           {LIBRARY_MEDIA.readings.map(item=>(
             <div key={item.id} style={{display:"flex",flexDirection:"column",gap:10}}>
               <MediaFrame title={item.title} src={toDrivePreviewUrl(item.id)} height={560}/>
-              <a href={toDriveViewUrl(item.id)} target="_blank" rel="noreferrer" style={{alignSelf:"flex-start",padding:"10px 14px",borderRadius:14,border:`1px solid ${C.border}`,background:"#f0fdf4",textDecoration:"none",color:C.primary,fontWeight:700}}>পূর্ণ স্ক্রিনে পড়ুন</a>
+              <a href={toDriveViewUrl(item.id)} target="_blank" rel="noreferrer" style={{alignSelf:"flex-start",padding:"10px 14px",borderRadius:14,border:`1px solid ${C.border}`,background:C.bgSuccess,textDecoration:"none",color:C.primary,fontWeight:700}}>পূর্ণ স্ক্রিনে পড়ুন</a>
             </div>
           ))}
         </div>
@@ -1326,7 +1334,7 @@ function LegacyLibrarySection(){
     <div>
       <div style={{display:"flex",gap:6,marginBottom:14}}>
         {tabs.map(t=>(
-          <button key={t.id} onClick={()=>{setActiveTab(t.id);setSelected(null);}} style={{flex:1,padding:"9px 6px",borderRadius:10,border:`1px solid ${activeTab===t.id?C.primary:C.border}`,background:activeTab===t.id?C.primary:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,color:activeTab===t.id?"#fff":C.text,transition:"all .15s"}}>{t.icon} {t.label}</button>
+          <button key={t.id} onClick={()=>{setActiveTab(t.id);setSelected(null);}} style={{flex:1,padding:"9px 6px",borderRadius:10,border:`1px solid ${activeTab===t.id?C.primary:C.border}`,background:activeTab===t.id?C.primary:C.bgCard,cursor:"pointer",fontSize:12,fontWeight:600,color:activeTab===t.id?"#fff":C.text,transition:"all .15s"}}>{t.icon} {t.label}</button>
         ))}
       </div>
       {selected?(
@@ -1340,9 +1348,9 @@ function LegacyLibrarySection(){
               <div style={{fontWeight:700,fontSize:12,color:C.text,marginBottom:5}}>🔍 লক্ষণসমূহ</div>
               <div style={{fontSize:13,color:C.text,lineHeight:1.7}}>{selected.symptoms}</div>
             </div>
-            {(selected.ipm||selected.fix)&&<div style={{background:"#f0fdf4",borderRadius:10,padding:12,marginBottom:10}}><div style={{fontWeight:700,fontSize:12,color:C.success,marginBottom:5}}>{selected.ipm?"🌿 IPM ব্যবস্থাপনা":"💊 প্রতিকার"}</div><div style={{fontSize:13,color:C.text,lineHeight:1.7}}>{selected.ipm||selected.fix}</div></div>}
-            {selected.etl&&<div style={{background:"#fffbeb",borderRadius:10,padding:12,marginBottom:10}}><div style={{fontWeight:700,fontSize:12,color:C.warning,marginBottom:3}}>📊 ETL</div><div style={{fontSize:13,color:C.text}}>{selected.etl}</div></div>}
-            <div style={{padding:"7px 10px",background:"#eff6ff",borderRadius:8,fontSize:11,color:C.blue}}>🌾 ফসল: {Array.isArray(selected.crops)?selected.crops.join(", "):selected.crops}</div>
+            {(selected.ipm||selected.fix)&&<div style={{background:C.bgSuccess,borderRadius:10,padding:12,marginBottom:10}}><div style={{fontWeight:700,fontSize:12,color:C.success,marginBottom:5}}>{selected.ipm?"🌿 IPM ব্যবস্থাপনা":"💊 প্রতিকার"}</div><div style={{fontSize:13,color:C.text,lineHeight:1.7}}>{selected.ipm||selected.fix}</div></div>}
+            {selected.etl&&<div style={{background:C.bgWarning,borderRadius:10,padding:12,marginBottom:10}}><div style={{fontWeight:700,fontSize:12,color:C.warning,marginBottom:3}}>📊 ETL</div><div style={{fontSize:13,color:C.text}}>{selected.etl}</div></div>}
+            <div style={{padding:"7px 10px",background:C.bgInfo,borderRadius:8,fontSize:11,color:C.blue}}>🌾 ফসল: {Array.isArray(selected.crops)?selected.crops.join(", "):selected.crops}</div>
           </div>
         </div>
       ):(
@@ -1433,7 +1441,7 @@ function CABIGuideTab(){
      <div>
        <div style={{display:"flex",gap:8,marginBottom:16,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
          {sections.map(s=>(
-           <button key={s.id} onClick={()=>setSection(s.id)} className="ud-headline" style={{flexShrink:0,padding:"10px 15px",borderRadius:999,border:`1px solid ${section===s.id?C.primary:C.border}`,background:section===s.id?C.primary:"#fff",color:section===s.id?"#fff":C.text,cursor:"pointer",fontSize:12,fontWeight:800,whiteSpace:"nowrap",transition:"all .15s"}}>{s.icon} {s.label}</button>
+           <button key={s.id} onClick={()=>setSection(s.id)} className="ud-headline" style={{flexShrink:0,padding:"10px 15px",borderRadius:999,border:`1px solid ${section===s.id?C.primary:C.border}`,background:section===s.id?C.primary:C.bgCard,color:section===s.id?"#fff":C.text,cursor:"pointer",fontSize:12,fontWeight:800,whiteSpace:"nowrap",transition:"all .15s"}}>{s.icon} {s.label}</button>
          ))}
        </div>
        {section==="protocol"&&(
@@ -1454,15 +1462,15 @@ function CABIGuideTab(){
              </div>
            </div>
            {CABI_GUIDE.protocol.steps.map((step,i)=>(
-             <div key={i} style={{background:"#fff",borderRadius:18,padding:18,marginBottom:12,border:`1px solid ${step.border}`,boxShadow:C.shadow,animation:`fadeIn .3s ease ${i*.05}s both`}}>
+             <div key={i} style={{background:C.bgCard,borderRadius:18,padding:18,marginBottom:12,border:`1px solid ${C[step.borderKey]||C.border}`,boxShadow:C.shadow,animation:`fadeIn .3s ease ${i*.05}s both`}}>
                <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
-                 <div style={{width:46,height:46,borderRadius:16,background:step.bg,border:`2px solid ${step.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>{step.icon}</div>
+                 <div style={{width:46,height:46,borderRadius:16,background:C[step.bgKey]||C.bgMuted,border:`2px solid ${C[step.borderKey]||C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>{step.icon}</div>
                  <div style={{flex:1}}>
                    <div style={{fontWeight:800,fontSize:14,color:step.color}}>ধাপ {step.num}: {step.title}</div>
                    <div style={{fontSize:11,color:C.textMuted}}>{step.en}</div>
                  </div>
                  {guideTtsReady && (
-                   <button onClick={() => speak("ধাপ " + step.num + ": " + step.title + ". " + step.desc, { prependFriendly: false })} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:step.bg,border:`1.5px solid ${step.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
+                   <button onClick={() => speak("ধাপ " + step.num + ": " + step.title + ". " + step.desc, { prependFriendly: false })} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:C[step.bgKey]||C.bgMuted,border:`1.5px solid ${C[step.borderKey]||C.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
                  )}
                </div>
                <p style={{fontSize:13,color:C.text,lineHeight:1.7,marginBottom:10}}>{step.desc}</p>
@@ -1486,14 +1494,14 @@ function CABIGuideTab(){
        )}
        {section==="etl"&&(
          <div>
-           <div style={{background:"#fffbeb",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #fcd34d"}}>
+           <div style={{background:C.bgWarning,borderRadius:12,padding:12,marginBottom:12,border:`1px solid ${C.borderWarning}`}}>
              <div style={{display:"flex",alignItems:"center",gap:10}}>
                <div style={{flex:1}}>
                  <div style={{fontWeight:700,fontSize:13,color:C.warning,marginBottom:3}}>📊 ETL কী?</div>
                  <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>ETL হলো সেই মাত্রা যখন কীটনাশক ব্যবহারের অর্থনৈতিক ন্যায্যতা থাকে। নিচে থাকলে প্রাকৃতিক নিয়ন্ত্রণই যথেষ্ট।</div>
                </div>
                {guideTtsReady && (
-                 <button onClick={() => speak("ই টি এল হলো সেই মাত্রা যখন কীটনাশক ব্যবহারের অর্থনৈতিক ন্যায্যতা থাকে। নিচে থাকলে প্রাকৃতিক নিয়ন্ত্রণই যথেষ্ট।", { prependFriendly: true })} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:"#fff",border:"1.5px solid #fcd34d",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
+                 <button onClick={() => speak("ই টি এল হলো সেই মাত্রা যখন কীটনাশক ব্যবহারের অর্থনৈতিক ন্যায্যতা থাকে। নিচে থাকলে প্রাকৃতিক নিয়ন্ত্রণই যথেষ্ট।", { prependFriendly: true })} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:C.bgCard,border:`1.5px solid ${C.borderWarning}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
                )}
              </div>
            </div>
@@ -1501,9 +1509,9 @@ function CABIGuideTab(){
              <div key={i} style={{background:C.bgCard,borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
                  <div><div style={{fontWeight:700,fontSize:13,color:C.primaryDark}}>{e.pest}</div><div style={{color:C.textMuted,fontSize:11}}>{e.en}</div></div>
-                 <span style={{background:"#fef3c7",border:"1px solid #fcd34d",color:"#92400e",borderRadius:8,padding:"2px 8px",fontSize:10,fontWeight:700,flexShrink:0,marginLeft:8}}>ETL</span>
+                 <span style={{background:C.badgeWarning,border:`1px solid ${C.borderWarning}`,color:C.textWarning,borderRadius:8,padding:"2px 8px",fontSize:10,fontWeight:700,flexShrink:0,marginLeft:8}}>ETL</span>
                </div>
-               <div style={{background:"#fffbeb",borderRadius:8,padding:"7px 10px",marginBottom:7}}><div style={{fontSize:11,fontWeight:700,color:C.warning,marginBottom:2}}>ব্যবস্থার সীমা:</div><div style={{fontSize:12,color:C.text}}>{e.etl}</div></div>
+               <div style={{background:C.bgWarning,borderRadius:8,padding:"7px 10px",marginBottom:7}}><div style={{fontSize:11,fontWeight:700,color:C.warning,marginBottom:2}}>ব্যবস্থার সীমা:</div><div style={{fontSize:12,color:C.text}}>{e.etl}</div></div>
                <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                  <div style={{fontSize:11,color:C.textMuted}}>📅 পর্যায়: <span style={{color:C.text,fontWeight:600}}>{e.stage}</span></div>
                  <div style={{fontSize:11,color:C.textMuted}}>🔍 <span style={{color:C.text,fontWeight:600}}>{e.monitor}</span></div>
@@ -1527,14 +1535,14 @@ function CABIGuideTab(){
        )}
        {section==="nutrients"&&(
          <div>
-           <div style={{background:"#f0fdf4",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #bbf7d0"}}>
+           <div style={{background:C.bgSuccess,borderRadius:12,padding:12,marginBottom:12,border:`1px solid ${C.borderSuccess}`}}>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <div style={{flex:1}}>
                 <div style={{fontWeight:700,fontSize:13,color:C.success,marginBottom:3}}>🧪 পুষ্টি উপাদান</div>
                 <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>পুষ্টি অভাবের লক্ষণ প্রায়ই রোগের মতো দেখায়। CABI প্রোটোকলে এটি প্রথমেই বাদ দিতে হয়।</div>
               </div>
               {guideTtsReady && (
-                <button onClick={() => speak("পুষ্টি উপাদান। পুষ্টি অভাবের লক্ষণ প্রায়ই রোগের মতো দেখায়। সি এ বি আই প্রোটোকলে এটি প্রথমেই বাদ দিতে হয়।", { prependFriendly: true })} style={{ flexShrink:0, width:36, height:36, borderRadius:10, background:"#fff", border:"1.5px solid #bbf7d0", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:16 }}>🔊</button>
+                <button onClick={() => speak("পুষ্টি উপাদান। পুষ্টি অভাবের লক্ষণ প্রায়ই রোগের মতো দেখায়। সি এ বি আই প্রোটোকলে এটি প্রথমেই বাদ দিতে হয়।", { prependFriendly: true })} style={{ flexShrink:0, width:36, height:36, borderRadius:10, background:C.bgCard, border:`1.5px solid ${C.borderSuccess}`, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:16 }}>🔊</button>
               )}
             </div>
           </div>
@@ -1580,7 +1588,7 @@ function CABIGuideTab(){
                <button onClick={() => {
                  const levels = CABI_GUIDE.ipm_pyramid.map(l => "লেভেল " + l.level + ": " + l.label).join(", ");
                  speak("আই পি এম পিরামিড। উদ্ভিদ সুরক্ষার পদ্ধতি। " + levels + ".", { prependFriendly: true });
-               }} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:"#f0fdf4",border:"1.5px solid #bbf7d0",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
+               }} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:C.bgSuccess,border:`1.5px solid ${C.borderSuccess}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
              )}
            </div>
            <div style={{display:"flex",gap:10,marginBottom:12}}>
@@ -1609,26 +1617,26 @@ function CABIGuideTab(){
        )}
        {section==="resistance"&&(
          <div>
-           <div style={{background:"#faf5ff",borderRadius:12,padding:12,marginBottom:12,border:"1px solid #e9d5ff"}}>
+           <div style={{background:C.bgPurple,borderRadius:12,padding:12,marginBottom:12,border:`1px solid ${C.borderPurple}`}}>
              <div style={{display:"flex",alignItems:"center",gap:10}}>
                <div style={{flex:1}}>
                  <div style={{fontWeight:700,fontSize:13,color:"#7c3aed",marginBottom:3}}>🔄 PRC/IRAC রোটেশন গাইড</div>
                  <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>FRAC ও IRAC গ্রুপ অনুযায়ী ভিন্ন গোত্রের কীটনাশক পরিবর্তন করে ব্যবহার করুন। এতে রোগ ও পোকার রোধ ক্ষমতা কমে।</div>
                </div>
                {guideTtsReady && (
-                 <button onClick={() => speak("এফ আর এসি ও আই আর এ সি গ্রুপ অনুযায়ী ভিন্ন গোত্রের কীটনাশক পরিবর্তন করে ব্যবহার করুন। এতে রোগ ও পোকার রোধ ক্ষমতা কমে।", { prependFriendly: true })} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:"#fff",border:"1.5px solid #e9d5ff",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
+                 <button onClick={() => speak("এফ আর এসি ও আই আর এ সি গ্রুপ অনুযায়ী ভিন্ন গোত্রের কীটনাশক পরিবর্তন করে ব্যবহার করুন। এতে রোগ ও পোকার রোধ ক্ষমতা কমে।", { prependFriendly: true })} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:C.bgCard,border:`1.5px solid ${C.borderPurple}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
                )}
              </div>
            </div>
            <div style={{display:"grid",gap:10,marginBottom:12}}>
              <div>
                <div style={{fontWeight:700,fontSize:13,color:"#7c3aed",marginBottom:4}}>FRAC (ছত্রাকনাশক)</div>
-               <div style={{background:"#fff",borderRadius:10,padding:12}}>
+               <div style={{background:C.bgCard,borderRadius:10,padding:12}}>
                  {resistanceData.frac.map((f,i)=>(
                    <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:i===resistanceData.frac.length-1?"none":`1px solid ${C.border}`}}>
                      <div><div style={{fontSize:11,color:C.textMuted}}>{f.group}</div><div style={{fontSize:10,color:C.text}}>{f.ai}</div></div>
                      <div style={{display:"flex",gap:6,alignItems:"center"}}>
-                       <span style={{background:"#fed7aa",borderRadius:4,padding:"1px 4px",fontSize:9,color:C.warning}}>{f.risk}</span>
+                       <span style={{background:C.bgOrange,borderRadius:4,padding:"1px 4px",fontSize:9,color:C.warning}}>{f.risk}</span>
                        <span style={{fontSize:10,color:C.text}}>{f.rotate}</span>
                      </div>
                    </div>
@@ -1637,12 +1645,12 @@ function CABIGuideTab(){
              </div>
              <div>
                <div style={{fontWeight:700,fontSize:13,color:"#7c3aed",marginBottom:4}}>IRAC (কীটনাশক)</div>
-               <div style={{background:"#fff",borderRadius:10,padding:12}}>
+               <div style={{background:C.bgCard,borderRadius:10,padding:12}}>
                  {resistanceData.irac.map((i,idx)=>( 
                    <div key={idx} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:idx===resistanceData.irac.length-1?"none":`1px solid ${C.border}`}}>
                      <div><div style={{fontSize:11,color:C.textMuted}}>{i.group}</div><div style={{fontSize:10,color:C.text}}>{i.ai}</div></div>
                      <div style={{display:"flex",gap:6,alignItems:"center"}}>
-                       <span style={{background:"#fed7aa",borderRadius:4,padding:"1px 4px",fontSize:9,color:C.warning}}>{i.risk}</span>
+                       <span style={{background:C.bgOrange,borderRadius:4,padding:"1px 4px",fontSize:9,color:C.warning}}>{i.risk}</span>
                        <span style={{fontSize:10,color:C.text}}>{i.rotate}</span>
                      </div>
                    </div>
@@ -1803,14 +1811,14 @@ function ShareAndInstallBar() {
         <button onClick={handleDismiss} style={{position:"absolute",top:-6,right:-6,width:18,height:18,borderRadius:"50%",border:"none",background:"#e5e7eb",color:"#6b7280",fontSize:11,fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1,padding:0,zIndex:1}}>✕</button>
       )}
       {/* Share button — always visible */}
-      <button onClick={handleNativeShare} style={{display:"flex",alignItems:"center",gap:5,padding:"7px 12px",borderRadius:50,border:`1px solid ${shared?C.success:C.border}`,background:shared?"#f0fdf4":"#fff",color:shared?C.success:C.textMuted,fontSize:11,fontWeight:700,cursor:"pointer",boxShadow:C.shadow,transition:"all .15s"}}>
+      <button onClick={handleNativeShare} style={{display:"flex",alignItems:"center",gap:5,padding:"7px 12px",borderRadius:50,border:`1px solid ${shared?C.success:C.border}`,background:shared?C.bgSuccess:C.bgCard,color:shared?C.success:C.textMuted,fontSize:11,fontWeight:700,cursor:"pointer",boxShadow:C.shadow,transition:"all .15s"}}>
         {shared ? "✅" : "📤"} শেয়ার
       </button>
       {/* Share dropdown menu */}
       {showShareMenu && (
         <>
           <div onClick={() => setShowShareMenu(false)} style={{position:"fixed",inset:0,zIndex:199}} />
-          <div style={{position:"absolute",top:44,right:0,background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:8,boxShadow:C.shadowLg,zIndex:200,minWidth:190,animation:"popIn .2s ease"}}>
+          <div style={{position:"absolute",top:44,right:0,background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:8,boxShadow:C.shadowLg,zIndex:200,minWidth:190,animation:"popIn .2s ease"}}>
             <div style={{fontSize:11,color:C.textLight,fontWeight:700,padding:"4px 10px 8px",letterSpacing:.3}}>শেয়ার করুন</div>
             {shareLinks.map((link) => (
               link.action === "copy" ? (
@@ -1874,7 +1882,7 @@ function GameHub(){
       </div>
 
       {isSupported && (
-        <button onClick={() => speak("গেম হাবে স্বাগতম! এখানে পাঁচটি CABI গেম আছে। লক্ষণ লক্ষ্য, কারণ খুঁজো, রোগ ত্রিভুজ, মাঠ পরীক্ষক, এবং IPM কমান্ডার।", { prependFriendly: true })} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "10px 14px", borderRadius: 12, border: `1.5px solid ${speaking ? C.success : C.border}`, background: speaking ? "#f0fdf4" : C.bgMuted, color: speaking ? C.success : C.textMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 14, boxShadow: C.shadow }}>
+        <button onClick={() => speak("গেম হাবে স্বাগতম! এখানে পাঁচটি CABI গেম আছে। লক্ষণ লক্ষ্য, কারণ খুঁজো, রোগ ত্রিভুজ, মাঠ পরীক্ষক, এবং IPM কমান্ডার।", { prependFriendly: true })} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "10px 14px", borderRadius: 12, border: `1.5px solid ${speaking ? C.success : C.border}`, background: speaking ? C.bgSuccess : C.bgMuted, color: speaking ? C.success : C.textMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 14, boxShadow: C.shadow }}>
           <span style={{ fontSize: 18 }}>🔊</span>
           {speaking ? "শুনছি..." : "গেম তালিকা শুনুন"}
         </button>
@@ -1895,7 +1903,7 @@ function GameHub(){
                 <div style={{width:54,height:54,borderRadius:14,background:game.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,boxShadow:"0 4px 12px rgba(0,0,0,0.12)"}}>
                   {game.icon}
                 </div>
-                <div style={{position:"absolute",top:-4,right:-4,width:20,height:20,borderRadius:8,background:"#fff",border:`1.5px solid ${game.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:game.color,boxShadow:C.shadow}}>ধা.{game.step}</div>
+                <div style={{position:"absolute",top:-4,right:-4,width:20,height:20,borderRadius:8,background:C.bgCard,border:`1.5px solid ${game.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:game.color,boxShadow:C.shadow}}>ধা.{game.step}</div>
               </div>
             </div>
             <div style={{flex:1,minWidth:0}}>
@@ -2088,6 +2096,33 @@ const[activeTab,setActiveTab]=useState("home");
       r.setProperty('--c-shadow',theme.shadow);
       r.setProperty('--c-shadow-md',theme.shadowMd);
       r.setProperty('--c-shadow-lg',theme.shadowLg);
+      // Tinted backgrounds & borders for dark-mode compatibility
+      r.setProperty('--c-bg-danger',theme.bgDanger||'#fef2f2');
+      r.setProperty('--c-bg-success',theme.bgSuccess||'#f0fdf4');
+      r.setProperty('--c-bg-warning',theme.bgWarning||'#fffbeb');
+      r.setProperty('--c-bg-info',theme.bgInfo||'#eff6ff');
+      r.setProperty('--c-bg-blue',theme.bgBlue||'#f0f9ff');
+      r.setProperty('--c-bg-purple',theme.bgPurple||'#faf5ff');
+      r.setProperty('--c-bg-teal',theme.bgTeal||'#ecfeff');
+      r.setProperty('--c-bg-orange',theme.bgOrange||'#fff7ed');
+      r.setProperty('--c-border-danger',theme.borderDanger||'#fecaca');
+      r.setProperty('--c-border-success',theme.borderSuccess||'#bbf7d0');
+      r.setProperty('--c-border-warning',theme.borderWarning||'#fcd34d');
+      r.setProperty('--c-border-info',theme.borderInfo||'#bfdbfe');
+      r.setProperty('--c-border-blue',theme.borderBlue||'#bae6fd');
+      r.setProperty('--c-border-purple',theme.borderPurple||'#e9d5ff');
+      r.setProperty('--c-border-teal',theme.borderTeal||'#a5f3fc');
+      r.setProperty('--c-border-orange',theme.borderOrange||'#fed7aa');
+      r.setProperty('--c-badge-success',theme.badgeSuccess||'#dcfce7');
+      r.setProperty('--c-badge-warning',theme.badgeWarning||'#fef3c7');
+      r.setProperty('--c-text-success',theme.textSuccess||'#14532d');
+      r.setProperty('--c-text-danger',theme.textDanger||'#991b1b');
+      r.setProperty('--c-text-warning',theme.textWarning||'#92400e');
+      r.setProperty('--c-text-info',theme.textInfo||'#1e40af');
+      r.setProperty('--c-text-blue',theme.textBlue||'#0369a1');
+      r.setProperty('--c-text-purple',theme.textPurple||'#6b21a8');
+      r.setProperty('--c-text-teal',theme.textTeal||'#155e75');
+      r.setProperty('--c-text-orange',theme.textOrange||'#9a3412');
     }
   },[darkMode]);
 
@@ -2652,7 +2687,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           const alerts=getCurrentRiskAlerts();
           if(alerts.length===0)return null;
           return(
-            <div style={{background:'#fef2f2',borderRadius:12,padding:12,marginBottom:10,border:'1px solid #fecaca'}}>
+            <div style={{background:C.bgDanger,borderRadius:12,padding:12,marginBottom:10,border:`1px solid ${C.borderDanger}`}}>
               <div style={{fontWeight:700,fontSize:13,color:C.danger,marginBottom:6}}>⚠️ এই মৌসুমে ঝুঁকি</div>
               {alerts.map((a,i)=>(
                 <div key={i} style={{fontSize:12,color:C.text,marginBottom:3}}>
@@ -2675,7 +2710,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:12}}>
               <button onClick={()=>setActiveTab("guide")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
-                <div style={{width:56,height:56,borderRadius:16,background:"#eff6ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #2563eb18"}}>📖</div>
+                <div style={{width:56,height:56,borderRadius:16,background:C.bgInfo,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #2563eb18"}}>📖</div>
                 <div>
                   <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>CABI গাইড</div>
                   <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>CABI Plantwise ৫-ধাপ রোগ নির্ণয় প্রোটোকল ধাপে ধাপে পড়ুন ও বুঝুন। ETL সীমা, পুষ্টি তথ্য ও IPM পিরামিড সহ।</div>
@@ -2685,7 +2720,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 </div>
               </button>
               <button onClick={()=>setActiveTab("game")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease .1s both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
-                <div style={{width:56,height:56,borderRadius:16,background:"#faf5ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #7c3aed18"}}>🎮</div>
+                <div style={{width:56,height:56,borderRadius:16,background:C.bgPurple,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #7c3aed18"}}>🎮</div>
                 <div>
                   <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>গেম হাব</div>
                   <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>৫টি ইন্টারেক্টিভ গেম খেলে CABI নির্ণয় প্রক্রিয়া চর্চা করুন! লক্ষণ চেনা থেকে IPM সিদ্ধান্ত — সব গেমে।</div>
@@ -2720,7 +2755,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:12}}>
               <button onClick={()=>setActiveTab("apps")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
-                <div style={{width:56,height:56,borderRadius:16,background:"#fff7ed",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #ea580c18"}}>🌐</div>
+                <div style={{width:56,height:56,borderRadius:16,background:C.bgOrange,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #ea580c18"}}>🌐</div>
                 <div>
                   <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>কৃষি অ্যাপস</div>
                   <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>Krishi AI, GAP Brinjal, CIRDAP GreenLoop — আরও সেবা একসাথে খুলুন।</div>
@@ -2730,7 +2765,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 </div>
               </button>
               <button onClick={()=>setActiveTab("history")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease .1s both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
-                <div style={{width:56,height:56,borderRadius:16,background:"#f0fdf4",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #16a34a18"}}>📋</div>
+                <div style={{width:56,height:56,borderRadius:16,background:C.bgSuccess,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #16a34a18"}}>📋</div>
                 <div>
                   <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>নির্ণয় ইতিহাস</div>
                   <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>আগের সব নির্ণয় রিপোর্ট দেখুন, ট্র্যাক করুন ফসলের স্বাস্থ্য পরিবর্তন।</div>
@@ -2818,8 +2853,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       <div style={{fontSize:13,color:C.textMuted,lineHeight:1.75}}>ফসল, জেলা, মৌসুম, লক্ষণ আর ছবি একসাথে দিলে ফল বেশি ভালো আসে। ছবি থাকলে সিস্টেম নিজে ফসল ধরারও চেষ্টা করবে.</div>
                       {images.length>0&&(
                         <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                          <span style={{fontSize:11,background:"#f0fdf4",padding:"4px 9px",borderRadius:8,color:C.success,fontWeight:700}}>✅ {images.length}টি ছবি যুক্ত</span>
-                          {analysingCrop&&<span style={{fontSize:11,background:"#eff6ff",padding:"4px 9px",borderRadius:8,color:C.blue}}>🔍 ফসল চিনে দেখছে...</span>}
+                          <span style={{fontSize:11,background:C.bgSuccess,padding:"4px 9px",borderRadius:8,color:C.success,fontWeight:700}}>✅ {images.length}টি ছবি যুক্ত</span>
+                          {analysingCrop&&<span style={{fontSize:11,background:C.bgInfo,padding:"4px 9px",borderRadius:8,color:C.blue}}>🔍 ফসল চিনে দেখছে...</span>}
                         </div>
                       )}
                       {form.crop&&<div style={{fontSize:11,background:C.bgMuted,padding:"4px 9px",borderRadius:8,color:C.textMuted,alignSelf:"flex-start"}}>🌱 {form.crop}</div>}
@@ -2832,8 +2867,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   {!form.crop&&!showMoreCrops&&<QuickCropRow onSelect={handleCropQuickSelect} selected={form.crop}/>}
                   {form.crop&&!showMoreCrops&&(
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{background:"#f0fdf4",border:`1.5px solid ${C.primary}`,borderRadius:12,padding:"8px 14px",color:C.primaryDark,fontWeight:700,fontSize:13,flex:1}}>✅ {form.crop}</div>
-                      <button onClick={()=>{setForm(f=>({...f,crop:""}));setShowMoreCrops(false);}} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:10,color:C.danger,padding:"7px 12px",cursor:"pointer",fontSize:12,fontWeight:600}}>পরিবর্তন</button>
+                      <div style={{background:C.bgSuccess,border:`1.5px solid ${C.primary}`,borderRadius:12,padding:"8px 14px",color:C.primaryDark,fontWeight:700,fontSize:13,flex:1}}>✅ {form.crop}</div>
+                      <button onClick={()=>{setForm(f=>({...f,crop:""}));setShowMoreCrops(false);}} style={{background:C.bgDanger,border:`1px solid ${C.borderDanger}`,borderRadius:10,color:C.danger,padding:"7px 12px",cursor:"pointer",fontSize:12,fontWeight:600}}>পরিবর্তন</button>
                     </div>
                   )}
                   {showMoreCrops&&(
@@ -2841,13 +2876,13 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       <button onClick={()=>setShowMoreCrops(false)} style={{background:"none",border:"none",color:C.primary,cursor:"pointer",fontSize:13,marginBottom:8,fontWeight:600}}>← ফিরুন</button>
                       {Object.keys(CROPS).map(group=>(
                         <div key={group} style={{marginBottom:7}}>
-                          <button onClick={()=>setExpandedGroup(expandedGroup===group?null:group)} style={{width:"100%",background:expandedGroup===group?"#f0fdf4":C.bgMuted,border:`1px solid ${expandedGroup===group?C.primary:C.border}`,borderRadius:10,padding:"8px 12px",color:C.text,cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:600}}>
+                          <button onClick={()=>setExpandedGroup(expandedGroup===group?null:group)} style={{width:"100%",background:expandedGroup===group?C.bgSuccess:C.bgMuted,border:`1px solid ${expandedGroup===group?C.primary:C.border}`,borderRadius:10,padding:"8px 12px",color:C.text,cursor:"pointer",textAlign:"left",fontSize:12,fontWeight:600}}>
                             {group} {expandedGroup===group?"▲":"▼"}
                           </button>
                           {expandedGroup===group&&(
-                            <div style={{background:"#fff",border:`1px solid ${C.border}`,borderTop:"none",borderRadius:"0 0 10px 10px",padding:7,maxHeight:190,overflowY:"auto"}}>
+                            <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderTop:"none",borderRadius:"0 0 10px 10px",padding:7,maxHeight:190,overflowY:"auto"}}>
                               {CROPS[group].map(crop=>(
-                                <div key={crop} onClick={()=>{handleCropQuickSelect(crop);setExpandedGroup(null);}} style={{padding:"6px 10px",cursor:"pointer",fontSize:12,color:C.text,borderRadius:7}} onMouseEnter={e=>e.currentTarget.style.background="#f0fdf4"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{crop}</div>
+                                <div key={crop} onClick={()=>{handleCropQuickSelect(crop);setExpandedGroup(null);}} style={{padding:"6px 10px",cursor:"pointer",fontSize:12,color:C.text,borderRadius:7}} onMouseEnter={e=>e.currentTarget.style.background=C.bgSuccess} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{crop}</div>
                               ))}
                             </div>
                           )}
@@ -2897,11 +2932,11 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   const activeSeason = calEntry.seasons.find(s => s.months.includes(currentMonth));
                   if (!activeSeason) return null;
                   return (
-                    <div style={{background:"#fffbeb",border:"1px solid #fcd34d",borderRadius:12,padding:"10px 14px",marginBottom:10,fontSize:12}}>
-                      <div style={{fontWeight:700,color:"#92400e",marginBottom:4}}>📅 বর্তমান মৌসুম: {activeSeason.name} ({activeSeason.nameEn})</div>
+                    <div style={{background:C.bgWarning,border:`1px solid ${C.borderWarning}`,borderRadius:12,padding:"10px 14px",marginBottom:10,fontSize:12}}>
+                      <div style={{fontWeight:700,color:C.textWarning,marginBottom:4}}>📅 বর্তমান মৌসুম: {activeSeason.name} ({activeSeason.nameEn})</div>
                       {activeSeason.riskPeriod && <div style={{color:"#b45309",marginBottom:3}}>⚠️ ঝুঁকির সময়: {activeSeason.riskPeriod}</div>}
-                      {activeSeason.keyDiseases?.length > 0 && <div style={{color:"#92400e"}}>🦠 প্রধান রোগ: {activeSeason.keyDiseases.join(", ")}</div>}
-                      {activeSeason.keyPests?.length > 0 && <div style={{color:"#92400e"}}>🐛 প্রধান পোকা: {activeSeason.keyPests.join(", ")}</div>}
+                      {activeSeason.keyDiseases?.length > 0 && <div style={{color:C.textWarning}}>🦠 প্রধান রোগ: {activeSeason.keyDiseases.join(", ")}</div>}
+                      {activeSeason.keyPests?.length > 0 && <div style={{color:C.textWarning}}>🐛 প্রধান পোকা: {activeSeason.keyPests.join(", ")}</div>}
                     </div>
                   );
                 })()}
@@ -2937,7 +2972,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <label style={labelSt}>⏱️ সমস্যার সময়কাল</label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                    {DURATION_CHIPS.map(chip=>{const a=form.duration===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,duration:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?"#f0fdf4":"#f8faf8",color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
+                    {DURATION_CHIPS.map(chip=>{const a=form.duration===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,duration:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?C.bgSuccess:C.bgMuted,color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
                   </div>
                 </div>
 
@@ -2945,7 +2980,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <label style={labelSt}>🗺️ আক্রান্ত এলাকা</label>
                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                    {AREA_CHIPS.map(chip=>{const a=form.affectedArea===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,affectedArea:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?"#f0fdf4":"#f8faf8",color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
+                    {AREA_CHIPS.map(chip=>{const a=form.affectedArea===chip.value;return<button key={chip.label} onClick={()=>setForm(f=>({...f,affectedArea:a?"":chip.value}))} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?C.bgSuccess:C.bgMuted,color:a?C.primaryDark:C.text,fontWeight:a?700:400}}>{chip.label}</button>;})}
                   </div>
                 </div>
 
@@ -2953,13 +2988,13 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:9}}>
                     <label style={{...labelSt,marginBottom:0}}>🩺 লক্ষণ বর্ণনা *</label>
-                    {voiceSupported&&<button onClick={isListening?stopListening:startListening} style={{width:40,height:40,borderRadius:"50%",border:`2px solid ${isListening?C.danger:C.primary}`,background:isListening?"#fef2f2":"#f0fdf4",cursor:"pointer",fontSize:17,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isListening?<span style={{animation:"pulse 1s infinite"}}>⏹</span>:"🎙️"}</button>}
+                    {voiceSupported&&<button onClick={isListening?stopListening:startListening} style={{width:40,height:40,borderRadius:"50%",border:`2px solid ${isListening?C.danger:C.primary}`,background:isListening?C.bgDanger:C.bgSuccess,cursor:"pointer",fontSize:17,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isListening?<span style={{animation:"pulse 1s infinite"}}>⏹</span>:"🎙️"}</button>}
                   </div>
                   {Object.entries(SYMPTOM_CHIPS).map(([group,chips])=>(
                     <div key={group} style={{marginBottom:9}}>
                       <div style={{color:C.textMuted,fontSize:10,fontWeight:700,marginBottom:5,textTransform:"uppercase",letterSpacing:.5}}>{group}</div>
                       <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-                        {chips.map(chip=>{const a=form.symptoms.includes(chip.value);return<button key={chip.label} onClick={()=>{if(a)setForm(f=>({...f,symptoms:f.symptoms.replace(chip.value,"").replace(/\n\n+/g,"\n").trim()}));else setForm(f=>({...f,symptoms:f.symptoms?f.symptoms.trimEnd()+"\n"+chip.value:chip.value}));}} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?"#f0fdf4":"#f8faf8",color:a?C.primaryDark:C.textMuted,fontWeight:a?700:400,fontSize:11}}>{a?"✓ ":""}{chip.label}</button>;})}
+                        {chips.map(chip=>{const a=form.symptoms.includes(chip.value);return<button key={chip.label} onClick={()=>{if(a)setForm(f=>({...f,symptoms:f.symptoms.replace(chip.value,"").replace(/\n\n+/g,"\n").trim()}));else setForm(f=>({...f,symptoms:f.symptoms?f.symptoms.trimEnd()+"\n"+chip.value:chip.value}));}} style={{...chipSt,border:`1px solid ${a?C.primary:C.border}`,background:a?C.bgSuccess:C.bgMuted,color:a?C.primaryDark:C.textMuted,fontWeight:a?700:400,fontSize:11}}>{a?"✓ ":""}{chip.label}</button>;})}
                       </div>
                     </div>
                   ))}
@@ -2982,7 +3017,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                               <button key={i} onClick={() => {
                                 if (a) setForm(f => ({...f, symptoms: f.symptoms.replace(sym, "").replace(/\n\n+/g, "\n").trim()}));
                                 else setForm(f => ({...f, symptoms: f.symptoms ? f.symptoms.trimEnd() + "\n" + sym : sym}));
-                              }} style={{...chipSt, border:`1px solid ${a ? C.primary : C.border}`, background:a ? "#f0fdf4" : C.bgMuted, color:a ? C.primaryDark : C.textMuted, fontWeight:a ? 700 : 400, fontSize:11}}>
+                              }} style={{...chipSt, border:`1px solid ${a ? C.primary : C.border}`, background:a ? C.bgSuccess : C.bgMuted, color:a ? C.primaryDark : C.textMuted, fontWeight:a ? 700 : 400, fontSize:11}}>
                                 {a ? "✓ " : ""}{sym}
                               </button>
                             );
@@ -2996,7 +3031,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
                 {/* Image picker is now integrated inside the leaf frame info box above */}
 
-                {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:12,padding:"12px 14px",color:C.danger,marginBottom:10,fontSize:13}}>⚠️ {error}</div>}
+                {error&&<div style={{background:C.bgDanger,border:`1px solid ${C.borderDanger}`,borderRadius:12,padding:"12px 14px",color:C.danger,marginBottom:10,fontSize:13}}>⚠️ {error}</div>}
 
                 {form.crop && form.symptoms && (() => {
                   const cropKey = resolveCropKey(form.crop);
@@ -3013,7 +3048,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       </div>
                       <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                         {matches.slice(0, 3).map((m, i) => (
-                          <span key={i} style={{background:i===0?"#f0fdf4":C.bgMuted,border:`1px solid ${i===0?"#bbf7d0":C.border}`,borderRadius:20,padding:"4px 10px",fontSize:11,fontWeight:i===0?700:500,color:i===0?C.primaryDark:C.text}}>
+                          <span key={i} style={{background:i===0?C.bgSuccess:C.bgMuted,border:`1px solid ${i===0?C.borderSuccess:C.border}`,borderRadius:20,padding:"4px 10px",fontSize:11,fontWeight:i===0?700:500,color:i===0?C.primaryDark:C.text}}>
                             {m.disease.nameBn} {Math.round((m.matchRatio||0)*100)}%
                           </span>
                         ))}
@@ -3072,28 +3107,28 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       <div style={{fontSize:13,color:C.textMuted,lineHeight:1.7}}>কোন সমস্যা বেশি মনে হচ্ছে, কী লক্ষণ দেখা গেছে, আর এখন কী করলে ক্ষতি কমবে তা নিচে কার্ড আকারে সাজানো আছে.</div>
                       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>
                         {form.district&&<span style={{fontSize:11,background:C.bgMuted,padding:"3px 8px",borderRadius:8,color:C.textMuted}}>📍 {form.district?.split("/")[0]?.trim()}</span>}
-                        {weather&&<span style={{fontSize:11,background:"#f0f9ff",padding:"3px 8px",borderRadius:8,color:"#0369a1"}}>🌡️{weather.temp}°C · 💧{weather.humidity}%</span>}
-                        {provider&&<span style={{fontSize:11,background:"#eff6ff",padding:"3px 8px",borderRadius:8,color:C.blue}}>🤖 {provider}</span>}
+                        {weather&&<span style={{fontSize:11,background:C.bgBlue,padding:"3px 8px",borderRadius:8,color:"#0369a1"}}>🌡️{weather.temp}°C · 💧{weather.humidity}%</span>}
+                        {provider&&<span style={{fontSize:11,background:C.bgInfo,padding:"3px 8px",borderRadius:8,color:C.blue}}>🤖 {provider}</span>}
                       </div>
                     </div>
                   </div>
                 </div>
                 <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,flexWrap:"wrap"}}>
-                    <div style={{width:38,height:38,borderRadius:10,background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>📋</div>
+                    <div style={{width:38,height:38,borderRadius:10,background:`linear-gradient(135deg,${C.bgSuccess},${C.badgeSuccess})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>📋</div>
                     <div style={{flex:1}}>
                       <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>রোগ নির্ণয় প্রতিবেদন</div>
                       <div style={{fontSize:11,color:C.textMuted}}>{form.crop?.split("/")[0]?.trim()} · {form.district?.split("/")[0]?.trim()||locationName}</div>
                     </div>
-                    {provider&&<span style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:20,padding:"3px 9px",color:C.blue,fontSize:10,fontWeight:700}}>{provider}</span>}
+                    {provider&&<span style={{background:C.bgInfo,border:"1px solid #bfdbfe",borderRadius:20,padding:"3px 9px",color:C.blue,fontSize:10,fontWeight:700}}>{provider}</span>}
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
                     <div style={{display:"flex",background:C.bgMuted,borderRadius:20,padding:3,gap:2}}>
                       <button onClick={()=>{setShowEnglish(false);stopSpeaking();}} style={{borderRadius:16,padding:"5px 14px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:!showEnglish?C.primary:"transparent",color:!showEnglish?"#fff":C.textMuted,transition:"all .2s"}}>বাংলা</button>
                       <button onClick={()=>{setShowEnglish(true);stopSpeaking();}} style={{borderRadius:16,padding:"5px 14px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:showEnglish?C.primary:"transparent",color:showEnglish?"#fff":C.textMuted,transition:"all .2s"}}>English</button>
                     </div>
-                    {ttsSupported&&<button onClick={()=>isSpeaking?stopSpeaking():speakResult(showEnglish?result.en:result.bn)} style={{width:36,height:36,borderRadius:"50%",border:`2px solid ${isSpeaking?C.warning:C.primary}`,background:isSpeaking?"#fffbeb":"#f0fdf4",cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isSpeaking?"⏹":"🔊"}</button>}
-                    {weather&&<span style={{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:20,padding:"3px 8px",color:"#0369a1",fontSize:10}}>🌡️{weather.temp}°C·💧{weather.humidity}%</span>}
+                    {ttsSupported&&<button onClick={()=>isSpeaking?stopSpeaking():speakResult(showEnglish?result.en:result.bn)} style={{width:36,height:36,borderRadius:"50%",border:`2px solid ${isSpeaking?C.warning:C.primary}`,background:isSpeaking?C.bgWarning:C.bgSuccess,cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isSpeaking?"⏹":"🔊"}</button>}
+                    {weather&&<span style={{background:C.bgBlue,border:`1px solid ${C.borderBlue}`,borderRadius:20,padding:"3px 8px",color:C.textBlue,fontSize:10}}>🌡️{weather.temp}°C·💧{weather.humidity}%</span>}
                   </div>
                 </div>
 
@@ -3125,16 +3160,16 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 {!severity?(
                   <div style={{background:C.bgCard,borderRadius:16,padding:18,marginTop:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}><SeveritySurvey onSubmit={s=>setSeverity(s)}/></div>
                 ):(
-                  <div style={{background:"#f0fdf4",borderRadius:12,padding:"11px 14px",marginTop:10,border:"1px solid #bbf7d0",fontSize:13,color:C.success,fontWeight:700}}>✅ তীব্রতা নথিভুক্ত: {severity}</div>
+                  <div style={{background:C.bgSuccess,borderRadius:12,padding:"11px 14px",marginTop:10,border:`1px solid ${C.borderSuccess}`,fontSize:13,color:C.success,fontWeight:700}}>✅ তীব্রতা নথিভুক্ত: {severity}</div>
                 )}
 
-                <div style={{marginTop:10,padding:"10px 14px",background:"#fffbeb",border:"1px solid #fed7aa",borderRadius:12,color:C.warning,fontSize:12}}>⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।</div>
+                <div style={{marginTop:10,padding:"10px 14px",background:C.bgWarning,border:`1px solid ${C.borderOrange}`,borderRadius:12,color:C.warning,fontSize:12}}>⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।</div>
                 <button onClick={reset} aria-label="Reset form" style={{width:"100%",marginTop:10,padding:"13px",borderRadius:14,border:`1px solid ${C.border}`,background:C.bgCard,color:C.text,fontWeight:600,fontSize:14,cursor:"pointer",boxShadow:C.shadow}}>🔁 নতুন রোগ নির্ণয়</button>
 
                 {/* Follow-up questions — dynamic & context-aware */}
                 <div style={{marginTop:14,padding:16,background:C.bgCard,borderRadius:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
-                    <div style={{width:32,height:32,borderRadius:10,background:'linear-gradient(135deg,#eff6ff,#dbeafe)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>💬</div>
+                    <div style={{width:32,height:32,borderRadius:10,background:`linear-gradient(135deg,${C.bgInfo},${C.borderInfo})`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>💬</div>
                     <div>
                       <div style={{fontWeight:800,fontSize:14,color:C.text}}>আরও জিজ্ঞাসা</div>
                       <div style={{fontSize:10,color:C.textMuted}}>রোগ সম্পর্কে বিস্তারিত জানতে প্রশ্ন করুন</div>
@@ -3227,7 +3262,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                             <div style={{fontSize:10,color:C.textLight,fontWeight:700,marginBottom:4,letterSpacing:.3,textTransform:'uppercase'}}>{meta.icon} {meta.label}</div>
                             <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
                               {items.slice(0,3).map(q=>(
-                                <button key={q} onClick={()=>setFollowUpQuestion(q)} style={{padding:'5px 10px',borderRadius:20,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.text,fontSize:11,cursor:'pointer',fontWeight:600,transition:'all .15s'}} onMouseEnter={e=>{e.currentTarget.style.background='#f0fdf4';e.currentTarget.style.borderColor=C.primary;}} onMouseLeave={e=>{e.currentTarget.style.background=C.bgMuted;e.currentTarget.style.borderColor=C.border;}}>{q}</button>
+                                <button key={q} onClick={()=>setFollowUpQuestion(q)} style={{padding:'5px 10px',borderRadius:20,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.text,fontSize:11,cursor:'pointer',fontWeight:600,transition:'all .15s'}} onMouseEnter={e=>{e.currentTarget.style.background=C.bgSuccess;e.currentTarget.style.borderColor=C.primary;}} onMouseLeave={e=>{e.currentTarget.style.background=C.bgMuted;e.currentTarget.style.borderColor=C.border;}}>{q}</button>
                               ))}
                             </div>
                           </div>
@@ -3303,13 +3338,13 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   <div key={i} style={{padding:"16px",background:C.bgMuted,borderRadius:20,border:`1px solid ${C.border}`,boxShadow:"0 6px 18px rgba(0,33,9,0.05)"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
                       <div className="ud-headline" style={{fontWeight:800,fontSize:17,color:C.text}}>{h.crop?.split("/")[0]?.trim()}</div>
-                      <span style={{background:"#dcfce7",color:"#166534",borderRadius:10,padding:"2px 9px",fontSize:11,fontWeight:700}}>সম্পন্ন</span>
+                      <span style={{background:C.badgeSuccess,color:C.textSuccess,borderRadius:10,padding:"2px 9px",fontSize:11,fontWeight:700}}>সম্পন্ন</span>
                     </div>
                     <div style={{color:C.textMuted,fontSize:11}}>📍 {h.district?.split("/")[0]?.trim()||"—"} · 📅 {h.date}</div>
                     {h.resultPreview&&<div style={{color:C.textLight,fontSize:12,marginTop:8,lineHeight:1.6,overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{h.resultPreview}...</div>}
                   </div>
                 ))}
-                <button onClick={()=>{setHistory([]);try{localStorage.removeItem("ud-history");}catch{}}} style={{padding:"9px",borderRadius:10,border:"1px solid #fecaca",background:"#fef2f2",color:C.danger,cursor:"pointer",fontSize:12,fontWeight:600,marginTop:3}}>🗑️ সব ইতিহাস মুছুন</button>
+                <button onClick={()=>{setHistory([]);try{localStorage.removeItem("ud-history");}catch{}}} style={{padding:"9px",borderRadius:10,border:"1px solid #fecaca",background:C.bgDanger,color:C.danger,cursor:"pointer",fontSize:12,fontWeight:600,marginTop:3}}>🗑️ সব ইতিহাস মুছুন</button>
                 <button onClick={()=>setActiveTab("more")} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600}}>← আরও পেজে ফিরুন</button>
               </div>
             )}
@@ -3319,7 +3354,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       </div>
 
         {!isGameTab&&<FeedbackPanel context={feedbackContext} summary={feedbackSummary} userEmail={userEmail} onEmailChange={setUserEmail} visitorStats={visitorStats} visitorId={visitorId}/>}
-       {!isGameTab&&<div style={{textAlign:"center",padding:"8px 4px",color:C.textLight,fontSize:10,borderTop:`1px solid ${C.border}`,background:"#fff",letterSpacing:0.5}}>
+       {!isGameTab&&<div style={{textAlign:"center",padding:"8px 4px",color:C.textLight,fontSize:10,borderTop:`1px solid ${C.border}`,background:C.bgCard,letterSpacing:0.5}}>
          উদ্ভিদ গোয়েন্দা · CABI Plantwise · BRRI · BARI · DAE Bangladesh
        </div>}
 
