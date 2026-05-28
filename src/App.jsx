@@ -8,6 +8,7 @@ import { translateBengaliToEnglish } from './data/bengaliKeywords';
 import CropCalendarComponent from './components/CropCalendar';
 import OnboardingFlow from './components/OnboardingFlow';
 import OutbreakList from './components/OutbreakList';
+import { computeEnsembleScore, scoreDiseasesBySeason, scoreDiseasesByWeather, getWeatherRiskSummary } from './data/agronomicEngine';
 import './styles/accessibility.css';
 
 const SymptomSpotter = React.lazy(() => import('./games/SymptomSpotter'));
@@ -702,6 +703,9 @@ function ProductRecommendations({products,crop}){
           <InfoRow icon="🌿" label="প্রতি বিঘায় মাত্রা" val={selected.dosage_per_bigha}/>
           <InfoRow icon="📅" label="PHI (ফসল কাটার আগে)" val={`${selected.phi_days} দিন`}/>
           <InfoRow icon="🔬" label="প্রয়োগ পদ্ধতি" val={selected.method}/>
+          {selected.frac_group&&<InfoRow icon="🧬" label="FRAC গ্রুপ" val={selected.frac_group}/>}
+          {selected.irac_group&&<InfoRow icon="🧬" label="IRAC গ্রুপ" val={selected.irac_group}/>}
+          {selected.resistance_risk&&<InfoRow icon="⚠️" label="প্রতিরোধ ঝুঁকি" val={selected.resistance_risk==="high"?"উচ্চ (রোটেশন বাধ্যতামূলক)":selected.resistance_risk==="medium"?"মাঝারি (রোটেশন সুপারিশ)":"কম (মাল্টিসাইট)"}/>}
         </div>
         {selected.ipm_note&&<div style={{marginTop:10,background:C.bgSuccess,borderRadius:10,padding:10}}><div style={{fontWeight:700,fontSize:11,color:C.success,marginBottom:3}}>🌿 IPM পরামর্শ</div><div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{selected.ipm_note}</div></div>}
         <div style={{marginTop:8,background:C.bgWarning,borderRadius:10,padding:10}}><div style={{fontWeight:700,fontSize:11,color:C.warning,marginBottom:3}}>⚠️ সতর্কতা</div><div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{selected.caution_bn||selected.caution}</div></div>
@@ -731,6 +735,7 @@ function ProductRecommendations({products,crop}){
                 <div style={{display:"flex",gap:5,marginTop:4,flexWrap:"wrap"}}>
                   <span style={{background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,borderRadius:10,padding:"1px 7px",fontSize:10,fontWeight:700}}>{tc.label}</span>
                   <span style={{background:C.bgSuccess,border:`1px solid ${C.borderSuccess}`,color:C.textSuccess,borderRadius:10,padding:"1px 7px",fontSize:10}}>PHI:{p.phi_days}d</span>
+                  {p.resistance_risk==="high"&&<span style={{background:C.bgDanger,border:`1px solid ${C.borderDanger}`,color:C.textDanger,borderRadius:10,padding:"1px 7px",fontSize:10}}>⚠️R</span>}
                   {isBio(p.type)&&<span style={{background:C.bgSuccess,border:`1px solid ${C.borderSuccess}`,color:C.textSuccess,borderRadius:10,padding:"1px 7px",fontSize:10}}>🌿IPM</span>}
                 </div>
               </div>
@@ -819,6 +824,162 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,vis
     </div>
   );
 }
+// ─── Voice Diagnosis Component ────────────────────────────────────────────
+function VoiceDiagnosis({onResult,activeCrop}){
+  const[listening,setListening]=useState(false);
+  const[transcript,setTranscript]=useState('');
+  const recRef=useRef(null);
+
+  const startListening=useCallback(()=>{
+    const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SpeechRecognition){alert('আপনার ব্রাউজার ভয়েস সাপোর্ট করে না। Chrome ব্যবহার করুন।');return;}
+    const rec=new SpeechRecognition();
+    rec.lang='bn-BD';rec.continuous=false;rec.interimResults=false;
+    rec.onresult=(e)=>{const t=Array.from(e.results).map(r=>r[0].transcript).join('');setTranscript(t);setListening(false);onResult(t);};
+    rec.onerror=()=>{setListening(false);};
+    rec.onend=()=>{setListening(false);};
+    recRef.current=rec;
+    rec.start();setListening(true);
+  },[onResult]);
+
+  const stopListening=useCallback(()=>{recRef.current?.stop();setListening(false);},[]);
+
+  return(
+    <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,marginTop:10}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+        <span style={{fontSize:18}}>🎤</span>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:700,fontSize:13,color:C.text}}>ভয়েসে লক্ষণ বলুন</div>
+          <div style={{fontSize:11,color:C.textMuted}}>বাংলায় বলুন — অটো ট্রান্সলেট হবে</div>
+        </div>
+      </div>
+      <button onClick={listening?stopListening:startListening} style={{width:'100%',padding:'10px',borderRadius:12,border:'none',background:listening?C.danger:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,color:'#fff',fontWeight:700,fontSize:13,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+        {listening?'⏹ থামান':'🎙️ শুনুন'}
+      </button>
+      {transcript&&<div style={{marginTop:8,padding:10,background:C.bgMuted,borderRadius:10,fontSize:12,color:C.text,lineHeight:1.6}}> "{transcript}" </div>}
+    </div>
+  );
+}
+
+// ─── Confidence Dashboard ──────────────────────────────────────────────
+function ConfidenceDashboard({structuredResult,cropKey,weather,symptomMatches}){
+  if(!structuredResult)return null;
+  const month=new Date().getMonth()+1;
+  let ensembleData=null;
+  if(cropKey&&symptomMatches&&symptomMatches.length>0){
+    try{ensembleData=computeEnsembleScore(cropKey,symptomMatches,weather,month);}catch{}
+  }
+  const confidence=structuredResult.confidence||'';
+  const severity=structuredResult.severity||'';
+  const cause=structuredResult.cause_type||structuredResult.biotic_abiotic||'';
+  const confPct=confidence==='high'?85:confidence==='medium'?55:25;
+  const confColor=confPct>=70?C.success:confPct>=40?C.warning:C.danger;
+  const sevLabel=severity==='severe'||severity==='high'?'মারাত্মক':severity==='moderate'||severity==='medium'?'মাঝারি':severity==='low'||severity==='mild'?'সামান্য':'অজানা';
+  const causeLabel=((c)=>{if(!c)return '';const cl=c.toLowerCase();if(cl.includes('fungal'))return'ছত্রাক';if(cl.includes('bacterial'))return'ব্যাকটেরিয়া';if(cl.includes('viral'))return'ভাইরাস';if(cl.includes('insect'))return'পোকা';if(cl.includes('nutrient'))return'পুষ্টি';return c;})(cause);
+
+  return(
+    <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:16,padding:14,marginTop:10,boxShadow:C.shadow}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+        <span style={{fontSize:18}}>📊</span>
+        <div style={{fontWeight:800,fontSize:14,color:C.primaryDark}}>কনফিডেন্স ড্যাশবোর্ড</div>
+      </div>
+      {/* Confidence bar */}
+      <div style={{marginBottom:10}}>
+        <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+          <span style={{fontSize:11,color:C.textMuted}}>নিশ্চয়তা</span>
+          <span style={{fontSize:11,fontWeight:700,color:confColor}}>{confPct}% — {confidence||'N/A'}</span>
+        </div>
+        <div style={{height:8,borderRadius:4,background:C.bgMuted,overflow:'hidden'}}>
+          <div style={{height:'100%',width:`${confPct}%`,background:confColor,borderRadius:4,transition:'width 0.5s ease'}}/>
+        </div>
+      </div>
+      {/* Badges row */}
+      <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:8}}>
+        {causeLabel&&<span style={{padding:'3px 10px',borderRadius:999,background:C.bgInfo,border:`1px solid ${C.borderInfo}`,color:C.textInfo,fontSize:10,fontWeight:700}}>{causeLabel}</span>}
+        <span style={{padding:'3px 10px',borderRadius:999,background:severity==='severe'||severity==='high'?C.bgDanger:severity==='moderate'||severity==='medium'?C.bgWarning:C.bgSuccess,border:`1px solid ${severity==='severe'||severity==='high'?C.borderDanger:severity==='moderate'||severity==='medium'?C.borderWarning:C.borderSuccess}`,color:severity==='severe'||severity==='high'?C.textDanger:severity==='moderate'||severity==='medium'?C.textWarning:C.textSuccess,fontSize:10,fontWeight:700}}>{sevLabel}</span>
+      </div>
+      {/* Ensemble scores */}
+      {ensembleData&&ensembleData.length>0&&(
+        <div style={{marginTop:6}}>
+          <div style={{fontSize:11,fontWeight:600,color:C.textMuted,marginBottom:6}}>এনসেম্বল স্কোর (লক্ষণ + মৌসুম + আবহাওয়া)</div>
+          {ensembleData.slice(0,3).map((d,i)=>(
+            <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0',borderBottom:i<2?`1px solid ${C.border}`:'none'}}>
+              <div style={{flex:1,fontSize:12,color:C.text,fontWeight:600}}>{d.disease.nameBn||d.disease.name}</div>
+              <div style={{display:'flex',gap:4}}>
+                <span style={{fontSize:9,padding:'2px 6px',borderRadius:8,background:C.bgSuccess,color:C.textSuccess}} title='লক্ষণ মিল'>{Math.round(d.symptomScore*100)}%</span>
+                <span style={{fontSize:9,padding:'2px 6px',borderRadius:8,background:C.bgInfo,color:C.textInfo}} title='মৌসুম মিল'>{Math.round(d.seasonScore*100)}%</span>
+                <span style={{fontSize:9,padding:'2px 6px',borderRadius:8,background:C.bgWarning,color:C.textWarning}} title='আবহাওয়া মিল'>{Math.round(d.weatherScore*100)}%</span>
+              </div>
+              <div style={{minWidth:40,fontSize:12,fontWeight:800,color:confColor,textAlign:'right'}}>{Math.round(d.combinedScore*100)}%</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── AI Copilot for Extension Officers ────────────────────────────────────
+function AICopilotTab({crop,district,weather,locationName,signedFetch}){
+  const[query,setQuery]=useState('');
+  const[conversation,setConversation]=useState([]);
+  const[loading,setLoading]=useState(false);
+
+  const quickPrompts=[
+    {label:'রোগ প্রতিরোধী জাত',q:'বাংলাদেশের কোন জাতগুলো এই রোগের বিরুদ্ধে প্রতিরোধী?'},
+    {label:'FRAC/IRAC রোটেশন',q:'এই রোগের জন্য কীভাবে কীটনাশক/ছত্রাকনাশক রোটেশন করব? FRAC/IRAC গ্রুপ বলুন।'},
+    {label:'DAE রিপোর্ট',q:'এই রোগের জন্য DAE-তে রিপোর্ট লেখার ফরম্যাট দিন।'},
+    {label:'ফসল ক্যালেন্ডার',q:'এই ফসলের মৌসুম ক্যালেন্ডার ও ঝুঁকি সময় কখন?'},
+    {label:'IPM পিরামিড',q:'এই রোগের জন্য IPM পিরামিড বিস্তারিত বলুন।'},
+    {label:'ETL মাত্রা',q:'এই পোকার Economic Threshold Level কত? কখন ব্যবস্থা নেব?'},
+  ];
+
+  const askCopilot=async(question)=>{
+    if(!question.trim())return;
+    const userMsg={role:'user',text:question};
+    setConversation(prev=>[...prev,userMsg]);
+    setLoading(true);setQuery('');
+    try{
+      const systemPrompt=`You are an AI Copilot for Bangladesh DAE extension officers. Provide expert agronomic advice in simple Bangla with English technical terms in brackets. Be specific to Bangladesh conditions, reference BRRI/BARI/DAE recommendations. Keep responses practical and actionable. Crop context: ${crop||'N/A'}, District: ${district||'N/A'}, Weather: ${weather?`${weather.temp}°C, ${weather.humidity}% humidity`:'N/A'}.`;
+      const res=await signedFetch('/api/diagnose',{method:'POST',body:JSON.stringify({systemPrompt,messages:[{role:'user',content:question}]})});
+      const data=await res.json();
+      const text=data.content?.map(b=>b.text||'').join('\n')||'উত্তর পাওয়া যায়নি।';
+      setConversation(prev=>[...prev,{role:'assistant',text,provider:data.provider}]);
+    }catch(e){setConversation(prev=>[...prev,{role:'assistant',text:'ত্রুটি হয়েছে: '+e.message}]);}
+    finally{setLoading(false);}
+  };
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:12,animation:'fadeIn .3s ease'}}>
+      <div style={{background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,borderRadius:18,padding:16,color:'#fff'}}>
+        <div style={{fontWeight:800,fontSize:20,marginBottom:6}}>🤖 AI কোপাইলট</div>
+        <div style={{fontSize:13,opacity:.9,lineHeight:1.6}}>DAE কর্মকর্তাদের জন্য — রোগ নির্ণয়, IPM, FRAC/IRAC, জাত নির্বাচন ও রিপোর্টিং সহায়তা।</div>
+      </div>
+      {/* Quick prompts */}
+      <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+        {quickPrompts.map(p=>(
+          <button key={p.label} onClick={()=>askCopilot(p.q)} style={{padding:'6px 10px',borderRadius:999,border:`1px solid ${C.border}`,background:C.bgCard,cursor:'pointer',fontSize:11,color:C.text,fontWeight:600}}>{p.label}</button>
+        ))}
+      </div>
+      {/* Conversation */}
+      <div style={{maxHeight:400,overflowY:'auto',display:'flex',flexDirection:'column',gap:10}}>
+        {conversation.map((msg,i)=>(
+          <div key={i} style={{background:msg.role==='user'?C.bgMuted:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:12,fontSize:13,lineHeight:1.7,color:C.text}}>
+            <div style={{fontSize:10,color:C.textMuted,fontWeight:600,marginBottom:4}}>{msg.role==='user'?'👤 আপনি':'🤖 কোপাইলট'} {msg.provider&&<span style={{fontSize:9,color:C.textLight}}> · {msg.provider}</span>}</div>
+            <div style={{whiteSpace:'pre-wrap'}}>{msg.text}</div>
+          </div>
+        ))}
+        {loading&&<div style={{padding:12,textAlign:'center',color:C.textMuted,fontSize:12}}>⏳ কোপাইলট ভাবছে...</div>}
+      </div>
+      {/* Input */}
+      <div style={{display:'flex',gap:8}}>
+        <input value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={e=>e.key==='Enter'&&!e.shiftKey&&askCopilot(query)} placeholder="প্রশ্ন করুন... (Enter পাঠান)" style={{flex:1,padding:'10px 14px',borderRadius:12,border:`1px solid ${C.border}`,fontSize:13,outline:'none'}}/>
+        <button onClick={()=>askCopilot(query)} disabled={loading||!query.trim()} style={{padding:'10px 16px',borderRadius:12,border:'none',background:query.trim()?C.primary:C.border,color:'#fff',fontWeight:700,cursor:query.trim()?'pointer':'not-allowed',fontSize:13}}>পাঠান</button>
+      </div>
+    </div>
+  );
+}
+
 function HomeTab({setActiveTab,history,weather,locationName}){
   const highlights=[
     {icon:"🧠",title:"ছবি দেখে রোগ ধরা",desc:"গ্যালারি বা ক্যামেরা থেকে ছবি দিন, তারপর সহজ ভাষায় রিপোর্ট পান.",action:"নির্ণয়ে যান",tab:"diagnose"},
@@ -2040,6 +2201,8 @@ const[activeTab,setActiveTab]=useState("home");
   const[recommendedProducts,setRecommendedProducts]=useState([]);
   // Structured AI output
   const[structuredResult,setStructuredResult]=useState(null);
+  // Symptom matches from offline engine (for ConfidenceDashboard)
+  const[symptomMatches,setSymptomMatches]=useState(null);
   // Follow-up questions
   const[followUpQuestion,setFollowUpQuestion]=useState('');
   const[followUpAnswer,setFollowUpAnswer]=useState('');
@@ -2620,6 +2783,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
     {id:"guide",label:"CABI গাইড",icon:"📖"},
     {id:"game",label:"গেম হাব",icon:"🎮"},
     {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
+    {id:"copilot",label:"কোপাইলট",icon:"🤖"},
     {id:"library",label:"ভান্ডার",icon:"📚"},
     {id:"more",label:"আরও",icon:"⋯"},
   ];
@@ -2628,6 +2792,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
     {id:"guide",label:"CABI গাইড",icon:"📖"},
     {id:"game",label:"গেম হাব",icon:"🎮"},
     {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
+    {id:"copilot",label:"কোপাইলট",icon:"🤖"},
     {id:"library",label:"তথ্যভান্ডার",icon:"📚"},
     {id:"apps",label:"অ্যাপস",icon:"🌐"},
     {id:"history",label:"ইতিহাস",icon:"📋"},
@@ -2802,6 +2967,10 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           </div>
         )}
 
+        {activeTab==="copilot"&&(
+          <AICopilotTab crop={form.crop} district={form.district} weather={weather} locationName={locationName} signedFetch={signedFetch}/>
+        )}
+
         {activeTab==="apps"&&(
           <div>
             <AppsHub/>
@@ -2945,8 +3114,11 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                         </label>
                       </div>
                     </div>
-                  
                   </div>
+
+                {/* Voice diagnosis — speak symptoms in Bangla */}
+                <VoiceDiagnosis onResult={(text)=>{setForm(f=>({...f,symptoms:f.symptoms?f.symptoms+", "+text:text}));}} activeCrop={form.crop}/>
+
                 </div>
 
                 {form.crop && (() => {
@@ -3063,6 +3235,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   const userSymptoms = form.symptoms.split('\n').filter(Boolean);
                   if (userSymptoms.length === 0) return null;
                   const matches = matchDiseasesBySymptoms(form.crop, userSymptoms);
+                  setSymptomMatches(matches);
                   if (!matches || matches.length === 0) return null;
                   return (
                     <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
@@ -3182,6 +3355,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 {recommendedProducts.length>0&&<ProductRecommendations products={recommendedProducts} crop={form.crop}/>}
 
                 <SeverityBadge severity={structuredResult?.severity||structuredResult?.severity_level} cause={structuredResult?.cause_type||structuredResult?.biotic_abiotic} affectedArea={form.affectedArea}/>
+
+                <ConfidenceDashboard structuredResult={structuredResult} cropKey={resolveCropKey(form.crop)} weather={weather} symptomMatches={symptomMatches}/>
 
                 <div style={{marginTop:10,padding:"10px 14px",background:C.bgWarning,border:`1px solid ${C.borderOrange}`,borderRadius:12,color:C.warning,fontSize:12}}>⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।</div>
                 <button onClick={reset} aria-label="Reset form" style={{width:"100%",marginTop:10,padding:"13px",borderRadius:14,border:`1px solid ${C.border}`,background:C.bgCard,color:C.text,fontWeight:600,fontSize:14,cursor:"pointer",boxShadow:C.shadow}}>🔁 নতুন রোগ নির্ণয়</button>

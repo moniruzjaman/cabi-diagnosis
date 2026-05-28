@@ -5,7 +5,9 @@
     "updated": "2025 — enhanced with DAE Bangladesh Approved Pesticide List (www.dae.gov.bd, 4475 registrations across 179 active ingredients)",
     "total": 94,
     "note": "DAE Bangladesh approved pesticides cross-referenced with CABI Plantwise, BRRI and BARI recommendations. All products carry valid DAE registration numbers.",
-    "dae_source": "DAE Bangladesh Approved Pesticide List — Table 1 (Insecticides, Fungicides, Herbicides, Miticides) — 4475 registrations analysed"
+    "dae_source": "DAE Bangladesh Approved Pesticide List — Table 1 (Insecticides, Fungicides, Herbicides, Miticides) — 4475 registrations analysed",
+    "frac_irac_updated": "2025 — FRAC/IRAC resistance management codes added for all products",
+    "frac_source": "FRAC Code List 2024, IRAC Mode of Action Classification 2024"
   },
   "products": [
     {
@@ -52,7 +54,9 @@
       "caution": "Do not apply during flowering. Highly toxic to bees.",
       "caution_bn": "ফুলের সময় স্প্রে করবেন না। মৌমাছির জন্য ক্ষতিকর।",
       "ipm_note": "Use only when pest count exceeds ETL. Prefer biological control first.",
-      "rating": 23
+      "rating": 23,
+      "irac_group": "4A",
+      "resistance_risk": "medium"
     },
     {
       "id": "P002",
@@ -86,7 +90,9 @@
       "caution": "Rotate with non-diamide insecticides to prevent resistance.",
       "caution_bn": "প্রতিরোধ গড়ে উঠতে না দিতে ভিন্ন শ্রেণির কীটনাশকের সাথে পর্যায়ক্রমে ব্যবহার করুন।",
       "ipm_note": "Very effective for stem borer. Single application often sufficient.",
-      "rating": 18
+      "rating": 18,
+      "irac_group": "28+4A",
+      "resistance_risk": "low"
     },
     {
       "id": "P003",
@@ -130,7 +136,9 @@
       "caution": "Avoid drift to water bodies. Toxic to fish.",
       "caution_bn": "জলাশয়ে যেন না পড়ে। মাছের জন্য ক্ষতিকর।",
       "ipm_note": "Broad spectrum. Use as last resort when other methods fail.",
-      "rating": 15
+      "rating": 15,
+      "irac_group": "3A",
+      "resistance_risk": "high"
     },
     {
       "id": "P004",
@@ -166,7 +174,9 @@
       "caution": "Apply at early infection stage. Preventive application most effective.",
       "caution_bn": "সংক্রমণের শুরুতে স্প্রে করুন। প্রতিরোধমূলক প্রয়োগ সবচেয়ে কার্যকর।",
       "ipm_note": "Use resistant varieties (BRRI dhan28/29) as primary defense.",
-      "rating": 31
+      "rating": 31,
+      "frac_group": "3",
+      "resistance_risk": "medium"
     },
     {
       "id": "P005",
@@ -208,7 +218,9 @@
       "caution": "Do not apply more than 3 times per season.",
       "caution_bn": "মৌসুমে ৩ বারের বেশি প্রয়োগ করবেন না।",
       "ipm_note": "Dual mode of action reduces resistance risk.",
-      "rating": 27
+      "rating": 27,
+      "frac_group": "3+11",
+      "resistance_risk": "medium"
     },
     {
       "id": "P006",
@@ -252,7 +264,9 @@
       "caution": "Preventive fungicide only. No curative activity.",
       "caution_bn": "শুধু প্রতিরোধমূলক। রোগ হলে কার্যকর নয়।",
       "ipm_note": "Inexpensive broad-spectrum protectant. Combine with systemic fungicide.",
-      "rating": 45
+      "rating": 45,
+      "frac_group": "M3",
+      "resistance_risk": "low"
     },
     {
       "id": "P007",
@@ -288,7 +302,9 @@
       "caution": "Resistance risk – rotate with other fungicide classes.",
       "caution_bn": "প্রতিরোধ ঝুঁকি – অন্য শ্রেণির ছত্রাকনাশকের সাথে পর্যায়ক্রমে ব্যবহার করুন।",
       "ipm_note": "Apply preventively before late blight season. BARI recommended.",
-      "rating": 19
+      "rating": 19,
+      "frac_group": "4+M3",
+      "resistance_risk": "high"
     },
     {
       "id": "P008",
@@ -332,7 +348,9 @@
       "caution": "Resistance reported in some areas. Rotate with triazoles.",
       "caution_bn": "কিছু এলাকায় প্রতিরোধ দেখা গেছে। ট্রাইয়াজোলের সাথে পর্যায়ক্রমে ব্যবহার করুন।",
       "ipm_note": "Effective seed treatment against soil-borne pathogens.",
-      "rating": 22
+      "rating": 22,
+      "frac_group": "1",
+      "resistance_risk": "high"
     },
     {
       "id": "P009",
@@ -360,7 +378,9 @@
       "caution": "Apply at first sign of blast. Repeat after 10 days if needed.",
       "caution_bn": "ব্লাস্টের প্রথম লক্ষণে স্প্রে করুন। প্রয়োজনে ১০ দিন পর আবার করুন।",
       "ipm_note": "Specific for blast only. Gold standard in Bangladesh rice farming.",
-      "rating": 52
+      "rating": 52,
+      "frac_group": "16",
+      "resistance_risk": "low"
     },
     {
       "id": "P010",
@@ -394,7 +414,9 @@
       "caution": "Most effective against sheath blight at tillering stage.",
       "caution_bn": "কুশি পর্যায়ে শিথ ব্লাইটের বিরুদ্ধে সবচেয়ে কার্যকর।",
       "ipm_note": "BRRI recommended for sheath blight management.",
-      "rating": 34
+      "rating": 34,
+      "frac_group": "3",
+      "resistance_risk": "medium"
     },
     {
       "id": "P011",
@@ -436,7 +458,9 @@
       "caution": "Highly toxic to bees. Do not apply during flowering.",
       "caution_bn": "মৌমাছির জন্য অত্যন্ত ক্ষতিকর। ফুলের সময় ব্যবহার করবেন না।",
       "ipm_note": "Very effective against BPH. Watch for resurgence with repeated use.",
-      "rating": 38
+      "rating": 38,
+      "irac_group": "4A",
+      "resistance_risk": "medium"
     },
     {
       "id": "P012",
@@ -470,7 +494,9 @@
       "caution": "Toxic to fish. Do not drain treated water to ponds.",
       "caution_bn": "মাছের জন্য ক্ষতিকর। চিকিৎসাকৃত পানি পুকুরে ফেলবেন না।",
       "ipm_note": "Granular form effective for soil application at planting.",
-      "rating": 12
+      "rating": 12,
+      "irac_group": "1A",
+      "resistance_risk": "high"
     },
     {
       "id": "P013",
@@ -508,7 +534,9 @@
       "caution": "HIGHLY TOXIC to birds and wildlife. Handle with extreme care. WHO Class Ib.",
       "caution_bn": "পাখি ও বন্যপ্রাণীর জন্য অত্যন্ত বিষাক্ত। WHO শ্রেণি Ib।",
       "ipm_note": "Use only as last resort. Prefer Triazophos or Chlorpyrifos sprays instead.",
-      "rating": 8
+      "rating": 8,
+      "irac_group": "1A",
+      "resistance_risk": "high"
     },
     {
       "id": "P014",
@@ -554,7 +582,9 @@
       "caution": "Toxic to fish and bees. Best applied in evening.",
       "caution_bn": "মাছ ও মৌমাছির জন্য ক্ষতিকর। সন্ধ্যায় স্প্রে করা ভালো।",
       "ipm_note": "Widely available. Effective for lepidopteran pests.",
-      "rating": 20
+      "rating": 20,
+      "irac_group": "3A",
+      "resistance_risk": "high"
     },
     {
       "id": "P015",
@@ -596,7 +626,9 @@
       "caution": "WHO Class II. Use protective equipment. Avoid inhalation.",
       "caution_bn": "WHO শ্রেণি II। সুরক্ষামূলক সরঞ্জাম ব্যবহার করুন।",
       "ipm_note": "Inexpensive broad-spectrum insecticide. Resistance common in some BPH populations.",
-      "rating": 25
+      "rating": 25,
+      "irac_group": "1B",
+      "resistance_risk": "medium"
     },
     {
       "id": "P016",
@@ -630,7 +662,9 @@
       "caution": "Toxic to birds and honeybees. Do not use near apiaries.",
       "caution_bn": "পাখি ও মৌমাছির জন্য ক্ষতিকর।",
       "ipm_note": "Highly effective for BPH. Use when hopper burn starts.",
-      "rating": 16
+      "rating": 16,
+      "irac_group": "2",
+      "resistance_risk": "medium"
     },
     {
       "id": "P017",
@@ -670,7 +704,9 @@
       "caution": "Very high concentration. Measure carefully.",
       "caution_bn": "অত্যন্ত উচ্চ ঘনত্ব। সাবধানে মাপুন।",
       "ipm_note": "Seed treatment form protects early stage seedlings from sucking pests.",
-      "rating": 14
+      "rating": 14,
+      "irac_group": "4A",
+      "resistance_risk": "medium"
     },
     {
       "id": "P018",
@@ -714,7 +750,9 @@
       "caution": "Broad spectrum systemic. Apply preventively or at early infection.",
       "caution_bn": "প্রতিরোধমূলকভাবে বা সংক্রমণের শুরুতে প্রয়োগ করুন।",
       "ipm_note": "Good tank-mix partner with protectant fungicides.",
-      "rating": 21
+      "rating": 21,
+      "frac_group": "11",
+      "resistance_risk": "medium"
     },
     {
       "id": "P019",
@@ -753,7 +791,9 @@
       "caution": "Preventive application before flowering most effective.",
       "caution_bn": "ফুলের আগে প্রতিরোধমূলক প্রয়োগ সবচেয়ে কার্যকর।",
       "ipm_note": "Key product for mustard Alternaria. Apply at pod formation.",
-      "rating": 17
+      "rating": 17,
+      "frac_group": "2",
+      "resistance_risk": "medium"
     },
     {
       "id": "P020",
@@ -796,7 +836,9 @@
       "caution": "Phytotoxic at high doses. Avoid application in hot midday sun.",
       "caution_bn": "বেশি মাত্রায় ফসলের ক্ষতি করতে পারে। দুপুরে গরমে স্প্রে করবেন না।",
       "ipm_note": "Organic farming compatible. Good for BLB management in rice.",
-      "rating": 29
+      "rating": 29,
+      "frac_group": "M1",
+      "resistance_risk": "low"
     },
     {
       "id": "P021",
@@ -837,7 +879,9 @@
       "caution": "Short PHI suitable for leaf vegetables. Rotate to prevent resistance.",
       "caution_bn": "পাতাজাতীয় সবজিতে উপযুক্ত। প্রতিরোধ ঠেকাতে পর্যায়ক্রমে ব্যবহার করুন।",
       "ipm_note": "Excellent for DBM which shows resistance to pyrethroids.",
-      "rating": 26
+      "rating": 26,
+      "irac_group": "6",
+      "resistance_risk": "low"
     },
     {
       "id": "P022",
@@ -878,7 +922,9 @@
       "caution": "Toxic to fish and aquatic invertebrates.",
       "caution_bn": "মাছ ও জলজ প্রাণীর জন্য ক্ষতিকর।",
       "ipm_note": "Best choice for mite management. Wettable sulfur is IPM alternative.",
-      "rating": 19
+      "rating": 19,
+      "irac_group": "6",
+      "resistance_risk": "low"
     },
     {
       "id": "P023",
@@ -916,7 +962,10 @@
       "caution": "Phytotoxic above 35°C. Do not mix with oil-based pesticides.",
       "caution_bn": "৩৫°C-এর উপরে ফসলের ক্ষতি করে। তেল-ভিত্তিক কীটনাশকের সাথে মিশাবেন না।",
       "ipm_note": "Approved in organic farming. Low cost and low PHI.",
-      "rating": 33
+      "rating": 33,
+      "frac_group": "M2",
+      "irac_group": "UN",
+      "resistance_risk": "low"
     },
     {
       "id": "P024",
@@ -957,7 +1006,9 @@
       "caution": "Degrade quickly. Spray in morning or evening for best effect.",
       "caution_bn": "দ্রুত বিভাজিত হয়। সকাল বা সন্ধ্যায় স্প্রে করুন।",
       "ipm_note": "IPM-friendly. Approved for organic farming. Low mammalian toxicity.",
-      "rating": 41
+      "rating": 41,
+      "irac_group": "UN",
+      "resistance_risk": "low"
     },
     {
       "id": "P025",
@@ -997,7 +1048,9 @@
       "caution": "Avoid use near beehives when bees are foraging.",
       "caution_bn": "মৌমাছি চরার সময় মৌচাকের কাছে ব্যবহার এড়ান।",
       "ipm_note": "Naturally derived. OMRI listed compatible with IPM programs.",
-      "rating": 18
+      "rating": 18,
+      "irac_group": "5",
+      "resistance_risk": "low"
     },
     {
       "id": "P026",
@@ -1040,7 +1093,9 @@
       "caution": "Systemic insecticide. WHO Class II. Use full PPE.",
       "caution_bn": "সিস্টেমিক কীটনাশক। WHO শ্রেণি II। পূর্ণ PPE ব্যবহার করুন।",
       "ipm_note": "Inexpensive option for sucking pest control in mustard.",
-      "rating": 16
+      "rating": 16,
+      "irac_group": "1B",
+      "resistance_risk": "medium"
     },
     {
       "id": "P027",
@@ -1083,7 +1138,9 @@
       "caution": "Systemic fungicide with curative and protective action.",
       "caution_bn": "সিস্টেমিক ছত্রাকনাশক — প্রতিকারমূলক ও প্রতিরোধমূলক উভয় কার্যকরী।",
       "ipm_note": "Effective 'rescue' treatment. Apply within 48h of infection.",
-      "rating": 24
+      "rating": 24,
+      "frac_group": "3",
+      "resistance_risk": "medium"
     },
     {
       "id": "P028",
@@ -1122,7 +1179,9 @@
       "caution": "Specifically for powdery mildew management. Excellent eradicant.",
       "caution_bn": "পাউডারি মিলডিউ ব্যবস্থাপনার জন্য বিশেষভাবে কার্যকর।",
       "ipm_note": "Use when powdery mildew first appears. 1-2 applications sufficient.",
-      "rating": 13
+      "rating": 13,
+      "frac_group": "3",
+      "resistance_risk": "medium"
     },
     {
       "id": "P029",
@@ -1162,7 +1221,9 @@
       "caution": "Protective only. No systemic activity.",
       "caution_bn": "শুধু প্রতিরোধমূলক। সিস্টেমিক কার্যকলাপ নেই।",
       "ipm_note": "Excellent for seed treatment before sowing.",
-      "rating": 11
+      "rating": 11,
+      "frac_group": "M4",
+      "resistance_risk": "low"
     },
     {
       "id": "P030",
@@ -1203,7 +1264,9 @@
       "caution": "Prepare fresh before use. Phytotoxic if lime ratio wrong.",
       "caution_bn": "ব্যবহারের আগে তাজা তৈরি করুন। লাইম অনুপাত ভুল হলে ফসলের ক্ষতি হবে।",
       "ipm_note": "Traditional organic fungicide. Approved for organic farming.",
-      "rating": 36
+      "rating": 36,
+      "frac_group": "M1",
+      "resistance_risk": "low"
     },
     {
       "id": "P031",
@@ -1233,7 +1296,9 @@
       "caution": "Stains skin and clothes. Use gloves.",
       "caution_bn": "ত্বক ও কাপড়ে দাগ ফেলে। গ্লাভস ব্যবহার করুন।",
       "ipm_note": "Cheap, effective seed treatment against seed-borne bacteria.",
-      "rating": 28
+      "rating": 28,
+      "frac_group": "M1",
+      "resistance_risk": "low"
     },
     {
       "id": "P032",
@@ -1272,7 +1337,9 @@
       "caution": "Do not mix with chemical fungicides. Apply in cool part of day.",
       "caution_bn": "রাসায়নিক ছত্রাকনাশকের সাথে মিশাবেন না। দিনের ঠান্ডা সময়ে প্রয়োগ করুন।",
       "ipm_note": "Excellent for soil health. Promotes root growth. BARI recommended.",
-      "rating": 32
+      "rating": 32,
+      "frac_group": "BM",
+      "resistance_risk": "low"
     },
     {
       "id": "P033",
@@ -1311,7 +1378,10 @@
       "caution": "Store in cool dry place. Avoid direct sunlight. Short shelf life.",
       "caution_bn": "ঠান্ডা শুষ্ক জায়গায় সংরক্ষণ করুন। সূর্যের আলো এড়ান।",
       "ipm_note": "DAE-promoted biocontrol agent. Takes 5-7 days for effect.",
-      "rating": 14
+      "rating": 14,
+      "irac_group": "UN",
+      "frac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P034",
@@ -1349,7 +1419,10 @@
       "caution": "Replace when surface full. Also catches beneficial insects.",
       "caution_bn": "পৃষ্ঠ ভর্তি হলে বদলান। উপকারী পোকাও ধরা পড়তে পারে।",
       "ipm_note": "IPM tool. Use for monitoring AND mass trapping of whitefly/aphid.",
-      "rating": 48
+      "rating": 48,
+      "irac_group": "UN",
+      "frac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P035",
@@ -1388,7 +1461,10 @@
       "caution": "Effective only for nocturnal pests. Empty trap daily.",
       "caution_bn": "রাতের পোকার জন্যই কার্যকর। প্রতিদিন পরিষ্কার করুন।",
       "ipm_note": "FFS-recommended IPM tool. Cost-effective long-term pest monitoring.",
-      "rating": 39
+      "rating": 39,
+      "irac_group": "UN",
+      "frac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P036",
@@ -1418,7 +1494,10 @@
       "caution": "Replace lure every 3-4 weeks. Clean water pan daily.",
       "caution_bn": "প্রতি ৩-৪ সপ্তাহে লিউর বদলান। প্রতিদিন পানির পাত্র পরিষ্কার করুন।",
       "ipm_note": "Best mass trapping tool for rice stem borer. BRRI endorsed.",
-      "rating": 27
+      "rating": 27,
+      "irac_group": "UN",
+      "frac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P037",
@@ -1450,7 +1529,10 @@
       "caution": "Apply when stem borer egg masses first appear. Do not spray insecticides for 2 weeks after application.",
       "caution_bn": "মাজরা পোকার ডিম প্রথম দেখা দিলে প্রয়োগ করুন। প্রয়োগের ২ সপ্তাহ কীটনাশক স্প্রে করবেন না।",
       "ipm_note": "Cornerstone of IPM in Boro season. DAE distributes at subsidized price.",
-      "rating": 44
+      "rating": 44,
+      "irac_group": "UN",
+      "frac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P038",
@@ -1480,7 +1562,10 @@
       "caution": "Do not apply in standing water during peak heat. Use LCC for timing.",
       "caution_bn": "দাঁড়ানো পানিতে তীব্র গরমে প্রয়োগ করবেন না। সময় নির্ধারণে LCC ব্যবহার করুন।",
       "ipm_note": "Excess N increases blast and BLB susceptibility. Balance with K.",
-      "rating": 67
+      "rating": 67,
+      "frac_group": "N/A",
+      "irac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P039",
@@ -1510,7 +1595,10 @@
       "caution": "Mix with water properly. Khaira disease in rice is usually Zn deficiency.",
       "caution_bn": "পানিতে ভালোভাবে মেশান। ধানের 'খইরা রোগ' সাধারণত জিংক অভাব।",
       "ipm_note": "BRRI recommends Zn application in all Boro paddy. Prevents khaira.",
-      "rating": 41
+      "rating": 41,
+      "frac_group": "N/A",
+      "irac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P040",
@@ -1542,7 +1630,10 @@
       "caution": "Interveinal chlorosis on new leaves is diagnostic for Fe deficiency.",
       "caution_bn": "নতুন পাতায় আন্তঃশিরা ক্লোরোসিস আয়রন অভাবের লক্ষণ।",
       "ipm_note": "Most common in calcareous and waterlogged soils of Bangladesh.",
-      "rating": 22
+      "rating": 22,
+      "frac_group": "N/A",
+      "irac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P041",
@@ -1576,7 +1667,10 @@
       "caution": "Leaf scorch (tip burn) on older leaves indicates K deficiency.",
       "caution_bn": "পুরনো পাতার ডগায় পোড়া দাগ পটাশিয়াম অভাবের লক্ষণ।",
       "ipm_note": "Adequate K improves disease resistance, especially blast in rice.",
-      "rating": 35
+      "rating": 35,
+      "frac_group": "N/A",
+      "irac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P042",
@@ -1610,7 +1704,10 @@
       "caution": "Accumulates in soil. Do not over-apply.",
       "caution_bn": "মাটিতে জমে থাকে। অতিরিক্ত প্রয়োগ করবেন না।",
       "ipm_note": "Bordeaux mixture component for BLB management.",
-      "rating": 18
+      "rating": 18,
+      "frac_group": "N/A",
+      "irac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P043",
@@ -1642,7 +1739,9 @@
       "caution": "Toxic to silkworms. Do not use near mulberry fields.",
       "caution_bn": "রেশম পোকার জন্য বিষাক্ত।",
       "ipm_note": "BRRI recommended for stem borer when ETL exceeded.",
-      "rating": 21
+      "rating": 21,
+      "irac_group": "14",
+      "resistance_risk": "low"
     },
     {
       "id": "P044",
@@ -1680,7 +1779,9 @@
       "caution": "Long PHI. Do not apply near harvest.",
       "caution_bn": "দীর্ঘ PHI। ফসল কাটার কাছাকাছি সময়ে প্রয়োগ করবেন না।",
       "ipm_note": "Key for wheat rust management. Apply at flag leaf emergence.",
-      "rating": 19
+      "rating": 19,
+      "frac_group": "3",
+      "resistance_risk": "medium"
     },
     {
       "id": "P045",
@@ -1717,7 +1818,9 @@
       "caution": "Specifically for oomycete diseases. Not effective for true fungi.",
       "caution_bn": "শুধু ওমাইসিট রোগের জন্য। প্রকৃত ছত্রাকের বিরুদ্ধে কার্যকর নয়।",
       "ipm_note": "Excellent seedbed drench for damping off prevention.",
-      "rating": 12
+      "rating": 12,
+      "frac_group": "28",
+      "resistance_risk": "low"
     },
     {
       "id": "P046",
@@ -1755,7 +1858,9 @@
       "caution": "Bee toxic. Do not apply during flowering.",
       "caution_bn": "মৌমাছির জন্য বিষাক্ত।",
       "ipm_note": "Most widely available BPH insecticide in Bangladesh.",
-      "rating": 55
+      "rating": 55,
+      "irac_group": "4A",
+      "resistance_risk": "medium"
     },
     {
       "id": "P047",
@@ -1785,7 +1890,9 @@
       "caution": "Mode of action different from neonicotinoids – use in rotation.",
       "caution_bn": "নিওনিকোটিনয়েডের সাথে পর্যায়ক্রমে ব্যবহার করুন।",
       "ipm_note": "Key resistance management tool for BPH. BRRI recommended.",
-      "rating": 17
+      "rating": 17,
+      "irac_group": "9B",
+      "resistance_risk": "low"
     },
     {
       "id": "P048",
@@ -1823,7 +1930,9 @@
       "caution": "Very toxic to aquatic organisms.",
       "caution_bn": "জলজ প্রাণীর জন্য অত্যন্ত বিষাক্ত।",
       "ipm_note": "Dual acaricide/insecticide. Useful when mites and insects co-occur.",
-      "rating": 9
+      "rating": 9,
+      "irac_group": "3A",
+      "resistance_risk": "high"
     },
     {
       "id": "P049",
@@ -1854,7 +1963,9 @@
       "caution": "IGR – slower onset. Apply before BPH population builds up.",
       "caution_bn": "ধীরে কাজ করে। BPH বাড়ার আগেই প্রয়োগ করুন।",
       "ipm_note": "Effective resistance management tool. Does not kill adults.",
-      "rating": 13
+      "rating": 13,
+      "irac_group": "16",
+      "resistance_risk": "low"
     },
     {
       "id": "P050",
@@ -1889,7 +2000,9 @@
       "caution": "Do not apply to grain for immediate consumption.",
       "caution_bn": "তাৎক্ষণিক ভোগের জন্য সংরক্ষিত শস্যে প্রয়োগ করবেন না।",
       "ipm_note": "DAE-recommended for grain storage. Use hermetic storage as first choice.",
-      "rating": 24
+      "rating": 24,
+      "irac_group": "1B",
+      "resistance_risk": "medium"
     },
     {
       "id": "P051",
@@ -1924,7 +2037,10 @@
       "caution": "Do not apply in temperatures above 32°C – phytotoxic risk.",
       "caution_bn": "৩২°C-এর উপরে প্রয়োগ করবেন না।",
       "ipm_note": "Low cost, effective for powdery mildew. Organic farming approved.",
-      "rating": 20
+      "rating": 20,
+      "frac_group": "M2",
+      "irac_group": "UN",
+      "resistance_risk": "low"
     },
     {
       "id": "P052",
@@ -1954,7 +2070,9 @@
       "caution": "NON-SELECTIVE – kills all plants including crops. Use with care.",
       "caution_bn": "সব গাছ মেরে ফেলে। সতর্কতার সাথে ব্যবহার করুন।",
       "ipm_note": "Use only for land clearing before planting or field edges.",
-      "rating": 31
+      "rating": 31,
+      "frac_group": "9",
+      "resistance_risk": "low"
     },
     {
       "id": "P053",
@@ -1986,7 +2104,9 @@
       "caution": "Apply only in standing water 3-5 cm. Do not drain for 3 days.",
       "caution_bn": "৩-৫ সেমি দাঁড়ানো পানিতেই প্রয়োগ করুন। ৩ দিন পানি বের করবেন না।",
       "ipm_note": "BRRI recommended standard weed management in rice.",
-      "rating": 42
+      "rating": 42,
+      "frac_group": "15",
+      "resistance_risk": "low"
     },
     {
       "id": "P054",
@@ -2018,7 +2138,9 @@
       "caution": "Very low dose – measure carefully.",
       "caution_bn": "অত্যন্ত কম মাত্রা – সাবধানে মাপুন।",
       "ipm_note": "Post-emergence herbicide. Apply 15-20 DAT.",
-      "rating": 28
+      "rating": 28,
+      "frac_group": "2",
+      "resistance_risk": "medium"
     },
     {
       "id": "P055",
@@ -2054,7 +2176,9 @@
       "caution": "Pre-emergence only. Incorporate into soil or irrigate after application.",
       "caution_bn": "শুধু বীজ বোনার আগে। প্রয়োগের পর মাটিতে মিশিয়ে দিন বা সেচ দিন।",
       "ipm_note": "BARI recommended for onion and garlic weed management.",
-      "rating": 23
+      "rating": 23,
+      "frac_group": "3",
+      "resistance_risk": "low"
     },
     {
       "id": "P056",
@@ -2086,7 +2210,10 @@
       "caution": "Not a substitute for mineral fertilizers.",
       "caution_bn": "খনিজ সারের বিকল্প নয়।",
       "ipm_note": "Improves soil microbial activity and nutrient uptake efficiency.",
-      "rating": 16
+      "rating": 16,
+      "frac_group": "N/A",
+      "irac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P057",
@@ -2117,7 +2244,9 @@
       "caution": "Use specifically for imidacloprid-resistant BPH populations.",
       "caution_bn": "ইমিডাক্লোপ্রিড-প্রতিরোধী BPH-র বিরুদ্ধে ব্যবহার করুন।",
       "ipm_note": "Rotation partner in neonicotinoid resistance management.",
-      "rating": 11
+      "rating": 11,
+      "irac_group": "4A",
+      "resistance_risk": "medium"
     },
     {
       "id": "P058",
@@ -2147,7 +2276,9 @@
       "caution": "Do not use on rice. Do not apply before rain.",
       "caution_bn": "ধানে ব্যবহার করবেন না।",
       "ipm_note": "BARI recommended for wheat. Apply 25-30 DAS.",
-      "rating": 14
+      "rating": 14,
+      "frac_group": "2",
+      "resistance_risk": "medium"
     },
     {
       "id": "P059",
@@ -2181,7 +2312,9 @@
       "caution": "Superior activity against late blight. Apply preventively in wet weather.",
       "caution_bn": "বৃষ্টিমুখর আবহাওয়ায় প্রতিরোধমূলকভাবে প্রয়োগ করুন।",
       "ipm_note": "High-end late blight product. Economic for commercial potato.",
-      "rating": 13
+      "rating": 13,
+      "frac_group": "U6+M3",
+      "resistance_risk": "medium"
     },
     {
       "id": "P060",
@@ -2214,7 +2347,9 @@
       "caution": "Two-in-one fungicide. Fewer applications needed.",
       "caution_bn": "একটি প্রয়োগে দুটি রোগের বিরুদ্ধে কাজ করে।",
       "ipm_note": "Convenient for mixed blast and sheath blight situations.",
-      "rating": 16
+      "rating": 16,
+      "frac_group": "3+3",
+      "resistance_risk": "medium"
     },
     {
       "id": "P061",
@@ -2253,7 +2388,9 @@
       "caution": "Protective only. Apply every 7-10 days in wet season.",
       "caution_bn": "বর্ষা মৌসুমে প্রতি ৭-১০ দিন অন্তর প্রয়োগ করুন।",
       "ipm_note": "Good tank-mix base with systemic fungicides.",
-      "rating": 18
+      "rating": 18,
+      "frac_group": "M5",
+      "resistance_risk": "low"
     },
     {
       "id": "P062",
@@ -2293,7 +2430,9 @@
       "caution": "Novel mode of action. Use in rotation to delay resistance.",
       "caution_bn": "নতুন ক্রিয়াপদ্ধতি। প্রতিরোধ দেরি করাতে পর্যায়ক্রমে ব্যবহার করুন।",
       "ipm_note": "Excellent for pyrethroid-resistant DBM. Low bee toxicity.",
-      "rating": 15
+      "rating": 15,
+      "irac_group": "22A",
+      "resistance_risk": "low"
     },
     {
       "id": "P063",
@@ -2327,7 +2466,9 @@
       "caution": "Rotate with non-diamide insecticides.",
       "caution_bn": "অন্য শ্রেণির কীটনাশকের সাথে পর্যায়ক্রমে ব্যবহার করুন।",
       "ipm_note": "IRAC group 28 – novel mode of action for resistance management.",
-      "rating": 9
+      "rating": 9,
+      "irac_group": "28",
+      "resistance_risk": "low"
     },
     {
       "id": "P064",
@@ -2364,7 +2505,10 @@
       "caution": "pH sensitive – acidic solution more effective. Avoid high temperature application.",
       "caution_bn": "অম্লীয় দ্রবণ বেশি কার্যকর। বেশি গরমে প্রয়োগ এড়ান।",
       "ipm_note": "Used for uniform ripening in banana and pineapple.",
-      "rating": 12
+      "rating": 12,
+      "frac_group": "N/A",
+      "irac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P065",
@@ -2396,7 +2540,9 @@
       "caution": "Effective against both BLB (bacteria) and blast (fungi).",
       "caution_bn": "BLB (ব্যাকটেরিয়া) ও ব্লাস্ট (ছত্রাক) উভয়ের বিরুদ্ধে কার্যকর।",
       "ipm_note": "Useful when both BLB and blast occur simultaneously.",
-      "rating": 14
+      "rating": 14,
+      "frac_group": "24",
+      "resistance_risk": "medium"
     },
     {
       "id": "P066",
@@ -2426,7 +2572,9 @@
       "caution": "Do not apply within 10 days of carbamate insecticide use.",
       "caution_bn": "কার্বামেট কীটনাশক ব্যবহারের ১০ দিনের মধ্যে প্রয়োগ করবেন না।",
       "ipm_note": "Post-emergence grass killer in rice. Leaves should be dry.",
-      "rating": 19
+      "rating": 19,
+      "frac_group": "O",
+      "resistance_risk": "low"
     },
     {
       "id": "P067",
@@ -2460,7 +2608,10 @@
       "caution": "Add 0.5ml liquid soap per litre as emulsifier. Spray in evening.",
       "caution_bn": "প্রতি লিটারে ০.৫ মিলি তরল সাবান যোগ করুন। সন্ধ্যায় স্প্রে করুন।",
       "ipm_note": "Free/low-cost IPM option. Compatible with Trichogramma release.",
-      "rating": 38
+      "rating": 38,
+      "irac_group": "UN",
+      "frac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P068",
@@ -2495,7 +2646,10 @@
       "caution": "Strain well to avoid nozzle blockage.",
       "caution_bn": "নজল বন্ধ না হওয়ার জন্য ভালোভাবে ছেঁকে নিন।",
       "ipm_note": "Free traditional IPM technique. Endorsed in FFS programs.",
-      "rating": 22
+      "rating": 22,
+      "irac_group": "UN",
+      "frac_group": "N/A",
+      "resistance_risk": "low"
     },
     {
       "id": "P069",
@@ -2528,7 +2682,9 @@
       "caution": "Most effective at early infection stage.",
       "caution_bn": "সংক্রমণের শুরুতে সবচেয়ে কার্যকর।",
       "ipm_note": "OMRI-listed organic option for powdery mildew.",
-      "rating": 10
+      "rating": 10,
+      "frac_group": "NC",
+      "resistance_risk": "low"
     },
     {
       "id": "P070",
@@ -2560,7 +2716,9 @@
       "caution": "Residual activity. Do not follow with sensitive crops.",
       "caution_bn": "অবশিষ্ট কার্যকলাপ। সংবেদনশীল ফসল পরে বুনবেন না।",
       "ipm_note": "BARI recommended for soybean. Apply 15-20 DAS.",
-      "rating": 11
+      "rating": 11,
+      "frac_group": "O",
+      "resistance_risk": "low"
     },
     {
       "id": "P071",
@@ -2599,7 +2757,9 @@
       "caution": "Resistance risk with repeated use. Rotate with multi-site fungicides.",
       "caution_bn": "বারবার ব্যবহারে প্রতিরোধ গড়ে উঠতে পারে।",
       "ipm_note": "Convert to carbendazim in soil. Seed treatment for legumes.",
-      "rating": 14
+      "rating": 14,
+      "frac_group": "1",
+      "resistance_risk": "high"
     },
     {
       "id": "P072",
@@ -2637,7 +2797,9 @@
       "caution": "Cheaper generic of Nativo. Same efficacy.",
       "caution_bn": "নেটিভোর সস্তা জেনেরিক বিকল্প। একই কার্যকারিতা।",
       "ipm_note": "Cost-effective option for commercial farmers.",
-      "rating": 18
+      "rating": 18,
+      "frac_group": "3+11",
+      "resistance_risk": "medium"
     },
     {
       "id": "P081",
@@ -2671,7 +2833,9 @@
       "caution": "DAE registered AP-2313. Dual-action: propiconazole for sheath blight + tricyclazole for blast. Apply at disease onset.",
       "caution_bn": "ব্লাস্ট ও শিথ ব্লাইট উভয়ের জন্য একযোগে কার্যকর। রোগের শুরুতে প্রয়োগ করুন।",
       "ipm_note": "Best choice when both blast and sheath blight occur simultaneously in rice. BRRI/DAE endorsed.",
-      "rating": 38
+      "rating": 38,
+      "frac_group": "3+16",
+      "resistance_risk": "medium"
     },
     {
       "id": "P082",
@@ -2705,7 +2869,9 @@
       "caution": "DAE registered AP-665. Systemic fungicide with good activity against sheath blight. Also has some insecticidal activity against BPH.",
       "caution_bn": "শিথ ব্লাইটের বিরুদ্ধে সিস্টেমিক ছত্রাকনাশক। BPH নিয়ন্ত্রণেও কিছুটা সহায়ক।",
       "ipm_note": "Unique mode of action. Useful in rotation with triazole fungicides to manage resistance.",
-      "rating": 22
+      "rating": 22,
+      "frac_group": "6",
+      "resistance_risk": "medium"
     },
     {
       "id": "P083",
@@ -2739,7 +2905,9 @@
       "caution": "DAE registered AP-268. Different mode of action from triazoles — useful for resistance management.",
       "caution_bn": "ট্রাইয়াজোল থেকে ভিন্ন ক্রিয়াপদ্ধতি — প্রতিরোধ ব্যবস্থাপনার জন্য উপকারী।",
       "ipm_note": "Good rotation partner with Beam/tricyclazole for blast resistance management.",
-      "rating": 14
+      "rating": 14,
+      "frac_group": "6",
+      "resistance_risk": "medium"
     },
     {
       "id": "P084",
@@ -2776,7 +2944,9 @@
       "caution": "DAE registered AP-3061. Specific for sheath blight (Rhizoctonia solani). Low mammalian toxicity.",
       "caution_bn": "শিথ ব্লাইটের জন্য বিশেষভাবে কার্যকর। স্তন্যপায়ী প্রাণীর জন্য কম বিষাক্ত।",
       "ipm_note": "Excellent choice for Rhizoctonia-caused diseases. Often used as drenching soil at transplanting.",
-      "rating": 19
+      "rating": 19,
+      "frac_group": "26",
+      "resistance_risk": "low"
     },
     {
       "id": "P085",
@@ -2819,7 +2989,9 @@
       "caution": "DAE registered AP-3153. Broad-spectrum dual action. Max 2 applications per season.",
       "caution_bn": "প্রতি মৌসুমে সর্বোচ্চ ২ বার প্রয়োগ করুন।",
       "ipm_note": "Premium product for multiple diseases. Rotate with FRAC 4 or M3 to avoid resistance.",
-      "rating": 29
+      "rating": 29,
+      "frac_group": "11+3",
+      "resistance_risk": "medium"
     },
     {
       "id": "P086",
@@ -2861,7 +3033,9 @@
       "caution": "DAE registered AP-353. Dimethomorph acts against metalaxyl-resistant strains. Protectant + curative.",
       "caution_bn": "মেটালাক্সিল-প্রতিরোধী লেট ব্লাইটের বিরুদ্ধেও কার্যকর।",
       "ipm_note": "Excellent tank mix base for late blight. Low resistance risk due to dual mode of action.",
-      "rating": 26
+      "rating": 26,
+      "frac_group": "40+M3",
+      "resistance_risk": "low"
     },
     {
       "id": "P087",
@@ -2901,7 +3075,9 @@
       "caution": "DAE registered AP-487. Protective fungicide — apply before disease appears.",
       "caution_bn": "প্রতিরক্ষামূলক ছত্রাকনাশক — রোগ আসার আগেই প্রয়োগ করুন।",
       "ipm_note": "Good low-resistance-risk base fungicide. Multi-site mode of action.",
-      "rating": 18
+      "rating": 18,
+      "frac_group": "M3",
+      "resistance_risk": "low"
     },
     {
       "id": "P088",
@@ -2945,7 +3121,9 @@
       "caution": "DAE registered AP-1770. Max 2 applications per crop cycle. Good curative + protectant activity.",
       "caution_bn": "প্রতি মৌসুমে সর্বোচ্চ ২ বার প্রয়োগ করুন।",
       "ipm_note": "Dual FRAC groups reduce resistance risk vs single strobilurin products.",
-      "rating": 21
+      "rating": 21,
+      "frac_group": "11+M3",
+      "resistance_risk": "medium"
     },
     {
       "id": "P089",
@@ -2990,7 +3168,9 @@
       "caution": "DAE registered AP-1146. For seed treatment only. Wear gloves when treating seed.",
       "caution_bn": "শুধুমাত্র বীজ শোধনের জন্য। গ্লাভস পরে বীজ শোধন করুন।",
       "ipm_note": "BARI/BRRI recommended seed treatment. Prevents 80-90% seed-borne diseases. Very cost-effective.",
-      "rating": 34
+      "rating": 34,
+      "frac_group": "7+M3",
+      "resistance_risk": "medium"
     },
     {
       "id": "P090",
@@ -3030,7 +3210,9 @@
       "caution": "DAE registered AP-3204. Antibiotic. Use judiciously to prevent antibiotic resistance. Do not use more than 2 times.",
       "caution_bn": "অ্যান্টিবায়োটিক। প্রতিরোধ ঠেকাতে সাবধানে ব্যবহার করুন। মৌসুমে ২ বারের বেশি নয়।",
       "ipm_note": "Only registered antibiotic bactericide for bacterial wilt of brinjal in Bangladesh. Use when copper-based products fail.",
-      "rating": 17
+      "rating": 17,
+      "frac_group": "44",
+      "resistance_risk": "low"
     },
     {
       "id": "P091",
@@ -3075,7 +3257,9 @@
       "caution": "DAE registered AP-317. Toxic to fish and bees. Avoid application near water bodies during flowering.",
       "caution_bn": "মাছ ও মৌমাছির জন্য ক্ষতিকর। ফুলের সময় ও জলাশয়ের কাছে ব্যবহার এড়ান।",
       "ipm_note": "Effective knockdown insecticide for brinjal fruit and shoot borer. Rotate with IRAC 28 (diamides).",
-      "rating": 24
+      "rating": 24,
+      "irac_group": "3A",
+      "resistance_risk": "high"
     },
     {
       "id": "P092",
@@ -3120,7 +3304,9 @@
       "caution": "DAE registered AP-1335. Naturally derived. Low mammalian toxicity. PHI only 3 days — suitable for frequent-harvest vegetables.",
       "caution_bn": "প্রাকৃতিক উৎস। স্তন্যপায়ী প্রাণীর জন্য কম বিষাক্ত। মাত্র ৩ দিনের PHI।",
       "ipm_note": "Excellent for pyrethroid-resistant shoot borer. DAE promoted for brinjal shoot & fruit borer management program.",
-      "rating": 31
+      "rating": 31,
+      "irac_group": "5",
+      "resistance_risk": "low"
     },
     {
       "id": "P093",
@@ -3162,7 +3348,9 @@
       "caution": "DAE registered AP-2019. Systemic — absorbed by both leaves and roots. Effective against hidden/protected pests.",
       "caution_bn": "সিস্টেমিক — পাতা ও শিকড় উভয় দিয়ে শোষিত হয়। লুকানো পোকার বিরুদ্ধেও কার্যকর।",
       "ipm_note": "Novel IRAC group 23. Key resistance management tool for neonicotinoid-resistant sucking pests.",
-      "rating": 16
+      "rating": 16,
+      "irac_group": "23",
+      "resistance_risk": "medium"
     },
     {
       "id": "P094",
@@ -3196,7 +3384,9 @@
       "caution": "DAE registered AP-2608. WHO Class Ib — highly toxic. Long PHI 21 days. Use only when ETL exceeded and other options exhausted.",
       "caution_bn": "WHO শ্রেণি Ib — অত্যন্ত বিষাক্ত। PHI ২১ দিন। শুধু ETL অতিক্রম করলে ও অন্য বিকল্প না থাকলে ব্যবহার করুন।",
       "ipm_note": "Last resort for BPH. BRRI recommends pymetrozine or dinotefuran first. High PHI makes it unsuitable near harvest.",
-      "rating": 8
+      "rating": 8,
+      "irac_group": "1B",
+      "resistance_risk": "medium"
     },
     {
       "id": "P095",
@@ -3241,7 +3431,9 @@
       "caution": "DAE registered AP-400. Dual mode of action. Toxic to bees — avoid application during flowering.",
       "caution_bn": "দ্বৈত ক্রিয়াপদ্ধতি। মৌমাছির জন্য বিষাক্ত — ফুলের সময় ব্যবহার করবেন না।",
       "ipm_note": "Useful when both contact and systemic action needed simultaneously.",
-      "rating": 14
+      "rating": 14,
+      "irac_group": "4A",
+      "resistance_risk": "medium"
     },
     {
       "id": "P096",
@@ -3282,7 +3474,9 @@
       "caution": "DAE registered AP-1617. Premium dual-action. Granule form applied into floodwater 5-7 DAT.",
       "caution_bn": "দানাদার রূপ রোপণের ৫-৭ দিন পর জমিতে ছিটিয়ে দিন।",
       "ipm_note": "Single granule application can protect rice for 3-4 weeks against stem borer + BPH. Most effective DAE-registered rice insecticide.",
-      "rating": 42
+      "rating": 42,
+      "irac_group": "4A",
+      "resistance_risk": "medium"
     },
     {
       "id": "P097",
@@ -3318,7 +3512,9 @@
       "caution": "DAE registered AP-1621. Unique feeding inhibitor mechanism. No cross-resistance with neonicotinoids.",
       "caution_bn": "নিওনিকোটিনয়েডের সাথে কোনো ক্রস-রেজিস্ট্যান্স নেই। অনন্য ক্রিয়াপদ্ধতি।",
       "ipm_note": "Key resistance management tool for BPH. BRRI recommends rotating with imidacloprid. Slow-acting but persistent.",
-      "rating": 28
+      "rating": 28,
+      "irac_group": "9B",
+      "resistance_risk": "low"
     },
     {
       "id": "P098",
@@ -3360,7 +3556,9 @@
       "caution": "DAE registered AP-217. Toxic to silkworms. Do not use near mulberry. BRRI recommended for stem borer at ETL.",
       "caution_bn": "রেশম পোকার জন্য বিষাক্ত। তুঁত গাছের কাছে ব্যবহার করবেন না।",
       "ipm_note": "BRRI standard recommendation for rice stem borer when ETL exceeded. Alternate with IRAC 28 (diamides).",
-      "rating": 25
+      "rating": 25,
+      "irac_group": "14",
+      "resistance_risk": "low"
     },
     {
       "id": "P099",
@@ -3397,7 +3595,9 @@
       "caution": "DAE registered AP-408. Apply in standing water. Do not drain field for 3 days after application.",
       "caution_bn": "দাঁড়ানো পানিতে প্রয়োগ করুন। প্রয়োগের পর ৩ দিন পানি বের করবেন না।",
       "ipm_note": "BRRI recommends pretilachlor as first choice post-emergence herbicide in transplanted rice. More effective than butachlor.",
-      "rating": 36
+      "rating": 36,
+      "frac_group": "15",
+      "resistance_risk": "low"
     },
     {
       "id": "P100",
@@ -3433,7 +3633,9 @@
       "caution": "DAE registered AP-3263. Post-emergence broad-spectrum. Apply on dry leaf surface.",
       "caution_bn": "পাতা শুকনো থাকলে স্প্রে করুন। রোপণের ১৫-২৫ দিন পর প্রয়োগ সবচেয়ে কার্যকর।",
       "ipm_note": "Controls barnyard grass that escapes butachlor/pretilachlor. Key 'rescue treatment' in rice weed management.",
-      "rating": 22
+      "rating": 22,
+      "frac_group": "2",
+      "resistance_risk": "medium"
     },
     {
       "id": "P101",
@@ -3474,7 +3676,9 @@
       "caution": "DAE registered AP-1709. Selective against grasses only — does not affect broadleaf crops.",
       "caution_bn": "শুধু ঘাস-জাতীয় আগাছার বিরুদ্ধে নির্বাচনমূলক। চওড়া পাতার ফসলে কোনো ক্ষতি নেই।",
       "ipm_note": "Very useful in onion, jute and vegetable fields where grass weeds dominate.",
-      "rating": 17
+      "rating": 17,
+      "frac_group": "O",
+      "resistance_risk": "low"
     },
     {
       "id": "P102",
@@ -3514,7 +3718,9 @@
       "caution": "DAE registered AP-1023. Do not apply to stressed or wet foliage. Crop-safe at recommended doses.",
       "caution_bn": "চাপগ্রস্ত বা ভেজা পাতায় স্প্রে করবেন না।",
       "ipm_note": "BARI standard for potato weed management. Apply at planting or just after emergence.",
-      "rating": 19
+      "rating": 19,
+      "frac_group": "5",
+      "resistance_risk": "low"
     }
   ],
   "pest_to_product_map": {
