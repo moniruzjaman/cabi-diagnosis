@@ -208,6 +208,7 @@ export default function CauseDetective() {
       speak(`${round.crop}। ${round.symptom}`);
     }
     return () => stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak/stop/isSupported from useTTS have unstable refs; round is derived from roundIdx which is already in deps
   }, [roundIdx, phase]);
 
   /* ── Speak explanation after correct answer ── */
@@ -215,6 +216,7 @@ export default function CauseDetective() {
     if (answered && round && isSupported) {
       setTimeout(() => speak(round.explanation), 500);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak/isSupported from useTTS have unstable refs; round is derived from roundIdx which is in the other effect's deps
   }, [answered]);
 
   /* ── Actions ── */

@@ -148,6 +148,7 @@ export default function DiseaseTriangle() {
       speak(`রোগ: ${round.disease}। পোষক, রোগজীবাণু ও পরিবেশ — তিনটি সঠিক উপাদান বেছে নিন।`);
     }
     return () => stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak/stop/isSupported from useTTS have unstable refs; round derived from roundIdx already in deps
   }, [roundIdx, phase]);
 
   // ── Speak result after submission ──
@@ -157,6 +158,7 @@ export default function DiseaseTriangle() {
       if (correct === 3) speak("চমৎকার! সব ঠিক আছে!");
       else speak(`${correct}টি সঠিক। আবার চেষ্টা করুন।`);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak/isSupported from useTTS have unstable refs; answers intentionally omitted—effect should only re-fire on submission, not on every answer change
   }, [submitted]);
 
   // ── Shuffled options for the current round ──
@@ -168,7 +170,7 @@ export default function DiseaseTriangle() {
       pathogen: mkOpts(round.pathogen),
       environment: mkOpts(round.environment),
     };
-  }, [round, animKey]);
+  }, [round]); // animKey removed from deps—it only needs to trigger re-shuffle when round changes, which round already covers
 
   // ── Category metadata ──
   const catMeta = {

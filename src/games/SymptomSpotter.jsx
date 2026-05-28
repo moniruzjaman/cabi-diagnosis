@@ -267,6 +267,7 @@ export default function SymptomSpotter() {
       speak(text);
     }
     return () => stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak/stop/isSupported from useTTS have unstable refs; currentQ derived from qIdx already in deps
   }, [qIdx, phase]);
 
   /* ── inject keyframes on mount ─────────── */
@@ -302,6 +303,7 @@ export default function SymptomSpotter() {
         speak(`ভুল। সঠিক উত্তর: ${currentQ.correct}`);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak/isSupported from useTTS have unstable refs; answers/currentQ.correct intentionally omitted—effect should only fire on lock state change
   }, [locked]);
 
   /* ── handle answer ─────────────────────── */

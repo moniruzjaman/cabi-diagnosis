@@ -194,7 +194,7 @@ export default function FieldScout() {
 
   // ── derived ──
   const scenario = SCENARIOS[round % SCENARIOS.length];
-  const grid = gridData?.points ?? [];
+  const grid = useMemo(() => gridData?.points ?? [], [gridData]);
   const cols = gridData?.cols ?? 5;
   const rows = gridData?.rows ?? 4;
   const wPattern = useMemo(() => getWPattern(cols, rows), [cols, rows]);
@@ -230,6 +230,7 @@ export default function FieldScout() {
       speak(`${scenario.crop}। ${scenario.pest}। ইটিএল: ${scenario.etl}। মাঠ পরীক্ষা করুন।`);
     }
     return () => stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak/stop/isSupported from useTTS have unstable refs; scenario derived from round already in deps
   }, [round, phase]);
 
   // ── speak result ──
@@ -238,6 +239,7 @@ export default function FieldScout() {
       if (roundCorrect) speak("সঠিক সিদ্ধান্ত!");
       else speak("ভুল সিদ্ধান্ত। আবার চেষ্টা করুন।");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak/isSupported from useTTS have unstable refs; scenario/roundCorrect intentionally omitted—effect should only fire on phase change to result
   }, [phase]);
 
   // ── handlers ──

@@ -290,6 +290,7 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
  * Helper: Check if onboarding should be shown.
  * Useful for parent components to decide whether to mount OnboardingFlow.
  */
+// eslint-disable-next-line react-refresh/only-export-components -- utility function, not a component
 export function isOnboardingCompleted() {
   if (typeof window === 'undefined') return false;
   return localStorage.getItem(ONBOARDING_KEY) === 'true';
@@ -298,6 +299,7 @@ export function isOnboardingCompleted() {
 /**
  * Helper: Reset onboarding (for testing or user preference).
  */
+// eslint-disable-next-line react-refresh/only-export-components -- utility function, not a component
 export function resetOnboarding() {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(ONBOARDING_KEY);

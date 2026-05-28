@@ -393,6 +393,7 @@ export default function IPMCommander() {
     }, 1200); // 1.2 seconds between each flip
 
     return () => clearInterval(flipTimerRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak/isSupported from useTTS have unstable refs; shuffledCards set within this effect
   }, [phase, roundIndex]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -415,6 +416,7 @@ export default function IPMCommander() {
     if (isSupported) {
       speak(`রাউন্ড ${roundIndex + 1}। ${round.crop}। ${round.problem}। কার্ডগুলো এখন খুলছে, দেখুন।`, { prependFriendly: true });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak/isSupported from useTTS have unstable refs; round.* derived from roundIndex already in deps
   }, [roundIndex, phase]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -422,7 +424,7 @@ export default function IPMCommander() {
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (phase === "result") { saveHighScore(totalScore); setHighScore(loadHighScore()); }
-  }, [phase]);
+  }, [phase, totalScore]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   // ─── Handle card selection (tap a card to select it) ───
@@ -478,6 +480,7 @@ export default function IPMCommander() {
         }
       }, 800);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak from useTTS has unstable ref; isSupported already in deps
   }, [selectedCardIdx, shuffledCards, slots, isSupported]);
 
   const handleNextRound = useCallback(() => {
@@ -503,6 +506,7 @@ export default function IPMCommander() {
     setShowRoundResult(false);
     setRoundScore(0);
     if (isSupported) speak("IPM কমান্ডার শুরু! প্রতিরোধ প্রথমে, রাসায়নিক শেষে!", { prependFriendly: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak from useTTS has unstable ref; isSupported already in deps
   }, [isSupported]);
 
   // ─── RENDER: Start Screen ─────────────────────────────────────────────────
