@@ -6,6 +6,7 @@ import { CROP_CALENDAR, getCurrentRiskAlerts } from './data/cropCalendar';
 import { CROP_DISEASES, matchDiseasesBySymptoms, resolveCropKey, getDiseasesForCrop, estimateInoculumPressure, getVarietySusceptibility } from './data/cropDiseases';
 import { translateBengaliToEnglish } from './data/bengaliKeywords';
 import CropCalendarComponent from './components/CropCalendar';
+import CropCalendarDashboard from './components/CropCalendarDashboard';
 import OnboardingFlow from './components/OnboardingFlow';
 import OutbreakList from './components/OutbreakList';
 import { computeEnsembleScore, scoreDiseasesBySeason, scoreDiseasesByWeather, getWeatherRiskSummary } from './data/agronomicEngine';
@@ -2932,10 +2933,9 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 অন্যান্য কৃষি অ্যাপস ও নির্ণয় ইতিহাস দেখুন।
               </p>
             </div>
-            {/* Crop Calendar */}
+            {/* Crop Calendar + Weather + Price Dashboard */}
             <div style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-              <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:8}}>📅 ফসল ক্যালেন্ডার</div>
-              <CropCalendarComponent C={C}/>
+              <CropCalendarDashboard C={C} weather={weather} coords={coords} locationName={locationName}/>
             </div>
             {/* Outbreak List */}
             <div style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
