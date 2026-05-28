@@ -1049,8 +1049,8 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
   const season = getCurrentSeason();
 
   const hubCards = [
-    { icon: "📖", title: "CABI গাইড", desc: "৫-ধাপ নির্ণয় প্রোটোকল", color: "#2563eb", bg: C.bgInfo, tab: "guide" },
-    { icon: "🎮", title: "গেম হাব", desc: "ইন্টারেক্টিভ শিখুন", color: "#7c3aed", bg: C.bgPurple, tab: "game" },
+    { icon: "📅", title: "ফসল ক্যালেন্ডার", desc: "আবহাওয়া ও মূল্য", color: "#f59e0b", bg: C.bgWarning, tab: "calendar" },
+    { icon: "📖", title: "CABI গাইড+গেম", desc: "শিখুন ও অনুশীলন", color: "#7c3aed", bg: C.bgPurple, tab: "learn" },
     { icon: "🔍", title: "ছবি দিয়ে নির্ণয়", desc: "রোগ চিহ্নিত করুন", color: "#dc2626", bg: C.bgDanger, tab: "diagnose" },
     { icon: "📚", title: "তথ্যভাণ্ডার", desc: "ভিডিও ও পড়ার উপকরণ", color: "#0891b2", bg: C.bgTeal, tab: "library" },
   ];
@@ -1076,7 +1076,7 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
             <button onClick={() => setActiveTab("diagnose")} className="ud-headline" style={{ display: "inline-flex", alignItems: "center", gap: 8, background:C.bgCard, color: C.primaryDark, border: "none", borderRadius: 14, padding: "13px 20px", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", fontSize: 14 }}>
               <span style={{fontSize:18}}>🔍</span> নির্ণয় শুরু করুন
             </button>
-            <button onClick={() => setActiveTab("guide")} className="ud-headline" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.12)", color: "#fff", border: "1.5px solid rgba(255,255,255,0.3)", borderRadius: 14, padding: "13px 18px", fontWeight: 700, cursor: "pointer", fontSize: 13, backdropFilter: "blur(6px)" }}>
+            <button onClick={() => setActiveTab("learn")} className="ud-headline" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.12)", color: "#fff", border: "1.5px solid rgba(255,255,255,0.3)", borderRadius: 14, padding: "13px 18px", fontWeight: 700, cursor: "pointer", fontSize: 13, backdropFilter: "blur(6px)" }}>
               📖 গাইড পড়ুন
             </button>
           </div>
@@ -1145,10 +1145,10 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
         <div style={{ display: "flex", flexDirection: "column", gap: 0, position: "relative" }}>
           <div style={{ position: "absolute", left: 18, top: 28, bottom: 28, width: 2.5, background: `linear-gradient(to bottom, ${C.primary}, ${C.primaryLight}, ${C.accent})`, borderRadius: 4 }} />
           {[
-            { step: "১", icon: "👁️", title: "পর্যবেক্ষণ", desc: "লক্ষণ ও লক্ষণ চিনুন", color: "#2563eb", bg: C.bgInfo, tab: "guide" },
-            { step: "২", icon: "🔬", title: "বর্জন পদ্ধতি", desc: "কারণ সংকুচিত করুন", color: "#7c3aed", bg: C.bgPurple, tab: "game" },
-            { step: "৩", icon: "🔺", title: "রোগ ত্রিভুজ", desc: "রোগের শর্ত বুঝুন", color: "#d97706", bg: C.bgWarning, tab: "game" },
-            { step: "৪", icon: "🧪", title: "নিশ্চিতকরণ", desc: "মাঠে যাচাই করুন", color: "#16a34a", bg: C.bgSuccess, tab: "guide" },
+            { step: "১", icon: "👁️", title: "পর্যবেক্ষণ", desc: "লক্ষণ ও লক্ষণ চিনুন", color: "#2563eb", bg: C.bgInfo, tab: "learn" },
+            { step: "২", icon: "🔬", title: "বর্জন পদ্ধতি", desc: "কারণ সংকুচিত করুন", color: "#7c3aed", bg: C.bgPurple, tab: "learn" },
+            { step: "৩", icon: "🔺", title: "রোগ ত্রিভুজ", desc: "রোগের শর্ত বুঝুন", color: "#d97706", bg: C.bgWarning, tab: "learn" },
+            { step: "৪", icon: "🧪", title: "নিশ্চিতকরণ", desc: "মাঠে যাচাই করুন", color: "#16a34a", bg: C.bgSuccess, tab: "learn" },
             { step: "৫", icon: "🌿", title: "IPM সিদ্ধান্ত", desc: "ব্যবস্থাপনা পরিকল্পনা", color: "#0891b2", bg: C.bgTeal, tab: "library" },
           ].map((item, i) => (
             <button key={i} onClick={() => setActiveTab(item.tab)} style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 12px", border: "none", background:i % 2 === 0 ? C.bgCard : C.bgMuted, cursor: "pointer", borderRadius: 14, width: "100%", textAlign: "left" }}>
@@ -2182,6 +2182,7 @@ function GameHub(){
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function UdbhidGoenda(){
 const[activeTab,setActiveTab]=useState("home");
+  const[copilotOpen,setCopilotOpen]=useState(false);
   const[step,setStep]=useState(1);
   const[form,setForm]=useState(()=>{try{const saved=JSON.parse(localStorage.getItem('ud-form')||'{}');return{crop:saved.crop||"",district:saved.district||"",season:saved.season||getCurrentSeason(),growthStage:saved.growthStage||"",symptoms:"",duration:saved.duration||"",affectedArea:saved.affectedArea||""};}catch{return{crop:"",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""};}});
   const[diagnosisMode,setDiagnosisMode]=useState("online"); // "online" or "offline"
@@ -2781,64 +2782,66 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
   const chipSt={padding:"5px 12px",borderRadius:20,fontSize:12,cursor:"pointer",transition:"all .15s",flexShrink:0};
 
   const navTabs=[
-    {id:"guide",label:"CABI গাইড",icon:"📖"},
-    {id:"game",label:"গেম হাব",icon:"🎮"},
+    {id:"calendar",label:"ক্যালেন্ডার",icon:"📅"},
+    {id:"learn",label:"শিখুন",icon:"📖"},
     {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
-    {id:"copilot",label:"কোপাইলট",icon:"🤖"},
     {id:"library",label:"ভান্ডার",icon:"📚"},
-    {id:"more",label:"আরও",icon:"⋯"},
   ];
   const allTabs=[
     {id:"home",label:"হোম",icon:"🏠"},
+    {id:"calendar",label:"ক্যালেন্ডার",icon:"📅"},
+    {id:"learn",label:"শিখুন",icon:"📖"},
     {id:"guide",label:"CABI গাইড",icon:"📖"},
     {id:"game",label:"গেম হাব",icon:"🎮"},
     {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
-    {id:"copilot",label:"কোপাইলট",icon:"🤖"},
     {id:"library",label:"তথ্যভান্ডার",icon:"📚"},
     {id:"apps",label:"অ্যাপস",icon:"🌐"},
     {id:"history",label:"ইতিহাস",icon:"📋"},
   ];
   const legacyNavTabs=[
+    {id:"calendar",label:"ক্যালেন্ডার",icon:"📅"},
+    {id:"learn",label:"শিখুন",icon:"📖"},
     {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
-    {id:"guide",label:"CABI গাইড",icon:"📖"},
     {id:"library",label:"তথ্যভাণ্ডার",icon:"📚"},
-    {id:"game",label:"গেম হাব",icon:"🎮"},
-    {id:"history",label:"ইতিহাস",icon:"📋"},
   ];
   const feedbackContext=activeTab==="diagnose"
     ?(step===2?"Diagnosis Report":"Diagnosis Form")
-    :activeTab==="game"
-      ?"Game Hub"
-      :activeTab==="library"
-        ?"Information Library"
-        :activeTab==="guide"
-          ?"CABI Guide"
-          :activeTab==="apps"
-            ?"Apps Hub"
-            :activeTab==="history"
-              ?"History"
-              :activeTab==="learn"
-                ?"Learn"
-                :activeTab==="more"
-                  ?"More"
-                  :"Home";
+    :activeTab==="calendar"
+      ?"Crop Calendar"
+      :activeTab==="game"
+        ?"Game Hub"
+        :activeTab==="library"
+          ?"Information Library"
+          :activeTab==="guide"
+            ?"CABI Guide"
+            :activeTab==="apps"
+              ?"Apps Hub"
+              :activeTab==="history"
+                ?"History"
+                :activeTab==="learn"
+                  ?"Learn"
+                  :activeTab==="more"
+                    ?"More"
+                    :"Home";
   const feedbackSummary=activeTab==="diagnose"&&result
     ?`${form.crop||"Unknown crop"} | ${form.district||locationName||"Unknown district"} | ${(result.bn||result.en||"").slice(0,160)}`
-    :activeTab==="game"
-      ?"Game tab feedback"
-      :activeTab==="library"
-        ?"Drive-based slide, reading, and audio library"
-        :activeTab==="apps"
-          ?"External agriculture apps hub"
-          :activeTab==="guide"
-            ?"CABI training guide view"
-            :activeTab==="history"
-              ?`Saved reports: ${history.length}`
-              :activeTab==="learn"
-                ?"Learn section: Guide + Games"
-                :activeTab==="more"
-                  ?"More section: Apps + History"
-                  :"General app feedback";
+    :activeTab==="calendar"
+      ?"Crop Calendar with weather & price data"
+      :activeTab==="game"
+        ?"Game tab feedback"
+        :activeTab==="library"
+          ?"Drive-based slide, reading, and audio library"
+          :activeTab==="apps"
+            ?"External agriculture apps hub"
+            :activeTab==="guide"
+              ?"CABI training guide view"
+              :activeTab==="history"
+                ?`Saved reports: ${history.length}`
+                :activeTab==="learn"
+                  ?"Learn section: Guide + Games"
+                  :activeTab==="more"
+                    ?"More section: Apps + History"
+                    :"General app feedback";
 
   return(
     <div style={{minHeight:"100svh",background:C.bg,width:"100%",display:"flex",flexDirection:"column"}}>
@@ -2888,6 +2891,31 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           );
         })()}
 
+        {/* ── CALENDAR tab (Crop Calendar + Weather + Price) ──────────── */}
+        {activeTab==="calendar"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:12,animation:"fadeIn .3s ease"}}>
+            <CropCalendarDashboard C={C} weather={weather} coords={coords} locationName={locationName}/>
+            {/* Outbreak List */}
+            <div style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+              <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:8}}>🚨 রোগ প্রাদুর্ভাব</div>
+              <OutbreakList C={C} district={form.district||locationName} postJson={postJson}/>
+            </div>
+            {/* Quick links to apps & history */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:10}}>
+              <button onClick={()=>setActiveTab("apps")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:"14px 12px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow}}>
+                <div style={{fontSize:22,marginBottom:4}}>🌐</div>
+                <div style={{fontWeight:700,fontSize:13,color:C.text}}>কৃষি অ্যাপস</div>
+                <div style={{fontSize:11,color:C.textMuted}}>আরও সেবা দেখুন</div>
+              </button>
+              <button onClick={()=>setActiveTab("history")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:"14px 12px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow}}>
+                <div style={{fontSize:22,marginBottom:4}}>📋</div>
+                <div style={{fontWeight:700,fontSize:13,color:C.text}}>নির্ণয় ইতিহাস</div>
+                <div style={{fontSize:11,color:C.textMuted}}>আগের রিপোর্ট</div>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── LEARN sub-view (Guide + Games) ────────────────────── */}
         {activeTab==="learn"&&(
           <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
@@ -2933,10 +2961,6 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 অন্যান্য কৃষি অ্যাপস ও নির্ণয় ইতিহাস দেখুন।
               </p>
             </div>
-            {/* Crop Calendar + Weather + Price Dashboard */}
-            <div style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-              <CropCalendarDashboard C={C} weather={weather} coords={coords} locationName={locationName}/>
-            </div>
             {/* Outbreak List */}
             <div style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
               <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:8}}>🚨 রোগ প্রাদুর্ভাব</div>
@@ -2967,9 +2991,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           </div>
         )}
 
-        {activeTab==="copilot"&&(
-          <AICopilotTab crop={form.crop} district={form.district} weather={weather} locationName={locationName} signedFetch={signedFetch}/>
-        )}
+        {/* Copilot is now a floating FAB — see CopilotFAB component below */}
 
         {activeTab==="apps"&&(
           <div>
@@ -3557,7 +3579,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       {!isGameTab&&<nav className="bottom-nav" aria-label="Main navigation">
         {navTabs.map(t=>{
           let isActive = activeTab === t.id;
-          if(t.id === "more") isActive = activeTab === "apps" || activeTab === "history";
+          if(t.id === "learn") isActive = activeTab === "learn" || activeTab === "guide" || activeTab === "game";
+          if(t.id === "more") isActive = activeTab === "apps" || activeTab === "history" || activeTab === "more";
           return (
             <button key={t.id} onClick={()=>setActiveTab(t.id)} className={`bottom-nav-item ${isActive?"active":""}`} aria-label={`${t.label} tab`}>
               <span className="nav-icon">{t.icon}</span>
@@ -3566,6 +3589,78 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           );
         })}
       </nav>}
+
+      {/* ══ FLOATING COPILOT FAB ═══════════════════════════════════ */}
+      {!isGameTab&&!copilotOpen&&(
+        <button
+          onClick={()=>setCopilotOpen(true)}
+          aria-label="AI Copilot"
+          style={{
+            position:'fixed',bottom:76,right:16,zIndex:300,
+            width:52,height:52,borderRadius:'50%',
+            background:`linear-gradient(135deg,${C.primaryXDark},${C.primary})`,
+            border:'none',cursor:'pointer',
+            boxShadow:'0 4px 20px rgba(0,96,40,0.4)',
+            display:'flex',alignItems:'center',justifyContent:'center',
+            animation:'popIn .3s ease both',
+            transition:'transform .2s, box-shadow .2s',
+          }}
+          onMouseEnter={e=>{e.currentTarget.style.transform='scale(1.08)';e.currentTarget.style.boxShadow='0 6px 28px rgba(0,96,40,0.55)';}}
+          onMouseLeave={e=>{e.currentTarget.style.transform='scale(1)';e.currentTarget.style.boxShadow='0 4px 20px rgba(0,96,40,0.4)';}}
+        >
+          <span style={{fontSize:24}}>🤖</span>
+        </button>
+      )}
+
+      {/* ══ COPILOT SLIDE-UP PANEL ═════════════════════════════════ */}
+      {copilotOpen&&(
+        <div
+          style={{
+            position:'fixed',bottom:0,left:0,right:0,zIndex:350,
+            maxHeight:'70vh',background:C.bgCard,
+            borderRadius:'20px 20px 0 0',
+            boxShadow:'0 -8px 40px rgba(0,0,0,0.15)',
+            display:'flex',flexDirection:'column',
+            animation:'slideUp .3s ease both',
+            overflow:'hidden',
+          }}
+        >
+          {/* Handle bar */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',padding:'8px 0 4px'}}>
+            <div style={{width:40,height:4,borderRadius:2,background:C.border}}/>
+          </div>
+          {/* Header with close */}
+          <div style={{display:'flex',alignItems:'center',padding:'4px 16px 8px',borderBottom:`1px solid ${C.border}`}}>
+            <span style={{fontSize:20,marginRight:8}}>🤖</span>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:800,fontSize:15,color:C.text}}>AI কোপাইলট</div>
+              <div style={{fontSize:10,color:C.textMuted}}>প্রতিটি পৃষ্ঠায় সহায়তা</div>
+            </div>
+            <button
+              onClick={()=>setCopilotOpen(false)}
+              style={{width:32,height:32,borderRadius:10,border:'none',background:C.bgMuted,cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',color:C.textMuted}}
+              aria-label="Close copilot"
+            >
+              ✕
+            </button>
+          </div>
+          {/* Copilot content */}
+          <div style={{flex:1,overflowY:'auto',padding:'0 0 16px'}}>
+            <AICopilotTab crop={form.crop} district={form.district} weather={weather} locationName={locationName} signedFetch={signedFetch}/>
+          </div>
+        </div>
+      )}
+      {/* Backdrop for copilot panel */}
+      {copilotOpen&&(
+        <div
+          onClick={()=>setCopilotOpen(false)}
+          style={{
+            position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:340,
+            background:'rgba(0,0,0,0.3)',
+            animation:'fadeIn .2s ease both',
+          }}
+        />
+      )}
       </>)}
     </div>
   );
