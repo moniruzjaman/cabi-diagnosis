@@ -2416,6 +2416,19 @@ const[activeTab,setActiveTab]=useState("home");
     setRecommendedProducts(matched.slice(0,5));
   },[pesticideDb,result,form.crop]);
 
+  // Update symptom matches when crop or symptoms change (avoid setState during render)
+  useEffect(()=>{
+    if(!form.crop||!form.symptoms){setSymptomMatches(null);return;}
+    const cropKey=resolveCropKey(form.crop);
+    if(!cropKey){setSymptomMatches(null);return;}
+    const userSymptoms=form.symptoms.split('\n').filter(Boolean);
+    if(userSymptoms.length===0){setSymptomMatches(null);return;}
+    try{
+      const matches=matchDiseasesBySymptoms(form.crop,userSymptoms);
+      setSymptomMatches(matches||null);
+    }catch{setSymptomMatches(null);}
+  },[form.crop,form.symptoms]);
+
   const fetchWeather=useCallback(async(lat,lon)=>{
     try{
       const d=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,wind_speed_10m,uv_index&daily=precipitation_sum&timezone=Asia%2FDhaka&forecast_days=1`)).json();
@@ -2635,7 +2648,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
         
         setResult({
           bn: banglaText.split("---END_BANGLA---")[0].replace("---BANGLA_SECTION---", "").trim(),
-          en: banglaText.split("---END_ENGLISH---")[1].replace("---ENGLISH_SECTION---", "").trim()
+          en: banglaText.split("---END_ENGLISH---")[0].split("---ENGLISH_SECTION---").pop().trim()
         });
         setProvider("Offline CABI Diagnostic Engine");
         if (offlineResult.specificDisease) {
@@ -2734,7 +2747,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
   };
 
   const stopSpeaking=()=>{window.speechSynthesis?.cancel();setIsSpeaking(false);};
-  const reset=()=>{setForm(f=>{const next={crop:"",district:f.district||"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:f.duration||"",affectedArea:f.affectedArea||""};try{localStorage.setItem('ud-form',JSON.stringify(next));}catch{}return next;});setImages([]);setImageBase64s([]);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setSeverity(null);setShowMoreCrops(false);setRecommendedProducts([]);setStructuredResult(null);setFollowUpQuestion('');setFollowUpAnswer('');setFollowUpLoading(false);stopSpeaking();};
+  const reset=()=>{setForm(f=>{const next={crop:"",district:f.district||"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:f.duration||"",affectedArea:f.affectedArea||""};try{localStorage.setItem('ud-form',JSON.stringify(next));}catch{}return next;});setImages([]);setImageBase64s([]);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setSeverity(null);setShowMoreCrops(false);setRecommendedProducts([]);setStructuredResult(null);setSymptomMatches(null);setOfflineDiagnosis(null);setFollowUpQuestion('');setFollowUpAnswer('');setFollowUpLoading(false);stopSpeaking();};
 
   // Follow-up question handler
   const handleFollowUp=async()=>{
@@ -3251,14 +3264,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
                 {error&&<div style={{background:C.bgDanger,border:`1px solid ${C.borderDanger}`,borderRadius:12,padding:"12px 14px",color:C.danger,marginBottom:10,fontSize:13}}>⚠️ {error}</div>}
 
-                {form.crop && form.symptoms && (() => {
-                  const cropKey = resolveCropKey(form.crop);
-                  if (!cropKey) return null;
-                  const userSymptoms = form.symptoms.split('\n').filter(Boolean);
-                  if (userSymptoms.length === 0) return null;
-                  const matches = matchDiseasesBySymptoms(form.crop, userSymptoms);
-                  setSymptomMatches(matches);
-                  if (!matches || matches.length === 0) return null;
+                {symptomMatches && symptomMatches.length > 0 && (() => {
                   return (
                     <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
@@ -3266,7 +3272,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                         <span style={{fontWeight:700,fontSize:13,color:C.primaryDark}}>সম্ভাব্য রোগ (প্রাথমিক)</span>
                       </div>
                       <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                        {matches.slice(0, 3).map((m, i) => (
+                        {symptomMatches.slice(0, 3).map((m, i) => (
                           <span key={i} style={{background:i===0?C.bgSuccess:C.bgMuted,border:`1px solid ${i===0?C.borderSuccess:C.border}`,borderRadius:20,padding:"4px 10px",fontSize:11,fontWeight:i===0?700:500,color:i===0?C.primaryDark:C.text}}>
                             {m.disease.nameBn} {Math.round((m.matchRatio||0)*100)}%
                           </span>
