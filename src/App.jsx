@@ -521,7 +521,10 @@ const _SECTION_META_COLORS={danger:"#dc2626",blue:"#2563eb",success:"#16a34a",wa
 function getSectionMeta(){const out={};for(const[k,v]of Object.entries(SECTION_META_KEYS)){out[k]={icon:v.icon,color:C[v.colorKey]||_SECTION_META_COLORS[v.colorKey],bg:C[v.bgKey]||C.bgMuted,border:C[v.borderKey]||C.border};}return out;}
 function getMeta(t){for(const[k,v]of Object.entries(getSectionMeta()))if((t||"").includes(k))return v;return{icon:"📄",color:C.text,bg:C.bgMuted,border:C.border};}
 function SectionCard({title,bodyLines,defaultOpen}){
-  const[open,setOpen]=useState(defaultOpen!==false);
+  // Collapse Exclusion Gate by default — it's technical detail users rarely need open
+  const isExclusion=(title||'').includes('Exclusion')||(title||'').includes('বর্জন');
+  const effectiveDefault=isExclusion?false:(defaultOpen!==false);
+  const[open,setOpen]=useState(effectiveDefault);
   const meta=getMeta(title);
   const bodyText=simplifyFarmerText(bodyLines.join("\n").trim());
   if(!bodyText&&!title)return null;
@@ -627,25 +630,38 @@ function DiagnosisHistory({history,onLoad}){
     </div>
   );
 }
-function SeveritySurvey({onSubmit}){
-  const[selected,setSelected]=useState("");
-  const options=["মাঠ সম্পূর্ণ সুস্থ","কয়েকটি গাছে লক্ষণ","মাঠের ৫০% এর কম","অর্ধেক মাঠ আক্রান্ত","বেশিরভাগ মাঠ (৫০%+)","সমস্ত মাঠ আক্রান্ত"];
+function SeverityBadge({severity,cause,affectedArea}){
+  // Auto-fill severity from diagnosis data or affected area
+  const autoLevel=((sev)=>{
+    if(sev==='severe'||sev==='high')return{label:'মারাত্মক',icon:'🔴',bg:C.bgDanger,border:C.borderDanger,color:C.danger};
+    if(sev==='moderate'||sev==='medium')return{label:'মাঝারি',icon:'🟡',bg:C.bgWarning,border:C.borderWarning,color:C.warning};
+    if(sev==='low'||sev==='mild')return{label:'সামান্য',icon:'🟢',bg:C.bgSuccess,border:C.borderSuccess,color:C.success};
+    // Infer from affected area chip
+    if(affectedArea){
+      const a=affectedArea.toLowerCase();
+      if(a.includes('৭৫%')||a.includes('সমস্ত'))return{label:'মারাত্মক',icon:'🔴',bg:C.bgDanger,border:C.borderDanger,color:C.danger};
+      if(a.includes('৫০%')||a.includes('অর্ধেক'))return{label:'মাঝারি',icon:'🟡',bg:C.bgWarning,border:C.borderWarning,color:C.warning};
+      return{label:'সামান্য',icon:'🟢',bg:C.bgSuccess,border:C.borderSuccess,color:C.success};
+    }
+    return{label:'অজানা',icon:'⚪',bg:C.bgMuted,border:C.border,color:C.textMuted};
+  })(severity);
+  const causeLabel=((c)=>{
+    if(!c)return '';
+    const cl=c.toLowerCase();
+    if(cl.includes('fungal')||cl.includes('ছত্রাক'))return'ছত্রাকজনিত';
+    if(cl.includes('bacterial')||cl.includes('ব্যাকটেরিয়া'))return'ব্যাকটেরিয়াজনিত';
+    if(cl.includes('viral')||cl.includes('ভাইরাস'))return'ভাইরাসজনিত';
+    if(cl.includes('insect')||cl.includes('পোকা'))return'পোকাজনিত';
+    if(cl.includes('nutrient')||cl.includes('পুষ্টি'))return'পুষ্টিজনিত';
+    return c;
+  })(cause);
   return(
-    <div>
-      <div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:12}}>📊 কতটুকু মাঠ আক্রান্ত?</div>
-      <div style={{display:"flex",flexDirection:"column",gap:7}}>
-        {options.map(opt=>(
-          <button key={opt} onClick={()=>setSelected(opt)} style={{padding:"11px 14px",borderRadius:12,border:`1.5px solid ${selected===opt?C.primary:C.border}`,background:selected===opt?C.bgSuccess:C.bgCard,cursor:"pointer",textAlign:"left",fontSize:13,color:C.text,display:"flex",alignItems:"center",gap:10,transition:"all .15s"}}>
-            <div style={{width:18,height:18,borderRadius:"50%",border:`2px solid ${selected===opt?C.primary:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              {selected===opt&&<div style={{width:8,height:8,borderRadius:"50%",background:C.primary}}/>}
-            </div>
-            {opt}
-          </button>
-        ))}
+    <div style={{display:'flex',alignItems:'center',gap:10,padding:"11px 14px",background:autoLevel.bg,border:`1px solid ${autoLevel.border}`,borderRadius:12,marginTop:10}}>
+      <span style={{fontSize:18}}>{autoLevel.icon}</span>
+      <div style={{flex:1}}>
+        <div style={{fontWeight:700,fontSize:13,color:autoLevel.color}}>তীব্রতা: {autoLevel.label}</div>
+        {causeLabel&&<div style={{fontSize:11,color:C.textMuted,marginTop:2}}>কারণ: {causeLabel}</div>}
       </div>
-      <button onClick={()=>selected&&onSubmit(selected)} disabled={!selected} style={{marginTop:12,width:"100%",padding:"12px",borderRadius:12,border:"none",background:selected?C.primary:C.border,color:"#fff",fontWeight:700,fontSize:14,cursor:selected?"pointer":"not-allowed",transition:"all .2s"}}>
-        সংরক্ষণ করুন
-      </button>
     </div>
   );
 }
@@ -729,6 +745,7 @@ function ProductRecommendations({products,crop}){
 
 // ─── Library section ──────────────────────────────────────────────────────────
 function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,visitorId}){
+  const[open,setOpen]=useState(false);
   const[rating,setRating]=useState(0);
   const[feedback,setFeedback]=useState("");
   const[status,setStatus]=useState("");
@@ -763,13 +780,18 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,vis
   const mailto=`mailto:?subject=${encodeURIComponent(`Udbhid Goenda feedback - ${context}`)}&body=${encodeURIComponent(payload)}`;
   return(
     <div className="ud-editorial-shadow" style={{marginTop:16,background:`linear-gradient(135deg,${C.bgCard},${C.bgMuted})`,border:`1px solid ${C.border}`,borderRadius:28,padding:18,boxShadow:C.shadow}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap",marginBottom:10}}>
-        <div>
+      <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap",background:"none",border:"none",cursor:"pointer",padding:0}}>
+        <div style={{textAlign:"left"}}>
           <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>⭐ রেটিং ও মতামত</div>
           <div style={{fontSize:12,color:C.textMuted}}>এই অংশ শেষে আপনার মতামত কপি করুন বা এক ক্লিকে পাঠান.</div>
         </div>
-        <div style={{fontSize:11,color:C.textMuted}}>This browser: {visitorStats?.visits||1} · Total: {visitorStats?.totalVisits||visitorStats?.visits||1}</div>
-      </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:11,color:C.textMuted}}>This browser: {visitorStats?.visits||1} · Total: {visitorStats?.totalVisits||visitorStats?.visits||1}</span>
+          <span style={{color:C.primary,fontSize:13}}>{open?"▲":"▼"}</span>
+        </div>
+      </button>
+      {open&&<>
+      <div style={{marginTop:10}}>
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
         {[1,2,3,4,5].map(star=>(
           <button key={star} onClick={()=>setRating(star)} style={{width:44,height:44,borderRadius:14,border:`1px solid ${rating>=star?"#fbbf24":C.border}`,background:rating>=star?C.bgWarning:C.bgCard,cursor:"pointer",fontSize:22}}>
@@ -792,6 +814,8 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,vis
         <a href={mailto} onClick={()=>{saveFeedback();}} style={{padding:"10px 14px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgSuccess,color:C.primary,textDecoration:"none",fontWeight:700}}>✉️ ক্লিকে পাঠান</a>
         {status&&<div style={{padding:"10px 0",fontSize:12,color:C.textMuted}}>{status}</div>}
       </div>
+      </div>
+      </>}
     </div>
   );
 }
@@ -3157,11 +3181,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
                 {recommendedProducts.length>0&&<ProductRecommendations products={recommendedProducts} crop={form.crop}/>}
 
-                {!severity?(
-                  <div style={{background:C.bgCard,borderRadius:16,padding:18,marginTop:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}><SeveritySurvey onSubmit={s=>setSeverity(s)}/></div>
-                ):(
-                  <div style={{background:C.bgSuccess,borderRadius:12,padding:"11px 14px",marginTop:10,border:`1px solid ${C.borderSuccess}`,fontSize:13,color:C.success,fontWeight:700}}>✅ তীব্রতা নথিভুক্ত: {severity}</div>
-                )}
+                <SeverityBadge severity={structuredResult?.severity||structuredResult?.severity_level} cause={structuredResult?.cause_type||structuredResult?.biotic_abiotic} affectedArea={form.affectedArea}/>
 
                 <div style={{marginTop:10,padding:"10px 14px",background:C.bgWarning,border:`1px solid ${C.borderOrange}`,borderRadius:12,color:C.warning,fontSize:12}}>⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।</div>
                 <button onClick={reset} aria-label="Reset form" style={{width:"100%",marginTop:10,padding:"13px",borderRadius:14,border:`1px solid ${C.border}`,background:C.bgCard,color:C.text,fontWeight:600,fontSize:14,cursor:"pointer",boxShadow:C.shadow}}>🔁 নতুন রোগ নির্ণয়</button>
