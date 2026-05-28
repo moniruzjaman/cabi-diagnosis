@@ -17,7 +17,7 @@
  * GET /api/crop-prices?mode=forecast&crop=ধান
  */
 
-import cors from './_lib/cors.js';
+import { handleCORSPreflight, setCORSHeaders } from './_lib/cors.js';
 
 // ─── Inline price engine (server-side, same logic as client) ──────────────────
 
@@ -93,7 +93,8 @@ function simulatePrice(crop, month, districtId) {
 }
 
 export default async function handler(req, res) {
-  if (cors(req, res)) return;
+  if (handleCORSPreflight(req, res, "GET, OPTIONS")) return;
+  setCORSHeaders(req, res, "GET, OPTIONS");
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

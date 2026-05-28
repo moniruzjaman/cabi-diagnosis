@@ -710,14 +710,14 @@ export default async function handler(req, res) {
   const messages = validation.messages;
   const imageAttached = validation.imageCount > 0;
 
-  // Overall timeout wrapper
-  const withTimeout = (promise, label) =>
-    Promise.race([
-      promise,
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error(`${label} timed out`)), REQUEST_TIMEOUT_MS)
-      ),
-    ]);
+  // Overall timeout wrapper — suppresses unhandled rejections from the losing promise
+  const withTimeout = (promise, label) => {
+    let timeoutId;
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error(`${label} timed out`)), REQUEST_TIMEOUT_MS);
+    });
+    return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
+  };
 
   const attempts = [];
 

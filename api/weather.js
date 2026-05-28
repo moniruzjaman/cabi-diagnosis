@@ -9,13 +9,14 @@
  * GET /api/weather?lat=23.685&lon=90.356
  */
 
-import cors from './_lib/cors.js';
+import { handleCORSPreflight, setCORSHeaders } from './_lib/cors.js';
 
 const BD_CENTER = { lat: 23.685, lon: 90.356 };
 const CACHE_MAX_AGE = 600; // 10 minutes
 
 export default async function handler(req, res) {
-  if (cors(req, res)) return;
+  if (handleCORSPreflight(req, res, "GET, OPTIONS")) return;
+  setCORSHeaders(req, res, "GET, OPTIONS");
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

@@ -1,9 +1,9 @@
 /**
  * Turso (LibSQL) Database Helper
  *
- * Replaces Supabase with Turso — edge-native SQLite with:
+ * Edge-native SQLite database:
  *   - Free tier: 9GB storage, 1B reads/month, 25M writes/month
- *   - No project pausing (unlike Supabase free tier)
+ *   - No project pausing
  *   - No quota limits for this app's usage
  *   - Low latency from Vercel serverless (edge-native)
  *

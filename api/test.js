@@ -77,13 +77,15 @@ export default async function handler(req, res) {
     const providedAdmin = req.query?.admin || req.headers["x-admin-secret"] || "";
 
     const hasValidSignature = signatureToken && verifyRequestToken(signatureToken);
-    const hasValidAdmin = providedAdmin && providedAdmin === adminSecret;
+    const hasValidAdmin = providedAdmin && crypto.timingSafeEqual(
+      Buffer.from(providedAdmin, "utf8"),
+      Buffer.from(adminSecret, "utf8")
+    );
 
     if (!hasValidSignature && !hasValidAdmin) {
       return res.status(403).json({
         error: "Access denied — authentication required",
         hint: "Access via: (1) the app with a valid session, or (2) ?admin=YOUR_SECRET",
-        secretHint: `Your auto-admin key starts with: ${adminSecret.slice(0, 4)}...`,
       });
     }
   }

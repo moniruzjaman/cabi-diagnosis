@@ -29,52 +29,62 @@ export default async function handler(req, res) {
 
   if (!visitorId) return res.status(400).json({ error: "visitorId is required" });
 
-  const store = await readStore();
-  const isNewVisitor = !store.visitors[visitorId];
+  try {
+    const store = await readStore();
+    const isNewVisitor = !store.visitors[visitorId];
 
-  store.totalVisits += 1;
-  store.sections[section] = (store.sections[section] || 0) + 1;
-  store.visitors[visitorId] = {
-    firstSeen: store.visitors[visitorId]?.firstSeen || new Date().toISOString(),
-    lastSeen: new Date().toISOString(),
-    visits: (store.visitors[visitorId]?.visits || 0) + 1,
-  };
-  if (isNewVisitor) store.uniqueVisitors += 1;
+    store.totalVisits += 1;
+    store.sections[section] = (store.sections[section] || 0) + 1;
+    store.visitors[visitorId] = {
+      firstSeen: store.visitors[visitorId]?.firstSeen || new Date().toISOString(),
+      lastSeen: new Date().toISOString(),
+      visits: (store.visitors[visitorId]?.visits || 0) + 1,
+    };
+    if (isNewVisitor) store.uniqueVisitors += 1;
 
-  await writeStore(store);
+    await writeStore(store);
 
-  return res.status(200).json({
-    totalVisits: store.totalVisits,
-    uniqueVisitors: store.uniqueVisitors,
-    sections: store.sections,
-    visitor: store.visitors[visitorId],
-    updatedAt: store.updatedAt,
-    persistence: (process.env.TURSO_DATABASE_URL) ? "turso" : (process.env.VERCEL ? "temporary-instance-storage" : "local-file-storage"),
-  });
+    return res.status(200).json({
+      totalVisits: store.totalVisits,
+      uniqueVisitors: store.uniqueVisitors,
+      sections: store.sections,
+      visitor: store.visitors[visitorId],
+      updatedAt: store.updatedAt,
+      persistence: (process.env.TURSO_DATABASE_URL) ? "turso" : (process.env.VERCEL ? "temporary-instance-storage" : "local-file-storage"),
+    });
+  } catch (err) {
+    console.error("Analytics POST error:", err.message);
+    return res.status(500).json({ error: "Failed to update analytics" });
+  }
 }
 
 async function handleGet(req, res) {
-  const store = await readStore();
+  try {
+    const store = await readStore();
 
-  // Base analytics response
-  const response = {
-    totalVisits: store.totalVisits,
-    uniqueVisitors: store.uniqueVisitors,
-    sections: store.sections,
-    updatedAt: store.updatedAt,
-  };
+    // Base analytics response
+    const response = {
+      totalVisits: store.totalVisits,
+      uniqueVisitors: store.uniqueVisitors,
+      sections: store.sections,
+      updatedAt: store.updatedAt,
+    };
 
-  // If disease stats requested and Turso is available
-  if (req.query?.disease === "true" && hasTurso()) {
-    try {
-      const days = Math.min(Math.max(parseInt(req.query?.days) || 30, 1), 365);
-      const diseaseStats = await getDiseaseStats(days);
-      response.diseaseStats = diseaseStats;
-    } catch (err) {
-      console.error("Analytics disease stats error:", err.message);
-      response.diseaseStats = { error: "Failed to fetch disease stats" };
+    // If disease stats requested and Turso is available
+    if (req.query?.disease === "true" && hasTurso()) {
+      try {
+        const days = Math.min(Math.max(parseInt(req.query?.days) || 30, 1), 365);
+        const diseaseStats = await getDiseaseStats(days);
+        response.diseaseStats = diseaseStats;
+      } catch (err) {
+        console.error("Analytics disease stats error:", err.message);
+        response.diseaseStats = { error: "Failed to fetch disease stats" };
+      }
     }
-  }
 
-  return res.status(200).json(response);
+    return res.status(200).json(response);
+  } catch (err) {
+    console.error("Analytics GET error:", err.message);
+    return res.status(500).json({ error: "Failed to fetch analytics" });
+  }
 }

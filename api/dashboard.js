@@ -7,6 +7,22 @@ import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
 import { analyticsLimiter } from "./_lib/rateLimit.js";
 import { getDiseaseStats, getOutbreaks, hasTurso } from "./_lib/turso.js";
 
+// Allowed hosts for internal API calls (SSRF protection)
+const ALLOWED_HOSTS = [
+  "cabi-diagnosis.vercel.app",
+  "cabi-diagnosis-git-main-moniruzjamans-projects.vercel.app",
+];
+
+function getSafeBaseUrl(req) {
+  const forwardedHost = req.headers["x-forwarded-host"] || "";
+  // Only trust known Vercel deployment hosts
+  if (forwardedHost && (ALLOWED_HOSTS.includes(forwardedHost) || forwardedHost.endsWith(".vercel.app"))) {
+    return `https://${forwardedHost}`;
+  }
+  // Fallback: no base URL (relative path works on Vercel)
+  return "";
+}
+
 export default async function handler(req, res) {
   if (handleCORSPreflight(req, res, "GET, OPTIONS")) return;
   setCORSHeaders(req, res, "GET, OPTIONS");
@@ -20,32 +36,38 @@ export default async function handler(req, res) {
 
   // If JSON requested, return raw data
   if (req.query?.format === "json") {
-    const store = await readStore();
-    const visitorList = Object.entries(store.visitors || {})
-      .sort((a, b) => new Date(b[1].lastSeen) - new Date(a[1].lastSeen));
-    return res.status(200).json({
-      totalVisits: store.totalVisits || 0,
-      uniqueVisitors: store.uniqueVisitors || 0,
-      sections: store.sections || {},
-      recentVisitors: visitorList.slice(0, 50).map(([id, v]) => ({
-        id: id.slice(0, 12) + "...",
-        firstSeen: v.firstSeen,
-        lastSeen: v.lastSeen,
-        visits: v.visits,
-      })),
-      updatedAt: store.updatedAt,
-      persistence: (process.env.TURSO_DATABASE_URL)
-        ? "turso"
-        : process.env.VERCEL
-          ? "vercel-tmp-storage"
-          : "local-file",
-    });
+    try {
+      const store = await readStore();
+      const visitorList = Object.entries(store.visitors || {})
+        .sort((a, b) => new Date(b[1].lastSeen) - new Date(a[1].lastSeen));
+      return res.status(200).json({
+        totalVisits: store.totalVisits || 0,
+        uniqueVisitors: store.uniqueVisitors || 0,
+        sections: store.sections || {},
+        recentVisitors: visitorList.slice(0, 50).map(([id, v]) => ({
+          id: id.slice(0, 12) + "...",
+          firstSeen: v.firstSeen,
+          lastSeen: v.lastSeen,
+          visits: v.visits,
+        })),
+        updatedAt: store.updatedAt,
+        persistence: (process.env.TURSO_DATABASE_URL)
+          ? "turso"
+          : process.env.VERCEL
+            ? "vercel-tmp-storage"
+            : "local-file",
+      });
+    } catch (err) {
+      console.error("Dashboard JSON error:", err.message);
+      return res.status(500).json({ error: "Failed to fetch analytics" });
+    }
   }
 
   // If presence JSON requested
   if (req.query?.format === "presence") {
     try {
-      const presenceRes = await fetch(`${req.headers["x-forwarded-host"] ? `https://${req.headers["x-forwarded-host"]}` : ""}/api/presence`);
+      const baseUrl = getSafeBaseUrl(req);
+      const presenceRes = await fetch(`${baseUrl}/api/presence`);
       const data = await presenceRes.json();
       return res.status(200).json(data);
     } catch {
@@ -94,14 +116,18 @@ export default async function handler(req, res) {
   }
 
   // Otherwise serve the live dashboard HTML
-  const store = await readStore();
+  let store;
+  try {
+    store = await readStore();
+  } catch (err) {
+    console.error("Dashboard HTML readStore error:", err.message);
+    store = { totalVisits: 0, uniqueVisitors: 0, sections: {}, visitors: {}, updatedAt: null };
+  }
 
   // Fetch presence data
   let presence = { onlineCount: 0, bySection: {}, recentVisitors: [], dailyStats: [], persistence: "none" };
   try {
-    const baseUrl = req.headers["x-forwarded-host"]
-      ? `https://${req.headers["x-forwarded-host"]}`
-      : "";
+    const baseUrl = getSafeBaseUrl(req);
     const presenceRes = await fetch(`${baseUrl}/api/presence?days=7`);
     presence = await presenceRes.json();
   } catch {}

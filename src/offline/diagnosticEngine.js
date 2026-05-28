@@ -553,16 +553,13 @@ function generateIPMRecommendations(diagnosis) {
 function diagnoseOffline(inputData) {
   const { symptoms, hostInfo = {}, pathogenInfo = {}, envInfo = {}, crop } = inputData;
   
-  // Step 1: Translate Bengali symptoms for the engine
-  const translatedSymptoms = translateSymptoms(symptoms);
-  
-  // Step 2: Abiotic vs Biotic assessment (uses Bengali-aware text)
+  // Step 1: Abiotic vs Biotic assessment (uses Bengali-aware text)
   const abioticBiotic = assessAbioticBiotic(symptoms);
   
-  // Step 3: Apply exclusion gates (uses Bengali-aware text)
+  // Step 2: Apply exclusion gates (uses Bengali-aware text)
   const { excluded, suspects } = applyExclusionGates(abioticBiotic, symptoms);
   
-  // Step 4: Crop-specific disease matching
+  // Step 3: Crop-specific disease matching
   let cropDiseaseMatches = [];
   let cropKey = null;
 
@@ -614,13 +611,13 @@ function diagnoseOffline(inputData) {
     }
   }
 
-  // Step 5: Disease triangle assessment (now crop-aware)
+  // Step 4: Disease triangle assessment (now crop-aware)
   const triangle = assessDiseaseTriangle(hostInfo, pathogenInfo, envInfo, crop);
   
-  // Step 6: Field confirmation methods
+  // Step 5: Field confirmation methods
   const fieldMethods = getFieldConfirmationMethods(suspects);
   
-  // Step 7: Generate IPM recommendations (now crop/disease-specific)
+  // Step 6: Generate IPM recommendations (now crop/disease-specific)
   const ipmRecommendations = generateIPMRecommendations({
     suspects: suspects,
     confidence: suspects.length > 0 && excluded.length > 0 ? "medium" : "low",

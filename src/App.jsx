@@ -2383,7 +2383,7 @@ const[activeTab,setActiveTab]=useState("home");
     }).catch(()=>{});
   },[visitorId,activeTab]);
 
-  // ─── Real-time presence heartbeat (Supabase) ──────────────────
+  // ─── Real-time presence heartbeat (Turso) ──────────────────
   useEffect(()=>{
     if(!visitorId)return;
     const isPwa=window.matchMedia?.("(display-mode: standalone)").matches||false;

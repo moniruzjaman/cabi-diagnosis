@@ -36,12 +36,23 @@ export default async function handler(req, res) {
     createdAt: new Date().toISOString(),
   };
 
-  await appendFeedback(feedbackItem);
+  try {
+    await appendFeedback(feedbackItem);
+  } catch (err) {
+    console.error("Feedback save error:", err.message);
+    return res.status(500).json({ error: "Failed to save feedback" });
+  }
 
   // Send email notification (non-blocking) — uses escaped HTML
   sendEmailNotification({ ...feedbackItem, email: safeEmail }).catch(() => {});
 
-  const store = await readStore();
+  let store;
+  try {
+    store = await readStore();
+  } catch (err) {
+    console.error("Feedback read error:", err.message);
+    store = { feedback: [] };
+  }
 
   return res.status(200).json({
     ok: true,
