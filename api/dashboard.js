@@ -84,7 +84,7 @@ export default async function handler(req, res) {
       const days = Math.min(Math.max(parseInt(req.query?.days) || 30, 1), 365);
       const diseaseStats = await getDiseaseStats(days);
       return res.status(200).json({ diseaseStats, days });
-    } catch (err) {
+    } catch (_err) { // eslint-disable-line no-unused-vars
       return res.status(500).json({ error: "Failed to fetch disease stats" });
     }
   }
@@ -110,7 +110,7 @@ export default async function handler(req, res) {
         heatmap: Object.values(heatmap).sort((a, b) => b.total - a.total),
         recentDays,
       });
-    } catch (err) {
+    } catch (_err) { // eslint-disable-line no-unused-vars
       return res.status(500).json({ error: "Failed to fetch outbreaks" });
     }
   }

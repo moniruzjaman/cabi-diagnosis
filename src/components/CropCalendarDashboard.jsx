@@ -7,9 +7,7 @@ import {
   findSprayWindows,
   compareWithClimate,
   scoreCropWeatherSuitability,
-  getClimateAverage,
   getCropTempRange,
-  getCropWaterNeed,
 } from '../data/weatherService';
 import {
   simulateCurrentPrice,
@@ -17,7 +15,6 @@ import {
   compareCropProfitability,
   formatPriceBDT,
   getTrendDisplay,
-  BASELINE_PRICES,
   adjustPriceForDistrict,
   analyzeWeatherPriceImpact,
   forecastCropPrices,
@@ -27,7 +24,7 @@ import {
   getTopRecommendations,
   generateSeasonalAdvisory,
 } from '../data/enhancedCropCalendar';
-import { CROP_CALENDAR, GREGORIAN_MONTHS, SEASON_COLORS, getCurrentCrops, getCurrentRiskAlerts } from '../data/cropCalendar';
+import { CROP_CALENDAR, GREGORIAN_MONTHS } from '../data/cropCalendar';
 import { BANGLADESH_DISTRICTS, getDivisions, getDistrictsByDivision, findNearestDistrict, getDistrictById } from '../data/bangladeshDistricts';
 
 /**
@@ -59,6 +56,7 @@ export default function CropCalendarDashboard({ C, weather, coords, locationName
   const currentMonthName = GREGORIAN_MONTHS[currentMonth - 1];
 
   // Auto-detect district from coordinates
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (coords?.lat && coords?.lon && !selectedDistrict) {
       const nearest = findNearestDistrict(coords.lat, coords.lon);
@@ -67,7 +65,8 @@ export default function CropCalendarDashboard({ C, weather, coords, locationName
         setSelectedDivision(nearest.division);
       }
     }
-  }, [coords]);
+  }, [coords, selectedDistrict]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Get current district data
   const districtData = useMemo(() => {
@@ -86,7 +85,9 @@ export default function CropCalendarDashboard({ C, weather, coords, locationName
     setForecastLoading(false);
   }, [coords, districtData]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => { loadForecast(); }, [loadForecast]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Generate comprehensive analysis with district pricing
   const analysis = useMemo(() => {

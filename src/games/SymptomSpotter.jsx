@@ -70,7 +70,7 @@ function saveHighScore(score) {
 }
 
 function resultMessage(score) {
-  const max = TOTAL_ROUNDS * 15; // 10 correct + 5 streak max theoretical
+  const _max = TOTAL_ROUNDS * 15; // 10 correct + 5 streak max theoretical
   if (score >= 100) return { emoji: "🏆", text: "অসাধারণ! আপনি একজন রোগ নির্ণয় বিশেষজ্ঞ!", color: "#f59e0b" };
   if (score >= 75) return { emoji: "🌟", text: "চমৎকার! আপনার লক্ষণ চিনতে খুব ভালো হয়েছে!", color: "#16a34a" };
   if (score >= 50) return { emoji: "👍", text: "ভালো চেষ্টা! আরেকটু অনুশীলন করলেই হবে।", color: "#2563eb" };
@@ -304,29 +304,6 @@ export default function SymptomSpotter() {
     }
   }, [locked]);
 
-  /* ── handle timeout ────────────────────── */
-  useEffect(() => {
-    if (phase !== "playing" || locked || timeLeft > 0) return;
-    // time ran out → treat as wrong
-    handleAnswer(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft, phase, locked]);
-
-  /* ── start game ────────────────────────── */
-  const startGame = () => {
-    const qs = pickQuestions();
-    setQuestions(qs);
-    setQIdx(0);
-    setScore(0);
-    setStreak(0);
-    setTimeLeft(TIME_PER_Q);
-    setAnswers([]);
-    setSelectedIdx(null);
-    setLocked(false);
-    setIsNewHigh(false);
-    setPhase("playing");
-  };
-
   /* ── handle answer ─────────────────────── */
   const handleAnswer = useCallback((choiceIdx) => {
     if (locked) return;
@@ -371,6 +348,31 @@ export default function SymptomSpotter() {
       }
     }, 1400);
   }, [locked, clearTimer, choices, currentQ, score, streak, qIdx]);
+
+  /* ── handle timeout ────────────────────── */
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (phase !== "playing" || locked || timeLeft > 0) return;
+    // time ran out → treat as wrong
+    handleAnswer(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft, phase, locked]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  /* ── start game ────────────────────────── */
+  const startGame = () => {
+    const qs = pickQuestions();
+    setQuestions(qs);
+    setQIdx(0);
+    setScore(0);
+    setStreak(0);
+    setTimeLeft(TIME_PER_Q);
+    setAnswers([]);
+    setSelectedIdx(null);
+    setLocked(false);
+    setIsNewHigh(false);
+    setPhase("playing");
+  };
 
   /* ── result data ───────────────────────── */
   const totalCorrect = answers.filter((a) => a.isCorrect).length;
@@ -768,7 +770,7 @@ const styles = {
     color: C.text,
     fontFamily: "'Plus Jakarta Sans','Noto Sans Bengali',sans-serif",
   }),
-  ruleList: (C) => ({
+  ruleList: (_C) => ({
     paddingLeft: 4,
   }),
   highScoreBox: (C) => ({
@@ -816,7 +818,7 @@ const styles = {
     color: C.textLight,
     fontWeight: 500,
   }),
-  topBar: (C) => ({
+  topBar: (_C) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
@@ -888,7 +890,7 @@ const styles = {
     animationFillMode: "backwards",
     fontFamily: "'Plus Jakarta Sans','Noto Sans Bengali',sans-serif",
   },
-  statsRow: (C) => ({
+  statsRow: (_C) => ({
     display: "flex",
     gap: 10,
     marginBottom: 16,

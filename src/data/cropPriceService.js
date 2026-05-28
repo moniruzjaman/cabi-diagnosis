@@ -528,7 +528,7 @@ function getSeasonalPriceShift(cropBn, currentMonth, daysAhead) {
  * @param {string} [districtId] - Optional district ID for local pricing
  * @returns {Object} Simulated price data
  */
-export function simulateCurrentPrice(cropBn, month, districtId) {
+export function simulateCurrentPrice(cropBn, month, _districtId) {
   const baseline = BASELINE_PRICES[cropBn];
   if (!baseline) return null;
 
@@ -541,7 +541,7 @@ export function simulateCurrentPrice(cropBn, month, districtId) {
 
   // Determine if we're in peak or off season
   const isPeakSeason = isCropHarvestSeason(cropBn, month);
-  const basePrice = isPeakSeason ? baseline.peak : baseline.off;
+  const _basePrice = isPeakSeason ? baseline.peak : baseline.off;
 
   // Apply seasonal interpolation
   const seasonProgress = getSeasonProgress(cropBn, month);
@@ -662,12 +662,12 @@ export function compareCropProfitability(month) {
 /**
  * Check if current month is in harvest season for a crop.
  */
-function isCropHarvestSeason(cropBn, month) {
+function isCropHarvestSeason(cropBn, _month) {
   const baseline = BASELINE_PRICES[cropBn];
   if (!baseline) return false;
 
   // Check if any season multiplier is < 1.0 (meaning harvest/glut = cheaper)
-  const multipliers = Object.values(baseline.seasonMultipliers);
+  const _multipliers = Object.values(baseline.seasonMultipliers);
   // We consider harvest if price tends to be lower than average
   return baseline.average > baseline.peak; // If peak price < average = harvest is cheap
 }

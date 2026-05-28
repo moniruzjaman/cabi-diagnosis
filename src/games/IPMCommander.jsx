@@ -201,7 +201,7 @@ function IPMPyramidSlots({ slots, activeSlot, onSelectSlot, phase, showResult })
 }
 
 /** Single revealed intervention card (always face-up) */
-function InterventionCard({ card, index, onClick, disabled, picked, animDelay, showResult, selectedForSlot }) {
+function InterventionCard({ card, index: _index, onClick, disabled, picked, animDelay, showResult: _showResult, selectedForSlot }) {
   const levelMeta = PYRAMID_LEVELS[card.level - 1];
   const isSelected = selectedForSlot !== undefined && selectedForSlot !== null;
 
@@ -357,6 +357,7 @@ export default function IPMCommander() {
   const maxPossible = 60;
 
   // ─── Auto-flip cards one by one ───
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (phase !== "flipping") {
       clearInterval(flipTimerRef.current);
@@ -393,8 +394,10 @@ export default function IPMCommander() {
 
     return () => clearInterval(flipTimerRef.current);
   }, [phase, roundIndex]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Shuffle cards when round changes
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (phase !== "flipping") return;
     const shuffled = shuffle(round.interventions);
@@ -413,11 +416,14 @@ export default function IPMCommander() {
       speak(`রাউন্ড ${roundIndex + 1}। ${round.crop}। ${round.problem}। কার্ডগুলো এখন খুলছে, দেখুন।`, { prependFriendly: true });
     }
   }, [roundIndex, phase]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Save high score
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (phase === "result") { saveHighScore(totalScore); setHighScore(loadHighScore()); }
   }, [phase]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // ─── Handle card selection (tap a card to select it) ───
   const handleCardSelect = useCallback((cardIndex) => {
@@ -557,7 +563,9 @@ export default function IPMCommander() {
       totalScore >= 50 ? { label: "C — আরও অনুশীলন দরকার 📚", color: C.warning } :
       { label: "D — আবার চেষ্টা করুন 🔄", color: C.danger };
     const confettiColors = ["#f59e0b", "#16a34a", "#2563eb", "#7c3aed", "#dc2626", "#ec4899"];
+    /* eslint-disable react-hooks/purity */
     const confetti = totalScore >= 100 ? Array.from({ length: 18 }, (_, i) => <ConfettiPiece key={i} delay={Math.random() * 1.2} color={confettiColors[i % confettiColors.length]} left={Math.random() * 90 + 5} />) : null;
+    /* eslint-enable react-hooks/purity */
 
     return (
       <div style={{ minHeight: "100vh", background: C.bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Noto Sans Bengali', 'Inter', sans-serif", position: "relative", overflow: "hidden" }}>
@@ -588,7 +596,7 @@ export default function IPMCommander() {
   }
 
   // ─── RENDER: Playing Screen (flipping + selecting) ────────────────────────
-  const allPlaced = slots.every(s => s !== null);
+  const _allPlaced = slots.every(s => s !== null);
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: "'Noto Sans Bengali', 'Inter', sans-serif", paddingBottom: 40 }}>

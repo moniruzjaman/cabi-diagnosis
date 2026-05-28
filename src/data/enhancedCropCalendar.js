@@ -19,18 +19,12 @@ import {
   estimateIrrigationNeed,
   findSprayWindows,
   compareWithClimate,
-  parseForecast,
-  fetch7DayForecast,
-  getCropTempRange,
 } from './weatherService.js';
 import {
   simulateCurrentPrice,
   getAllCropPrices,
   compareCropProfitability,
-  BASELINE_PRICES,
-  CROP_PRICE_MAP,
   formatPriceBDT,
-  getTrendDisplay,
 } from './cropPriceService.js';
 
 // ─── Main integration functions ───────────────────────────────────────────────
@@ -309,7 +303,7 @@ function getRecommendationLabel(score) {
   return 'এড়িয়ে চলুন 🚫';
 }
 
-function buildRecommendationReasons(crop, analysis) {
+function buildRecommendationReasons(crop, _analysis) {
   const reasons = [];
 
   if (crop.isActive) {

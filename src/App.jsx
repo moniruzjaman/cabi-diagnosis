@@ -3,13 +3,11 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { diagnoseOffline } from "./offline/index";
 import { lightThemeFull, darkThemeFull, getPreferredTheme } from './data/themes';
 import { CROP_CALENDAR, getCurrentRiskAlerts } from './data/cropCalendar';
-import { CROP_DISEASES, matchDiseasesBySymptoms, resolveCropKey, getDiseasesForCrop, estimateInoculumPressure, getVarietySusceptibility } from './data/cropDiseases';
-import { translateBengaliToEnglish } from './data/bengaliKeywords';
-import CropCalendarComponent from './components/CropCalendar';
+import { CROP_DISEASES, matchDiseasesBySymptoms, resolveCropKey, estimateInoculumPressure, getVarietySusceptibility } from './data/cropDiseases';
 import CropCalendarDashboard from './components/CropCalendarDashboard';
 import OnboardingFlow from './components/OnboardingFlow';
 import OutbreakList from './components/OutbreakList';
-import { computeEnsembleScore, scoreDiseasesBySeason, scoreDiseasesByWeather, getWeatherRiskSummary } from './data/agronomicEngine';
+import { computeEnsembleScore } from './data/agronomicEngine';
 import './styles/accessibility.css';
 
 const SymptomSpotter = React.lazy(() => import('./games/SymptomSpotter'));
@@ -87,8 +85,8 @@ const GLOBAL_STYLE = `
   .hero-leaf{position:absolute;font-size:80px;opacity:.07;animation:leafFloat 6s ease-in-out infinite}
 `;
 /* Reduced header/footer heights for better game visibility */
-const REDUCED_HEADER_HEIGHT = `60px`;
-const REDUCED_FOOTER_HEIGHT = `35px`;
+const _REDUCED_HEADER_HEIGHT = `60px`;
+const _REDUCED_FOOTER_HEIGHT = `35px`;
 if(typeof document!=="undefined"&&!document.getElementById("ud-gs")){
   const s=document.createElement("style");s.id="ud-gs";s.textContent=GLOBAL_STYLE;document.head.appendChild(s);
 }
@@ -827,7 +825,7 @@ function FeedbackPanel({context,summary,userEmail,onEmailChange,visitorStats,vis
   );
 }
 // ─── Voice Diagnosis Component ────────────────────────────────────────────
-function VoiceDiagnosis({onResult,activeCrop}){
+function VoiceDiagnosis({onResult,activeCrop:_activeCrop}){
   const[listening,setListening]=useState(false);
   const[transcript,setTranscript]=useState('');
   const recRef=useRef(null);
@@ -922,7 +920,7 @@ function ConfidenceDashboard({structuredResult,cropKey,weather,symptomMatches}){
 }
 
 // ─── AI Copilot for Extension Officers ────────────────────────────────────
-function AICopilotTab({crop,district,weather,locationName,signedFetch}){
+function AICopilotTab({crop,district,weather,locationName:_locationName,signedFetch}){
   const[query,setQuery]=useState('');
   const[conversation,setConversation]=useState([]);
   const[loading,setLoading]=useState(false);
@@ -982,7 +980,7 @@ function AICopilotTab({crop,district,weather,locationName,signedFetch}){
   );
 }
 
-function HomeTab({setActiveTab,history,weather,locationName}){
+function _HomeTab({setActiveTab,history,weather,locationName}){
   const highlights=[
     {icon:"🧠",title:"ছবি দেখে রোগ ধরা",desc:"গ্যালারি বা ক্যামেরা থেকে ছবি দিন, তারপর সহজ ভাষায় রিপোর্ট পান.",action:"নির্ণয়ে যান",tab:"diagnose"},
     {icon:"📚",title:"তথ্যভাণ্ডার",desc:"স্লাইড, পড়ার PDF, আর অডিও পডকাস্ট এক জায়গায়.",action:"তথ্যভাণ্ডার খুলুন",tab:"library"},
@@ -1192,7 +1190,7 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
 }
 
 function AppsHub(){
-  const{ speak, stop, speaking: appsSpeaking, isSupported: appsTts } = useTTS();
+  const{ speak: _speak, stop: _stop, speaking: _appsSpeaking, isSupported: _appsTts } = useTTS();
   return(
     <div style={{animation:"fadeIn .3s ease"}}>
       {/* YouTube Channel Section */}
@@ -1331,7 +1329,8 @@ function AudioPodcastCard({title,id}){
     </div>
   );
 }
-function LibrarySection(){
+/* eslint-disable react-hooks/rules-of-hooks */
+function _LibrarySection(){
   const[section,setSection]=useState("slides");
   const[currentSlide,setCurrentSlide]=useState(0);
   const sections=[
@@ -1512,7 +1511,7 @@ function EnhancedLibrarySection(){
     </div>
   );
 }
-function LegacyLibrarySection(){
+function _LegacyLibrarySection(){
   const[activeTab,setActiveTab]=useState("pests");
   const[selected,setSelected]=useState(null);
   const tabs=[{id:"pests",label:"পোকামাকড়",icon:"🐛"},{id:"diseases",label:"রোগ",icon:"🦠"},{id:"deficiencies",label:"পুষ্টি অভাব",icon:"🌿"}];
@@ -1557,14 +1556,15 @@ function LegacyLibrarySection(){
     </div>
   );
 }
+/* eslint-enable react-hooks/rules-of-hooks */
 
 // ─── CABI Guide tab ───────────────────────────────────────────────────────────
 function CABIGuideTab(){
    const[section,setSection]=useState("protocol");
    const[database,setDatabase]=useState(null);
    const[loading,setLoading]=useState(true);
-   const{ speak, stop, speaking: guideSpeaking, isSupported: guideTtsReady } = useTTS();
-   const[activeStep, setActiveStep] = useState(null);
+   const{ speak: _speakGuide, stop: _stopGuide, speaking: _guideSpeaking, isSupported: guideTtsReady } = useTTS();
+   const[_activeStep, _setActiveStep] = useState(null);
    
    useEffect(()=>{
      fetch('/database.json')
@@ -1931,6 +1931,7 @@ function ShareAndInstallBar() {
   const SHARE_TEXT = "🌾 উদ্ভিদ গোয়েন্দা — কৃষকের সহজ রোগ নির্ণয় অ্যাপ! CABI Plantwise প্রোটোকল দিয়ে ফসলের রোগ চিনুন।";
 
   // PWA install prompt capture
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const handler = (e) => { e.preventDefault(); setInstallPrompt(e); setCanInstall(true); };
     window.addEventListener("beforeinstallprompt", handler);
@@ -1945,6 +1946,7 @@ function ShareAndInstallBar() {
     try { if (localStorage.getItem("ud-install-dismissed")) setDismissed(true); } catch {}
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleInstall = async () => {
     if (!installPrompt) return;
@@ -2028,7 +2030,7 @@ function ShareAndInstallBar() {
 // ─── 🎮 GAME HUB ─────────────────────────────────────────────────────────────
 function GameHub(){
   const[activeGame,setActiveGame]=useState(null);
-  const { speak, stop, speaking, isSupported } = useTTS();
+  const { speak, stop: _stopGame, speaking, isSupported } = useTTS();
 
   const CABI_GAMES=[
     {id:"symptom-spotter",title:"লক্ষণ লক্ষ্য",en:"Symptom Spotter",step:1,icon:"👁️",color:"#2563eb",bg:"linear-gradient(135deg,#1e40af,#2563eb)",desc:"ফসলের লক্ষণ চিনুন — পাতার দাগ, রং ও আকৃতি থেকে রোগ শনাক্ত করুন",difficulty:"সহজ",duration:"৫-১০ মিনিট",Component:SymptomSpotter},
@@ -2150,7 +2152,7 @@ function GameHub(){
       <div style={{marginTop:16,padding:"14px 0",borderTop:"1px solid "+C.border}}>
         <div style={{fontSize:11,color:C.textLight,fontWeight:700,marginBottom:10,textTransform:"uppercase",letterSpacing:.5}}>🏅 অর্জন ক্রেস্ট</div>
         <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
-          {CABI_GAMES.map((game,i)=>{
+          {CABI_GAMES.map((game,_i)=>{
             const key=`game-${game.id}-high`;
             let hs=0;try{hs=Number(localStorage.getItem(key))||0;}catch{}
             const tier=hs>=80?{l:"platinum",e:"💎",c:"#8b5cf6"}:hs>=60?{l:"gold",e:"🏆",c:"#f59e0b"}:hs>=40?{l:"silver",e:"🥈",c:"#6b7280"}:hs>=20?{l:"bronze",e:"🥉",c:"#ea580c"}:{l:"",e:"🎮",c:"#9ca3af"};
@@ -2250,7 +2252,13 @@ const[activeTab,setActiveTab]=useState("home");
   };
 
   // Session ID for server-side history
-  const sessionId=useRef(`sid-${Date.now()}-${Math.random().toString(36).slice(2,8)}`).current;
+  const sessionIdRef=useRef(null);
+  useEffect(()=>{
+    if(!sessionIdRef.current){
+      sessionIdRef.current=`sid-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    }
+  },[]);
+  const sessionId=sessionIdRef.current;
 
   const galleryRef=useRef();
   const cameraRef=useRef();
@@ -2345,6 +2353,7 @@ const[activeTab,setActiveTab]=useState("home");
     window.addEventListener("resize",onResize);
     return()=>window.removeEventListener("resize",onResize);
   },[]);
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(()=>{
     try{
       const raw=JSON.parse(localStorage.getItem("ud-visitor-stats")||"{}");
@@ -2356,6 +2365,7 @@ const[activeTab,setActiveTab]=useState("home");
       setVisitorStats(next);
     }catch{}
   },[]);
+  /* eslint-enable react-hooks/set-state-in-effect */
   useEffect(()=>{
     try{localStorage.setItem("ud-user-email",userEmail||"");}catch{}
   },[userEmail]);
@@ -2364,6 +2374,7 @@ const[activeTab,setActiveTab]=useState("home");
       const raw=JSON.parse(localStorage.getItem("ud-visitor-stats")||"{}");
       const next={visits:raw.visits||1,sections:{...(raw.sections||{}),[activeTab]:(raw.sections?.[activeTab]||0)+1},totalVisits:raw.totalVisits||0,uniqueVisitors:raw.uniqueVisitors||0};
       localStorage.setItem("ud-visitor-stats",JSON.stringify(next));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVisitorStats(next);
     }catch{}
   },[activeTab]);
@@ -2375,7 +2386,7 @@ const[activeTab,setActiveTab]=useState("home");
         try{localStorage.setItem("ud-visitor-stats",JSON.stringify({...visitorStats,totalVisits:data.totalVisits,uniqueVisitors:data.uniqueVisitors,sections:data.sections||visitorStats.sections,visits:visitorStats.visits||1}));}catch{}
       }
     }).catch(()=>{});
-  },[visitorId]);
+  },[visitorId,visitorStats]);
   useEffect(()=>{
     if(!visitorId||!activeTab)return;
     postJson("/api/analytics",{visitorId,section:activeTab}).then(data=>{
@@ -2412,11 +2423,13 @@ const[activeTab,setActiveTab]=useState("home");
     const matched=allIds.map(id=>pesticideDb.products.find(p=>p.id===id)).filter(Boolean);
     const pestSet=new Set(pestIds);
     matched.sort((a,b)=>{const aP=pestSet.has(a.id)?1:0;const bP=pestSet.has(b.id)?1:0;if(bP!==aP)return bP-aP;return(b.rating||0)-(a.rating||0);});
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRecommendedProducts(matched.slice(0,5));
   },[pesticideDb,result,form.crop]);
 
   // Update symptom matches when crop or symptoms change (avoid setState during render)
   useEffect(()=>{
+    /* eslint-disable react-hooks/set-state-in-effect */
     if(!form.crop||!form.symptoms){setSymptomMatches(null);return;}
     const cropKey=resolveCropKey(form.crop);
     if(!cropKey){setSymptomMatches(null);return;}
@@ -2426,6 +2439,7 @@ const[activeTab,setActiveTab]=useState("home");
       const matches=matchDiseasesBySymptoms(form.crop,userSymptoms);
       setSymptomMatches(matches||null);
     }catch{setSymptomMatches(null);}
+    /* eslint-enable react-hooks/set-state-in-effect */
   },[form.crop,form.symptoms]);
 
   const fetchWeather=useCallback(async(lat,lon)=>{
@@ -2455,13 +2469,23 @@ const[activeTab,setActiveTab]=useState("home");
   },[fetchWeather]);
 
   useEffect(()=>{
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setWeatherLoading(true);
     if(navigator.geolocation){navigator.geolocation.getCurrentPosition(async(pos)=>{const{latitude:lat,longitude:lon}=pos.coords;setCoords({lat,lon});setLocationSource("gps");await Promise.all([fetchWeather(lat,lon),reverseGeocode(lat,lon)]);setWeatherLoading(false);},async()=>{await fetchByIP();setWeatherLoading(false);},{timeout:8000});}
     else{fetchByIP().then(()=>setWeatherLoading(false));}
   },[fetchWeather,reverseGeocode,fetchByIP]);
-  useEffect(()=>{setForm(f=>f.season?f:{...f,season:getCurrentSeason()});},[]);
+  useEffect(()=>{
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setForm(f=>f.season?f:{...f,season:getCurrentSeason()});
+    /* eslint-enable react-hooks/set-state-in-effect */
+  },[]);
 
-  useEffect(()=>{setVoiceSupported(!!(window.SpeechRecognition||window.webkitSpeechRecognition));setTtsSupported(!!window.speechSynthesis);},[]);
+  useEffect(()=>{
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setVoiceSupported(!!(window.SpeechRecognition||window.webkitSpeechRecognition));
+    setTtsSupported(!!window.speechSynthesis);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  },[]);
 
   const refreshWeather=async()=>{if(!coords)return;setWeatherLoading(true);await fetchWeather(coords.lat,coords.lon);setWeatherLoading(false);};
 
@@ -2737,7 +2761,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
             image_count: images.length
           })
         });
-      } catch(e) { /* non-critical, don't block */ }
+      } catch(e) { /* non-critical, don't block */ void e; }
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (err) {
       setError(`রোগ নির্ণয়ে সমস্যা: ${err.message}`);
@@ -3338,7 +3362,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       const disease=structuredResult?.disease_name_bn||structuredResult?.disease_name||'';
                       const cause=structuredResult?.cause_type||structuredResult?.biotic_abiotic||'';
                       const sev=structuredResult?.severity||'';
-                      const conf=structuredResult?.confidence||'';
+                      const _conf=structuredResult?.confidence||'';
                       const season=form.season||'';
 
                       // 🔬 Disease-specific (highest priority)

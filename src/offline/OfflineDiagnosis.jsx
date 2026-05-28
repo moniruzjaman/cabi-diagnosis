@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { diagnoseOffline } from "./diagnosticEngine";
 
 const OfflineDiagnosis = () => {
@@ -29,7 +29,7 @@ const OfflineDiagnosis = () => {
     }
   });
 
-  const handleDiagnose = () => {
+  const _handleDiagnose = () => {
     setLoading(true);
     setError(null);
     

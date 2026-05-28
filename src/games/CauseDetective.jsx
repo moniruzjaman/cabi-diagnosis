@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { CAUSE_DETECTIVE_IMAGES } from "./imageMap";
 import useTTS from "./useTTS";
 import SymptomImageGallery from "./SymptomImageGallery";

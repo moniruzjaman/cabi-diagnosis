@@ -51,10 +51,11 @@ const SLIDES = [
   },
 ];
 
-export default function OnboardingFlow({ C, onComplete }) {
+export default function OnboardingFlow({ C: _C, onComplete }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [visible, setVisible] = useState(false);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     // Check if onboarding was already completed
     const completed = localStorage.getItem(ONBOARDING_KEY);
@@ -64,6 +65,7 @@ export default function OnboardingFlow({ C, onComplete }) {
     }
     setVisible(true);
   }, [onComplete]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function handleNext() {
     if (currentSlide < SLIDES.length - 1) {

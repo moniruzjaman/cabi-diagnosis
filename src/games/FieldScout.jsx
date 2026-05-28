@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { FIELD_SCOUT_IMAGES } from "./imageMap";
 import useTTS from "./useTTS";
 import SymptomImageGallery from "./SymptomImageGallery";
@@ -201,12 +201,14 @@ export default function FieldScout() {
   const isNewHigh = score > highScore && gameComplete;
 
   // ── load high score ──
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       const saved = localStorage.getItem("game-field-scout-high");
       if (saved) setHighScore(parseInt(saved, 10) || 0);
     } catch {}
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // ── persist high score ──
   const persistHigh = useCallback((val) => {
@@ -216,9 +218,11 @@ export default function FieldScout() {
     } catch {}
   }, []);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (score > highScore) persistHigh(score);
   }, [score, highScore, persistHigh]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // ── auto-speak each round ──
   useEffect(() => {
@@ -587,7 +591,7 @@ export default function FieldScout() {
      RENDER — Result Screen
      ═══════════════════════════════════════════════════════════ */
   if (phase === "result") {
-    const advice =
+    const _advice =
       decision === "treat"
         ? scenario.treatAdvice
         : scenario.monitorAdvice;

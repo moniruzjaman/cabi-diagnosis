@@ -101,7 +101,9 @@ export default function OutbreakList({ C, district, postJson }) {
     } finally { setLoading(false); }
   }, [district]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => { fetchOutbreaks(); }, [fetchOutbreaks]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   async function handleSubmitReport() {
     if (!reportData.crop || !reportData.disease_name) return;

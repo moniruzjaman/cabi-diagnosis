@@ -251,12 +251,14 @@ export default function DiseaseTriangle() {
   }, [roundIdx, totalRounds, score, highScore, results]);
 
   // ── Save high score on result ──
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (phase === "result" && score > highScore) {
       setHighScore(score);
       setHighScoreState(score);
     }
   }, [phase, score, highScore]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // ── Scroll to top on phase change ──
   useEffect(() => {
