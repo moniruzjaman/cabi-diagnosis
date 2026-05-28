@@ -273,18 +273,18 @@ export const CROP_CALENDAR = [
  * but this mapping is commonly used for agricultural reference.
  */
 export const BENGALI_MONTHS = [
-  'বৈশাখ',    // ~Apr 14 - May 14 → mapped to month 4-5
-  'জ্যৈষ্ঠ',   // ~May 15 - Jun 14 → mapped to month 5-6
-  'আষাঢ়',     // ~Jun 15 - Jul 15 → mapped to month 6-7
-  'শ্রাবণ',    // ~Jul 16 - Aug 15 → mapped to month 7-8
-  'ভাদ্র',     // ~Aug 16 - Sep 15 → mapped to month 8-9
-  'আশ্বিন',    // ~Sep 16 - Oct 15 → mapped to month 9-10
-  'কার্তিক',   // ~Oct 16 - Nov 14 → mapped to month 10-11
-  'অগ্রহায়ণ',  // ~Nov 15 - Dec 14 → mapped to month 11-12
-  'পৌষ',       // ~Dec 15 - Jan 14 → mapped to month 12-1
-  'মাঘ',       // ~Jan 15 - Feb 13 → mapped to month 1-2
-  'ফাল্গুন',   // ~Feb 14 - Mar 14 → mapped to month 2-3
-  'চৈত্র',     // ~Mar 15 - Apr 13 → mapped to month 3-4
+  'পৌষ',       // ~Dec 15 - Jan 14 → mapped to Gregorian month 1 (January)
+  'মাঘ',       // ~Jan 15 - Feb 13 → mapped to Gregorian month 2 (February)
+  'ফাল্গুন',   // ~Feb 14 - Mar 14 → mapped to Gregorian month 3 (March)
+  'চৈত্র',     // ~Mar 15 - Apr 13 → mapped to Gregorian month 4 (April)
+  'বৈশাখ',    // ~Apr 14 - May 14 → mapped to Gregorian month 5 (May)
+  'জ্যৈষ্ঠ',   // ~May 15 - Jun 14 → mapped to Gregorian month 6 (June)
+  'আষাঢ়',     // ~Jun 15 - Jul 15 → mapped to Gregorian month 7 (July)
+  'শ্রাবণ',    // ~Jul 16 - Aug 15 → mapped to Gregorian month 8 (August)
+  'ভাদ্র',     // ~Aug 16 - Sep 15 → mapped to Gregorian month 9 (September)
+  'আশ্বিন',    // ~Sep 16 - Oct 15 → mapped to Gregorian month 10 (October)
+  'কার্তিক',   // ~Oct 16 - Nov 14 → mapped to Gregorian month 11 (November)
+  'অগ্রহায়ণ',  // ~Nov 15 - Dec 14 → mapped to Gregorian month 12 (December)
 ];
 
 /**

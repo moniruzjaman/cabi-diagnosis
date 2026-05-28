@@ -283,7 +283,7 @@ export function adjustPriceForDistrict(priceData, districtId, districtData) {
  */
 export function analyzeWeatherPriceImpact(forecast, cropBn, currentPrice) {
   if (!forecast?.days?.length || !currentPrice) {
-    return { impact: 'neutral', score: 0, insights: [] };
+    return { impact: 'neutral', impactScore: 0, priceDirectionBn: 'স্থিতিশীল থাকতে পারে', insights: [] };
   }
 
   const insights = [];

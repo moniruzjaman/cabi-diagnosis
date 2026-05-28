@@ -179,6 +179,7 @@ const SYMPTOM_CHIPS={
   ],
 };
 const AREA_CHIPS=[{label:"৫% এর কম",value:"৫% এর কম"},{label:"১০%",value:"প্রায় ১০%"},{label:"২৫%",value:"প্রায় ২৫%"},{label:"৫০%",value:"প্রায় ৫০%"},{label:"৭৫%+",value:"৭৫% এরও বেশি"},{label:"বিক্ষিপ্ত",value:"বিক্ষিপ্তভাবে ছড়িয়ে"},{label:"সমস্ত মাঠ",value:"সমস্ত মাঠ"}];
+const IMAGE_LABELS=['সম্পূর্ণ গাছ','পাতা সামনে','পাতা পেছনে','কাণ্ড/ডাল'];
 const DURATION_CHIPS=[{label:"আজই",value:"আজই শুরু"},{label:"১-২ দিন",value:"১-২ দিন আগে"},{label:"৩-৫ দিন",value:"৩-৫ দিন ধরে"},{label:"১ সপ্তাহ",value:"প্রায় ১ সপ্তাহ"},{label:"২ সপ্তাহ",value:"প্রায় ২ সপ্তাহ"},{label:"১ মাস+",value:"১ মাসেরও বেশি"}];
 const OTHER_APPS=[
   {name:"Krishi AI Web",url:"https://web.krishiai.live/",icon:"🌐",desc:"Browser-friendly agriculture support portal"},
@@ -1052,7 +1053,7 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
     { icon: "📅", title: "ফসল ক্যালেন্ডার", desc: "আবহাওয়া ও মূল্য", color: "#f59e0b", bg: C.bgWarning, tab: "calendar" },
     { icon: "📖", title: "CABI গাইড+গেম", desc: "শিখুন ও অনুশীলন", color: "#7c3aed", bg: C.bgPurple, tab: "learn" },
     { icon: "🔍", title: "ছবি দিয়ে নির্ণয়", desc: "রোগ চিহ্নিত করুন", color: "#dc2626", bg: C.bgDanger, tab: "diagnose" },
-    { icon: "📚", title: "তথ্যভাণ্ডার", desc: "ভিডিও ও পড়ার উপকরণ", color: "#0891b2", bg: C.bgTeal, tab: "library" },
+    { icon: "📚", title: "তথ্যভান্ডার", desc: "ভিডিও ও পড়ার উপকরণ", color: "#0891b2", bg: C.bgTeal, tab: "library" },
   ];
 
   return (
@@ -2186,7 +2187,6 @@ const[activeTab,setActiveTab]=useState("home");
   const[step,setStep]=useState(1);
   const[form,setForm]=useState(()=>{try{const saved=JSON.parse(localStorage.getItem('ud-form')||'{}');return{crop:saved.crop||"",district:saved.district||"",season:saved.season||getCurrentSeason(),growthStage:saved.growthStage||"",symptoms:"",duration:saved.duration||"",affectedArea:saved.affectedArea||""};}catch{return{crop:"",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""};}});
   const[diagnosisMode,setDiagnosisMode]=useState("online"); // "online" or "offline"
-  const[offlineDiagnosis,setOfflineDiagnosis]=useState(null);
   const[showMoreCrops,setShowMoreCrops]=useState(false);
   const[expandedGroup,setExpandedGroup]=useState(null);
   // Multi-image support (2-4 images)
@@ -2197,7 +2197,6 @@ const[activeTab,setActiveTab]=useState("home");
   const[provider,setProvider]=useState(null);
   const[loading,setLoading]=useState(false);
   const[error,setError]=useState(null);
-  const[severity,setSeverity]=useState(null);
   const[history,setHistory]=useState(()=>{try{return JSON.parse(localStorage.getItem("ud-history")||"[]");}catch{return[];}});
   const[pesticideDb,setPesticideDb]=useState(null);
   const[recommendedProducts,setRecommendedProducts]=useState([]);
@@ -2489,8 +2488,9 @@ const[activeTab,setActiveTab]=useState("home");
     if(images.length>=4)return; // max 4 images
     const objectUrl=URL.createObjectURL(file);
     const img=new Image();
-    const labelIdx=images.length;
-    const IMAGE_LABELS=['সম্গ্র গাছ','পাতা সামনে','পাতা পেছনে','কাণ্ড/ডাল'];
+    // Pick the first unused label (fixes duplicate labels after image removal)
+    const usedLabels=new Set(images.map(im=>im.label));
+    const nextLabel=IMAGE_LABELS.find(l=>!usedLabels.has(l))||`ছবি ${images.length+1}`;
     img.onload=()=>{
       try{
         const MAX=800;let{width:w,height:h}=img;
@@ -2498,11 +2498,11 @@ const[activeTab,setActiveTab]=useState("home");
         const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
         const dataUrl=cv.toDataURL("image/jpeg",0.7);
         const base64=dataUrl.split(",")[1];
-        setImages(prev=>[...prev,{url:dataUrl,label:IMAGE_LABELS[labelIdx]||`ছবি ${labelIdx+1}`}]);
+        setImages(prev=>[...prev,{url:dataUrl,label:nextLabel}]);
         setImageBase64s(prev=>[...prev,base64]);
         const cropFromName=guessCropFromText(file.name||"");
         if(cropFromName)setForm(f=>f.crop?f:{...f,crop:cropFromName});
-        else if(labelIdx===0) detectCropFromImage(base64,file.name);
+        else if(images.length===0) detectCropFromImage(base64,file.name);
       }catch(err){console.error("Image processing failed:",err);}
       URL.revokeObjectURL(objectUrl);
     };
@@ -2517,7 +2517,7 @@ const[activeTab,setActiveTab]=useState("home");
 
 const handleSubmit=async()=>{
     if(!form.crop||!form.symptoms){setError("অনুগ্রহ করে ফসল এবং লক্ষণ উভয়ই পূরণ করুন।");return;}
-    setLoading(true);setError(null);setResult(null);setSeverity(null);setRecommendedProducts([]);
+    setLoading(true);setError(null);setResult(null);setRecommendedProducts([]);
     
     if (diagnosisMode === "offline") {
       // Use offline diagnosis
@@ -2555,7 +2555,7 @@ const handleSubmit=async()=>{
 ---BANGLA_SECTION---
 ## ১. CABI বর্জন পদ্ধতি অনুযায়ী বিশ্লেষণ
 **অ্যাবায়োটিক নাকি বায়োটিক:** ${offlineResult.abioticBiotic === "abiotic" ? "অবায়টিক (পরিবেশজ)" : offlineResult.abioticBiotic === "biotic" ? "বায়োটিক (জীবজিৎ)" : "নিশ্চিত নয়"}
-**বর্জন গেট ফলাফল:** ${offlineResult.excluded.length > 0 ? offlineResult.excluded.join(", ") : "কোনোcause বাদ দেয়নি"} || ${offlineResult.suspects.length > 0 ? offlineResult.suspects.join(", ") : "কোনোসন্দেহ নেই"}
+**বর্জন গেট ফলাফল:** ${offlineResult.excluded.length > 0 ? offlineResult.excluded.join(", ") : "কোনো কারণ বাদ দেয়নি"} || ${offlineResult.suspects.length > 0 ? offlineResult.suspects.join(", ") : "কোনোসন্দেহ নেই"}
 
 ## ২. সম্ভাব্য রোগ / পোকার নাম
 **প্রাথমিক সন্দেহ:** ${offlineResult.primarySuspect}
@@ -2747,7 +2747,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
   };
 
   const stopSpeaking=()=>{window.speechSynthesis?.cancel();setIsSpeaking(false);};
-  const reset=()=>{setForm(f=>{const next={crop:"",district:f.district||"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:f.duration||"",affectedArea:f.affectedArea||""};try{localStorage.setItem('ud-form',JSON.stringify(next));}catch{}return next;});setImages([]);setImageBase64s([]);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setSeverity(null);setShowMoreCrops(false);setRecommendedProducts([]);setStructuredResult(null);setSymptomMatches(null);setOfflineDiagnosis(null);setFollowUpQuestion('');setFollowUpAnswer('');setFollowUpLoading(false);stopSpeaking();};
+  const reset=()=>{setForm(f=>{const next={crop:"",district:f.district||"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:f.duration||"",affectedArea:f.affectedArea||""};try{localStorage.setItem('ud-form',JSON.stringify(next));}catch{}return next;});setImages([]);setImageBase64s([]);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setShowMoreCrops(false);setRecommendedProducts([]);setStructuredResult(null);setSymptomMatches(null);setFollowUpQuestion('');setFollowUpAnswer('');setFollowUpLoading(false);stopSpeaking();};
 
   // Follow-up question handler
   const handleFollowUp=async()=>{
@@ -2800,42 +2800,19 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
     {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
     {id:"library",label:"ভান্ডার",icon:"📚"},
   ];
-  const allTabs=[
-    {id:"home",label:"হোম",icon:"🏠"},
-    {id:"calendar",label:"ক্যালেন্ডার",icon:"📅"},
-    {id:"learn",label:"শিখুন",icon:"📖"},
-    {id:"guide",label:"CABI গাইড",icon:"📖"},
-    {id:"game",label:"গেম হাব",icon:"🎮"},
-    {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
-    {id:"library",label:"তথ্যভান্ডার",icon:"📚"},
-    {id:"apps",label:"অ্যাপস",icon:"🌐"},
-    {id:"history",label:"ইতিহাস",icon:"📋"},
-  ];
-  const legacyNavTabs=[
-    {id:"calendar",label:"ক্যালেন্ডার",icon:"📅"},
-    {id:"learn",label:"শিখুন",icon:"📖"},
-    {id:"diagnose",label:"নির্ণয়",icon:"🔬"},
-    {id:"library",label:"তথ্যভাণ্ডার",icon:"📚"},
-  ];
   const feedbackContext=activeTab==="diagnose"
     ?(step===2?"Diagnosis Report":"Diagnosis Form")
     :activeTab==="calendar"
       ?"Crop Calendar"
       :activeTab==="game"
         ?"Game Hub"
-        :activeTab==="library"
+        :activeTab==="library"||activeTab==="apps"||activeTab==="history"
           ?"Information Library"
           :activeTab==="guide"
             ?"CABI Guide"
-            :activeTab==="apps"
-              ?"Apps Hub"
-              :activeTab==="history"
-                ?"History"
-                :activeTab==="learn"
-                  ?"Learn"
-                  :activeTab==="more"
-                    ?"More"
-                    :"Home";
+            :activeTab==="learn"
+              ?"Learn"
+              :"Home";
   const feedbackSummary=activeTab==="diagnose"&&result
     ?`${form.crop||"Unknown crop"} | ${form.district||locationName||"Unknown district"} | ${(result.bn||result.en||"").slice(0,160)}`
     :activeTab==="calendar"
@@ -2852,9 +2829,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 ?`Saved reports: ${history.length}`
                 :activeTab==="learn"
                   ?"Learn section: Guide + Games"
-                  :activeTab==="more"
-                    ?"More section: Apps + History"
-                    :"General app feedback";
+                  :"General app feedback";
 
   return(
     <div style={{minHeight:"100svh",background:C.bg,width:"100%",display:"flex",flexDirection:"column"}}>
@@ -2964,52 +2939,12 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           </div>
         )}
 
-        {/* ── MORE sub-view (Apps + History) ─────────────────────── */}
-        {activeTab==="more"&&(
-          <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeIn .3s ease"}}>
-            <div style={{background:C.bgCard,borderRadius:18,padding:20,boxShadow:C.shadow,border:`1px solid ${C.border}`,textAlign:"center"}}>
-              <div style={{fontSize:40,marginBottom:8}}>⚙️</div>
-              <h2 className="ud-headline" style={{fontWeight:800,fontSize:22,color:C.text,marginBottom:6}}>আরও সেবা</h2>
-              <p style={{fontSize:13,color:C.textMuted,lineHeight:1.6,maxWidth:400,marginLeft:"auto",marginRight:"auto"}}>
-                অন্যান্য কৃষি অ্যাপস ও নির্ণয় ইতিহাস দেখুন।
-              </p>
-            </div>
-            {/* Outbreak List */}
-            <div style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-              <div style={{fontWeight:800,fontSize:16,color:C.primaryDark,marginBottom:8}}>🚨 রোগ প্রাদুর্ভাব</div>
-              <OutbreakList C={C} district={form.district||locationName} postJson={postJson}/>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:12}}>
-              <button onClick={()=>setActiveTab("apps")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
-                <div style={{width:56,height:56,borderRadius:16,background:C.bgOrange,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #ea580c18"}}>🌐</div>
-                <div>
-                  <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>কৃষি অ্যাপস</div>
-                  <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>Krishi AI, GAP Brinjal, CIRDAP GreenLoop — আরও সেবা একসাথে খুলুন।</div>
-                </div>
-                <div style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:12,fontWeight:700,color:"#ea580c",marginTop:4}}>
-                  অ্যাপস দেখুন <span style={{fontSize:14}}>→</span>
-                </div>
-              </button>
-              <button onClick={()=>setActiveTab("history")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:18,padding:"24px 18px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow,animation:"popIn .4s ease .1s both",display:"flex",flexDirection:"column",gap:12,width:"100%"}}>
-                <div style={{width:56,height:56,borderRadius:16,background:C.bgSuccess,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,border:"1.5px solid #16a34a18"}}>📋</div>
-                <div>
-                  <div className="ud-headline" style={{fontWeight:800,fontSize:18,color:C.text,marginBottom:4}}>নির্ণয় ইতিহাস</div>
-                  <div style={{fontSize:12.5,color:C.textMuted,lineHeight:1.6}}>আগের সব নির্ণয় রিপোর্ট দেখুন, ট্র্যাক করুন ফসলের স্বাস্থ্য পরিবর্তন।</div>
-                </div>
-                <div style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:12,fontWeight:700,color:"#16a34a",marginTop:4}}>
-                  ইতিহাস দেখুন <span style={{fontSize:14}}>→</span>
-                </div>
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Copilot is now a floating FAB — see CopilotFAB component below */}
 
         {activeTab==="apps"&&(
           <div>
             <AppsHub/>
-            <button onClick={()=>setActiveTab("more")} style={{marginTop:12,width:"100%",padding:"10px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600}}>← আরও পেজে ফিরুন</button>
+            <button onClick={()=>setActiveTab("library")} style={{marginTop:12,width:"100%",padding:"10px",borderRadius:12,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600}}>← তথ্যভান্ডারে ফিরুন</button>
           </div>
         )}
 
@@ -3320,9 +3255,6 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                         {images.length<4&&(
                           <button onClick={()=>galleryRef.current?.click()} style={{width:40,height:40,borderRadius:8,border:`2px dashed ${C.primary}`,background:"rgba(255,255,255,0.5)",color:C.primary,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>+</button>
                         )}
-                        <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
-                        <input ref={galleryRef} type="file" accept="image/*" onChange={handleImage} style={{display:"none"}}/>
-                        <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{display:"none"}}/>
                       </div>
                     </div>
                     {/* Right: Info */}
@@ -3529,10 +3461,25 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
 
         {/* ── LIBRARY ──────────────────────────────────────────────── */}
         {activeTab==="library"&&(
-          <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadowMd}}>
-            <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:3}}>📚 তথ্যভাণ্ডার</div>
-            <div style={{color:C.textMuted,fontSize:12,marginBottom:14}}>পোকামাকড়, রোগ ও পুষ্টি অভাব</div>
-            <EnhancedLibrarySection/>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadowMd}}>
+              <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:3}}>📚 তথ্যভান্ডার</div>
+              <div style={{color:C.textMuted,fontSize:12,marginBottom:14}}>পোকামাকড়, রোগ ও পুষ্টি অভাব</div>
+              <EnhancedLibrarySection/>
+            </div>
+            {/* Quick links to Apps & History sub-views */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:10}}>
+              <button onClick={()=>setActiveTab("apps")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:"14px 12px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow}}>
+                <div style={{fontSize:22,marginBottom:4}}>🌐</div>
+                <div style={{fontWeight:700,fontSize:13,color:C.text}}>কৃষি অ্যাপস</div>
+                <div style={{fontSize:11,color:C.textMuted}}>আরও সেবা দেখুন</div>
+              </button>
+              <button onClick={()=>setActiveTab("history")} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:"14px 12px",textAlign:"left",cursor:"pointer",boxShadow:C.shadow}}>
+                <div style={{fontSize:22,marginBottom:4}}>📋</div>
+                <div style={{fontWeight:700,fontSize:13,color:C.text}}>নির্ণয় ইতিহাস</div>
+                <div style={{fontSize:11,color:C.textMuted}}>আগের রিপোর্ট</div>
+              </button>
+            </div>
           </div>
         )}
 
@@ -3568,7 +3515,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   </div>
                 ))}
                 <button onClick={()=>{setHistory([]);try{localStorage.removeItem("ud-history");}catch{}}} style={{padding:"9px",borderRadius:10,border:"1px solid #fecaca",background:C.bgDanger,color:C.danger,cursor:"pointer",fontSize:12,fontWeight:600,marginTop:3}}>🗑️ সব ইতিহাস মুছুন</button>
-                <button onClick={()=>setActiveTab("more")} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600}}>← আরও পেজে ফিরুন</button>
+                <button onClick={()=>setActiveTab("library")} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600}}>← তথ্যভান্ডারে ফিরুন</button>
               </div>
             )}
           </div>
@@ -3586,7 +3533,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
         {navTabs.map(t=>{
           let isActive = activeTab === t.id;
           if(t.id === "learn") isActive = activeTab === "learn" || activeTab === "guide" || activeTab === "game";
-          if(t.id === "more") isActive = activeTab === "apps" || activeTab === "history" || activeTab === "more";
+          if(t.id === "library") isActive = activeTab === "library" || activeTab === "apps" || activeTab === "history";
           return (
             <button key={t.id} onClick={()=>setActiveTab(t.id)} className={`bottom-nav-item ${isActive?"active":""}`} aria-label={`${t.label} tab`}>
               <span className="nav-icon">{t.icon}</span>
