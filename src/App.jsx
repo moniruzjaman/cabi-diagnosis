@@ -862,62 +862,343 @@ function VoiceDiagnosis({onResult,activeCrop:_activeCrop}){
 }
 
 // ─── Confidence Dashboard ──────────────────────────────────────────────
-function ConfidenceDashboard({structuredResult,cropKey,weather,symptomMatches}){
+// ─── Sprint 1: Structured Result Dashboard ────────────────────────────────────
+// Replaces the old 7-field ConfidenceDashboard with a full clinical result card.
+
+function UrgencyBanner({urgency,actionRequired,etlExceeded}){
+  const cfg={
+    immediate:{bg:'#fef2f2',border:'#fca5a5',text:'#991b1b',icon:'🚨',label:'এখনই ব্যবস্থা নিন',sub:'তাৎক্ষণিক হস্তক্ষেপ প্রয়োজন'},
+    within_3_days:{bg:'#fff7ed',border:'#fdba74',text:'#9a3412',icon:'⚠️',label:'৩ দিনের মধ্যে ব্যবস্থা নিন',sub:'দ্রুত সাড়া দিন'},
+    within_week:{bg:'#fefce8',border:'#fde047',text:'#854d0e',icon:'📋',label:'এক সপ্তাহের মধ্যে ব্যবস্থা নিন',sub:'নজর রাখুন'},
+    monitor:{bg:'#f0fdf4',border:'#86efac',text:'#14532d',icon:'👁️',label:'পর্যবেক্ষণ করুন',sub:'এখনই ব্যবস্থার দরকার নেই'},
+  };
+  const k=urgency||'monitor';
+  const c=cfg[k]||cfg.monitor;
+  return(
+    <div style={{background:c.bg,border:`1px solid ${c.border}`,borderRadius:14,padding:'10px 14px',display:'flex',alignItems:'center',gap:12,marginBottom:10}}>
+      <span style={{fontSize:22,flexShrink:0}}>{c.icon}</span>
+      <div style={{flex:1}}>
+        <div style={{fontWeight:800,fontSize:13,color:c.text}}>{c.label}</div>
+        <div style={{fontSize:11,color:c.text,opacity:.8,marginTop:1}}>{c.sub}{etlExceeded?' · ETL অতিক্রান্ত':''}{actionRequired?'':' · ETL-এর নিচে'}</div>
+      </div>
+    </div>
+  );
+}
+
+function DifferentialCandidates({candidates}){
+  if(!candidates||candidates.length===0)return null;
+  const causeIcon=t=>{const cl=(t||'').toLowerCase();if(cl.includes('fungal'))return'🍄';if(cl.includes('bacteria'))return'🦠';if(cl.includes('viral')||cl.includes('virus'))return'🔬';if(cl.includes('insect'))return'🐛';if(cl.includes('mite'))return'🕷️';if(cl.includes('nutrient'))return'🌿';return'❓';};
+  return(
+    <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,marginBottom:10,boxShadow:C.shadow}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+        <span style={{fontSize:16}}>🎯</span>
+        <div style={{fontWeight:800,fontSize:13,color:C.primaryDark}}>ডিফারেনশিয়াল ডায়াগনোসিস</div>
+        <span style={{fontSize:10,color:C.textLight,marginLeft:'auto'}}>সম্ভাবনার ক্রমানুযায়ী</span>
+      </div>
+      {candidates.slice(0,3).map((c2,i)=>{
+        const pct=Math.min(100,Math.max(0,c2.confidence_pct||0));
+        const barColor=i===0?C.success:i===1?C.warning:C.textLight;
+        return(
+          <div key={i} style={{marginBottom:i<candidates.length-1?10:0,paddingBottom:i<candidates.length-1?10:0,borderBottom:i<candidates.length-1?`1px solid ${C.border}`:'none'}}>
+            <div style={{display:'flex',alignItems:'flex-start',gap:8,marginBottom:4}}>
+              <div style={{width:22,height:22,borderRadius:'50%',background:i===0?C.primary:C.bgMuted,color:i===0?'#fff':C.textMuted,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:800,flexShrink:0}}>{i+1}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+                  <span style={{fontSize:13,fontWeight:i===0?800:600,color:C.text}}>{c2.name_bn||c2.name_en}</span>
+                  {c2.name_en&&c2.name_bn&&<span style={{fontSize:10,color:C.textMuted,fontStyle:'italic'}}>{c2.name_en}</span>}
+                  {c2.scientific_name&&c2.scientific_name!=='N/A'&&<span style={{fontSize:9,color:C.textLight,fontStyle:'italic'}}>{c2.scientific_name}</span>}
+                </div>
+                {c2.key_feature&&<div style={{fontSize:10,color:C.textMuted,marginTop:2,lineHeight:1.4}}>{c2.key_feature}</div>}
+              </div>
+              <div style={{flexShrink:0,textAlign:'right'}}>
+                <div style={{fontSize:14,fontWeight:800,color:barColor}}>{pct}%</div>
+              </div>
+            </div>
+            <div style={{height:6,borderRadius:3,background:C.bgMuted,overflow:'hidden',marginLeft:30}}>
+              <div style={{height:'100%',width:`${pct}%`,background:barColor,borderRadius:3,transition:'width .6s ease'}}/>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ExclusionGatesPanel({gateResults}){
+  if(!gateResults)return null;
+  const gates=[
+    {key:'a_insects',reasonKey:'a_reason',label:'গেট A',sub:'পোকা/মাইট',icon:'🐛'},
+    {key:'b_virus',reasonKey:'b_reason',label:'গেট B',sub:'ভাইরাস',icon:'🔬'},
+    {key:'c_bacteria',reasonKey:'c_reason',label:'গেট C',sub:'ব্যাকটেরিয়া',icon:'🦠'},
+    {key:'d_fungi',reasonKey:'d_reason',label:'গেট D',sub:'ছত্রাক',icon:'🍄'},
+  ];
+  const statusCfg={
+    excluded:{icon:'✅',color:'#14532d',bg:'#f0fdf4',border:'#86efac',label:'বাদ'},
+    confirmed:{icon:'🎯',color:'#1e40af',bg:'#eff6ff',border:'#bfdbfe',label:'নিশ্চিত'},
+    retained:{icon:'⚠️',color:'#92400e',bg:'#fffbeb',border:'#fcd34d',label:'সন্দেহভাজন'},
+    uncertain:{icon:'❓',color:'#5f6672',bg:'#f9fafb',border:'#e2e5ea',label:'অনিশ্চিত'},
+  };
+  return(
+    <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,marginBottom:10,boxShadow:C.shadow}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+        <span style={{fontSize:16}}>🔍</span>
+        <div style={{fontWeight:800,fontSize:13,color:C.primaryDark}}>CABI বর্জন গেট</div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+        {gates.map(g=>{
+          const status=gateResults[g.key]||'uncertain';
+          const sc=statusCfg[status]||statusCfg.uncertain;
+          const reason=gateResults[g.reasonKey]||'';
+          return(
+            <div key={g.key} style={{background:sc.bg,border:`1px solid ${sc.border}`,borderRadius:10,padding:'8px 10px'}}>
+              <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:reason?4:0}}>
+                <span style={{fontSize:14}}>{g.icon}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:10,fontWeight:700,color:sc.color}}>{g.label} — {g.sub}</div>
+                  <div style={{fontSize:10,color:sc.color,opacity:.85}}>{sc.icon} {sc.label}</div>
+                </div>
+              </div>
+              {reason&&<div style={{fontSize:9,color:sc.color,opacity:.75,lineHeight:1.4,marginTop:2}}>{reason}</div>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DiseaseTrianglePanel({triangle}){
+  if(!triangle)return null;
+  const bars=[
+    {label:'পোষক (Host)',score:triangle.host_score,note:triangle.host_note,color:'#7c3aed',bg:'#faf5ff',icon:'🌱'},
+    {label:'জীবাণু (Pathogen)',score:triangle.pathogen_score,note:triangle.pathogen_note,color:'#dc2626',bg:'#fef2f2',icon:'🦠'},
+    {label:'পরিবেশ (Environment)',score:triangle.environment_score,note:triangle.environment_note,color:'#2563eb',bg:'#eff6ff',icon:'🌤️'},
+  ];
+  const overall=triangle.overall_risk||(((triangle.host_score||5)+(triangle.pathogen_score||5)+(triangle.environment_score||5))/3>=7?'high':(((triangle.host_score||5)+(triangle.pathogen_score||5)+(triangle.environment_score||5))/3>=4?'medium':'low'));
+  const riskCfg={high:{label:'উচ্চ ঝুঁকি',color:'#991b1b',bg:'#fef2f2'},medium:{label:'মাঝারি ঝুঁকি',color:'#92400e',bg:'#fffbeb'},low:{label:'কম ঝুঁকি',color:'#14532d',bg:'#f0fdf4'}};
+  const rc=riskCfg[overall]||riskCfg.medium;
+  return(
+    <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,marginBottom:10,boxShadow:C.shadow}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+        <span style={{fontSize:16}}>🔺</span>
+        <div style={{fontWeight:800,fontSize:13,color:C.primaryDark}}>রোগ ত্রিভুজ মূল্যায়ন</div>
+        <span style={{marginLeft:'auto',padding:'2px 10px',borderRadius:999,background:rc.bg,color:rc.color,fontSize:10,fontWeight:700}}>{rc.label}</span>
+      </div>
+      {bars.map((b,i)=>{
+        const pct=Math.min(100,Math.max(0,(b.score||5)*10));
+        return(
+          <div key={i} style={{marginBottom:i<2?10:0}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:3}}>
+              <div style={{display:'flex',alignItems:'center',gap:5}}>
+                <span style={{fontSize:13}}>{b.icon}</span>
+                <span style={{fontSize:11,fontWeight:700,color:C.text}}>{b.label}</span>
+              </div>
+              <span style={{fontSize:11,fontWeight:700,color:b.color}}>{b.score||'?'}/10</span>
+            </div>
+            <div style={{height:7,borderRadius:4,background:C.bgMuted,overflow:'hidden',marginBottom:b.note?3:0}}>
+              <div style={{height:'100%',width:`${pct}%`,background:b.color,borderRadius:4,transition:'width .6s ease'}}/>
+            </div>
+            {b.note&&<div style={{fontSize:9.5,color:C.textMuted,lineHeight:1.4}}>{b.note}</div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function IPMRecommendations({recommendations}){
+  if(!recommendations||recommendations.length===0)return null;
+  const typeCfg={
+    cultural:{icon:'🌾',label:'কৃষি ব্যবস্থাপনা',color:'#065f46',bg:'#ecfdf5',border:'#6ee7b7'},
+    biological:{icon:'🌿',label:'জৈবিক নিয়ন্ত্রণ',color:'#1e40af',bg:'#eff6ff',border:'#93c5fd'},
+    chemical:{icon:'⚗️',label:'রাসায়নিক (শেষ উপায়)',color:'#92400e',bg:'#fffbeb',border:'#fcd34d'},
+    monitoring:{icon:'👁️',label:'পর্যবেক্ষণ',color:'#5f6672',bg:'#f9fafb',border:'#e2e5ea'},
+  };
+  const priorityOrder=['cultural','biological','monitoring','chemical'];
+  const sorted=[...recommendations].sort((a,b)=>priorityOrder.indexOf(a.type)-priorityOrder.indexOf(b.type));
+  return(
+    <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,marginBottom:10,boxShadow:C.shadow}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+        <span style={{fontSize:16}}>🛡️</span>
+        <div style={{fontWeight:800,fontSize:13,color:C.primaryDark}}>সমন্বিত বালাই ব্যবস্থাপনা (IPM)</div>
+      </div>
+      {sorted.map((r,i)=>{
+        const tc=typeCfg[r.type]||typeCfg.monitoring;
+        return(
+          <div key={i} style={{display:'flex',gap:10,padding:'8px 0',borderBottom:i<sorted.length-1?`1px solid ${C.border}`:'none',alignItems:'flex-start'}}>
+            <div style={{width:28,height:28,borderRadius:8,background:tc.bg,border:`1px solid ${tc.border}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}}>{tc.icon}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2,flexWrap:'wrap'}}>
+                <span style={{fontSize:9,fontWeight:700,padding:'1px 7px',borderRadius:999,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>{tc.label}</span>
+                {r.timing&&<span style={{fontSize:9,color:C.textLight}}>⏱ {r.timing}</span>}
+              </div>
+              <div style={{fontSize:12,color:C.text,lineHeight:1.5}}>{r.action_bn}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ChemicalOptions({chemicals}){
+  if(!chemicals||chemicals.length===0)return null;
+  return(
+    <div style={{background:C.bgCard,border:`1px solid ${C.borderWarning}`,borderRadius:14,padding:14,marginBottom:10,boxShadow:C.shadow}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+        <span style={{fontSize:16}}>⚗️</span>
+        <div style={{fontWeight:800,fontSize:13,color:'#92400e'}}>রাসায়নিক বিকল্প</div>
+        <span style={{marginLeft:'auto',fontSize:9,color:'#92400e',background:'#fffbeb',border:'1px solid #fcd34d',padding:'2px 8px',borderRadius:999,fontWeight:600}}>শেষ উপায় — FRAC রোটেশন মানুন</span>
+      </div>
+      <div style={{fontSize:10,color:C.textMuted,marginBottom:8,lineHeight:1.4}}>⚠️ একই FRAC গ্রুপ পরপর ব্যবহার করবেন না — প্রতিরোধ ক্ষমতা তৈরি হয়।</div>
+      <div style={{display:'flex',flexDirection:'column',gap:6}}>
+        {chemicals.map((ch,i)=>(
+          <div key={i} style={{background:'#fffbeb',border:'1px solid #fde68a',borderRadius:10,padding:'8px 10px'}}>
+            <div style={{display:'flex',alignItems:'flex-start',gap:8,flexWrap:'wrap'}}>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:700,fontSize:12,color:C.text}}>{ch.name_bn||ch.name}</div>
+                {ch.trade_name&&<div style={{fontSize:10,color:C.textMuted}}>ব্র্যান্ড: {ch.trade_name}</div>}
+                {ch.dose&&<div style={{fontSize:10,color:C.textMuted}}>মাত্রা: {ch.dose}</div>}
+              </div>
+              <div style={{textAlign:'right',flexShrink:0}}>
+                {ch.frac_irac_group&&<div style={{fontSize:9,fontWeight:700,padding:'2px 7px',borderRadius:999,background:'#fef3c7',border:'1px solid #fcd34d',color:'#92400e',marginBottom:2}}>{ch.frac_irac_group}</div>}
+                {ch.phi_days>0&&<div style={{fontSize:9,color:'#991b1b',fontWeight:600}}>PHI: {ch.phi_days} দিন</div>}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FieldConfirmation({confirmation}){
+  if(!confirmation||!confirmation.steps_bn||confirmation.steps_bn.length===0)return null;
+  return(
+    <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,marginBottom:10,boxShadow:C.shadow}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+        <span style={{fontSize:16}}>🔎</span>
+        <div style={{fontWeight:800,fontSize:13,color:C.primaryDark}}>মাঠে নিশ্চিতকরণ পদ্ধতি</div>
+      </div>
+      {confirmation.test_bn&&<div style={{fontSize:11,color:C.text,fontWeight:600,marginBottom:6,background:C.bgMuted,padding:'6px 10px',borderRadius:8}}>{confirmation.test_bn}</div>}
+      {confirmation.steps_bn.map((step,i)=>(
+        <div key={i} style={{display:'flex',gap:8,padding:'5px 0',alignItems:'flex-start'}}>
+          <div style={{width:20,height:20,borderRadius:'50%',background:C.primary,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,flexShrink:0,marginTop:1}}>{i+1}</div>
+          <div style={{fontSize:11,color:C.text,lineHeight:1.5,flex:1}}>{step}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DiagnosisResultDashboard({structuredResult,cropKey,weather,symptomMatches}){
   if(!structuredResult)return null;
+  const[expanded,setExpanded]=useState(false);
   const month=new Date().getMonth()+1;
   let ensembleData=null;
   if(cropKey&&symptomMatches&&symptomMatches.length>0){
     try{ensembleData=computeEnsembleScore(cropKey,symptomMatches,weather,month);}catch{}
   }
-  const confidence=structuredResult.confidence||'';
-  const severity=structuredResult.severity||'';
-  const cause=structuredResult.cause_type||structuredResult.biotic_abiotic||'';
-  const confPct=confidence==='high'?85:confidence==='medium'?55:25;
+
+  // Backward compat: if old 7-field schema, build minimal display
+  const hasRichData=!!(structuredResult.gate_results||structuredResult.top_candidates||structuredResult.ipm_recommendations);
+
+  // Primary candidate confidence (rich or legacy)
+  const confPct=structuredResult.confidence_pct||(structuredResult.confidence==='high'?85:structuredResult.confidence==='medium'?55:25);
   const confColor=confPct>=70?C.success:confPct>=40?C.warning:C.danger;
-  const sevLabel=severity==='severe'||severity==='high'?'মারাত্মক':severity==='moderate'||severity==='medium'?'মাঝারি':severity==='low'||severity==='mild'?'সামান্য':'অজানা';
-  const causeLabel=((c)=>{if(!c)return '';const cl=c.toLowerCase();if(cl.includes('fungal'))return'ছত্রাক';if(cl.includes('bacterial'))return'ব্যাকটেরিয়া';if(cl.includes('viral'))return'ভাইরাস';if(cl.includes('insect'))return'পোকা';if(cl.includes('nutrient'))return'পুষ্টি';return c;})(cause);
+
+  // Build legacy top_candidates from old schema if needed
+  const candidates=structuredResult.top_candidates||[{
+    rank:1,
+    name_bn:structuredResult.disease_name_bn||'অজানা',
+    name_en:structuredResult.disease_name||'Unknown',
+    scientific_name:'',
+    confidence_pct:confPct,
+    key_feature:'',
+  }];
 
   return(
-    <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:16,padding:14,marginTop:10,boxShadow:C.shadow}}>
-      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
-        <span style={{fontSize:18}}>📊</span>
-        <div style={{fontWeight:800,fontSize:14,color:C.primaryDark}}>কনফিডেন্স ড্যাশবোর্ড</div>
-      </div>
-      {/* Confidence bar */}
-      <div style={{marginBottom:10}}>
-        <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
-          <span style={{fontSize:11,color:C.textMuted}}>নিশ্চয়তা</span>
-          <span style={{fontSize:11,fontWeight:700,color:confColor}}>{confPct}% — {confidence||'N/A'}</span>
-        </div>
-        <div style={{height:8,borderRadius:4,background:C.bgMuted,overflow:'hidden'}}>
-          <div style={{height:'100%',width:`${confPct}%`,background:confColor,borderRadius:4,transition:'width 0.5s ease'}}/>
-        </div>
-      </div>
-      {/* Badges row */}
-      <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:8}}>
-        {causeLabel&&<span style={{padding:'3px 10px',borderRadius:999,background:C.bgInfo,border:`1px solid ${C.borderInfo}`,color:C.textInfo,fontSize:10,fontWeight:700}}>{causeLabel}</span>}
-        <span style={{padding:'3px 10px',borderRadius:999,background:severity==='severe'||severity==='high'?C.bgDanger:severity==='moderate'||severity==='medium'?C.bgWarning:C.bgSuccess,border:`1px solid ${severity==='severe'||severity==='high'?C.borderDanger:severity==='moderate'||severity==='medium'?C.borderWarning:C.borderSuccess}`,color:severity==='severe'||severity==='high'?C.textDanger:severity==='moderate'||severity==='medium'?C.textWarning:C.textSuccess,fontSize:10,fontWeight:700}}>{sevLabel}</span>
-      </div>
-      {/* Ensemble scores */}
-      {ensembleData&&ensembleData.length>0&&(
-        <div style={{marginTop:6}}>
-          <div style={{fontSize:11,fontWeight:600,color:C.textMuted,marginBottom:6}}>এনসেম্বল স্কোর (লক্ষণ + মৌসুম + আবহাওয়া)</div>
-          {ensembleData.slice(0,3).map((d,i)=>(
-            <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0',borderBottom:i<2?`1px solid ${C.border}`:'none'}}>
-              <div style={{flex:1,fontSize:12,color:C.text,fontWeight:600}}>{d.disease.nameBn||d.disease.name}</div>
-              <div style={{display:'flex',gap:4}}>
-                <span style={{fontSize:9,padding:'2px 6px',borderRadius:8,background:C.bgSuccess,color:C.textSuccess}} title='লক্ষণ মিল'>{Math.round(d.symptomScore*100)}%</span>
-                <span style={{fontSize:9,padding:'2px 6px',borderRadius:8,background:C.bgInfo,color:C.textInfo}} title='মৌসুম মিল'>{Math.round(d.seasonScore*100)}%</span>
-                <span style={{fontSize:9,padding:'2px 6px',borderRadius:8,background:C.bgWarning,color:C.textWarning}} title='আবহাওয়া মিল'>{Math.round(d.weatherScore*100)}%</span>
-              </div>
-              <div style={{minWidth:40,fontSize:12,fontWeight:800,color:confColor,textAlign:'right'}}>{Math.round(d.combinedScore*100)}%</div>
+    <div style={{animation:'fadeIn .3s ease'}}>
+      {/* Urgency banner */}
+      <UrgencyBanner urgency={structuredResult.urgency} actionRequired={structuredResult.action_required} etlExceeded={structuredResult.etl_exceeded}/>
+
+      {/* Differential diagnosis */}
+      <DifferentialCandidates candidates={candidates}/>
+
+      {/* Expandable detail panels */}
+      {hasRichData&&(
+        <>
+          <button onClick={()=>setExpanded(e=>!e)} style={{width:'100%',background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:10,padding:'8px 14px',cursor:'pointer',fontSize:12,fontWeight:700,color:C.textMuted,display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+            <span>🔬 বিস্তারিত বিশ্লেষণ (CABI গেট · রোগ ত্রিভুজ · IPM)</span>
+            <span style={{fontSize:14,transition:'transform .2s',transform:expanded?'rotate(180deg)':'none'}}>⌄</span>
+          </button>
+
+          {expanded&&(
+            <div style={{animation:'slideUp .25s ease'}}>
+              <ExclusionGatesPanel gateResults={structuredResult.gate_results}/>
+              <DiseaseTrianglePanel triangle={structuredResult.disease_triangle}/>
+              <IPMRecommendations recommendations={structuredResult.ipm_recommendations}/>
+              <ChemicalOptions chemicals={structuredResult.chemical_options}/>
+              <FieldConfirmation confirmation={structuredResult.field_confirmation}/>
+
+              {/* Ensemble scores from agronomic engine */}
+              {ensembleData&&ensembleData.length>0&&(
+                <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,marginBottom:10,boxShadow:C.shadow}}>
+                  <div style={{fontWeight:800,fontSize:12,color:C.textMuted,marginBottom:8}}>🔢 এনসেম্বল স্কোর (লক্ষণ + মৌসুম + আবহাওয়া)</div>
+                  {ensembleData.slice(0,3).map((d,i)=>(
+                    <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'5px 0',borderBottom:i<2?`1px solid ${C.border}`:'none'}}>
+                      <div style={{flex:1,fontSize:11,color:C.text,fontWeight:600}}>{d.disease.nameBn||d.disease.name}</div>
+                      <div style={{display:'flex',gap:3}}>
+                        <span style={{fontSize:9,padding:'1px 5px',borderRadius:6,background:C.bgSuccess,color:C.textSuccess}}>{Math.round(d.symptomScore*100)}%</span>
+                        <span style={{fontSize:9,padding:'1px 5px',borderRadius:6,background:C.bgInfo,color:C.textInfo}}>{Math.round(d.seasonScore*100)}%</span>
+                        <span style={{fontSize:9,padding:'1px 5px',borderRadius:6,background:C.bgWarning,color:C.textWarning}}>{Math.round(d.weatherScore*100)}%</span>
+                      </div>
+                      <div style={{minWidth:36,fontSize:12,fontWeight:800,color:confColor,textAlign:'right'}}>{Math.round(d.combinedScore*100)}%</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Prevention + DAE consult */}
+              {(structuredResult.prevention_bn||structuredResult.dae_consult_bn)&&(
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:10}}>
+                  {structuredResult.prevention_bn&&(
+                    <div style={{background:C.bgSuccess,border:`1px solid ${C.borderSuccess}`,borderRadius:10,padding:'10px 12px'}}>
+                      <div style={{fontWeight:700,fontSize:11,color:C.textSuccess,marginBottom:4}}>🛡️ প্রতিরোধ</div>
+                      <div style={{fontSize:10,color:C.textSuccess,lineHeight:1.5}}>{structuredResult.prevention_bn}</div>
+                    </div>
+                  )}
+                  {structuredResult.dae_consult_bn&&(
+                    <div style={{background:C.bgInfo,border:`1px solid ${C.borderInfo}`,borderRadius:10,padding:'10px 12px'}}>
+                      <div style={{fontWeight:700,fontSize:11,color:C.textInfo,marginBottom:4}}>📞 DAE পরামর্শ</div>
+                      <div style={{fontSize:10,color:C.textInfo,lineHeight:1.5}}>{structuredResult.dae_consult_bn}</div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          ))}
+          )}
+        </>
+      )}
+
+      {/* Legacy fallback: simple confidence bar if no rich data */}
+      {!hasRichData&&(
+        <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,marginBottom:10,boxShadow:C.shadow}}>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+            <span style={{fontSize:11,color:C.textMuted}}>নিশ্চয়তা</span>
+            <span style={{fontSize:11,fontWeight:700,color:confColor}}>{confPct}%</span>
+          </div>
+          <div style={{height:8,borderRadius:4,background:C.bgMuted,overflow:'hidden'}}>
+            <div style={{height:'100%',width:`${confPct}%`,background:confColor,borderRadius:4,transition:'width .5s ease'}}/>
+          </div>
         </div>
       )}
     </div>
   );
 }
+
+// Keep backward-compat alias used in some places
+function ConfidenceDashboard(props){ return <DiagnosisResultDashboard {...props}/>; }
 
 // ─── AI Copilot for Extension Officers ────────────────────────────────────
 function AICopilotTab({crop,district,weather,locationName:_locationName,signedFetch}){

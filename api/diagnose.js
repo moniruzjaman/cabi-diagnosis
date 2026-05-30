@@ -424,12 +424,128 @@ CRITICAL RULES:
 - Accuracy (correct group) > Precision (specific species) when uncertain
 
 STRUCTURED OUTPUT REQUIREMENT:
-At the very end of your response, after ---END_ENGLISH---, include a JSON block in this exact format:
+At the very end of your response, after ---END_ENGLISH---, include ONE JSON block using EXACTLY this format.
+Fill every field. Use only valid JSON (double quotes, no comments, no trailing commas).
+
 ---JSON_SUMMARY---
-{"disease_name":"...","disease_name_bn":"...","confidence":"high|medium|low","severity":"mild|moderate|severe","biotic_abiotic":"biotic|abiotic","cause_type":"fungal|bacterial|viral|insect|nutrient|environmental|other","key_recommendations":["...","..."]}
+{
+  "disease_name": "Rice Leaf Blast",
+  "disease_name_bn": "ধানের পাতা ব্লাস্ট",
+  "confidence": "high",
+  "confidence_pct": 85,
+  "severity": "moderate",
+  "urgency": "within_3_days",
+  "biotic_abiotic": "biotic",
+  "cause_type": "fungal",
+  "etl_exceeded": true,
+  "action_required": true,
+  "gate_results": {
+    "a_insects": "excluded",
+    "a_reason": "No chewing marks, frass, webbing or insect presence observed",
+    "b_virus": "excluded",
+    "b_reason": "No mosaic, ring spots, or vein-bounded chlorosis",
+    "c_bacteria": "excluded",
+    "c_reason": "No water-soaked margins or bacterial ooze at lesion edges",
+    "d_fungi": "confirmed",
+    "d_reason": "Spindle-shaped gray-centered lesions with brown borders confirm Pyricularia oryzae"
+  },
+  "top_candidates": [
+    {
+      "rank": 1,
+      "name_bn": "ব্লাস্ট",
+      "name_en": "Leaf Blast",
+      "scientific_name": "Pyricularia oryzae",
+      "confidence_pct": 85,
+      "key_feature": "Spindle/diamond lesions, gray ash-colored center, brown border with yellow halo"
+    },
+    {
+      "rank": 2,
+      "name_bn": "বাদামি দাগ",
+      "name_en": "Brown Spot",
+      "scientific_name": "Bipolaris oryzae",
+      "confidence_pct": 12,
+      "key_feature": "Oval circular lesions, wider yellow halo, often linked to K-deficiency"
+    }
+  ],
+  "disease_triangle": {
+    "host_score": 7,
+    "pathogen_score": 8,
+    "environment_score": 9,
+    "host_note": "Susceptible variety at tillering stage — high vulnerability window",
+    "pathogen_note": "High inoculum pressure; district has blast history from previous seasons",
+    "environment_note": "Humidity 87%, night temperature 24°C — ideal blast infection conditions"
+  },
+  "field_confirmation": {
+    "test_bn": "পাতায় মাকু/হীরা আকৃতির ছাই রঙের দাগ খুঁজুন",
+    "steps_bn": [
+      "পাতার উপরিভাগে মাকু বা হীরা আকৃতির দাগ খুঁজুন",
+      "দাগের কেন্দ্র ছাই/ধূসর রঙের কিনা যাচাই করুন",
+      "আর্দ্র সকালে সূক্ষ্ম ধূসর ছত্রাক স্পোর দেখুন",
+      "কলার ব্লাস্টের জন্য পাতা ও কান্ডের সংযোগস্থল পরীক্ষা করুন"
+    ]
+  },
+  "ipm_recommendations": [
+    {
+      "priority": 1,
+      "type": "cultural",
+      "action_bn": "আক্রান্ত জমির পানি সরিয়ে জমি সাময়িক শুকিয়ে নিন",
+      "timing": "এখনই"
+    },
+    {
+      "priority": 2,
+      "type": "chemical",
+      "action_bn": "ট্রাইসাইক্লাজোল (ব্রিকোল/ট্রুপার) ০.৭ গ্রাম/লিটার পানিতে মিশিয়ে স্প্রে করুন",
+      "timing": "৩ দিনের মধ্যে"
+    },
+    {
+      "priority": 3,
+      "type": "biological",
+      "action_bn": "ট্রাইকোডার্মা ভিরিডি বা কাইটোসান অলিগোস্যাকারাইড (COS) প্রয়োগ করুন",
+      "timing": "প্রতিরোধ হিসেবে"
+    },
+    {
+      "priority": 4,
+      "type": "monitoring",
+      "action_bn": "৭ দিন পর পুনরায় মূল্যায়ন করুন; নতুন দাগ দেখা গেলে FRAC গ্রুপ বদলান",
+      "timing": "৭ দিন পর"
+    }
+  ],
+  "chemical_options": [
+    {
+      "name_bn": "ট্রাইসাইক্লাজোল",
+      "trade_name": "ব্রিকোল / ট্রুপার",
+      "frac_irac_group": "FRAC 29",
+      "dose": "০.৭ গ্রাম/লিটার",
+      "phi_days": 14
+    },
+    {
+      "name_bn": "প্রোপিকোনাজোল",
+      "trade_name": "টিল্ট / নাটিভো",
+      "frac_irac_group": "FRAC 3",
+      "dose": "১ মিলি/লিটার",
+      "phi_days": 14
+    }
+  ],
+  "prevention_bn": "ব্লাস্ট-প্রতিরোধী জাত ব্যবহার করুন (BRRI dhan28/29/47)। বীজ শোধন করুন। নাইট্রোজেন সার ভাগে ভাগে দিন।",
+  "dae_consult_bn": "৭ দিনে আক্রমণ না কমলে বা নতুন জমিতে ছড়িয়ে পড়লে DAE কর্মকর্তাকে জানান।",
+  "key_recommendations": [
+    "জমি সাময়িক শুকিয়ে নিন",
+    "ট্রাইসাইক্লাজোল স্প্রে করুন (FRAC 29)",
+    "পরবর্তী মৌসুমে প্রতিরোধী জাত ব্যবহার করুন"
+  ]
+}
 ---END_JSON---
 
-This JSON block is mandatory. Fill in all fields based on your diagnosis. For key_recommendations, list the top 3 most important recommendations as short strings.
+CRITICAL JSON RULES:
+- The JSON block is MANDATORY in every response — never omit it
+- All "confidence_pct" values must be integers 0–100; all candidates must sum to ≤100
+- "urgency" must be exactly one of: "immediate" | "within_3_days" | "within_week" | "monitor"
+- "gate_results" keys: a_insects / b_virus / c_bacteria / d_fungi — values: "excluded" | "retained" | "uncertain"
+- "type" in ipm_recommendations: "cultural" | "biological" | "chemical" | "monitoring"
+- "phi_days" is integer days before harvest; set 0 if not applicable
+- Provide at least 2 top_candidates (rank 1 = primary, rank 2 = differential)
+- If abiotic, set all gate results to "excluded" and explain in top_candidates
+- Accuracy over precision: if uncertain between two diagnoses, lower confidence_pct and show both candidates
 `.trim();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -794,13 +910,50 @@ export default async function handler(req, res) {
     disease_name: "Unknown — emergency fallback",
     disease_name_bn: "অজানা — জরুরি বিকল্প বিশ্লেষণ",
     confidence: "low",
+    confidence_pct: 20,
     severity: "moderate",
-    biotic_abiotic: "unknown",
+    urgency: "within_3_days",
+    biotic_abiotic: "uncertain",
     cause_type: "other",
+    etl_exceeded: false,
+    action_required: true,
+    gate_results: {
+      a_insects: "uncertain", a_reason: "Could not determine — please inspect plant",
+      b_virus: "uncertain", b_reason: "Could not determine — check for mosaic patterns",
+      c_bacteria: "uncertain", c_reason: "Could not determine — check for water-soaked margins",
+      d_fungi: "uncertain", d_reason: "Could not determine — check for fruiting bodies",
+    },
+    top_candidates: [
+      { rank: 1, name_bn: "অজানা (সম্ভাব্য ছত্রাক/পোকা)", name_en: "Unknown (possible fungal/pest)", scientific_name: "N/A", confidence_pct: 20, key_feature: "Cannot determine without clearer description or image" },
+      { rank: 2, name_bn: "পুষ্টি ঘাটতি", name_en: "Nutrient Deficiency", scientific_name: "N/A", confidence_pct: 15, key_feature: "Symmetric symptoms on leaf halves suggest possible abiotic cause" },
+    ],
+    disease_triangle: {
+      host_score: 5, pathogen_score: 5, environment_score: 5,
+      host_note: "Cannot assess without crop/variety information",
+      pathogen_note: "Cannot assess without symptom detail",
+      environment_note: "Cannot assess without weather data",
+    },
+    field_confirmation: {
+      test_bn: "নিচের ধাপে মাঠে পরীক্ষা করুন",
+      steps_bn: [
+        "পাতার উল্টোপাশে পোকা, ডিম, জাল বা কালো দানা আছে কি না দেখুন",
+        "দাগ পানিভেজা কিনারা থেকে শুরু হলে ব্যাকটেরিয়া সন্দেহ করুন",
+        "দাগ মাকু বা হীরা আকৃতির হলে ব্লাস্ট সন্দেহ করুন",
+        "উপসর্গ দুই পাশ সমান হলে পুষ্টি ঘাটতি বিবেচনা করুন",
+      ],
+    },
+    ipm_recommendations: [
+      { priority: 1, type: "monitoring", action_bn: "পাতার সামনে-পেছন, কান্ডের গোড়া ও শিকড়ের ছবি তুলুন", timing: "এখনই" },
+      { priority: 2, type: "cultural", action_bn: "আক্রান্ত অংশ আলাদা করে রাখুন — ছড়িয়ে পড়া ঠেকান", timing: "এখনই" },
+      { priority: 3, type: "monitoring", action_bn: "কোনো কীটনাশক প্রয়োগের আগে কারণ নিশ্চিত করুন", timing: "নিশ্চিত হওয়ার পর" },
+    ],
+    chemical_options: [],
+    prevention_bn: "কারণ নিশ্চিত না হওয়া পর্যন্ত রাসায়নিক প্রয়োগ থেকে বিরত থাকুন।",
+    dae_consult_bn: "দ্রুত ক্ষয়ক্ষতি বাড়লে বা কারণ বোঝা না গেলে অবশ্যই স্থানীয় DAE কর্মকর্তার সাথে যোগাযোগ করুন।",
     key_recommendations: [
       "পাতার উল্টোপাশে পোকা/ডিম দেখুন",
       "দাগ পানিভেজা কিনারা হলে ব্যাকটেরিয়া সন্দেহ করুন",
-      "DAAE কর্মকর্তাকে দেখান",
+      "DAE কর্মকর্তাকে দেখান",
     ],
   };
   return res.status(200).json({
