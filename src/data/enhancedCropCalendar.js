@@ -79,11 +79,19 @@ export function generateCropAnalysis({ forecast, currentWeather, month }) {
     // Weight: weather 40%, price 30%, calendar relevance 30%
     const weatherNorm = weatherScore.score / 100;
     const priceNorm = priceData ? Math.min(1, (priceData.priceChangePercent + 20) / 40) : 0.5; // Normalise around 0
-    const calendarNorm = isActive ? 1 : 0.3;
 
-    const combinedScore = Math.round(
+    // Hard cap: off-season crops must never compete with in-season crops.
+    // calendarNorm = 1.0 if currently in season, 0.0 otherwise.
+    // This prevents Rabi crops (mustard, potato) from appearing in Kharif recommendations.
+    const calendarNorm = isActive ? 1 : 0;
+
+    // Off-season crops get a hard ceiling of 35 regardless of weather/price score.
+    // This keeps them out of top-N recommendation lists while still allowing them
+    // to appear in the full crop calendar browse view.
+    const rawScore = Math.round(
       (weatherNorm * 0.40 + priceNorm * 0.30 + calendarNorm * 0.30) * 100
     );
+    const combinedScore = isActive ? rawScore : Math.min(rawScore, 35);
 
     return {
       crop: crop.crop,
@@ -129,14 +137,20 @@ export function generateCropAnalysis({ forecast, currentWeather, month }) {
 export function getTopRecommendations(analysis, n = 3) {
   if (!analysis?.cropDetails) return [];
 
-  return analysis.cropDetails.slice(0, n).map(crop => ({
-    crop: crop.crop,
-    cropEn: crop.cropEn,
-    icon: crop.icon,
-    combinedScore: crop.combinedScore,
-    recommendation: crop.recommendation,
-    reasons: buildRecommendationReasons(crop, analysis),
-  }));
+  // Only recommend crops that are currently in season.
+  // Off-season crops (mustard, potato in May etc.) must never appear here,
+  // regardless of their weather or price scores.
+  return analysis.cropDetails
+    .filter(crop => crop.isActive)
+    .slice(0, n)
+    .map(crop => ({
+      crop: crop.crop,
+      cropEn: crop.cropEn,
+      icon: crop.icon,
+      combinedScore: crop.combinedScore,
+      recommendation: crop.recommendation,
+      reasons: buildRecommendationReasons(crop, analysis),
+    }));
 }
 
 /**

@@ -1103,24 +1103,32 @@ export default function CropCalendarDashboard({ C, weather, coords, locationName
       {activeView === 'advisory' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {/* Crop selector */}
+          <div style={{ fontSize: 10, color: C.textMuted, marginBottom: 2 }}>
+            ✅ = এই মৌসুমে আছে &nbsp;|&nbsp; ⏸ = এই মৌসুমে নেই (তথ্য দেখতে পারবেন)
+          </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {CROP_CALENDAR.map(crop => (
+            {CROP_CALENDAR.map(crop => {
+              const inSeason = analysis?.activeCrops?.some(ac => ac.crop === crop.crop);
+              return (
               <button
                 key={crop.crop}
                 onClick={() => setSelectedAdvisoryCrop(crop.crop)}
                 style={{
                   padding: '6px 12px', borderRadius: 10,
-                  border: `1.5px solid ${selectedAdvisoryCrop === crop.crop ? C.primary : C.border}`,
-                  background: selectedAdvisoryCrop === crop.crop ? C.primary + '15' : C.bgCard,
+                  border: `1.5px solid ${selectedAdvisoryCrop === crop.crop ? C.primary : inSeason ? C.border : C.borderWarning}`,
+                  background: selectedAdvisoryCrop === crop.crop ? C.primary + '15' : inSeason ? C.bgCard : C.bgWarning + '44',
                   cursor: 'pointer', fontSize: 12,
                   fontWeight: selectedAdvisoryCrop === crop.crop ? 700 : 500,
-                  color: selectedAdvisoryCrop === crop.crop ? C.primary : C.textMuted,
+                  color: selectedAdvisoryCrop === crop.crop ? C.primary : inSeason ? C.textMuted : C.textWarning,
                   display: 'flex', alignItems: 'center', gap: 4,
+                  opacity: inSeason ? 1 : 0.65,
                 }}
               >
                 {crop.icon} {crop.crop}
+                {!inSeason && <span style={{ fontSize: 9 }}>⏸</span>}
               </button>
-            ))}
+              );
+            })}
           </div>
 
           {/* Advisory content */}
