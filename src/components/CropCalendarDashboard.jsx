@@ -26,6 +26,7 @@ import {
 } from '../data/enhancedCropCalendar';
 import { CROP_CALENDAR, GREGORIAN_MONTHS } from '../data/cropCalendar';
 import { BANGLADESH_DISTRICTS, getDivisions, getDistrictsByDivision, findNearestDistrict, getDistrictById } from '../data/bangladeshDistricts';
+import { getUpazilasByDistrict } from '../data/upazilas';
 
 /**
  * CropCalendarDashboard — Real-time weather + price comparison
@@ -51,6 +52,9 @@ export default function CropCalendarDashboard({ C, weather, coords, locationName
   const [selectedDivision, setSelectedDivision] = useState(null);
   const [districtSearch, setDistrictSearch] = useState('');
   const [priceForecastCrop, setPriceForecastCrop] = useState('ধান');
+  const [damRefreshing, setDamRefreshing] = useState(false);
+  const [priceSource, setPriceSource] = useState('estimated'); // 'live_dam' | 'estimated' | 'unavailable'
+  const [_damPrices, setDamPrices] = useState(null);
 
   const currentMonth = new Date().getMonth() + 1;
   const currentMonthName = GREGORIAN_MONTHS[currentMonth - 1];
@@ -160,6 +164,30 @@ export default function CropCalendarDashboard({ C, weather, coords, locationName
     }
     return districts;
   }, [selectedDivision, districtSearch]);
+
+  // Upazilas for selected district
+  const districtUpazilas = useMemo(() => {
+    if (!selectedDistrict) return [];
+    return getUpazilasByDistrict(selectedDistrict);
+  }, [selectedDistrict]);
+
+  // DAM price refresh handler
+  const refreshDAMPrices = useCallback(async () => {
+    setDamRefreshing(true);
+    try {
+      const res = await fetch('/api/dam-scraper?mode=ticker');
+      const data = await res.json();
+      if (data.source === 'live_dam' || data.source === 'dam_ticker') {
+        setDamPrices(data.prices || data.ticker || null);
+        setPriceSource('live_dam');
+      } else {
+        setPriceSource('unavailable');
+      }
+    } catch {
+      setPriceSource('unavailable');
+    }
+    setDamRefreshing(false);
+  }, []);
 
   // ─── Styles ────────────────────────────────────────────────────────────────
 
@@ -292,6 +320,22 @@ export default function CropCalendarDashboard({ C, weather, coords, locationName
             ))}
           </select>
         </div>
+        {/* Upazila chips for selected district */}
+        {districtUpazilas.length > 0 && (
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
+            {districtUpazilas.slice(0, 8).map(u => (
+              <span key={u.id} style={{
+                fontSize: 9, padding: '2px 7px', borderRadius: 6,
+                background: C.bgMuted, color: C.textMuted, fontWeight: 500,
+              }}>
+                {u.name}
+              </span>
+            ))}
+            {districtUpazilas.length > 8 && (
+              <span style={{ fontSize: 9, color: C.textLight }}>+{districtUpazilas.length - 8} আরও</span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* View tabs */}
@@ -666,8 +710,32 @@ export default function CropCalendarDashboard({ C, weather, coords, locationName
             <div style={{
               padding: '8px 12px', borderRadius: 10, background: C.primary + '0a',
               border: `1px solid ${C.primary}22`, fontSize: 12, color: C.primary, fontWeight: 600,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
-              📍 {districtData.name} ({districtData.nameEn}) — বাজার: {districtData.markets?.[0] || 'স্থানীয়'}
+              <span>📍 {districtData.name} ({districtData.nameEn}) — বাজার: {districtData.markets?.[0] || 'স্থানীয়'}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{
+                  fontSize: 9, padding: '2px 6px', borderRadius: 6, fontWeight: 700,
+                  background: priceSource === 'live_dam' ? '#dcfce7' :
+                              priceSource === 'estimated' ? '#fef3c7' : '#fee2e2',
+                  color: priceSource === 'live_dam' ? '#166534' :
+                         priceSource === 'estimated' ? '#92400e' : '#991b1b',
+                }}>
+                  {priceSource === 'live_dam' ? '🔴 লাইভ DAM' :
+                   priceSource === 'estimated' ? '🟡 অনুমানিত' : '⚪ অনুপলব্ধ'}
+                </span>
+                <button
+                  onClick={refreshDAMPrices}
+                  disabled={damRefreshing}
+                  style={{
+                    padding: '3px 8px', borderRadius: 8, border: `1px solid ${C.border}`,
+                    background: C.bgCard, cursor: 'pointer', fontSize: 10, color: C.primary,
+                    fontWeight: 600, opacity: damRefreshing ? 0.5 : 1,
+                  }}
+                >
+                  {damRefreshing ? '⏳' : '🔄'} DAM
+                </button>
+              </div>
             </div>
           )}
 

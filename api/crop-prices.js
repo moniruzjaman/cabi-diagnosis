@@ -32,6 +32,11 @@ const BASELINE_PRICES = {
   'আম':    { peak: 50, off: 150, average: 70, seasonMultipliers: { 'খরিপ-১': 0.60 }, priceVolatility: 'very_high', minSupportPrice: null },
   'গম':    { peak: 38, off: 48, average: 42, seasonMultipliers: { 'রবি': 0.88 }, priceVolatility: 'low', minSupportPrice: 37 },
   'ভুট্টা': { peak: 22, off: 35, average: 28, seasonMultipliers: { 'রবি': 0.80, 'খরিপ-১': 1.1 }, priceVolatility: 'medium', minSupportPrice: null },
+  'পেঁয়াজ': { peak: 25, off: 80, average: 45, seasonMultipliers: { 'রবি': 0.50, 'খরিপ-১': 1.6 }, priceVolatility: 'very_high', minSupportPrice: null },
+  'রসুন':   { peak: 80, off: 180, average: 120, seasonMultipliers: { 'রবি': 0.65, 'খরিপ-১': 1.3 }, priceVolatility: 'high', minSupportPrice: null },
+  'মরিচ':   { peak: 60, off: 200, average: 120, seasonMultipliers: { 'রবি': 0.50, 'খরিপ-১': 1.5 }, priceVolatility: 'very_high', minSupportPrice: null },
+  'মসুর ডাল': { peak: 85, off: 130, average: 105, seasonMultipliers: { 'রবি': 0.82 }, priceVolatility: 'medium', minSupportPrice: null },
+  'আখ':     { peak: 150, off: 250, average: 190, seasonMultipliers: { 'খরিপ-১': 0.75, 'খরিপ-২': 0.85 }, priceVolatility: 'medium', minSupportPrice: null },
 };
 
 const PRODUCTION_DATA = {
@@ -45,6 +50,11 @@ const PRODUCTION_DATA = {
   'আম':    { costPerBigha: 5000, yieldKgPerBigha: 2000, nameEn: 'Mango' },
   'গম':    { costPerBigha: 6000, yieldKgPerBigha: 600, nameEn: 'Wheat' },
   'ভুট্টা': { costPerBigha: 10000, yieldKgPerBigha: 1500, nameEn: 'Maize' },
+  'পেঁয়াজ': { costPerBigha: 18000, yieldKgPerBigha: 2500, nameEn: 'Onion' },
+  'রসুন':   { costPerBigha: 20000, yieldKgPerBigha: 1200, nameEn: 'Garlic' },
+  'মরিচ':   { costPerBigha: 15000, yieldKgPerBigha: 800, nameEn: 'Chili' },
+  'মসুর ডাল': { costPerBigha: 7000, yieldKgPerBigha: 300, nameEn: 'Lentil' },
+  'আখ':     { costPerBigha: 25000, yieldKgPerBigha: 8000, nameEn: 'Sugarcane' },
 };
 
 // District price adjustment factors (subset of 64 districts)

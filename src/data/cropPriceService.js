@@ -99,6 +99,46 @@ export const CROP_PRICE_MAP = {
     unitBn: 'কেজি',
     category: 'cereal',
   },
+  'পেঁয়াজ': {
+    nameEn: 'Onion',
+    damCode: 'onion',
+    marketName: 'পেঁয়াজ',
+    unit: 'kg',
+    unitBn: 'কেজি',
+    category: 'spice',
+  },
+  'রসুন': {
+    nameEn: 'Garlic',
+    damCode: 'garlic',
+    marketName: 'রসুন',
+    unit: 'kg',
+    unitBn: 'কেজি',
+    category: 'spice',
+  },
+  'মরিচ': {
+    nameEn: 'Chili',
+    damCode: 'chili',
+    marketName: 'মরিচ',
+    unit: 'kg',
+    unitBn: 'কেজি',
+    category: 'spice',
+  },
+  'মসুর ডাল': {
+    nameEn: 'Lentil',
+    damCode: 'lentil',
+    marketName: 'মসুর ডাল',
+    unit: 'kg',
+    unitBn: 'কেজি',
+    category: 'pulse',
+  },
+  'আখ': {
+    nameEn: 'Sugarcane',
+    damCode: 'sugarcane',
+    marketName: 'আখ',
+    unit: 'maund',
+    unitBn: 'মণ',
+    category: 'cash_crop',
+  },
 };
 
 // ─── Baseline Reference Prices ────────────────────────────────────────────────
@@ -215,6 +255,60 @@ export const BASELINE_PRICES = {
     seasonMultipliers: {
       'রবি': 0.80,
       'খরিপ-১': 1.1,
+    },
+    priceVolatility: 'medium',
+    minSupportPrice: null,
+  },
+  'পেঁয়াজ': {
+    peak: 25,     // Rabi harvest (Mar-Apr)
+    off: 80,      // Off-season imported
+    average: 45,
+    seasonMultipliers: {
+      'রবি': 0.50,   // Harvest glut = very cheap
+      'খরিপ-১': 1.6, // Off-season = very expensive
+    },
+    priceVolatility: 'very_high',  // Onion prices are famously volatile
+    minSupportPrice: null,
+  },
+  'রসুন': {
+    peak: 80,     // Rabi harvest
+    off: 180,     // Imported off-season
+    average: 120,
+    seasonMultipliers: {
+      'রবি': 0.65,
+      'খরিপ-১': 1.3,
+    },
+    priceVolatility: 'high',
+    minSupportPrice: null,
+  },
+  'মরিচ': {
+    peak: 60,     // Rabi dry chili harvest
+    off: 200,     // Off-season green chili
+    average: 120,
+    seasonMultipliers: {
+      'রবি': 0.50,
+      'খরিপ-১': 1.5,
+    },
+    priceVolatility: 'very_high',
+    minSupportPrice: null,
+  },
+  'মসুর ডাল': {
+    peak: 85,     // Rabi harvest
+    off: 130,
+    average: 105,
+    seasonMultipliers: {
+      'রবি': 0.82,
+    },
+    priceVolatility: 'medium',
+    minSupportPrice: null,
+  },
+  'আখ': {
+    peak: 150,    // Per maund, Kharif harvest
+    off: 250,
+    average: 190,
+    seasonMultipliers: {
+      'খরিপ-১': 0.75,
+      'খরিপ-২': 0.85,
     },
     priceVolatility: 'medium',
     minSupportPrice: null,
@@ -621,6 +715,11 @@ export function compareCropProfitability(month) {
     'আম':    { costPerBigha: 5000, yieldKgPerBigha: 2000, season: [2,3,4,5,6,7] },
     'গম':    { costPerBigha: 6000, yieldKgPerBigha: 600, season: [11,12,1,2,3] },
     'ভুট্টা': { costPerBigha: 10000, yieldKgPerBigha: 1500, season: [10,11,12,1,2,3,4,3,4,5,6,7,8] },
+    'পেঁয়াজ': { costPerBigha: 18000, yieldKgPerBigha: 2500, season: [10,11,12,1,2,3] },
+    'রসুন':   { costPerBigha: 20000, yieldKgPerBigha: 1200, season: [10,11,12,1,2,3] },
+    'মরিচ':   { costPerBigha: 15000, yieldKgPerBigha: 800, season: [10,11,12,1,2,3,6,7,8,9] },
+    'মসুর ডাল': { costPerBigha: 7000, yieldKgPerBigha: 300, season: [10,11,12,1,2] },
+    'আখ':     { costPerBigha: 25000, yieldKgPerBigha: 8000, season: [3,4,5,6,7,8,9,10,11] },
   };
 
   const results = [];
