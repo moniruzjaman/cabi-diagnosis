@@ -887,7 +887,7 @@ function UrgencyBanner({urgency,actionRequired,etlExceeded}){
 
 function DifferentialCandidates({candidates}){
   if(!candidates||candidates.length===0)return null;
-  const causeIcon=t=>{const cl=(t||'').toLowerCase();if(cl.includes('fungal'))return'🍄';if(cl.includes('bacteria'))return'🦠';if(cl.includes('viral')||cl.includes('virus'))return'🔬';if(cl.includes('insect'))return'🐛';if(cl.includes('mite'))return'🕷️';if(cl.includes('nutrient'))return'🌿';return'❓';};
+  const _causeIcon=t=>{const cl=(t||'').toLowerCase();if(cl.includes('fungal'))return'🍄';if(cl.includes('bacteria'))return'🦠';if(cl.includes('viral')||cl.includes('virus'))return'🔬';if(cl.includes('insect'))return'🐛';if(cl.includes('mite'))return'🕷️';if(cl.includes('nutrient'))return'🌿';return'❓';};
   return(
     <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,marginBottom:10,boxShadow:C.shadow}}>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
@@ -1092,8 +1092,8 @@ function FieldConfirmation({confirmation}){
 }
 
 function DiagnosisResultDashboard({structuredResult,cropKey,weather,symptomMatches}){
-  if(!structuredResult)return null;
   const[expanded,setExpanded]=useState(false);
+  if(!structuredResult)return null;
   const month=new Date().getMonth()+1;
   let ensembleData=null;
   if(cropKey&&symptomMatches&&symptomMatches.length>0){
