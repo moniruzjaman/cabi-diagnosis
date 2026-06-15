@@ -1,9 +1,9 @@
-// CABI Plant Detective — Service Worker v4
+// CABI Plant Detective — Service Worker v5
 // Network-first strategy ensures users always get the latest version
 // Cache is used as fallback when offline only
 // API responses are NEVER cached to prevent stale diagnostic results
 
-const CACHE_VERSION = 'cabi-v4-' + new Date().toISOString().slice(0, 10);
+const CACHE_VERSION = 'cabi-v5-' + new Date().toISOString().slice(0, 10);
 const PRECACHE_ASSETS = ["/", "/index.html", "/favicon.png", "/cabi-logo.png", "/favicon.svg", "/manifest.json"];
 
 // Install — precache essential shell assets, then activate immediately
@@ -61,9 +61,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // For hashed Vite assets (e.g., /assets/index-abc123.js) — cache-first with network fallback
-  // These have content hashes, so cached version is always correct
-  if (url.pathname.match(/\/assets\/.*\.[a-f0-9]{8,}\.(js|css|woff2?|png|jpg|svg)$/)) {
+  // For hashed Vite assets (e.g., /assets/index-abc12345.js) — cache-first with network fallback
+  // These have content hashes, so cached version is always correct.
+  // Regex matches both hex (8+ chars) and base64url hashes that Vite may generate.
+  if (url.pathname.match(/\/assets\/[^/]+-[a-zA-Z0-9_-]{4,}\.(js|css|woff2?|png|jpg|jpeg|svg|webp|ico)$/)) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
         if (cached) return cached;
