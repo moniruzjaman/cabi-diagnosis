@@ -3,35 +3,25 @@ import react from "@vitejs/plugin-react";
 import { readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
 
-// ─── Vercel CDN Fix: Remove crossorigin from ALL built assets ───────────────
-// Vite adds crossorigin to <script type="module"> and <link rel="stylesheet">
-// tags. On Vercel's CDN, these attributes trigger CORS preflight checks that
-// can fail, resulting in CSS 404 errors and blank pages.
+// ─── Vercel CDN Fix: Remove crossorigin from built index.html ──────────────
+// Vite 5 always adds crossorigin to <script type="module"> and <link
+// rel="stylesheet"> tags during its internal HTML generation phase. On
+// Vercel's CDN, these crossorigin attributes cause CORS failures because
+// the browser treats them as cross-origin requests, resulting in CSS 404s
+// and blank pages.
 //
-// Fix: Strip ALL crossorigin attributes from the built index.html using a
-// two-layer approach:
-//   1. transformIndexHtml — modifies HTML during Vite's build pipeline
-//   2. writeBundle — post-processes the file on disk AFTER all plugins finish
-//
-// The writeBundle hook is the reliable fallback: it reads the final index.html
-// from the output directory and removes any remaining crossorigin attributes
-// that Vite or other plugins may have injected after transformIndexHtml ran.
+// IMPORTANT: The transformIndexHtml hook runs BEFORE Vite's internal HTML
+// generation, so it CANNOT remove crossorigin that hasn't been added yet.
+// Only the closeBundle hook (which runs after ALL files are written) can
+// reliably strip these attributes from the final output.
 
 function removeCrossoriginPlugin() {
   return {
-    name: "remove-crossorigin-all",
+    name: "remove-crossorigin-final",
 
-    // Layer 1: Transform during Vite's HTML pipeline
-    transformIndexHtml(html) {
-      return html
-        .replace(/(<link[^>]*?)\s+crossorigin(\s*=\s*"[^"]*")?/g, "$1")
-        .replace(/(<script[^>]*?)\s+crossorigin(\s*=\s*"[^"]*")?/g, "$1");
-    },
-
-    // Layer 2: Post-process the final file on disk (guaranteed to run last)
-    writeBundle(options) {
-      const outDir = options.dir || "dist";
-      const htmlPath = resolve(outDir, "index.html");
+    // closeBundle runs AFTER writeBundle — guaranteed last hook before build ends
+    closeBundle() {
+      const htmlPath = resolve("dist", "index.html");
       try {
         let html = readFileSync(htmlPath, "utf-8");
         const cleaned = html
@@ -39,11 +29,12 @@ function removeCrossoriginPlugin() {
           .replace(/(<script[^>]*?)\s+crossorigin(\s*=\s*"[^"]*")?/g, "$1");
         if (cleaned !== html) {
           writeFileSync(htmlPath, cleaned, "utf-8");
-          console.log("✓ remove-crossorigin: cleaned crossorigin from index.html (writeBundle)");
+          console.log("✓ remove-crossorigin: stripped crossorigin from dist/index.html");
+        } else {
+          console.log("✓ remove-crossorigin: index.html already clean");
         }
       } catch (e) {
-        // Non-fatal — the transformIndexHtml hook may have already handled it
-        console.warn("remove-crossorigin writeBundle:", e.message);
+        console.warn("remove-crossorigin:", e.message);
       }
     },
   };
@@ -57,7 +48,6 @@ export default defineConfig({
     cssCodeSplit: true,
     rollupOptions: {
       output: {
-        // Use 8-char hex hashes — compatible with SW regex and all CDNs
         entryFileNames: "assets/[name]-[hash].js",
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: "assets/[name]-[hash].[ext]",
