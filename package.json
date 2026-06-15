@@ -31,7 +31,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/strip-crossorigin.js",
     "preview": "vite preview",
     "lint": "eslint src/ api/ --ext .js,.jsx --no-warn-ignored",
     "lint:fix": "eslint src/ api/ --ext .js,.jsx --fix --no-warn-ignored",
