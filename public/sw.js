@@ -1,9 +1,9 @@
-// CABI Plant Detective — Service Worker v3
+// CABI Plant Detective — Service Worker v4
 // Network-first strategy ensures users always get the latest version
 // Cache is used as fallback when offline only
 // API responses are NEVER cached to prevent stale diagnostic results
 
-const CACHE_VERSION = 'cabi-v3-' + new Date().toISOString().slice(0, 10);
+const CACHE_VERSION = 'cabi-v4-' + new Date().toISOString().slice(0, 10);
 const PRECACHE_ASSETS = ["/", "/index.html", "/favicon.png", "/cabi-logo.png", "/favicon.svg", "/manifest.json"];
 
 // Install — precache essential shell assets, then activate immediately
