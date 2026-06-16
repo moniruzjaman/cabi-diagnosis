@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
-import { diagnoseOffline } from "./offline/index";
+import { diagnoseOffline, enrichDiagnosisWithImages } from "./offline/index";
 import { lightThemeFull, darkThemeFull, getPreferredTheme } from './data/themes';
 import { CROP_CALENDAR, getCurrentRiskAlerts } from './data/cropCalendar';
 import { CROP_DISEASES, matchDiseasesBySymptoms, resolveCropKey, estimateInoculumPressure, getVarietySusceptibility } from './data/cropDiseases';
 import CropCalendarDashboard from './components/CropCalendarDashboard';
 import OnboardingFlow from './components/OnboardingFlow';
 import OutbreakList from './components/OutbreakList';
+import VisualDiagnosisLibrary from './components/VisualDiagnosisLibrary';
 import { computeEnsembleScore } from './data/agronomicEngine';
 import './styles/accessibility.css';
 
@@ -2487,6 +2488,8 @@ const[activeTab,setActiveTab]=useState("home");
   const[structuredResult,setStructuredResult]=useState(null);
   // Symptom matches from offline engine (for ConfidenceDashboard)
   const[symptomMatches,setSymptomMatches]=useState(null);
+  // CABI reference images (offline visual enrichment)
+  const[referenceImages,setReferenceImages]=useState(null);
   // Follow-up questions
   const[followUpQuestion,setFollowUpQuestion]=useState('');
   const[followUpAnswer,setFollowUpAnswer]=useState('');
@@ -2822,7 +2825,7 @@ const[activeTab,setActiveTab]=useState("home");
 
 const handleSubmit=async()=>{
     if(!form.crop||!form.symptoms){setError("অনুগ্রহ করে ফসল এবং লক্ষণ উভয়ই পূরণ করুন।");return;}
-    setLoading(true);setError(null);setResult(null);setRecommendedProducts([]);
+    setLoading(true);setError(null);setResult(null);setRecommendedProducts([]);setReferenceImages(null);
     
     if (diagnosisMode === "offline") {
       // Use offline diagnosis
@@ -2852,8 +2855,12 @@ const handleSubmit=async()=>{
           } : null
         };
         
-        // Perform offline diagnosis
-        const offlineResult = diagnoseOffline(inputData);
+        // Perform offline diagnosis (synchronous rule-based engine)
+        const baseResult = diagnoseOffline(inputData);
+        // Enrich with CABI reference images (async — uses /database.json + /images/)
+        const offlineResult = await enrichDiagnosisWithImages(baseResult, inputData);
+        // Save reference images separately for the UI to render
+        const referenceImages = offlineResult.referenceImages || { overall: [], perDisease: [], visualConfidence: 'none' };
         
         // Convert offline result to format compatible with existing result display
         const banglaText = `
@@ -2956,6 +2963,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           en: banglaText.split("---END_ENGLISH---")[0].split("---ENGLISH_SECTION---").pop().trim()
         });
         setProvider("Offline CABI Diagnostic Engine");
+        setReferenceImages(referenceImages);
         if (offlineResult.specificDisease) {
           setStructuredResult({
             disease: offlineResult.specificDisease.nameBn,
@@ -3052,7 +3060,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
   };
 
   const stopSpeaking=()=>{window.speechSynthesis?.cancel();setIsSpeaking(false);};
-  const reset=()=>{setForm(f=>{const next={crop:"",district:f.district||"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:f.duration||"",affectedArea:f.affectedArea||""};try{localStorage.setItem('ud-form',JSON.stringify(next));}catch{}return next;});setImages([]);setImageBase64s([]);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setShowMoreCrops(false);setRecommendedProducts([]);setStructuredResult(null);setSymptomMatches(null);setFollowUpQuestion('');setFollowUpAnswer('');setFollowUpLoading(false);stopSpeaking();};
+  const reset=()=>{setForm(f=>{const next={crop:"",district:f.district||"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:f.duration||"",affectedArea:f.affectedArea||""};try{localStorage.setItem('ud-form',JSON.stringify(next));}catch{}return next;});setImages([]);setImageBase64s([]);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setShowMoreCrops(false);setRecommendedProducts([]);setStructuredResult(null);setSymptomMatches(null);setReferenceImages(null);setFollowUpQuestion('');setFollowUpAnswer('');setFollowUpLoading(false);stopSpeaking();};
 
   // Follow-up question handler
   const handleFollowUp=async()=>{
@@ -3617,6 +3625,55 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                   return sections.map((sec,i)=><SectionCard key={i} title={sec.title} bodyLines={sec.body} defaultOpen={i<3}/>);
                 })()}
 
+                {/* ─── CABI Reference Images (offline visual enrichment) ──────── */}
+                {referenceImages && referenceImages.overall && referenceImages.overall.length > 0 && (() => {
+                  const catColors = {
+                    'Wilt':{bg:'#fef3c7',fg:'#92400e'},'Leaf spot':{bg:'#fee2e2',fg:'#991b1b'},
+                    'Mosaic':{bg:'#dbeafe',fg:'#1e40af'},'Yellowing of leaves':{bg:'#fef9c3',fg:'#854d0e'},
+                    'Distortion of leaves':{bg:'#f3e8ff',fg:'#6b21a8'},'Little leaf':{bg:'#dcfce7',fg:'#166534'},
+                    'Witches\' broom':{bg:'#fce7f3',fg:'#9d174d'},'Canker':{bg:'#fed7aa',fg:'#9a3412'},
+                    'Galls':{bg:'#d1fae5',fg:'#065f46'},'Drying/necrosis/blight':{bg:'#fee2e2',fg:'#7f1d1d'},
+                  };
+                  const confStyle = referenceImages.visualConfidence==='high'
+                    ? {bg:'#dcfce7',fg:'#166534'}
+                    : referenceImages.visualConfidence==='medium'
+                      ? {bg:'#fef9c3',fg:'#854d0e'}
+                      : {bg:'#fee2e2',fg:'#991b1b'};
+                  return (
+                    <div style={{marginTop:10,background:C.bgCard,borderRadius:16,padding:14,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8,flexWrap:'wrap'}}>
+                        <div style={{width:32,height:32,borderRadius:10,background:`linear-gradient(135deg,${C.bgInfo},${C.borderInfo})`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16}}>📷</div>
+                        <div style={{flex:1}}>
+                          <div style={{fontWeight:800,fontSize:14,color:C.primaryDark}}>CABI রেফারেন্স ইমেজ</div>
+                          <div style={{fontSize:10,color:C.textMuted}}>CABI Plantwise Field Guide থেকে — সম্পূর্ণ অফলাইনে</div>
+                        </div>
+                        <span style={{background:confStyle.bg,color:confStyle.fg,borderRadius:999,padding:'3px 10px',fontSize:10,fontWeight:700}}>
+                          ভিজ্যুয়াল আস্থা: {referenceImages.visualConfidence}
+                        </span>
+                      </div>
+                      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(110px,1fr))',gap:8,marginTop:8}}>
+                        {referenceImages.overall.slice(0,12).map((entry,idx)=>{
+                          const c = catColors[entry.category] || {bg:'#f1f5f9',fg:'#475569'};
+                          return (
+                            <div key={`ref-${idx}`} style={{border:`1px solid ${C.border}`,borderRadius:10,overflow:'hidden',background:C.bgCard}}>
+                              <img src={entry.url} alt={`CABI page ${entry.page}`} loading="lazy" style={{width:'100%',height:90,objectFit:'cover',display:'block',background:C.bgMuted}} onError={(e)=>{e.target.style.display='none';}}/>
+                              <div style={{padding:'4px 6px'}}>
+                                {entry.category && <span style={{display:'inline-block',padding:'2px 6px',borderRadius:999,fontSize:9,fontWeight:600,background:c.bg,color:c.fg,marginBottom:2}}>{entry.category}</span>}
+                                <div style={{fontSize:9,color:C.textMuted}}>📄 পৃষ্ঠা {entry.page}</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {referenceImages.libraryStats && (
+                        <div style={{marginTop:8,fontSize:10,color:C.textMuted,textAlign:'center',borderTop:`1px solid ${C.border}`,paddingTop:6}}>
+                          📚 {referenceImages.libraryStats.totalImages} ইমেজ · {referenceImages.libraryStats.totalPages} পৃষ্ঠা · {referenceImages.libraryStats.totalCategories} ক্যাটেগরি
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {recommendedProducts.length>0&&<ProductRecommendations products={recommendedProducts} crop={form.crop}/>}
 
                 <SeverityBadge severity={structuredResult?.severity||structuredResult?.severity_level} cause={structuredResult?.cause_type||structuredResult?.biotic_abiotic} affectedArea={form.affectedArea}/>
@@ -3771,6 +3828,10 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
               <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:3}}>📚 তথ্যভান্ডার</div>
               <div style={{color:C.textMuted,fontSize:12,marginBottom:14}}>পোকামাকড়, রোগ ও পুষ্টি অভাব</div>
               <EnhancedLibrarySection/>
+            </div>
+            {/* CABI Visual Reference Library — 278 offline images */}
+            <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:18,padding:4,border:`1px solid ${C.border}`,boxShadow:C.shadowMd,overflow:'hidden'}}>
+              <VisualDiagnosisLibrary/>
             </div>
             {/* Quick links to Apps & History sub-views */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:10}}>
