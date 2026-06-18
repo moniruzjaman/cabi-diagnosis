@@ -749,7 +749,10 @@ export function matchDiseasesBySymptoms(cropInput, userSymptoms) {
     return b.score - a.score;
   });
 
-  return results;
+  // GAP-04 FIX: Filter out diseases with zero or trivially low match scores.
+  // Without this, every disease in the DB was returned for any single symptom,
+  // flooding the UI with misleading 0/5 match candidates.
+  return results.filter(r => r.score >= 1 && r.matchRatio >= 0.1);
 }
 
 /**

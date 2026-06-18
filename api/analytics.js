@@ -18,8 +18,8 @@ export default async function handler(req, res) {
   // Verify request signature on POST (prevents external API abuse)
   if (requireSignedRequest(req, res)) return;
 
-  // Rate limiting on POST
-  if (analyticsLimiter(req, res)) return;
+  // Rate limiting on POST (async — supports Upstash distributed limiting when configured)
+  if (await analyticsLimiter(req, res)) return;
 
   const body = parseBody(req);
   if (!body) return res.status(400).json({ error: "Invalid JSON body" });

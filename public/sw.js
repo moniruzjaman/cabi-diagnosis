@@ -4,7 +4,10 @@
 // API responses are NEVER cached to prevent stale diagnostic results
 
 const CACHE_VERSION = 'cabi-v5-' + new Date().toISOString().slice(0, 10);
-const PRECACHE_ASSETS = ["/", "/index.html", "/favicon.png", "/cabi-logo.png", "/favicon.svg", "/manifest.json"];
+const PRECACHE_ASSETS = ["/", "/index.html", "/favicon.png", "/cabi-logo.png", "/favicon.svg", "/manifest.json",
+  "/database.json",    // ENH-07: precache for zero-latency offline reference access
+  "/pesticides.json",  // ENH-07: precache pesticide DB for offline IPM recommendations
+];
 
 // Install — precache essential shell assets, then activate immediately
 self.addEventListener("install", (event) => {

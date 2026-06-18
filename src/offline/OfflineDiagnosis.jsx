@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { diagnoseOffline } from "./diagnosticEngine";
 import { enrichDiagnosisWithImages } from "./visualEnrichment";
 
