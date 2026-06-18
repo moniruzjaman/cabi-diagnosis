@@ -53,3 +53,4 @@ download/
 # Expo mobile (work-in-progress)
 expo-mobile/
 .vercel
+.env*
