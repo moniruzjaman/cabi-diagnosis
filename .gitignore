@@ -41,9 +41,6 @@ src/App.jsx.backup
 skills/
 skills-lock.json
 
-# Supabase CLI temp files
-supabase/.temp/
-
 # Worklog (local dev artifact)
 worklog.md
 
@@ -53,3 +50,4 @@ download/
 # Expo mobile (work-in-progress)
 expo-mobile/
 .vercel
+.env*

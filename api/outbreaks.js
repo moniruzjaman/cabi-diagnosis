@@ -28,7 +28,7 @@ export default async function handler(req, res) {
 
   if (req.method === "POST") {
     if (requireSignedRequest(req, res)) return;
-    if (outbreaksLimiter(req, res)) return;
+    if (await outbreaksLimiter(req, res)) return;
     return handlePost(req, res);
   }
 

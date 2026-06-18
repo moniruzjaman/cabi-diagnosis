@@ -4,6 +4,10 @@ import { diagnoseOffline, enrichDiagnosisWithImages } from "./offline/index";
 import { lightThemeFull, darkThemeFull, getPreferredTheme } from './data/themes';
 import { CROP_CALENDAR, getCurrentRiskAlerts } from './data/cropCalendar';
 import { CROP_DISEASES, matchDiseasesBySymptoms, resolveCropKey, estimateInoculumPressure, getVarietySusceptibility } from './data/cropDiseases';
+import { getVarietiesByCrop } from './data/varieties';
+import { UPAZILAS } from './data/upazilas';
+import { BANGLADESH_DISTRICTS } from './data/bangladeshDistricts';
+import { saveOfflineDiagnosis, loadOfflineHistory, clearOfflineHistory } from './offline/offlineStorage';
 import CropCalendarDashboard from './components/CropCalendarDashboard';
 import OnboardingFlow from './components/OnboardingFlow';
 import OutbreakList from './components/OutbreakList';
@@ -17,6 +21,25 @@ const DiseaseTriangle = React.lazy(() => import('./games/DiseaseTriangle'));
 const FieldScout = React.lazy(() => import('./games/FieldScout'));
 const IPMCommander = React.lazy(() => import('./games/IPMCommander'));
 import useTTS from "./games/useTTS";
+// ─── GAP-01 FIX: ErrorBoundary for lazy game imports ─────────────────────────
+class GameErrorBoundary extends React.Component {
+  constructor(props){super(props);this.state={hasError:false};}
+  static getDerivedStateFromError(){return{hasError:true};}
+  componentDidCatch(err){console.error("Game load error:",err);}
+  render(){
+    if(this.state.hasError)return(
+      <div style={{textAlign:"center",padding:40}}>
+        <div style={{fontSize:32,marginBottom:12}}>⚠️</div>
+        <div style={{fontSize:15,fontWeight:600,marginBottom:8}}>গেমটি লোড করা যায়নি</div>
+        <div style={{fontSize:13,color:"#666",marginBottom:16}}>পৃষ্ঠা রিফ্রেশ করুন অথবা ইন্টারনেট সংযোগ পরীক্ষা করুন।</div>
+        <button onClick={()=>this.setState({hasError:false})} style={{padding:"8px 18px",borderRadius:10,border:"none",background:"#006028",color:"#fff",cursor:"pointer",fontWeight:600}}>আবার চেষ্টা করুন</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
+
 
 // ─── Global styles ────────────────────────────────────────────────────────────
 const GLOBAL_STYLE = `
@@ -118,7 +141,18 @@ const C_LIGHT={
 };
 // Dynamic theme bridge — main component updates C on every render
 // so renderTokens, SectionCard, InfoRow etc. automatically get the correct theme.
-let C = C_LIGHT;
+// BUG-06 FIX: Initialise module-level C from the user's persisted theme preference
+// so helper functions (renderTokens, SectionCard, InfoRow, getMeta, getSectionMeta)
+// see the correct theme tokens BEFORE the first render frame — eliminates the
+// flash-of-wrong-theme that occurred because the module-level C was hardcoded to
+// C_LIGHT and only updated by setThemeTokens() after the first render completed.
+let C = (() => {
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('ud-dark') === 'true') return darkThemeFull;
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('ud-dark') === null && typeof matchMedia !== 'undefined' && matchMedia('(prefers-color-scheme: dark)').matches) return darkThemeFull;
+  } catch {}
+  return C_LIGHT;
+})();
 function setThemeTokens(c) { C = c; }
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -250,9 +284,21 @@ const FRIENDLY_SECTION_LABELS={
 };
 
 function getCurrentSeason(){
-  const month=new Date().getMonth()+1;
-  if(month>=10||month<=3)return "রবি মৌসুম / Rabi Season (Oct–Mar)";
-  return "খরিপ মৌসুম / Kharif Season (Apr–Sep)";
+  // BUG-02 FIX: Was collapsing 5 distinct Bangladesh crop seasons into 2.
+  // Overlapping season windows resolved by crop-calendar priority:
+  //   Boro: Nov–May (dominant dry-season paddy)
+  //   Aus:  Mar–Aug (short-duration summer paddy, overlaps Boro tail & Aman start)
+  //   Aman: Jun–Nov (wet-season paddy)
+  //   Rabi: Oct–Mar (cool-season vegetables/oilseeds — non-rice emphasis)
+  //   Kharif: Apr–Sep (general warm-season crops, fallback)
+  const m=new Date().getMonth()+1; // 1-based
+  if(m===12||m===1||m===2)return "বোরো মৌসুম / Boro Season (Nov–May)";
+  if(m===3||m===4)return "বোরো মৌসুম / Boro Season (Nov–May)"; // late Boro / early Aus overlap
+  if(m===5)return "আউশ মৌসুম / Aus Season (Mar–Aug)";
+  if(m===6||m===7||m===8)return "আমন মৌসুম / Aman Season (Jun–Nov)";
+  if(m===9||m===10)return "আমন মৌসুম / Aman Season (Jun–Nov)";
+  if(m===11)return "রবি মৌসুম / Rabi Season (Oct–Mar)";
+  return "রবি মৌসুম / Rabi Season (Oct–Mar)";
 }
 function findDistrictMatch(...values){
   const checks=values.flat().filter(Boolean).map(v=>String(v).toLowerCase());
@@ -262,6 +308,114 @@ function findDistrictMatch(...values){
     if(checks.some(v=>v.includes(bn)||v.includes(en)||bn.includes(v)||en.includes(v)))return district;
   }
   return "";
+}
+/**
+ * ENH-02 FIX: Coordinate-based district matching as a fallback when the
+ * reverse-geocoded district name doesn't match the DISTRICTS list exactly.
+ * Uses Haversine distance against district centroids from bangladeshDistricts.js.
+ * Returns the bilingual display string (e.g. "কুড়িগ্রাম / Kurigram") or "".
+ */
+function findDistrictByCoords(lat, lon){
+  if (typeof lat !== 'number' || typeof lon !== 'number') return "";
+  let best = null, bestDist = Infinity;
+  for (const d of BANGLADESH_DISTRICTS) {
+    if (typeof d.lat !== 'number' || typeof d.lon !== 'number') continue;
+    // Haversine formula (km)
+    const R = 6371, φ1 = lat * Math.PI / 180, φ2 = d.lat * Math.PI / 180;
+    const Δφ = (d.lat - lat) * Math.PI / 180, Δλ = (d.lon - lon) * Math.PI / 180;
+    const a = Math.sin(Δφ/2)**2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2)**2;
+    const dist = 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    if (dist < bestDist) { bestDist = dist; best = d; }
+  }
+  // Only accept if within ~60km of a known district centroid
+  if (best && bestDist < 60) {
+    const bn = best.name || best.nameBn;
+    const en = best.nameEn || best.name;
+    if (bn && en) return `${bn} / ${en}`;
+  }
+  return "";
+}
+
+// ─── ENH-05: Diagnosis History Export (PDF + Share) ─────────────────────────
+// Uses the browser's native print-to-PDF via a hidden iframe (zero dependencies).
+// Share uses navigator.share() on supported browsers with a text fallback.
+function exportHistoryPDF(entries) {
+  if (!entries || entries.length === 0) return;
+  const win = window.open('', '_blank');
+  if (!win) {
+    alert('পপ-আপ ব্লক করা হয়েছে। পপ-আপ অনুমোদন করে আবার চেষ্টা করুন।');
+    return;
+  }
+  const rows = entries.map((e, i) => `
+    <tr>
+      <td style="padding:8px;border:1px solid #e2e5ea;text-align:center">${i+1}</td>
+      <td style="padding:8px;border:1px solid #e2e5ea">${escapeHtml(e.crop || '—')}</td>
+      <td style="padding:8px;border:1px solid #e2e5ea">${escapeHtml(e.district || '—')}</td>
+      <td style="padding:8px;border:1px solid #e2e5ea">${escapeHtml(e.date || '—')}</td>
+      <td style="padding:8px;border:1px solid #e2e5ea">${escapeHtml(e.mode === 'offline' ? 'অফলাইন' : (e.fromServer ? 'সার্ভার' : 'অনলাইন'))}</td>
+      <td style="padding:8px;border:1px solid #e2e5ea;font-size:11px;color:#5f6672">${escapeHtml(e.resultPreview || '')}</td>
+    </tr>
+  `).join('');
+  win.document.write(`<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>নির্ণয়ের ইতিহাস — ${new Date().toLocaleDateString('bn-BD')}</title>
+<style>
+  body{font-family:'Noto Sans Bengali','Noto Sans',sans-serif;padding:24px;color:#1a1d21;max-width:900px;margin:0 auto}
+  h1{color:#006028;font-size:20px;margin-bottom:4px}
+  .meta{color:#5f6672;font-size:12px;margin-bottom:16px}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{background:#f0fdf4;color:#14532d;padding:8px;border:1px solid #e2e5ea;text-align:left;font-weight:700}
+  .foot{margin-top:20px;color:#8e95a2;font-size:10px;text-align:center}
+</style>
+</head>
+<body>
+  <h1>📋 উদ্ভিদ গোয়েন্দা — নির্ণয়ের ইতিহাস</h1>
+  <div class="meta">তৈরি: ${new Date().toLocaleString('bn-BD')} · মোট ${entries.length}টি নির্ণয়</div>
+  <table>
+    <thead><tr>
+      <th>#</th><th>ফসল</th><th>জেলা</th><th>তারিখ</th><th>ধরন</th><th>সারাংশ</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="foot">CABI Plantwise Methodology · উদ্ভিদ গোয়েন্দা (Plant Detective)</div>
+  <script>setTimeout(()=>{window.print();},300);</script>
+</body>
+</html>`);
+  win.document.close();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function shareHistoryText(entries) {
+  if (!entries || entries.length === 0) return;
+  const lines = entries.slice(0, 20).map((e, i) =>
+    `${i+1}. ${e.crop || '—'} | ${e.district || '—'} | ${e.date || '—'} | ${e.mode === 'offline' ? 'অফলাইন' : 'অনলাইন'}${e.resultPreview ? `\n   ${e.resultPreview.slice(0, 80)}` : ''}`
+  ).join('\n');
+  const text = `📋 উদ্ভিদ গোয়েন্দা — নির্ণয়ের ইতিহাস\nমোট ${entries.length}টি নির্ণয়\n\n${lines}\n\n— CABI Plantwise Methodology`;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'নির্ণয়ের ইতিহাস', text });
+    } catch (e) {
+      if (e.name !== 'AbortError') console.warn('Share failed:', e);
+    }
+  } else {
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('ইতিহাস ক্লিপবোর্ডে কপি হয়েছে।');
+    } catch {
+      // Final fallback: open a text blob
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'diagnosis-history.txt'; a.click();
+      URL.revokeObjectURL(url);
+    }
+  }
 }
 function extractDriveId(url){
   if(!url)return "";
@@ -1312,7 +1466,7 @@ function _HomeTab({setActiveTab,history,weather,locationName}){
           <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:10}}>🕘 সাম্প্রতিক রিপোর্ট</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10}}>
             {[...history].reverse().slice(0,4).map((item,index)=>(
-              <div key={index} style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:14,padding:12}}>
+              <div key={`${item.crop||'crop'}-${item.date||'na'}-${index}`} style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:14,padding:12}}>
                 <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:4}}>{item.crop?.split("/")[0]?.trim()||"ফসল"}</div>
                 <div style={{fontSize:11,color:C.textMuted}}>{item.district?.split("/")[0]?.trim()||"জেলা নেই"}</div>
                 <div style={{fontSize:11,color:C.textLight,marginTop:6}}>{item.date}</div>
@@ -1455,7 +1609,7 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {[...history].reverse().slice(0, 3).map((item, index) => (
-              <div key={index} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px", borderRadius: 14, background: C.bgMuted, border: `1px solid ${C.border}` }}>
+              <div key={`${item.crop||'crop'}-${item.date||'na'}-${index}`} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px", borderRadius: 14, background: C.bgMuted, border: `1px solid ${C.border}` }}>
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(135deg, ${C.primary}18, ${C.primaryLight}18)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🌿</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="ud-headline" style={{ fontWeight: 700, fontSize: 13.5, color: C.text, marginBottom: 2 }}>{item.crop?.split("/")[0]?.trim() || "ফসল"}</div>
@@ -1952,7 +2106,7 @@ function CABIGuideTab(){
                <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🔍 প্রোটোকল সম্পর্কিত ছবি</div>
                <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
                  {getRelevantImages(database, "protocol").map((img, index)=>( 
-                   <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
+                   <div key={img || `protocol-img-${index}`} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
                      <img src={`/images/${img}`} alt={`Reference ${index+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
                    </div>
                  ))}
@@ -1968,32 +2122,60 @@ function CABIGuideTab(){
                <div style={{flex:1}}>
                  <div style={{fontWeight:700,fontSize:13,color:C.warning,marginBottom:3}}>📊 ETL কী?</div>
                  <div style={{fontSize:12,color:C.text,lineHeight:1.7}}>ETL হলো সেই মাত্রা যখন কীটনাশক ব্যবহারের অর্থনৈতিক ন্যায্যতা থাকে। নিচে থাকলে প্রাকৃতিক নিয়ন্ত্রণই যথেষ্ট।</div>
+                 {/* ENH-04: Season-smart ETL pre-fill — highlight relevant pests based on current season */}
+                 {(() => {
+                   const currentSeason = getCurrentSeason();
+                   const isRiceSeason = currentSeason.includes("Boro") || currentSeason.includes("Aman") || currentSeason.includes("Aus");
+                   const isVegetableSeason = currentSeason.includes("Rabi") || currentSeason.includes("Kharif");
+                   const relevantNow = CABI_GUIDE.etl.filter(e =>
+                     (isRiceSeason && (e.pest.includes("ধান") || e.pest.includes("বাদামি") || e.pest.includes("পাতামোড়া") || e.pest.includes("জাব"))) ||
+                     (isVegetableSeason && (e.pest.includes("টমেটো") || e.pest.includes("আলু") || e.pest.includes("ডায়মন্ড")))
+                   );
+                   if (relevantNow.length === 0) return null;
+                   return (
+                     <div style={{marginTop:8,padding:"8px 10px",background:C.bgCard,borderRadius:8,border:`1px dashed ${C.borderWarning}`,fontSize:11,color:C.textWarning}}>
+                       <div style={{fontWeight:700,marginBottom:4}}>📅 এই মৌসুমে প্রাসঙ্গিক ({currentSeason.split("/")[0].trim()}):</div>
+                       <div>{relevantNow.map(e => e.pest).join(" · ")}</div>
+                     </div>
+                   );
+                 })()}
                </div>
                {guideTtsReady && (
                  <button onClick={() => speak("ই টি এল হলো সেই মাত্রা যখন কীটনাশক ব্যবহারের অর্থনৈতিক ন্যায্যতা থাকে। নিচে থাকলে প্রাকৃতিক নিয়ন্ত্রণই যথেষ্ট।", { prependFriendly: true })} style={{flexShrink:0,width:36,height:36,borderRadius:10,background:C.bgCard,border:`1.5px solid ${C.borderWarning}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:16}}>🔊</button>
                )}
              </div>
            </div>
-           {CABI_GUIDE.etl.map((e,i)=>(
-             <div key={i} style={{background:C.bgCard,borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
-               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-                 <div><div style={{fontWeight:700,fontSize:13,color:C.primaryDark}}>{e.pest}</div><div style={{color:C.textMuted,fontSize:11}}>{e.en}</div></div>
-                 <span style={{background:C.badgeWarning,border:`1px solid ${C.borderWarning}`,color:C.textWarning,borderRadius:8,padding:"2px 8px",fontSize:10,fontWeight:700,flexShrink:0,marginLeft:8}}>ETL</span>
+           {/* ENH-04: Season-relevant ETL entries are visually highlighted with a "এখন" (now) badge */}
+           {CABI_GUIDE.etl.map((e,i)=>{
+             const currentSeason = getCurrentSeason();
+             const isRiceSeason = currentSeason.includes("Boro") || currentSeason.includes("Aman") || currentSeason.includes("Aus");
+             const isVegetableSeason = currentSeason.includes("Rabi") || currentSeason.includes("Kharif");
+             const relevantNow = (isRiceSeason && (e.pest.includes("ধান") || e.pest.includes("বাদামি") || e.pest.includes("পাতামোড়া") || e.pest.includes("জাব"))) ||
+                                 (isVegetableSeason && (e.pest.includes("টমেটো") || e.pest.includes("আলু") || e.pest.includes("ডায়মন্ড")));
+             return (
+               <div key={i} style={{background:C.bgCard,borderRadius:12,padding:14,marginBottom:9,border:`1px solid ${relevantNow ? C.borderWarning : C.border}`,boxShadow:C.shadow,position:"relative"}}>
+                 {relevantNow && (
+                   <span style={{position:"absolute",top:8,right:8,background:C.warning,color:"#fff",borderRadius:6,padding:"1px 6px",fontSize:9,fontWeight:700}}>এখন</span>
+                 )}
+                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                   <div><div style={{fontWeight:700,fontSize:13,color:C.primaryDark}}>{e.pest}</div><div style={{color:C.textMuted,fontSize:11}}>{e.en}</div></div>
+                   <span style={{background:C.badgeWarning,border:`1px solid ${C.borderWarning}`,color:C.textWarning,borderRadius:8,padding:"2px 8px",fontSize:10,fontWeight:700,flexShrink:0,marginLeft:8,marginRight:relevantNow?38:0}}>ETL</span>
+                 </div>
+                 <div style={{background:C.bgWarning,borderRadius:8,padding:"7px 10px",marginBottom:7}}><div style={{fontSize:11,fontWeight:700,color:C.warning,marginBottom:2}}>ব্যবস্থার সীমা:</div><div style={{fontSize:12,color:C.text}}>{e.etl}</div></div>
+                 <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                   <div style={{fontSize:11,color:C.textMuted}}>📅 পর্যায়: <span style={{color:C.text,fontWeight:600}}>{e.stage}</span></div>
+                   <div style={{fontSize:11,color:C.textMuted}}>🔍 <span style={{color:C.text,fontWeight:600}}>{e.monitor}</span></div>
+                 </div>
                </div>
-               <div style={{background:C.bgWarning,borderRadius:8,padding:"7px 10px",marginBottom:7}}><div style={{fontSize:11,fontWeight:700,color:C.warning,marginBottom:2}}>ব্যবস্থার সীমা:</div><div style={{fontSize:12,color:C.text}}>{e.etl}</div></div>
-               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                 <div style={{fontSize:11,color:C.textMuted}}>📅 পর্যায়: <span style={{color:C.text,fontWeight:600}}>{e.stage}</span></div>
-                 <div style={{fontSize:11,color:C.textMuted}}>🔍 <span style={{color:C.text,fontWeight:600}}>{e.monitor}</span></div>
-               </div>
-             </div>
-           ))}
+             );
+           })}
            {/* Add reference images for ETL section */}
            {!loading && database && (
              <div style={{marginTop:20}}>
                <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ ETL সম্পর্কিত संदर्भ ছবি</div>
                <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
                  {getRelevantImages(database, "etl").map((img, index)=>( 
-                   <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
+                   <div key={img || `etl-img-${index}`} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
                      <img src={`/images/${img}`} alt={`ETL Reference ${index+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
                    </div>
                  ))}
@@ -2040,7 +2222,7 @@ function CABIGuideTab(){
               <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ পুষ্টি অভাব সম্পর্কিত ছবি</div>
                <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
                  {getRelevantImages(database, "nutrients").map((img, index)=>( 
-                   <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
+                   <div key={img || `nutrients-img-${index}`} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
                      <img src={`/images/${img}`} alt={`Nutrient Reference ${index+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
                    </div>
                  ))}
@@ -2075,7 +2257,7 @@ function CABIGuideTab(){
                <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ IPM পিরামিড সম্পর্কিত ছবি</div>
                <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
                  {getRelevantImages(database, "ipm").map((img, index)=>( 
-                   <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
+                   <div key={img || `ipm-img-${index}`} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
                      <img src={`/images/${img}`} alt={`IPM Reference ${index+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
                    </div>
                  ))}
@@ -2133,7 +2315,7 @@ function CABIGuideTab(){
                <div style={{fontWeight:700,fontSize:14,color:C.primaryDark,marginBottom:8}}>🖼️ FRAC/IRAC রোটেশন সম্পর্কিত ছবি</div>
                <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
                  {getRelevantImages(database, "resistance").map((img, index)=>( 
-                   <div key={index} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
+                   <div key={img || `resistance-img-${index}`} style={{flexShrink:0,width:100,height:80,borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
                      <img src={`/images/${img}`} alt={`Resistance Reference ${index+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
                    </div>
                  ))}
@@ -2337,9 +2519,11 @@ function GameHub(){
         <button onClick={()=>setActiveGame(null)} style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,background:"none",border:"none",cursor:"pointer",padding:0,color:C.primary,fontSize:13,fontWeight:600}}>
           <span style={{fontSize:18}}>←</span> গেম হাবে ফিরুন
         </button>
+        <GameErrorBoundary>
         <React.Suspense fallback={<div style={{textAlign:'center',padding:40,color:C.textMuted}}>লোড হচ্ছে...</div>}>
           <GameComponent/>
         </React.Suspense>
+        </GameErrorBoundary>
       </div>
     );
   }
@@ -2470,7 +2654,7 @@ const[activeTab,setActiveTab]=useState("home");
   const[copilotOpen,setCopilotOpen]=useState(false);
   const[step,setStep]=useState(1);
   const[form,setForm]=useState(()=>{try{const saved=JSON.parse(localStorage.getItem('ud-form')||'{}');return{crop:saved.crop||"",district:saved.district||"",season:saved.season||getCurrentSeason(),growthStage:saved.growthStage||"",symptoms:"",duration:saved.duration||"",affectedArea:saved.affectedArea||""};}catch{return{crop:"",district:"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:"",affectedArea:""};}});
-  const[diagnosisMode,setDiagnosisMode]=useState("online"); // "online" or "offline"
+  const[diagnosisMode,setDiagnosisMode]=useState(()=>{try{return localStorage.getItem("ud-mode")||"online";}catch{return"online";}}); // "online" or "offline" — GAP-05 FIX: persisted
   const[showMoreCrops,setShowMoreCrops]=useState(false);
   const[expandedGroup,setExpandedGroup]=useState(null);
   // Multi-image support (2-4 images)
@@ -2482,8 +2666,13 @@ const[activeTab,setActiveTab]=useState("home");
   const[loading,setLoading]=useState(false);
   const[error,setError]=useState(null);
   const[history,setHistory]=useState(()=>{try{return JSON.parse(localStorage.getItem("ud-history")||"[]");}catch{return[];}});
+  const[offlineHistory,setOfflineHistory]=useState([]); // GAP-03: IndexedDB-backed offline diagnoses
   const[pesticideDb,setPesticideDb]=useState(null);
   const[recommendedProducts,setRecommendedProducts]=useState([]);
+  // ENH-06: Variety dropdown state (BRRI/BARI registry)
+  const[selectedVarietyId,setSelectedVarietyId]=useState("");
+  // ENH-03: Upazila dropdown state
+  const[selectedUpazilaId,setSelectedUpazilaId]=useState("");
   // Structured AI output
   const[structuredResult,setStructuredResult]=useState(null);
   // Symptom matches from offline engine (for ConfidenceDashboard)
@@ -2632,6 +2821,28 @@ const[activeTab,setActiveTab]=useState("home");
   },[]);
 
   useEffect(()=>{fetch("/pesticides.json").then(r=>r.json()).then(d=>setPesticideDb(d)).catch(()=>{});},[]);
+  // GAP-03 FIX: Load offline diagnoses from IndexedDB on mount
+  // IndexedDB persists across cold starts, so field officers can review past
+  // offline-mode diagnoses even after closing/reopening the browser tab.
+  useEffect(()=>{
+    let cancelled=false;
+    loadOfflineHistory({ limit: 50 }).then(entries=>{
+      if (cancelled || !entries.length) return;
+      setOfflineHistory(entries);
+    }).catch(()=>{});
+    return ()=>{ cancelled = true; };
+  },[]);
+  // GAP-08 FIX: Auto-switch to offline mode when network drops, restore when it returns.
+  // Prevents raw network errors for field officers in low-connectivity char areas.
+  useEffect(()=>{
+    const goOffline=()=>{setDiagnosisMode('offline');try{localStorage.setItem('ud-mode','offline');}catch{}};
+    const goOnline=()=>{setDiagnosisMode('online');try{localStorage.setItem('ud-mode','online');}catch{}};
+    window.addEventListener('offline',goOffline);
+    window.addEventListener('online',goOnline);
+    // Sync initial state with actual network status
+    if(!navigator.onLine)goOffline();
+    return()=>{window.removeEventListener('offline',goOffline);window.removeEventListener('online',goOnline);};
+  },[]);
   useEffect(()=>{
     const onResize=()=>setViewportWidth(window.innerWidth);
     window.addEventListener("resize",onResize);
@@ -2739,7 +2950,12 @@ const[activeTab,setActiveTab]=useState("home");
       const d=await(await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`,{headers:{"User-Agent":"UddhidGoenda/1.0"}})).json();
       const district=d.address?.county||d.address?.state_district||d.address?.city||d.address?.town||d.address?.village||"";
       setLocationName([district,"Bangladesh"].filter(Boolean).join(", "));
-      const m=findDistrictMatch(district,d.address?.state,d.address?.region);
+      // ENH-02 FIX: Try name-based match first, then fall back to coordinate-based
+      // matching using Haversine distance against district centroids. This catches
+      // cases where Nominatim returns a village/sub-district name that doesn't
+      // exactly match our DISTRICTS list.
+      let m=findDistrictMatch(district,d.address?.state,d.address?.region);
+      if(!m) m=findDistrictByCoords(lat, lon);
       if(m)setForm(f=>({...f,district:f.district||m}));
     }catch{setLocationName("Bangladesh");}
   },[]);
@@ -2814,7 +3030,7 @@ const[activeTab,setActiveTab]=useState("home");
       }catch(err){console.error("Image processing failed:",err);}
       URL.revokeObjectURL(objectUrl);
     };
-    img.onerror=()=>{console.error("Image load failed");URL.revokeObjectURL(objectUrl);};
+    img.onerror=()=>{URL.revokeObjectURL(objectUrl);setError("ছবিটি লোড করা যায়নি। JPEG বা PNG ফাইল ব্যবহার করুন।");}; // GAP-07 FIX: was silently swallowed
     img.src=objectUrl;
   };
   const handleImage=(e)=>{handleImageFile(e.target.files?.[0]);e.target.value="";};
@@ -2984,6 +3200,19 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
         const nh = [...history, entry].slice(-10);
         setHistory(nh);
         try { localStorage.setItem("ud-history", JSON.stringify(nh)); } catch {}
+        // GAP-03 FIX: persist offline diagnosis to IndexedDB so it survives tab close/refresh.
+        // Fire-and-forget — UI doesn't need to wait; failure is logged but non-fatal.
+        saveOfflineDiagnosis({
+          crop: form.crop,
+          district: form.district,
+          season: form.season,
+          growthStage: form.growthStage,
+          symptoms: form.symptoms,
+          result: offlineResult,
+          resultPreview: entry.resultPreview,
+        }).then(saved => {
+          setOfflineHistory(prev => [saved, ...prev].slice(0, 50));
+        }).catch((e) => console.warn('Failed to persist offline diagnosis:', e));
         setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
       } catch (err) {
         setError(`অফলাইন নিদানে সমস্যা: ${err.message}`);
@@ -3010,7 +3239,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       const res = await signedFetch("/api/diagnose", {
         method: "POST",
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "claude-sonnet-4-6",
           max_tokens: 2000,
           messages: [{ role: "user", content: uc }]
         })
@@ -3378,7 +3607,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                             name="diagnosisMode"
                             value="online"
                             checked={diagnosisMode==="online"}
-                            onChange={(e)=>setDiagnosisMode(e.target.value)}
+                            onChange={(e)=>{setDiagnosisMode(e.target.value);try{localStorage.setItem("ud-mode",e.target.value);}catch{}}}
                             style={{margin:0,width:16,height:16}}
                           />
                           <span style={{fontSize:11,color:C.text}}>Online (AI-based)</span>
@@ -3390,7 +3619,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                             name="diagnosisMode"
                             value="offline"
                             checked={diagnosisMode==="offline"}
-                            onChange={(e)=>setDiagnosisMode(e.target.value)}
+                            onChange={(e)=>{setDiagnosisMode(e.target.value);try{localStorage.setItem("ud-mode",e.target.value);}catch{}}}
                             style={{margin:0,width:16,height:16}}
                           />
                           <span style={{fontSize:11,color:C.text}}>Offline (Rule-based)</span>
@@ -3445,6 +3674,62 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       {GROWTH_STAGES.map(s=><option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
+                  {/* ENH-03: Upazila (sub-district) selector — narrows outbreak tracking for DAE */}
+                  {form.district && (() => {
+                    const districtBn = form.district.split("/")[0].trim();
+                    // Match district display name to upazilas.js districtId (lowercased slug)
+                    const districtId = districtBn.toLowerCase().replace(/[\u0980-\u09FF]+/g, '').trim().replace(/\s+/g, '') || districtBn.toLowerCase().replace(/\s+/g, '');
+                    const upazilasForDistrict = UPAZILAS.filter(u => u.districtId === districtId || u.districtId === districtBn.toLowerCase().replace(/\s+/g, '_'));
+                    // Fallback: if exact match fails, try matching by Bengali name prefix
+                    const matches = upazilasForDistrict.length > 0 ? upazilasForDistrict : UPAZILAS.filter(u => {
+                      const distObj = DISTRICTS.find(d => d.split("/")[0].trim().toLowerCase() === districtBn.toLowerCase());
+                      return distObj && u.districtId === distObj.split("/")[1]?.trim().toLowerCase().replace(/\s+/g, '').toLowerCase();
+                    });
+                    if (matches.length === 0) return null;
+                    return (
+                      <div style={{marginTop:10}}>
+                        <label style={labelSt}>🏘️ উপজেলা <span style={{color:C.textMuted,fontSize:9,fontWeight:400}}>(ঐচ্ছিক)</span></label>
+                        <select value={selectedUpazilaId} onChange={e=>setSelectedUpazilaId(e.target.value)} style={selSt}>
+                          <option value="">-- উপজেলা --</option>
+                          {matches.map(u=><option key={u.id} value={u.id}>{u.name} / {u.nameEn}</option>)}
+                        </select>
+                      </div>
+                    );
+                  })()}
+                  {/* ENH-06: Variety dropdown — BRRI/BARI registry with disease resistance info */}
+                  {form.crop && (() => {
+                    const varieties = getVarietiesByCrop(form.crop);
+                    if (varieties.length === 0) return null;
+                    const selected = varieties.find(v => v.id === selectedVarietyId);
+                    return (
+                      <div style={{marginTop:10}}>
+                        <label style={labelSt}>🌱 জাত <span style={{color:C.textMuted,fontSize:9,fontWeight:400}}>({varieties.length}টি নিবন্ধিত)</span></label>
+                        <select value={selectedVarietyId} onChange={e=>setSelectedVarietyId(e.target.value)} style={selSt}>
+                          <option value="">-- জাত নির্বাচন (ঐচ্ছিক) --</option>
+                          {varieties.map(v=><option key={v.id} value={v.id}>{v.name} · {v.nameEn} ({v.season || v.releasedBy})</option>)}
+                        </select>
+                        {selected && selected.resistance && (
+                          <div style={{marginTop:6,padding:"8px 10px",background:C.bgMuted,borderRadius:10,fontSize:11,color:C.text,lineHeight:1.6}}>
+                            <div style={{fontWeight:700,color:C.primaryDark,marginBottom:4}}>🛡️ রোগ প্রতিরোধ তথ্য:</div>
+                            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                              {Object.entries(selected.resistance).map(([k, v]) => {
+                                const code = String(v).toUpperCase();
+                                const color = code === 'HR' || code === 'R' ? C.success : code === 'MR' ? C.warning : C.danger;
+                                const label = {HR:'বি.প্র.',R:'প্র.',MR:'ম.প্র.',MS:'ম.স.',S:'স.',HS:'বি.স.'}[code] || code;
+                                const keyLabel = {blast:'ব্লাস্ট',blb:'BLB',bph:'BPH',stemBorer:'মাজরা',sheathBlight:'গাট পচা',lateBlight:'লেট ব্লাইট',earlyBlight:'আর্লি ব্লাইট',scab:'স্ক্যাব',virus:'ভাইরাস',leafCurlVirus:'লিফ কার্ল',bacterialWilt:'ব্যাক. উইল্ট',leafRust:'লিফ রাস্ট',stripeRust:'স্ট্রাইপ রাস্ট',leafBlight:'লিফ ব্লাইট',downyMildew:'ডাউনি মিলডিউ',stalkRot:'স্টক রট',alternaria:'অল্টারনারিয়া',whiteRust:'হোয়াইট রাস্ট',aphid:'জাব পোকা',anthracnose:'অ্যানথ্রাকনোজ',powderyMildew:'পাউডারি মিলডিউ',fruitBorer:'ফল ছিদ্রকারী',phomopsis:'ফোমোপসিস'}[k] || k;
+                                return (
+                                  <span key={k} style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 7px",borderRadius:8,background:C.bgCard,border:`1px solid ${color}33`,color,fontWeight:600,fontSize:10}}>
+                                    {keyLabel}: <span style={{background:color,color:'#fff',padding:"1px 5px",borderRadius:4,fontSize:9}}>{label}</span>
+                                  </span>
+                                );
+                              })}
+                            </div>
+                            {selected.notes && <div style={{marginTop:5,color:C.textMuted,fontStyle:'italic'}}>📝 {selected.notes}</div>}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* duration */}
@@ -3787,19 +4072,23 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       });
                     })()}
                   </div>
-                  {/* Input area */}
-                  <div style={{display:'flex',gap:8}}>
+                  {/* Input area — GAP-06 FIX: maxLength 400 + char counter */}
+                  <div style={{display:'flex',gap:8,flexDirection:'column'}}>
+                    <div style={{display:'flex',gap:8}}>
                     <input 
                       value={followUpQuestion} 
-                      onChange={e=>setFollowUpQuestion(e.target.value)}
+                      onChange={e=>setFollowUpQuestion(e.target.value.slice(0,400))}
                       onKeyDown={e=>{if(e.key==='Enter')handleFollowUp();}}
                       placeholder="আপনার প্রশ্ন লিখুন..."
                       aria-label="Follow-up question"
+                      maxLength={400}
                       style={{flex:1,padding:'10px 14px',borderRadius:12,border:`1px solid ${C.border}`,fontSize:13,color:C.text,background:C.bgMuted,outline:'none'}}
                     />
                     <button onClick={handleFollowUp} disabled={!followUpQuestion.trim()||followUpLoading} aria-label="Ask follow-up question" style={{padding:'10px 16px',borderRadius:12,border:'none',background:C.primary,color:'#fff',fontWeight:700,fontSize:13,cursor:!followUpQuestion.trim()||followUpLoading?'not-allowed':'pointer',opacity:!followUpQuestion.trim()||followUpLoading?0.6:1,whiteSpace:'nowrap'}}>
                       {followUpLoading?<>⟳ চলছে...</>:'প্রশ্ন করুন'}
                     </button>
+                    </div>
+                    {followUpQuestion.length>300&&<div style={{fontSize:11,color:followUpQuestion.length>=400?C.danger:C.textMuted,textAlign:'right'}}>{followUpQuestion.length}/400</div>}
                   </div>
                   {followUpLoading&&<div style={{marginTop:8,fontSize:12,color:C.textMuted,display:'flex',alignItems:'center',gap:6}}><span style={{animation:'spin 1s linear infinite',display:'inline-block'}}>⟳</span> AI আপনার প্রশ্নের উত্তর দিচ্ছে...</div>}
                   {followUpAnswer&&<div style={{marginTop:10,padding:14,background:C.bgMuted,borderRadius:12,fontSize:13,color:C.text,lineHeight:1.8,borderLeft:`3px solid ${C.primary}`,animation:'fadeIn .3s ease'}}>{renderInline(followUpAnswer)}</div>}
@@ -3861,8 +4150,17 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
         {activeTab==="history"&&(
           <div className="ud-editorial-shadow" style={{background:C.bgCard,borderRadius:18,padding:18,border:`1px solid ${C.border}`,boxShadow:C.shadowMd}}>
             <div style={{fontSize:11,color:C.primary,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",marginBottom:6}}>History</div>
-            <div style={{fontWeight:800,fontSize:15,color:C.primaryDark,marginBottom:14}}>📋 নির্ণয়ের ইতিহাস</div>
-            {history.length===0?(
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
+              <div style={{fontWeight:800,fontSize:15,color:C.primaryDark}}>📋 নির্ণয়ের ইতিহাস</div>
+              {/* ENH-05: Export / Share buttons */}
+              {(history.length > 0 || offlineHistory.length > 0) && (
+                <div style={{display:"flex",gap:6}}>
+                  <button onClick={()=>exportHistoryPDF([...offlineHistory.map(o=>({crop:o.crop,district:o.district,date:o.date,resultPreview:o.resultPreview,mode:'offline'})),...history])} style={{padding:"6px 12px",borderRadius:10,border:`1px solid ${C.primary}`,background:C.bgSuccess,color:C.primaryDark,cursor:"pointer",fontSize:11,fontWeight:700}}>📄 PDF</button>
+                  <button onClick={()=>shareHistoryText([...offlineHistory.map(o=>({crop:o.crop,district:o.district,date:o.date,resultPreview:o.resultPreview,mode:'offline'})),...history])} style={{padding:"6px 12px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.text,cursor:"pointer",fontSize:11,fontWeight:700}}>🔗 Share</button>
+                </div>
+              )}
+            </div>
+            {history.length===0&&offlineHistory.length===0?(
               <div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>
                 <div style={{fontSize:48,marginBottom:12,animation:"float 2s ease-in-out infinite"}}>🌾</div>
                 <div style={{fontWeight:700,fontSize:15}}>এখনো কোনো নির্ণয় নেই</div>
@@ -3870,17 +4168,35 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
               </div>
             ):(
               <div style={{display:"flex",flexDirection:"column",gap:9}}>
-                {[...history].reverse().map((h,i)=>(
-                  <div key={i} style={{padding:"16px",background:C.bgMuted,borderRadius:20,border:`1px solid ${C.border}`,boxShadow:"0 6px 18px rgba(0,33,9,0.05)"}}>
+                {/* GAP-03: Offline-persisted diagnoses (IndexedDB) shown first */}
+                {offlineHistory.map((h)=>(
+                  <div key={h.id} style={{padding:"16px",background:C.bgMuted,borderRadius:20,border:`1px solid ${C.border}`,boxShadow:"0 6px 18px rgba(0,33,9,0.05)"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
                       <div className="ud-headline" style={{fontWeight:800,fontSize:17,color:C.text}}>{h.crop?.split("/")[0]?.trim()}</div>
-                      <span style={{background:C.badgeSuccess,color:C.textSuccess,borderRadius:10,padding:"2px 9px",fontSize:11,fontWeight:700}}>সম্পন্ন</span>
+                      <span style={{background:C.badgeWarning,color:C.textWarning,borderRadius:10,padding:"2px 9px",fontSize:11,fontWeight:700}}>📱 অফলাইন</span>
+                    </div>
+                    <div style={{color:C.textMuted,fontSize:11}}>📍 {h.district?.split("/")[0]?.trim()||"—"} · 📅 {h.date}</div>
+                    {h.resultPreview&&<div style={{color:C.textLight,fontSize:12,marginTop:8,lineHeight:1.6,overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{h.resultPreview}...</div>}
+                    {h.result?.primarySuspect&&<div style={{marginTop:6,fontSize:11,color:C.primary,fontWeight:600}}>🦠 {h.result.primarySuspect}</div>}
+                  </div>
+                ))}
+                {/* Online diagnoses from localStorage + server */}
+                {[...history].reverse().map((h,i)=>(
+                  <div key={`ol-${i}`} style={{padding:"16px",background:C.bgMuted,borderRadius:20,border:`1px solid ${C.border}`,boxShadow:"0 6px 18px rgba(0,33,9,0.05)"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+                      <div className="ud-headline" style={{fontWeight:800,fontSize:17,color:C.text}}>{h.crop?.split("/")[0]?.trim()}</div>
+                      <span style={{background:C.badgeSuccess,color:C.textSuccess,borderRadius:10,padding:"2px 9px",fontSize:11,fontWeight:700}}>{h.fromServer?"☁️ সার্ভার":"✓ সম্পন্ন"}</span>
                     </div>
                     <div style={{color:C.textMuted,fontSize:11}}>📍 {h.district?.split("/")[0]?.trim()||"—"} · 📅 {h.date}</div>
                     {h.resultPreview&&<div style={{color:C.textLight,fontSize:12,marginTop:8,lineHeight:1.6,overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{h.resultPreview}...</div>}
                   </div>
                 ))}
-                <button onClick={()=>{setHistory([]);try{localStorage.removeItem("ud-history");}catch{}}} style={{padding:"9px",borderRadius:10,border:"1px solid #fecaca",background:C.bgDanger,color:C.danger,cursor:"pointer",fontSize:12,fontWeight:600,marginTop:3}}>🗑️ সব ইতিহাস মুছুন</button>
+                <button onClick={async()=>{
+                  setHistory([]);try{localStorage.removeItem("ud-history");}catch{}
+                  // Also clear IndexedDB offline history
+                  const ok = await clearOfflineHistory();
+                  if (ok) setOfflineHistory([]);
+                }} style={{padding:"9px",borderRadius:10,border:"1px solid #fecaca",background:C.bgDanger,color:C.danger,cursor:"pointer",fontSize:12,fontWeight:600,marginTop:3}}>🗑️ সব ইতিহাস মুছুন</button>
                 <button onClick={()=>setActiveTab("library")} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bgMuted,color:C.textMuted,cursor:"pointer",fontSize:12,fontWeight:600}}>← তথ্যভান্ডারে ফিরুন</button>
               </div>
             )}

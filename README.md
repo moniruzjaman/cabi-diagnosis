@@ -18,7 +18,7 @@
 
 **উদ্ভিদ গোয়েন্দা (Plant Detective)** is a mobile-first educational app designed to teach Bangladesh farmers and extension workers the **CABI Plantwise 5-step diagnostic process**. Rather than just giving answers, it trains users to systematically identify crop problems — from symptom observation to IPM decision-making.
 
-The app is production-hardened with zero-trust API security, HMAC request signing, server-side key isolation, and **Turso SQLite** for persistent analytics — with zero Supabase dependencies. The main branch is fully lint-clean (0 errors, 0 warnings) and builds successfully for production deployment.
+The app is production-hardened with zero-trust API security, HMAC request signing, server-side key isolation, and **Turso SQLite** for persistent analytics. The main branch is fully lint-clean (0 errors, 0 warnings) and builds successfully for production deployment.
 
 ---
 
@@ -298,8 +298,7 @@ bash setup-vercel-env.sh
 ## Changelog
 
 ### v4.0.0 — Production Hardening & Turso Migration
-- Replaced Supabase with Turso SQLite — no more quota limits, no more project pausing, generous free tier (9GB storage, 1B reads/month)
-- Completely removed all Supabase dependencies, configs, and references — zero Supabase in codebase
+- Migrated persistent analytics layer to Turso SQLite — generous free tier (9GB storage, 1B reads/month)
 - Zero-trust API security — HMAC-SHA256 request signing, no frontend secrets
 - Auto-derived secrets — `API_SIGNING_SECRET` and `ADMIN_SECRET` eliminated, derived from Turso credentials
 - Hardened CORS — explicit origin allowlist, auto-allow `*.vercel.app` deployments

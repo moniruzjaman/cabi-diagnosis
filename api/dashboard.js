@@ -29,8 +29,8 @@ export default async function handler(req, res) {
 
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
 
-  // Rate limit dashboard access
-  if (analyticsLimiter(req, res)) return;
+  // Rate limit dashboard access (async — supports Upstash distributed limiting when configured)
+  if (await analyticsLimiter(req, res)) return;
 
   res.setHeader("Cache-Control", "no-store");
 

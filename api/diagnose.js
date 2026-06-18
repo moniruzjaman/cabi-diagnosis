@@ -8,6 +8,7 @@ import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
 import { diagnoseLimiter } from "./_lib/rateLimit.js";
 import { parseBody, validateDiagnoseMessages } from "./_lib/validation.js";
 import { requireSignedRequest } from "./_lib/requestSigning.js";
+import { logInfo, logWarn, logError } from "./_lib/logger.js";
 
 const REQUEST_TIMEOUT_MS = 30_000; // 30 second overall timeout
 
@@ -806,8 +807,8 @@ export default async function handler(req, res) {
   // Verify request signature (prevents external API abuse)
   if (requireSignedRequest(req, res)) return;
 
-  // Rate limiting
-  if (diagnoseLimiter(req, res)) return;
+  // Rate limiting (async — supports Upstash distributed limiting when configured)
+  if (await diagnoseLimiter(req, res)) return;
 
   // Parse body
   const body = parseBody(req);
@@ -841,14 +842,20 @@ export default async function handler(req, res) {
   // WATERFALL: Gemini 2.5 Flash → OpenRouter Qwen-VL → Groq Llama4 → OR text → Gemini text → Emergency
   // Gemini is primary because it has the best free vision quality for agriculture.
   // ═══════════════════════════════════════════════════════════════════════════
+  const __diagnoseStart = Date.now();
+  logInfo('diagnose_request_start', { imageAttached, messageCount: messages.length, systemPromptLen: systemPrompt.length });
 
   // ─── 1. Gemini 2.5 Flash (best free vision model — primary) ────────────
   try {
     const r = await withTimeout(tryGemini(messages, imageAttached, systemPrompt), "Gemini 2.5 Flash");
     const structured = extractStructuredJson(r.text);
     const cleanText = structured ? stripStructuredJson(r.text) : r.text;
+    logInfo('diagnose_provider_succeeded', { provider: 'gemini', duration_ms: Date.now() - __diagnoseStart, structured: !!structured });
     return res.status(200).json({ content: [{ type: "text", text: cleanText }], structured, provider: r.provider, attempts });
-  } catch (e) { attempts.push(`Gemini 2.5 Flash: ${e.message}`); }
+  } catch (e) {
+    attempts.push(`Gemini 2.5 Flash: ${e.message}`);
+    logWarn('diagnose_provider_fallback', { from: 'gemini', to: 'openrouter_vision', reason: e.message, duration_ms: Date.now() - __diagnoseStart });
+  }
 
   // ─── 2. OpenRouter Qwen-VL smart route (vision or text) ────────────────
   try {
@@ -864,16 +871,24 @@ export default async function handler(req, res) {
     );
     const structured = extractStructuredJson(r.text);
     const cleanText = structured ? stripStructuredJson(r.text) : r.text;
+    logInfo('diagnose_provider_succeeded', { provider: 'openrouter_vision', duration_ms: Date.now() - __diagnoseStart, structured: !!structured });
     return res.status(200).json({ content: [{ type: "text", text: cleanText }], structured, provider: r.provider, attempts });
-  } catch (e) { attempts.push(`OpenRouter smart route: ${e.message}`); }
+  } catch (e) {
+    attempts.push(`OpenRouter smart route: ${e.message}`);
+    logWarn('diagnose_provider_fallback', { from: 'openrouter_vision', to: 'groq', reason: e.message, duration_ms: Date.now() - __diagnoseStart });
+  }
 
   // ─── 3. Groq Llama 4 Scout (fast text, no vision) ──────────────────────
   try {
     const r = await withTimeout(tryGroq(messages, systemPrompt), "Groq");
     const structured = extractStructuredJson(r.text);
     const cleanText = structured ? stripStructuredJson(r.text) : r.text;
+    logInfo('diagnose_provider_succeeded', { provider: 'groq', duration_ms: Date.now() - __diagnoseStart, structured: !!structured });
     return res.status(200).json({ content: [{ type: "text", text: cleanText }], structured, provider: r.provider, attempts });
-  } catch (e) { attempts.push(`Groq: ${e.message}`); }
+  } catch (e) {
+    attempts.push(`Groq: ${e.message}`);
+    logWarn('diagnose_provider_fallback', { from: 'groq', to: 'openrouter_text', reason: e.message, duration_ms: Date.now() - __diagnoseStart });
+  }
 
   // ─── 4. OpenRouter text-only fallback ───────────────────────────────────
   try {
@@ -890,8 +905,12 @@ export default async function handler(req, res) {
       : "";
     const structured = extractStructuredJson(r.text);
     const cleanText = structured ? stripStructuredJson(r.text) : r.text;
+    logInfo('diagnose_provider_succeeded', { provider: 'openrouter_text', duration_ms: Date.now() - __diagnoseStart, structured: !!structured });
     return res.status(200).json({ content: [{ type: "text", text: cleanText + note }], structured, provider: r.provider, attempts });
-  } catch (e) { attempts.push(`OpenRouter text: ${e.message}`); }
+  } catch (e) {
+    attempts.push(`OpenRouter text: ${e.message}`);
+    logWarn('diagnose_provider_fallback', { from: 'openrouter_text', to: 'gemini_text', reason: e.message, duration_ms: Date.now() - __diagnoseStart });
+  }
 
   // ─── 5. Gemini text-only fallback (always try, even without images) ───
   try {
@@ -901,10 +920,15 @@ export default async function handler(req, res) {
       : "";
     const structured = extractStructuredJson(r.text);
     const cleanText = structured ? stripStructuredJson(r.text) : r.text;
+    logInfo('diagnose_provider_succeeded', { provider: 'gemini_text', duration_ms: Date.now() - __diagnoseStart, structured: !!structured });
     return res.status(200).json({ content: [{ type: "text", text: cleanText + note }], structured, provider: r.provider, attempts });
-  } catch (e) { attempts.push(`Gemini text: ${e.message}`); }
+  } catch (e) {
+    attempts.push(`Gemini text: ${e.message}`);
+    logWarn('diagnose_provider_fallback', { from: 'gemini_text', to: 'emergency', reason: e.message, duration_ms: Date.now() - __diagnoseStart });
+  }
 
   // ─── 6. Emergency offline-style fallback ────────────────────────────────
+  logError('diagnose_all_providers_failed', { duration_ms: Date.now() - __diagnoseStart, attempts: attempts.length });
   const fallbackText = buildEmergencyDiagnosis(messages, imageAttached);
   const emergencyStructured = {
     disease_name: "Unknown — emergency fallback",
