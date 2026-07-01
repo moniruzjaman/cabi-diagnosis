@@ -5,6 +5,8 @@ import { lightThemeFull, darkThemeFull, getPreferredTheme } from './data/themes'
 import { CROP_CALENDAR, getCurrentRiskAlerts } from './data/cropCalendar';
 import { CROP_DISEASES, matchDiseasesBySymptoms, resolveCropKey, estimateInoculumPressure, getVarietySusceptibility } from './data/cropDiseases';
 import CropCalendarDashboard from './components/CropCalendarDashboard';
+import WeatherDecisionSummary from './components/WeatherDecisionSummary';
+import TodayDecisionView from './components/TodayDecisionView';
 import OnboardingFlow from './components/OnboardingFlow';
 import OutbreakList from './components/OutbreakList';
 import VisualDiagnosisLibrary from './components/VisualDiagnosisLibrary';
@@ -1324,7 +1326,7 @@ function _HomeTab({setActiveTab,history,weather,locationName}){
     </div>
   );
 }
-function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
+function EnhancedHomeTab({setActiveTab,history,weather,locationName,coords}){
   const { speak, stop, speaking, isSupported } = useTTS();
   const risk = weather ? assessWeatherRisks(weather)[0] : null;
   const season = getCurrentSeason();
@@ -1401,6 +1403,14 @@ function EnhancedHomeTab({setActiveTab,history,weather,locationName}){
           <span>🗓️ {season.split("/")[0].trim()}</span>
         </div>
       </div>
+
+      {/* ── Today's Decision Summary ─────────────────────────────── */}
+      <WeatherDecisionSummary
+        C={C}
+        coords={coords}
+        history={history}
+        onOpenDetail={() => setActiveTab("today")}
+      />
 
       {/* ── Knowledge Hub ────────────────────────────────────────── */}
       <div>
@@ -3176,7 +3186,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       <div id="main-content" role="tabpanel" style={{flex:1,padding:activeTab==="game"?"10px 12px":"14px",overflowY:activeTab==="game"?"hidden":"auto",overflowX:"hidden"}}>
         <div style={{maxWidth:isDesktop?1280:1040,margin:"0 auto",width:"100%"}}>
 
-        {activeTab==="home"&&<EnhancedHomeTab setActiveTab={setActiveTab} history={history} weather={weather} locationName={locationName}/>}
+        {activeTab==="home"&&<EnhancedHomeTab setActiveTab={setActiveTab} history={history} weather={weather} locationName={locationName} coords={coords}/>}
         {activeTab==="home"&&(()=>{
           const alerts=getCurrentRiskAlerts();
           if(alerts.length===0)return null;
@@ -3191,6 +3201,17 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
             </div>
           );
         })()}
+
+        {/* ── TODAY tab (dedicated weather-decision page) ─────────── */}
+        {activeTab==="today"&&(
+          <TodayDecisionView
+            C={C}
+            coords={coords}
+            locationName={locationName}
+            history={history}
+            onBack={()=>setActiveTab("home")}
+          />
+        )}
 
         {/* ── CALENDAR tab (Crop Calendar + Weather + Price) ──────────── */}
         {activeTab==="calendar"&&(
