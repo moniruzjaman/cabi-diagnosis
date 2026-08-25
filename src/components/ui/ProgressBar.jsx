@@ -15,7 +15,7 @@ export default function ProgressBar({
   return (
     <div
       className={`ud-progress ${className}`.trim()}
-      style={{ '--progress-height': `${height}px`, ...style } as React.CSSProperties}
+      style={{ '--progress-height': `${height}px`, ...style }}
       role="progressbar"
       aria-valuenow={clampedValue}
       aria-valuemin={0}
@@ -27,7 +27,7 @@ export default function ProgressBar({
         style={{
           width: `${clampedValue}%`,
           '--progress-color': color || undefined,
-        } as React.CSSProperties}
+        }}
       />
       {showLabel && (
         <span

@@ -76,7 +76,7 @@ function ConfettiEffect({ active, onComplete }) {
             borderRadius: Math.random() > 0.5 ? '50%' : '2px',
             animation: `confettiFall ${p.duration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94) ${p.delay}ms forwards`,
             '--confetti-rotate': `${p.rotate}deg`,
-          } as React.CSSProperties}
+          }}
         />
       ))}
     </div>
