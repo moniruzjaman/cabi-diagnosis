@@ -27,6 +27,7 @@ import {
 import { CROP_CALENDAR, GREGORIAN_MONTHS } from '../data/cropCalendar';
 import { BANGLADESH_DISTRICTS, getDivisions, getDistrictsByDivision, findNearestDistrict, getDistrictById } from '../data/bangladeshDistricts';
 import { getUpazilasByDistrict } from '../data/upazilas';
+import Skeleton from '../components/ui/Skeleton';
 
 /**
  * CropCalendarDashboard — Real-time weather + price comparison
@@ -562,8 +563,21 @@ export default function CropCalendarDashboard({ C, weather, coords, locationName
       {activeView === 'forecast' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {forecastLoading && !forecast && (
-            <div style={{ padding: 20, textAlign: 'center', color: C.textMuted, fontSize: 13 }}>
-              ⏳ ৭ দিনের পূর্বাভাস আনা হচ্ছে...
+            <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <Skeleton variant="text" width="50%" height={14} />
+              <div style={{ display: 'flex', gap: 12 }}>
+                <Skeleton variant="rectangular" width="33%" height={60} />
+                <Skeleton variant="rectangular" width="33%" height={60} />
+                <Skeleton variant="rectangular" width="33%" height={60} />
+              </div>
+              {[0,1,2,3].map(i=>(
+                <div key={i} style={{display:"flex",gap:12,alignItems:"center",padding:"10px 14px",background:C.bgCard,borderRadius:12,border:`1px solid ${C.border}`}}>
+                  <Skeleton variant="text" width={60} height={12}/>
+                  <Skeleton variant="text" width="40%" height={10}/>
+                  <Skeleton variant="text" width="30%" height={10}/>
+                  <Skeleton variant="text" width={40} height={10}/>
+                </div>
+              ))}
             </div>
           )}
 
