@@ -1,5 +1,5 @@
 import React from 'react';
-import { useStagger } from '../hooks/useWow.js';
+import { useStagger } from '../hooks/useAnimations.js';
 
 const LEAF_EMOJIS = ['🍃', '🌿', '🍂', '☘️', '🌱', '🍀'];
 
@@ -74,12 +74,11 @@ export function StaggerContainer({ children, baseDelay = 80, className = '', as 
   );
 }
 
-export function ShimmerText({ text = '', className = '', as: Component = 'span', color, ...rest }) {
+export function ShimmerText({ text = '', className = '', as: Component = 'span', color, style, ...rest }) {
   const textColor = color || 'var(--c-text, #1a1d21)';
   return (
     <Component
       className={`ud-shimmer-text ${className}`.trim()}
-      {...rest}
       style={{
         background: `linear-gradient(90deg, ${textColor} 0%, ${textColor} 40%, var(--c-accent, #f59e0b) 50%, ${textColor} 60%, ${textColor} 100%)`,
         backgroundSize: '200% 100%',
@@ -88,8 +87,9 @@ export function ShimmerText({ text = '', className = '', as: Component = 'span',
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
         display: 'inline-block',
-        ...rest.style,
+        ...style,
       }}
+      {...rest}
     >
       {text}
     </Component>

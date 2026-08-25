@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { SYMPTOM_SPOTTER_IMAGES } from "./imageMap";
 import useTTS from "./useTTS";
 import SymptomImageGallery from "./SymptomImageGallery";
-import { useConfetti } from "../hooks/useWow";
+import { useConfetti } from "../hooks/useAnimations";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {

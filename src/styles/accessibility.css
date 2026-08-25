@@ -62,9 +62,12 @@ label {
   color: var(--c-text, #1a1d21);
 }
 
-/* Ensure error messages are not conveyed by color alone */
+/* Ensure error messages are not conveyed by color alone.
+   Use :user-invalid (and :-moz-ui-invalid) so the indicator only appears
+   after the user interacts, not on initial page load. */
 [aria-invalid="true"],
-input:invalid {
+input:user-invalid,
+input:-moz-ui-invalid {
   border-color: var(--c-danger, #dc2626) !important;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='5' fill='%23dc2626'/%3E%3Ctext x='6' y='9' text-anchor='middle' fill='white' font-size='8' font-weight='bold'%3E!%3C/text%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -106,12 +109,11 @@ select:disabled {
 /* Prevent text overflow in narrow viewports */
 body {
   overflow-wrap: break-word;
-  word-break: break-word;
 }
 
-/* Ensure scrolling works in all directions */
-[role="region"],
-[aria-label] {
+/* Ensure scrolling works in all directions for actual scrollable regions
+   (scoped to role="region" to avoid forcing scrollbars on every labelled element) */
+[role="region"] {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }

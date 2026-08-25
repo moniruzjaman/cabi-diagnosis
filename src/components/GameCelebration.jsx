@@ -1,21 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Confetti from './ui/Confetti';
 
-const KEYFRAMES = `
-@keyframes gc-fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes gc-bounceIn{0%{transform:scale(0);opacity:0}50%{transform:scale(1.2)}70%{transform:scale(0.9)}100%{transform:scale(1);opacity:1}}
-@keyframes gc-slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-`;
-
-let _stylesInjected = false;
-function injectStyles() {
-  if (_stylesInjected) return;
-  _stylesInjected = true;
-  const s = document.createElement('style');
-  s.textContent = KEYFRAMES;
-  document.head.appendChild(s);
-}
-
 export default function GameCelebration({
   show,
   score,
@@ -27,10 +12,6 @@ export default function GameCelebration({
 }) {
   const playAgainRef = useRef(null);
   const [shouldRender, setShouldRender] = useState(false);
-
-  useEffect(() => {
-    injectStyles();
-  }, []);
 
   useEffect(() => {
     if (show) {

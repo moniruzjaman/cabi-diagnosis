@@ -37,14 +37,14 @@ export default function Confetti({ active = false, onComplete, colors }) {
 
       timerRef.current = setTimeout(() => {
         setParticles([]);
-        onComplete && onComplete();
+        onComplete?.();
       }, DURATION + 700);
     }
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [active]);
+  }, [active, onComplete, colors]);
 
   if (!active || particles.length === 0) return null;
 
