@@ -685,6 +685,7 @@ const styles = {
     margin: 0,
     overflowY: "auto",
     overflowX: "hidden",
+    animation: "fadeInUp 0.4s ease",
   },
 
   /* ── Start Screen ── */

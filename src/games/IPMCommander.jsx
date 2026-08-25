@@ -603,7 +603,7 @@ export default function IPMCommander() {
   const _allPlaced = slots.every(s => s !== null);
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: "'Noto Sans Bengali', 'Inter', sans-serif", paddingBottom: 40 }}>
+    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: "'Noto Sans Bengali', 'Inter', sans-serif", paddingBottom: 40, animation: "fadeInUp 0.4s ease" }}>
       {/* Top bar */}
       <div style={{ position: "sticky", top: 0, zIndex: 10, background: `linear-gradient(135deg, ${C.primaryDark}, ${C.primary})`, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 4px 16px rgba(0,33,9,0.15)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

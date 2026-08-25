@@ -1,19 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-/**
- * OnboardingFlow Component
- *
- * A first-time user onboarding with 4 slides:
- *   1. "স্বাগতম!" — App intro with leaf animation
- *   2. "ছবি তুলে রোগ চিনুন" — How diagnosis works
- *   3. "শিখুন ও খেলুন" — Learning games overview
- *   4. "শুরু করুন!" — Get started CTA
- *
- * Each slide: emoji icon, Bengali title + English subtitle, description,
- * dot indicators, Next/Skip/Get Started buttons.
- * Receives onComplete callback and C color tokens as props.
- * Saves completion to localStorage so it only shows once.
- */
 const ONBOARDING_KEY = 'cabi-onboarding-completed';
 
 const SLIDES = [
@@ -54,10 +40,12 @@ const SLIDES = [
 export default function OnboardingFlow({ C: _C, onComplete }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [visible, setVisible] = useState(false);
+  const [slideDirection, setSlideDirection] = useState('next');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [fadingOut, setFadingOut] = useState(false);
+  const touchStartX = useRef(null);
 
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    // Check if onboarding was already completed
     const completed = localStorage.getItem(ONBOARDING_KEY);
     if (completed === 'true') {
       if (onComplete) onComplete();
@@ -65,18 +53,34 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
     }
     setVisible(true);
   }, [onComplete]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const navigateTo = (newSlide, direction) => {
+    if (isTransitioning) return;
+    setSlideDirection(direction);
+    setIsTransitioning(true);
+    setCurrentSlide(newSlide);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
 
   function handleNext() {
     if (currentSlide < SLIDES.length - 1) {
-      setCurrentSlide(prev => prev + 1);
+      navigateTo(currentSlide + 1, 'next');
+    }
+  }
+
+  function handlePrev() {
+    if (currentSlide > 0) {
+      navigateTo(currentSlide - 1, 'prev');
     }
   }
 
   function handleSkip() {
-    localStorage.setItem(ONBOARDING_KEY, 'true');
-    setVisible(false);
-    if (onComplete) onComplete();
+    setFadingOut(true);
+    setTimeout(() => {
+      localStorage.setItem(ONBOARDING_KEY, 'true');
+      setVisible(false);
+      if (onComplete) onComplete();
+    }, 300);
   }
 
   function handleGetStarted() {
@@ -85,30 +89,89 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
     if (onComplete) onComplete();
   }
 
-  // Don't render if not visible or already completed
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const delta = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(delta) > 50) {
+      if (delta > 0) {
+        handleNext();
+      } else {
+        handlePrev();
+      }
+    }
+    touchStartX.current = null;
+  };
+
   if (!visible) return null;
 
   const slide = SLIDES[currentSlide];
   const isLast = currentSlide === SLIDES.length - 1;
 
+  const slideStyle = {
+    background: slide.bgGradient,
+    animation: fadingOut ? 'fadeOut .3s ease forwards' : 'fadeIn .4s ease',
+  };
+
+  const contentSlideStyle = {
+    transform: isTransitioning
+      ? slideDirection === 'next'
+        ? 'translateX(30px)'
+        : 'translateX(-30px)'
+      : 'translateX(0)',
+    opacity: isTransitioning ? 0.5 : 1,
+    transition: 'all .5s cubic-bezier(0.4, 0, 0.2, 1)',
+  };
+
+  const decorativeElements = [
+    { size: 8, top: '20%', left: '10%', duration: '4s', delay: '0s', opacity: 0.2 },
+    { size: 6, top: '60%', right: '15%', duration: '5.5s', delay: '1.2s', opacity: 0.15 },
+    { size: 10, bottom: '30%', left: '80%', duration: '6s', delay: '2s', opacity: 0.1 },
+  ];
+
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: slide.bgGradient, zIndex: 9999,
-      display: 'flex', flexDirection: 'column',
-      animation: 'fadeIn .4s ease',
-    }}>
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: slide.bgGradient,
+        zIndex: 9999,
+        display: 'flex',
+        flexDirection: 'column',
+        ...slideStyle,
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="অনবোর্ডিং গাইড"
+    >
       {/* Skip button */}
       <div style={{
-        display: 'flex', justifyContent: 'flex-end', padding: '16px 20px',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '16px 20px',
       }}>
         <button
           onClick={handleSkip}
+          aria-label="অনবোর্ডিং এড়িয়ে যান"
           style={{
-            background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)',
-            borderRadius: 20, padding: '6px 16px', color: '#fff',
-            fontSize: 13, fontWeight: 600, cursor: 'pointer',
-            backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+            background: 'rgba(255,255,255,0.2)',
+            border: '1px solid rgba(255,255,255,0.3)',
+            borderRadius: 20,
+            padding: '6px 16px',
+            color: '#fff',
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
+            minHeight: 44,
+            minWidth: 44,
           }}
         >
           এড়িয়ে যান / Skip
@@ -116,44 +179,95 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
       </div>
 
       {/* Content area */}
-      <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        padding: '20px 28px', textAlign: 'center',
-      }}>
-        {/* Floating emoji animation */}
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px 28px',
+          textAlign: 'center',
+          ...contentSlideStyle,
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Existing floating emojis */}
         <div style={{
-          fontSize: 40, marginBottom: 8, opacity: 0.4,
+          fontSize: 40,
+          marginBottom: 8,
+          opacity: 0.4,
           animation: 'leafFloat 6s ease-in-out infinite',
-          position: 'absolute', top: '15%', right: '15%',
+          position: 'absolute',
+          top: '15%',
+          right: '15%',
+          willChange: 'transform',
         }}>
           {slide.floatingEmoji}
         </div>
         <div style={{
-          fontSize: 28, marginBottom: 8, opacity: 0.25,
+          fontSize: 28,
+          marginBottom: 8,
+          opacity: 0.25,
           animation: 'leafFloat 5s ease-in-out infinite 1s',
-          position: 'absolute', bottom: '25%', left: '12%',
+          position: 'absolute',
+          bottom: '25%',
+          left: '12%',
+          willChange: 'transform',
         }}>
           {slide.floatingEmoji}
         </div>
 
+        {/* Additional parallax decorative elements */}
+        {decorativeElements.map((el, i) => (
+          <span
+            key={i}
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              width: el.size,
+              height: el.size,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.3)',
+              top: el.top,
+              left: el.left,
+              right: el.right,
+              bottom: el.bottom,
+              opacity: el.opacity,
+              animation: `floatGentle ${el.duration} ease-in-out infinite`,
+              animationDelay: el.delay,
+              willChange: 'transform',
+            }}
+          />
+        ))}
+
         {/* Main icon */}
         <div style={{
-          width: 100, height: 100, borderRadius: '50%',
+          width: 100,
+          height: 100,
+          borderRadius: '50%',
           background: 'rgba(255,255,255,0.15)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 48, marginBottom: 24,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 48,
+          marginBottom: 24,
           border: '2px solid rgba(255,255,255,0.2)',
           animation: 'popIn .5s ease',
-          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
         }}>
           {slide.icon}
         </div>
 
         {/* Title */}
         <h1 style={{
-          color: '#ffffff', fontSize: 28, fontWeight: 800,
-          marginBottom: 4, lineHeight: 1.2,
+          color: '#ffffff',
+          fontSize: 28,
+          fontWeight: 800,
+          marginBottom: 4,
+          lineHeight: 1.2,
           fontFamily: "'Plus Jakarta Sans', 'Noto Sans Bengali', sans-serif",
         }}>
           {slide.title}
@@ -161,16 +275,22 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
 
         {/* English subtitle */}
         <div style={{
-          color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 500,
-          marginBottom: 16, letterSpacing: 0.5,
+          color: 'rgba(255,255,255,0.7)',
+          fontSize: 14,
+          fontWeight: 500,
+          marginBottom: 16,
+          letterSpacing: 0.5,
         }}>
           {slide.subtitle}
         </div>
 
         {/* Description */}
         <p style={{
-          color: 'rgba(255,255,255,0.9)', fontSize: 15, lineHeight: 1.7,
-          maxWidth: 320, marginBottom: 32,
+          color: 'rgba(255,255,255,0.9)',
+          fontSize: 15,
+          lineHeight: 1.7,
+          maxWidth: 320,
+          marginBottom: 32,
         }}>
           {slide.description}
         </p>
@@ -184,9 +304,15 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
               { icon: '📋', text: 'ফলাফল দেখুন' },
             ].map((step, i) => (
               <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: 'rgba(255,255,255,0.15)', borderRadius: 20,
-                padding: '6px 14px', fontSize: 13, color: '#fff', fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                background: 'rgba(255,255,255,0.15)',
+                borderRadius: 20,
+                padding: '6px 14px',
+                fontSize: 13,
+                color: '#fff',
+                fontWeight: 600,
                 border: '1px solid rgba(255,255,255,0.2)',
               }}>
                 <span>{step.icon}</span>
@@ -205,9 +331,15 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
               { icon: '🧭', text: 'মাঠ পরিদর্শন' },
             ].map((game, i) => (
               <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: 'rgba(255,255,255,0.15)', borderRadius: 20,
-                padding: '6px 14px', fontSize: 13, color: '#fff', fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                background: 'rgba(255,255,255,0.15)',
+                borderRadius: 20,
+                padding: '6px 14px',
+                fontSize: 13,
+                color: '#fff',
+                fontWeight: 600,
                 border: '1px solid rgba(255,255,255,0.2)',
               }}>
                 <span>{game.icon}</span>
@@ -218,24 +350,72 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
         )}
       </div>
 
-      {/* Bottom: dots + button */}
+      {/* Bottom: progress bar + button */}
       <div style={{
-        padding: '20px 28px 40px', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', gap: 20,
+        padding: '20px 28px 40px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 20,
       }}>
-        {/* Dot indicators */}
-        <div style={{ display: 'flex', gap: 8 }}>
+        {/* Animated progress indicator */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0,
+          width: '100%',
+          maxWidth: 280,
+          position: 'relative',
+        }}>
+          {/* Connecting line */}
+          <div style={{
+            position: 'absolute',
+            left: 12,
+            right: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            height: 2,
+            background: 'rgba(255,255,255,0.2)',
+            borderRadius: 1,
+            zIndex: 0,
+          }}>
+            <div style={{
+              width: `${((currentSlide) / (SLIDES.length - 1)) * 100}%`,
+              height: '100%',
+              background: 'rgba(255,255,255,0.9)',
+              borderRadius: 1,
+              transition: 'width .5s cubic-bezier(0.4, 0, 0.2, 1)',
+            }} />
+          </div>
+
+          {/* Dots with pulse ring on active */}
           {SLIDES.map((_, i) => (
             <div
               key={i}
               style={{
+                position: 'relative',
+                zIndex: 1,
                 width: i === currentSlide ? 24 : 8,
-                height: 8,
-                borderRadius: 4,
-                background: i === currentSlide ? '#ffffff' : 'rgba(255,255,255,0.35)',
+                height: i === currentSlide ? 24 : 8,
+                borderRadius: '50%',
+                background: i === currentSlide ? '#ffffff' : 'rgba(255,255,255,0.4)',
                 transition: 'all .3s ease',
+                flexShrink: 0,
               }}
-            />
+            >
+              {i === currentSlide && (
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '50%',
+                    border: '2px solid rgba(255,255,255,0.8)',
+                    animation: 'pulseRing 1.5s ease-out infinite',
+                  }}
+                />
+              )}
+            </div>
           ))}
         </div>
 
@@ -243,12 +423,21 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
         <div style={{ display: 'flex', gap: 12, width: '100%', maxWidth: 360 }}>
           {currentSlide > 0 && (
             <button
-              onClick={() => setCurrentSlide(prev => prev - 1)}
+              onClick={handlePrev}
+              aria-label="পেছনের স্লাইডে যান"
               style={{
-                flex: 1, padding: '14px 20px', borderRadius: 14,
-                background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)',
-                color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer',
-                backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+                flex: 1,
+                padding: '14px 20px',
+                borderRadius: 14,
+                background: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: '#fff',
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: 'pointer',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                minHeight: 44,
               }}
             >
               ← পেছনে
@@ -258,11 +447,19 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
           {isLast ? (
             <button
               onClick={handleGetStarted}
+              aria-label="অ্যাপ শুরু করুন"
               style={{
-                flex: 1, padding: '14px 20px', borderRadius: 14,
-                background: '#ffffff', border: 'none',
-                color: '#065f46', fontSize: 16, fontWeight: 800, cursor: 'pointer',
+                flex: 1,
+                padding: '14px 20px',
+                borderRadius: 14,
+                background: '#ffffff',
+                border: 'none',
+                color: '#065f46',
+                fontSize: 16,
+                fontWeight: 800,
+                cursor: 'pointer',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+                minHeight: 44,
               }}
             >
               🚀 শুরু করুন!
@@ -270,11 +467,19 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
           ) : (
             <button
               onClick={handleNext}
+              aria-label="পরবর্তী স্লাইডে যান"
               style={{
-                flex: 1, padding: '14px 20px', borderRadius: 14,
-                background: '#ffffff', border: 'none',
-                color: '#065f46', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                flex: 1,
+                padding: '14px 20px',
+                borderRadius: 14,
+                background: '#ffffff',
+                border: 'none',
+                color: '#065f46',
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: 'pointer',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+                minHeight: 44,
               }}
             >
               পরবর্তী →
@@ -286,20 +491,11 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
   );
 }
 
-/**
- * Helper: Check if onboarding should be shown.
- * Useful for parent components to decide whether to mount OnboardingFlow.
- */
-// eslint-disable-next-line react-refresh/only-export-components -- utility function, not a component
 export function isOnboardingCompleted() {
   if (typeof window === 'undefined') return false;
   return localStorage.getItem(ONBOARDING_KEY) === 'true';
 }
 
-/**
- * Helper: Reset onboarding (for testing or user preference).
- */
-// eslint-disable-next-line react-refresh/only-export-components -- utility function, not a component
 export function resetOnboarding() {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(ONBOARDING_KEY);

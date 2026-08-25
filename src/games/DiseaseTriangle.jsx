@@ -333,7 +333,7 @@ export default function DiseaseTriangle() {
   // ═══════════════════════════════════════════════════════════════════════════════
   if (phase === "start") {
     return (
-      <div ref={scrollRef} style={{ maxWidth: 480, margin: "0 auto", padding: "16px 16px 32px" }}>
+      <div ref={scrollRef} style={{ maxWidth: 480, margin: "0 auto", padding: "16px 16px 32px", animation: "fadeInUp 0.4s ease" }}>
         {/* Hero card */}
         <div
           className="dt-popIn"
@@ -476,7 +476,7 @@ export default function DiseaseTriangle() {
     const lastResult = results.length > 0 ? results[results.length - 1] : null;
 
     return (
-      <div ref={scrollRef} style={{ maxWidth: 480, margin: "0 auto", padding: "16px 16px 32px" }}>
+      <div ref={scrollRef} style={{ maxWidth: 480, margin: "0 auto", padding: "16px 16px 32px", animation: "fadeInUp 0.4s ease" }}>
         {/* Top bar: score + progress */}
         <div
           style={{
@@ -841,7 +841,7 @@ export default function DiseaseTriangle() {
     const stars = percentage >= 90 ? 3 : percentage >= 70 ? 2 : percentage >= 50 ? 1 : 0;
 
     return (
-      <div ref={scrollRef} style={{ maxWidth: 480, margin: "0 auto", padding: "16px 16px 32px" }}>
+      <div ref={scrollRef} style={{ maxWidth: 480, margin: "0 auto", padding: "16px 16px 32px", animation: "fadeInUp 0.4s ease" }}>
         {/* Score hero */}
         <div
           className="dt-popIn"

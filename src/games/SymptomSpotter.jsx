@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { SYMPTOM_SPOTTER_IMAGES } from "./imageMap";
 import useTTS from "./useTTS";
 import SymptomImageGallery from "./SymptomImageGallery";
+import { useConfetti } from "../hooks/useAnimations";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -129,7 +130,7 @@ function ChoiceButton({ label, index, state, onClick, disabled }) {
   if (state === "correct") {
     bg = "#dcfce7";
     border = C.success;
-    extra = { animation: "ss-pulse-glow 0.6s ease-in-out" };
+    extra = { animation: "pulseRing 1.2s ease-in-out infinite" };
   } else if (state === "wrong") {
     bg = "#fef2f2";
     border = C.danger;
@@ -141,11 +142,14 @@ function ChoiceButton({ label, index, state, onClick, disabled }) {
   }
 
   const labels = ["ক", "খ", "গ", "ঘ"];
+  const [hovered, setHovered] = useState(false);
 
   return (
     <button
       onClick={onClick}
       disabled={disabled}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         display: "flex",
         alignItems: "center",
@@ -161,6 +165,7 @@ function ChoiceButton({ label, index, state, onClick, disabled }) {
         fontFamily: "'Plus Jakarta Sans','Noto Sans Bengali',sans-serif",
         cursor: disabled ? "default" : "pointer",
         transition: "all 0.25s ease",
+        transform: hovered && !disabled ? "translateY(-2px)" : "translateY(0)",
         opacity: state === "wrong" ? 0.7 : 1,
         textAlign: "left",
         animation: "ss-fadeIn 0.35s ease-out",
@@ -219,7 +224,7 @@ function TimerBar({ timeLeft, max }) {
         borderRadius: 99,
         background: C.bgMuted,
         overflow: "hidden",
-        marginBottom: 20,
+        marginBottom: 6,
       }}
     >
       <div
@@ -229,7 +234,7 @@ function TimerBar({ timeLeft, max }) {
           borderRadius: 99,
           background: barColor,
           transition: "width 0.3s linear",
-          animation: isLow ? "ss-timer-pulse 0.5s ease-in-out infinite" : "none",
+          animation: isLow ? "pulse 1s infinite" : "none",
         }}
       />
     </div>
@@ -252,6 +257,9 @@ export default function SymptomSpotter() {
   const [locked, setLocked] = useState(false);
   const [scorePop, setScorePop] = useState(false);
   const [isNewHigh, setIsNewHigh] = useState(false);
+  const [animatingAnswer, setAnimatingAnswer] = useState(false);
+
+  const { triggerConfetti, ConfettiComponent } = useConfetti();
 
   const timerRef = useRef(null);
   const currentQ = questions[qIdx] || null;
@@ -305,6 +313,13 @@ export default function SymptomSpotter() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- speak/isSupported from useTTS have unstable refs; answers/currentQ.correct intentionally omitted—effect should only fire on lock state change
   }, [locked]);
+
+  /* ── trigger confetti on good result ────── */
+  useEffect(() => {
+    if (phase === "result" && score >= 70) {
+      triggerConfetti();
+    }
+  }, [phase, score, triggerConfetti]);
 
   /* ── handle answer ─────────────────────── */
   const handleAnswer = useCallback((choiceIdx) => {
@@ -454,10 +469,13 @@ export default function SymptomSpotter() {
           </div>
 
           {/* timer */}
-          <TimerBar timeLeft={timeLeft} max={TIME_PER_Q} />
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+            <TimerBar timeLeft={timeLeft} max={TIME_PER_Q} />
+            <span style={{fontSize:12,fontWeight:700,color:timeLeft<5?C.danger:C.textMuted,animation:timeLeft<5?"pulse 1s infinite":"none",marginLeft:8,flexShrink:0}}>⏱ {timeLeft}s</span>
+          </div>
 
           {/* crop & symptom */}
-          <div style={styles.questionArea(C)}>
+          <div key={qIdx} style={{...styles.questionArea(C), animation: "fadeInUp 0.4s ease-out"}}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
               <span style={{ fontSize: 48 }}>{currentQ.icon}</span>
               <div>
@@ -580,10 +598,11 @@ export default function SymptomSpotter() {
   if (phase === "result") {
     return (
       <div style={{ ...styles.wrapper, animation: "ss-fadeIn 0.5s ease-out" }}>
+        <ConfettiComponent />
         <div style={styles.card(C, "ss-popIn")}>
           {/* header */}
           <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <div style={{ fontSize: 64, marginBottom: 8 }}>{msg.emoji}</div>
+            <div style={{ fontSize: 64, marginBottom: 8, animation: "bounceIn 0.6s ease" }}>{msg.emoji}</div>
             <h1 style={{ ...styles.title(C), margin: "0 0 4px" }}>খেলা শেষ!</h1>
             <p style={{ color: msg.color, fontSize: 15, fontWeight: 600, lineHeight: 1.5, maxWidth: 300, margin: "0 auto" }}>
               {msg.text}
