@@ -11,8 +11,8 @@
  *   - Ensemble score combines symptom matching with season + weather signals.
  */
 
-import { CROP_CALENDAR, getCurrentRiskAlerts } from './cropCalendar.js';
-import { CROP_DISEASES } from './cropDiseases.js';
+import { CROP_CALENDAR, getCurrentRiskAlerts } from "./cropCalendar.js";
+import { CROP_DISEASES } from "./cropDiseases.js";
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
 
@@ -24,7 +24,7 @@ import { CROP_DISEASES } from './cropDiseases.js';
  * @returns {string} Normalised name matching CROP_DISEASES conventions
  */
 function normaliseSeasonName(nameEn) {
-  if (nameEn === 'Kharif-1' || nameEn === 'Kharif-2') return 'Kharif';
+  if (nameEn === "Kharif-1" || nameEn === "Kharif-2") return "Kharif";
   return nameEn; // Boro, Aman, Aus, Rabi, Year-round
 }
 
@@ -126,7 +126,7 @@ export function scoreDiseasesBySeason(cropKey, month) {
     const seasonMonths = getMonthsForDiseaseSeasons(cropKey, disease.season);
 
     // Year-round diseases are always in season
-    if (disease.season.includes('Year-round')) {
+    if (disease.season.includes("Year-round")) {
       return { diseaseName: disease.name, seasonScore: 1.0 };
     }
 
@@ -173,55 +173,57 @@ export function scoreDiseasesByWeather(cropKey, weather) {
     let score = 0;
 
     switch (disease.cause) {
-      case 'fungal': {
+      case "fungal": {
         // Fungal diseases thrive in warm, humid conditions
-        const humScore = humidity > 80
-          ? clamp((humidity - 80) / 20, 0, 1)       // 80→0, 100→1
-          : 0;
-        const tempScore = (temp >= 25 && temp <= 35)
-          ? 1 - Math.abs(temp - 30) / 5              // peaks at 30°C
-          : 0;
+        const humScore =
+          humidity > 80
+            ? clamp((humidity - 80) / 20, 0, 1) // 80→0, 100→1
+            : 0;
+        const tempScore =
+          temp >= 25 && temp <= 35
+            ? 1 - Math.abs(temp - 30) / 5 // peaks at 30°C
+            : 0;
         score = Math.max(humScore * 0.6 + tempScore * 0.4, humScore > 0 ? 0.3 : 0);
         break;
       }
 
-      case 'bacterial': {
+      case "bacterial": {
         // Bacterial diseases need high humidity + rain splash
-        const humScore = humidity > 85
-          ? clamp((humidity - 85) / 15, 0, 1)
-          : 0;
-        const rainScore = rain24h > 20
-          ? clamp((rain24h - 20) / 30, 0, 1)         // 20→0, 50→1
-          : 0;
+        const humScore = humidity > 85 ? clamp((humidity - 85) / 15, 0, 1) : 0;
+        const rainScore =
+          rain24h > 20
+            ? clamp((rain24h - 20) / 30, 0, 1) // 20→0, 50→1
+            : 0;
         score = Math.max(humScore * 0.4 + rainScore * 0.6, humScore > 0 && rainScore > 0 ? 0.5 : 0);
         break;
       }
 
-      case 'viral': {
+      case "viral": {
         // Viral diseases spread via vectors:
         //   Cool temps (<25°C): aphids & leafhoppers active
         //   Hot temps (>30°C):  whitefly active
         if (temp < 25) {
-          score = clamp((25 - temp) / 10, 0.2, 1);    // 25→0.2, 15→1
+          score = clamp((25 - temp) / 10, 0.2, 1); // 25→0.2, 15→1
         } else if (temp > 30) {
-          score = clamp((temp - 30) / 5, 0.2, 1);     // 30→0.2, 35→1
+          score = clamp((temp - 30) / 5, 0.2, 1); // 30→0.2, 35→1
         } else {
           score = 0.2; // moderate temp — low vector pressure
         }
         break;
       }
 
-      case 'insect': {
+      case "insect": {
         // Insect pests favour warm conditions with moderate humidity
-        const tempScore = temp > 28
-          ? clamp((temp - 28) / 7, 0, 1)              // 28→0, 35→1
-          : 0;
-        const humOk = (humidity >= 40 && humidity <= 80) ? 1 : 0.3;
+        const tempScore =
+          temp > 28
+            ? clamp((temp - 28) / 7, 0, 1) // 28→0, 35→1
+            : 0;
+        const humOk = humidity >= 40 && humidity <= 80 ? 1 : 0.3;
         score = tempScore * 0.7 + humOk * 0.3;
         break;
       }
 
-      case 'nutrient': {
+      case "nutrient": {
         // Nutrient deficiencies: heavy rain leaches nutrients; drought
         // limits uptake
         if (rain24h > 50) {
@@ -279,17 +281,11 @@ export function computeEnsembleScore(cropKey, symptomMatches, weather, month) {
   const seasonScores = scoreDiseasesBySeason(cropKey, month);
   const weatherScores = scoreDiseasesByWeather(cropKey, weather);
 
-  const seasonMap = Object.fromEntries(
-    seasonScores.map((s) => [s.diseaseName, s.seasonScore])
-  );
-  const weatherMap = Object.fromEntries(
-    weatherScores.map((w) => [w.diseaseName, w.weatherScore])
-  );
+  const seasonMap = Object.fromEntries(seasonScores.map((s) => [s.diseaseName, s.seasonScore]));
+  const weatherMap = Object.fromEntries(weatherScores.map((w) => [w.diseaseName, w.weatherScore]));
 
   // Build a symptom map — default to 0 for diseases not matched by symptoms
-  const symptomMap = Object.fromEntries(
-    symptomMatches.map((m) => [m.disease, m.matchRatio])
-  );
+  const symptomMap = Object.fromEntries(symptomMatches.map((m) => [m.disease, m.matchRatio]));
 
   // Score every disease in the crop's database
   const results = CROP_DISEASES[cropKey].diseases.map((disease) => {
@@ -297,10 +293,7 @@ export function computeEnsembleScore(cropKey, symptomMatches, weather, month) {
     const seasonScore = seasonMap[disease.name] ?? 0.2;
     const weatherScore = weatherMap[disease.name] ?? 0;
 
-    const combinedScore =
-      0.50 * symptomScore +
-      0.25 * seasonScore +
-      0.25 * weatherScore;
+    const combinedScore = 0.5 * symptomScore + 0.25 * seasonScore + 0.25 * weatherScore;
 
     return {
       disease: disease.name,
@@ -334,9 +327,9 @@ export function getWeatherRiskSummary(weather) {
 
   if (!weather) {
     return {
-      level: 'low',
-      risks: [{ level: 'low', text: 'No weather data available' }],
-      sprayCondition: { ok: true, reason: 'No weather data — proceed with caution', until: null },
+      level: "low",
+      risks: [{ level: "low", text: "No weather data available" }],
+      sprayCondition: { ok: true, reason: "No weather data — proceed with caution", until: null },
     };
   }
 
@@ -346,49 +339,49 @@ export function getWeatherRiskSummary(weather) {
 
   if (humidity >= 80 && temp >= 26 && temp <= 36) {
     risks.push({
-      level: 'high',
-      text: 'Blast & Sheath Blight risk is high (warm & humid)',
+      level: "high",
+      text: "Blast & Sheath Blight risk is high (warm & humid)",
     });
   }
 
   if (rain24h >= 50) {
     risks.push({
-      level: 'high',
-      text: 'Stem borer & root rot risk is high (heavy rain)',
+      level: "high",
+      text: "Stem borer & root rot risk is high (heavy rain)",
     });
   }
 
   if (rain24h === 0 && humidity < 55) {
     risks.push({
-      level: 'medium',
-      text: 'Mite & thrips risk (dry conditions)',
+      level: "medium",
+      text: "Mite & thrips risk (dry conditions)",
     });
   }
 
   if (temp < 20) {
     risks.push({
-      level: 'medium',
-      text: 'Tungro virus risk (cool weather — vector active)',
+      level: "medium",
+      text: "Tungro virus risk (cool weather — vector active)",
     });
   }
 
   if (humidity >= 85) {
     risks.push({
-      level: 'high',
-      text: 'Bacterial blight risk is high (very humid)',
+      level: "high",
+      text: "Bacterial blight risk is high (very humid)",
     });
   }
 
   // Default low-risk message if nothing triggered
   if (risks.length === 0) {
-    risks.push({ level: 'low', text: 'Weather is normal — low disease pressure' });
+    risks.push({ level: "low", text: "Weather is normal — low disease pressure" });
   }
 
   // ── Determine overall level ──
 
-  const hasHigh = risks.some((r) => r.level === 'high');
-  const hasMedium = risks.some((r) => r.level === 'medium');
-  const level = hasHigh ? 'high' : hasMedium ? 'medium' : 'low';
+  const hasHigh = risks.some((r) => r.level === "high");
+  const hasMedium = risks.some((r) => r.level === "medium");
+  const level = hasHigh ? "high" : hasMedium ? "medium" : "low";
 
   // ── Spray condition (mirrors getSprayingCondition from App.jsx) ──
 
@@ -398,30 +391,30 @@ export function getWeatherRiskSummary(weather) {
     sprayCondition = {
       ok: false,
       reason: `Wind speed is too high (${windSpeed} km/h)`,
-      until: 'Wait until wind subsides',
+      until: "Wait until wind subsides",
     };
   } else if (rain24h > 5) {
     sprayCondition = {
       ok: false,
-      reason: 'Rain is likely',
-      until: 'Wait until rain stops',
+      reason: "Rain is likely",
+      until: "Wait until rain stops",
     };
   } else if (temp > 38) {
     sprayCondition = {
       ok: false,
-      reason: 'Temperature is too high',
-      until: 'Spray in the evening',
+      reason: "Temperature is too high",
+      until: "Spray in the evening",
     };
   } else if (uvIndex > 8) {
     sprayCondition = {
       ok: false,
-      reason: 'UV index is too high',
-      until: 'Spray in the evening',
+      reason: "UV index is too high",
+      until: "Spray in the evening",
     };
   } else {
     sprayCondition = {
       ok: true,
-      reason: 'Conditions are suitable for spraying',
+      reason: "Conditions are suitable for spraying",
       until: null,
     };
   }

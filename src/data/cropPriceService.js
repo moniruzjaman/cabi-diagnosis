@@ -19,125 +19,125 @@
  * These are the common names used in Bangladesh agricultural market data.
  */
 export const CROP_PRICE_MAP = {
-  'ধান': {
-    nameEn: 'Rice (Paddy)',
-    damCode: 'rice_paddy',
-    marketName: 'ধান (চালা)',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'cereal',
+  ধান: {
+    nameEn: "Rice (Paddy)",
+    damCode: "rice_paddy",
+    marketName: "ধান (চালা)",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "cereal",
   },
-  'পাট': {
-    nameEn: 'Jute',
-    damCode: 'jute',
-    marketName: 'পাট',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'fiber',
+  পাট: {
+    nameEn: "Jute",
+    damCode: "jute",
+    marketName: "পাট",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "fiber",
   },
-  'আলু': {
-    nameEn: 'Potato',
-    damCode: 'potato',
-    marketName: 'আলু',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'vegetable',
+  আলু: {
+    nameEn: "Potato",
+    damCode: "potato",
+    marketName: "আলু",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "vegetable",
   },
-  'টমেটো': {
-    nameEn: 'Tomato',
-    damCode: 'tomato',
-    marketName: 'টমেটো',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'vegetable',
+  টমেটো: {
+    nameEn: "Tomato",
+    damCode: "tomato",
+    marketName: "টমেটো",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "vegetable",
   },
-  'বেগুন': {
-    nameEn: 'Brinjal',
-    damCode: 'brinjal',
-    marketName: 'বেগুন',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'vegetable',
+  বেগুন: {
+    nameEn: "Brinjal",
+    damCode: "brinjal",
+    marketName: "বেগুন",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "vegetable",
   },
-  'সরিষা': {
-    nameEn: 'Mustard',
-    damCode: 'mustard',
-    marketName: 'সরিষা',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'oilseed',
+  সরিষা: {
+    nameEn: "Mustard",
+    damCode: "mustard",
+    marketName: "সরিষা",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "oilseed",
   },
-  'কলা': {
-    nameEn: 'Banana',
-    damCode: 'banana',
-    marketName: 'কলা',
-    unit: 'dozen',
-    unitBn: 'ডজন',
-    category: 'fruit',
+  কলা: {
+    nameEn: "Banana",
+    damCode: "banana",
+    marketName: "কলা",
+    unit: "dozen",
+    unitBn: "ডজন",
+    category: "fruit",
   },
-  'আম': {
-    nameEn: 'Mango',
-    damCode: 'mango',
-    marketName: 'আম',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'fruit',
+  আম: {
+    nameEn: "Mango",
+    damCode: "mango",
+    marketName: "আম",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "fruit",
   },
-  'গম': {
-    nameEn: 'Wheat',
-    damCode: 'wheat',
-    marketName: 'গম',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'cereal',
+  গম: {
+    nameEn: "Wheat",
+    damCode: "wheat",
+    marketName: "গম",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "cereal",
   },
-  'ভুট্টা': {
-    nameEn: 'Maize',
-    damCode: 'maize',
-    marketName: 'ভুট্টা',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'cereal',
+  ভুট্টা: {
+    nameEn: "Maize",
+    damCode: "maize",
+    marketName: "ভুট্টা",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "cereal",
   },
-  'পেঁয়াজ': {
-    nameEn: 'Onion',
-    damCode: 'onion',
-    marketName: 'পেঁয়াজ',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'spice',
+  পেঁয়াজ: {
+    nameEn: "Onion",
+    damCode: "onion",
+    marketName: "পেঁয়াজ",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "spice",
   },
-  'রসুন': {
-    nameEn: 'Garlic',
-    damCode: 'garlic',
-    marketName: 'রসুন',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'spice',
+  রসুন: {
+    nameEn: "Garlic",
+    damCode: "garlic",
+    marketName: "রসুন",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "spice",
   },
-  'মরিচ': {
-    nameEn: 'Chili',
-    damCode: 'chili',
-    marketName: 'মরিচ',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'spice',
+  মরিচ: {
+    nameEn: "Chili",
+    damCode: "chili",
+    marketName: "মরিচ",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "spice",
   },
-  'মসুর ডাল': {
-    nameEn: 'Lentil',
-    damCode: 'lentil',
-    marketName: 'মসুর ডাল',
-    unit: 'kg',
-    unitBn: 'কেজি',
-    category: 'pulse',
+  "মসুর ডাল": {
+    nameEn: "Lentil",
+    damCode: "lentil",
+    marketName: "মসুর ডাল",
+    unit: "kg",
+    unitBn: "কেজি",
+    category: "pulse",
   },
-  'আখ': {
-    nameEn: 'Sugarcane',
-    damCode: 'sugarcane',
-    marketName: 'আখ',
-    unit: 'maund',
-    unitBn: 'মণ',
-    category: 'cash_crop',
+  আখ: {
+    nameEn: "Sugarcane",
+    damCode: "sugarcane",
+    marketName: "আখ",
+    unit: "maund",
+    unitBn: "মণ",
+    category: "cash_crop",
   },
 };
 
@@ -153,164 +153,164 @@ export const CROP_PRICE_MAP = {
  *   - Off-season: higher (scarcity)
  */
 export const BASELINE_PRICES = {
-  'ধান': {
-    peak: 32,    // Boro harvest (Apr-May)
-    off: 42,     // Off-season
+  ধান: {
+    peak: 32, // Boro harvest (Apr-May)
+    off: 42, // Off-season
     average: 36,
     seasonMultipliers: {
-      'বোরো': 0.85,  // Harvest = cheaper
-      'আমন': 0.90,
-      'আউশ': 0.88,
+      বোরো: 0.85, // Harvest = cheaper
+      আমন: 0.9,
+      আউশ: 0.88,
     },
-    priceVolatility: 'low',      // Rice is price-controlled
-    minSupportPrice: 30,         // Government MSP
+    priceVolatility: "low", // Rice is price-controlled
+    minSupportPrice: 30, // Government MSP
   },
-  'পাট': {
-    peak: 45,    // Kharif harvest (Jun-Jul)
+  পাট: {
+    peak: 45, // Kharif harvest (Jun-Jul)
     off: 65,
     average: 52,
     seasonMultipliers: {
-      'খরিপ-১': 0.80,
-      'খরিপ-২': 0.85,
+      "খরিপ-১": 0.8,
+      "খরিপ-২": 0.85,
     },
-    priceVolatility: 'medium',
+    priceVolatility: "medium",
     minSupportPrice: null,
   },
-  'আলু': {
-    peak: 15,    // Rabi harvest (Feb-Mar)
+  আলু: {
+    peak: 15, // Rabi harvest (Feb-Mar)
     off: 35,
     average: 22,
     seasonMultipliers: {
-      'রবি': 0.65,   // Cold season harvest = very cheap
+      রবি: 0.65, // Cold season harvest = very cheap
     },
-    priceVolatility: 'high',    // Potato prices swing wildly
+    priceVolatility: "high", // Potato prices swing wildly
     minSupportPrice: null,
   },
-  'টমেটো': {
-    peak: 20,    // Rabi harvest
+  টমেটো: {
+    peak: 20, // Rabi harvest
     off: 60,
     average: 35,
     seasonMultipliers: {
-      'রবি': 0.55,
-      'খরিপ-১': 1.4,
+      রবি: 0.55,
+      "খরিপ-১": 1.4,
     },
-    priceVolatility: 'very_high',
+    priceVolatility: "very_high",
     minSupportPrice: null,
   },
-  'বেগুন': {
+  বেগুন: {
     peak: 25,
     off: 50,
     average: 35,
     seasonMultipliers: {
-      'রবি': 0.75,
-      'খরিপ-১': 1.15,
+      রবি: 0.75,
+      "খরিপ-১": 1.15,
     },
-    priceVolatility: 'medium',
+    priceVolatility: "medium",
     minSupportPrice: null,
   },
-  'সরিষা': {
-    peak: 80,    // Rabi harvest
+  সরিষা: {
+    peak: 80, // Rabi harvest
     off: 120,
     average: 95,
     seasonMultipliers: {
-      'রবি': 0.80,
+      রবি: 0.8,
     },
-    priceVolatility: 'medium',
+    priceVolatility: "medium",
     minSupportPrice: null,
   },
-  'কলা': {
-    peak: 40,    // Per dozen
+  কলা: {
+    peak: 40, // Per dozen
     off: 70,
     average: 50,
     seasonMultipliers: {
-      'সারা বছর': 1.0,
+      "সারা বছর": 1.0,
     },
-    priceVolatility: 'low',
+    priceVolatility: "low",
     minSupportPrice: null,
   },
-  'আম': {
-    peak: 50,    // Kharif-1 harvest (May-Jul)
-    off: 150,    // Off-season very expensive or unavailable
+  আম: {
+    peak: 50, // Kharif-1 harvest (May-Jul)
+    off: 150, // Off-season very expensive or unavailable
     average: 70,
     seasonMultipliers: {
-      'খরিপ-১': 0.60,  // In season = cheap
+      "খরিপ-১": 0.6, // In season = cheap
     },
-    priceVolatility: 'very_high',   // Seasonal fruit
+    priceVolatility: "very_high", // Seasonal fruit
     minSupportPrice: null,
   },
-  'গম': {
+  গম: {
     peak: 38,
     off: 48,
     average: 42,
     seasonMultipliers: {
-      'রবি': 0.88,
+      রবি: 0.88,
     },
-    priceVolatility: 'low',
+    priceVolatility: "low",
     minSupportPrice: 37,
   },
-  'ভুট্টা': {
+  ভুট্টা: {
     peak: 22,
     off: 35,
     average: 28,
     seasonMultipliers: {
-      'রবি': 0.80,
-      'খরিপ-১': 1.1,
+      রবি: 0.8,
+      "খরিপ-১": 1.1,
     },
-    priceVolatility: 'medium',
+    priceVolatility: "medium",
     minSupportPrice: null,
   },
-  'পেঁয়াজ': {
-    peak: 25,     // Rabi harvest (Mar-Apr)
-    off: 80,      // Off-season imported
+  পেঁয়াজ: {
+    peak: 25, // Rabi harvest (Mar-Apr)
+    off: 80, // Off-season imported
     average: 45,
     seasonMultipliers: {
-      'রবি': 0.50,   // Harvest glut = very cheap
-      'খরিপ-১': 1.6, // Off-season = very expensive
+      রবি: 0.5, // Harvest glut = very cheap
+      "খরিপ-১": 1.6, // Off-season = very expensive
     },
-    priceVolatility: 'very_high',  // Onion prices are famously volatile
+    priceVolatility: "very_high", // Onion prices are famously volatile
     minSupportPrice: null,
   },
-  'রসুন': {
-    peak: 80,     // Rabi harvest
-    off: 180,     // Imported off-season
+  রসুন: {
+    peak: 80, // Rabi harvest
+    off: 180, // Imported off-season
     average: 120,
     seasonMultipliers: {
-      'রবি': 0.65,
-      'খরিপ-১': 1.3,
+      রবি: 0.65,
+      "খরিপ-১": 1.3,
     },
-    priceVolatility: 'high',
+    priceVolatility: "high",
     minSupportPrice: null,
   },
-  'মরিচ': {
-    peak: 60,     // Rabi dry chili harvest
-    off: 200,     // Off-season green chili
+  মরিচ: {
+    peak: 60, // Rabi dry chili harvest
+    off: 200, // Off-season green chili
     average: 120,
     seasonMultipliers: {
-      'রবি': 0.50,
-      'খরিপ-১': 1.5,
+      রবি: 0.5,
+      "খরিপ-১": 1.5,
     },
-    priceVolatility: 'very_high',
+    priceVolatility: "very_high",
     minSupportPrice: null,
   },
-  'মসুর ডাল': {
-    peak: 85,     // Rabi harvest
+  "মসুর ডাল": {
+    peak: 85, // Rabi harvest
     off: 130,
     average: 105,
     seasonMultipliers: {
-      'রবি': 0.82,
+      রবি: 0.82,
     },
-    priceVolatility: 'medium',
+    priceVolatility: "medium",
     minSupportPrice: null,
   },
-  'আখ': {
-    peak: 150,    // Per maund, Kharif harvest
+  আখ: {
+    peak: 150, // Per maund, Kharif harvest
     off: 250,
     average: 190,
     seasonMultipliers: {
-      'খরিপ-১': 0.75,
-      'খরিপ-২': 0.85,
+      "খরিপ-১": 0.75,
+      "খরিপ-২": 0.85,
     },
-    priceVolatility: 'medium',
+    priceVolatility: "medium",
     minSupportPrice: null,
   },
 };
@@ -334,7 +334,7 @@ export function adjustPriceForDistrict(priceData, districtId, districtData) {
   const adjustedPrevious = Math.round(priceData.previousWeekPrice * adjustFactor * 100) / 100;
   const priceChange = adjustedPrice - adjustedPrevious;
   const priceChangePercent = Math.round((priceChange / adjustedPrevious) * 1000) / 10;
-  const trend = priceChangePercent > 3 ? 'up' : priceChangePercent < -3 ? 'down' : 'stable';
+  const trend = priceChangePercent > 3 ? "up" : priceChangePercent < -3 ? "down" : "stable";
 
   // Check if crop is a major crop in this district (local supply = cheaper)
   const isMajorCrop = districtData.majorCrops?.includes(priceData.crop);
@@ -348,13 +348,13 @@ export function adjustPriceForDistrict(priceData, districtId, districtData) {
     priceChange: Math.round((finalPrice - adjustedPrevious) * 100) / 100,
     priceChangePercent: Math.round(((finalPrice - adjustedPrevious) / adjustedPrevious) * 1000) / 10,
     trend,
-    trendBn: trend === 'up' ? 'বাড়ছে' : trend === 'down' ? 'কমছে' : 'স্থিতিশীল',
+    trendBn: trend === "up" ? "বাড়ছে" : trend === "down" ? "কমছে" : "স্থিতিশীল",
     isMajorCropInDistrict: isMajorCrop,
     district: districtId,
     districtName: districtData.name,
     districtNameEn: districtData.nameEn,
     priceAdjustFactor: adjustFactor,
-    marketName: districtData.markets?.[0] || 'স্থানীয় বাজার',
+    marketName: districtData.markets?.[0] || "স্থানীয় বাজার",
   };
 }
 
@@ -377,7 +377,7 @@ export function adjustPriceForDistrict(priceData, districtId, districtData) {
  */
 export function analyzeWeatherPriceImpact(forecast, cropBn, currentPrice) {
   if (!forecast?.days?.length || !currentPrice) {
-    return { impact: 'neutral', impactScore: 0, priceDirectionBn: 'স্থিতিশীল থাকতে পারে', insights: [] };
+    return { impact: "neutral", impactScore: 0, priceDirectionBn: "স্থিতিশীল থাকতে পারে", insights: [] };
   }
 
   const insights = [];
@@ -386,28 +386,28 @@ export function analyzeWeatherPriceImpact(forecast, cropBn, currentPrice) {
   const totalRain = forecast.weekRainTotal;
   const avgTemp = forecast.weekAvgTemp;
   const avgHumid = forecast.weekAvgHumidity;
-  const rainyDays = forecast.days.filter(d => d.rain > 20).length;
-  const veryHotDays = forecast.days.filter(d => d.tempMax > 38).length;
+  const rainyDays = forecast.days.filter((d) => d.rain > 20).length;
+  const veryHotDays = forecast.days.filter((d) => d.tempMax > 38).length;
 
   // Heavy rain / flood risk → supply chain disruption
   if (totalRain > 150) {
-    if (cropBn === 'ধান' || cropBn === 'পাট') {
+    if (cropBn === "ধান" || cropBn === "পাট") {
       insights.push({
-        type: 'warning',
-        icon: '🌊',
-        title: 'বন্যার ঝুঁকি — সরবরাহ ব্যাহত হতে পারে',
+        type: "warning",
+        icon: "🌊",
+        title: "বন্যার ঝুঁকি — সরবরাহ ব্যাহত হতে পারে",
         detail: `${Math.round(totalRain)}mm বৃষ্টির পূর্বাভাস — ফসল ক্ষতি ও পরিবহন ব্যাহত হওয়ার সম্ভাবনা`,
-        priceEffect: 'up',
+        priceEffect: "up",
         magnitude: 2,
       });
       impactScore += 2; // Supply disruption → price up
-    } else if (cropBn === 'টমেটো' || cropBn === 'বেগুন') {
+    } else if (cropBn === "টমেটো" || cropBn === "বেগুন") {
       insights.push({
-        type: 'danger',
-        icon: '🌧️',
-        title: 'অতিরিক্ত বৃষ্টি — সবজি ফসল ক্ষতির ঝুঁকি',
+        type: "danger",
+        icon: "🌧️",
+        title: "অতিরিক্ত বৃষ্টি — সবজি ফসল ক্ষতির ঝুঁকি",
         detail: `${rainyDays} দিন ভারী বৃষ্টি — পচন ও ছত্রাক রোগের উচ্চ ঝুঁকি`,
-        priceEffect: 'up',
+        priceEffect: "up",
         magnitude: 3,
       });
       impactScore += 3;
@@ -416,23 +416,23 @@ export function analyzeWeatherPriceImpact(forecast, cropBn, currentPrice) {
 
   // Drought / dry conditions
   if (totalRain < 10 && avgTemp > 30) {
-    if (cropBn === 'ধান') {
+    if (cropBn === "ধান") {
       insights.push({
-        type: 'warning',
-        icon: '☀️',
-        title: 'খরা — ধানের ফলন কমার ঝুঁকি',
-        detail: 'পানির অভাবে বোরো/আমন ধানের ফলন কমতে পারে — মূল্য বাড়তে পারে',
-        priceEffect: 'up',
+        type: "warning",
+        icon: "☀️",
+        title: "খরা — ধানের ফলন কমার ঝুঁকি",
+        detail: "পানির অভাবে বোরো/আমন ধানের ফলন কমতে পারে — মূল্য বাড়তে পারে",
+        priceEffect: "up",
         magnitude: 2,
       });
       impactScore += 2;
-    } else if (cropBn === 'গম' || cropBn === 'সরিষা') {
+    } else if (cropBn === "গম" || cropBn === "সরিষা") {
       insights.push({
-        type: 'good',
-        icon: '☀️',
-        title: 'রবি ফসলের জন্য অনুকূল',
-        detail: 'শুষ্ক ও ঠান্ডা আবহাওয়া — গম/সরিষার ফলন ভালো হওয়ার সম্ভাবনা',
-        priceEffect: 'down',
+        type: "good",
+        icon: "☀️",
+        title: "রবি ফসলের জন্য অনুকূল",
+        detail: "শুষ্ক ও ঠান্ডা আবহাওয়া — গম/সরিষার ফলন ভালো হওয়ার সম্ভাবনা",
+        priceEffect: "down",
         magnitude: 1,
       });
       impactScore -= 1; // Good harvest → price down
@@ -441,13 +441,13 @@ export function analyzeWeatherPriceImpact(forecast, cropBn, currentPrice) {
 
   // Very hot days → heat stress
   if (veryHotDays >= 3) {
-    if (cropBn === 'আলু' || cropBn === 'টমেটো' || cropBn === 'গম') {
+    if (cropBn === "আলু" || cropBn === "টমেটো" || cropBn === "গম") {
       insights.push({
-        type: 'danger',
-        icon: '🔥',
-        title: 'তাপপ্রবাহ — ফসল পুড়ে যাওয়ার ঝুঁকি',
+        type: "danger",
+        icon: "🔥",
+        title: "তাপপ্রবাহ — ফসল পুড়ে যাওয়ার ঝুঁকি",
         detail: `${veryHotDays} দিন ৩৮°C+ — আলু/টমেটো/গমের মারাত্মক ক্ষতি হতে পারে`,
-        priceEffect: 'up',
+        priceEffect: "up",
         magnitude: 3,
       });
       impactScore += 3;
@@ -456,13 +456,13 @@ export function analyzeWeatherPriceImpact(forecast, cropBn, currentPrice) {
 
   // Good monsoon for jute
   if (totalRain > 80 && totalRain < 200 && avgHumid > 70) {
-    if (cropBn === 'পাট') {
+    if (cropBn === "পাট") {
       insights.push({
-        type: 'good',
-        icon: '🌿',
-        title: 'পাটের জন্য আদর্শ আবহাওয়া',
-        detail: 'উচ্চ আর্দ্রতা ও পরিমিত বৃষ্টি — পাটের ভালো ফলনের সম্ভাবনা',
-        priceEffect: 'down',
+        type: "good",
+        icon: "🌿",
+        title: "পাটের জন্য আদর্শ আবহাওয়া",
+        detail: "উচ্চ আর্দ্রতা ও পরিমিত বৃষ্টি — পাটের ভালো ফলনের সম্ভাবনা",
+        priceEffect: "down",
         magnitude: 1,
       });
       impactScore -= 1;
@@ -471,24 +471,24 @@ export function analyzeWeatherPriceImpact(forecast, cropBn, currentPrice) {
 
   // Cold wave → good for potato, bad for mango
   if (avgTemp < 18) {
-    if (cropBn === 'আলু' || cropBn === 'গম' || cropBn === 'সরিষা') {
+    if (cropBn === "আলু" || cropBn === "গম" || cropBn === "সরিষা") {
       insights.push({
-        type: 'good',
-        icon: '❄️',
-        title: 'শীতের আবহাওয়া — রবি ফসলের জন্য উপযুক্ত',
-        detail: 'ঠান্ডা আবহাওয়া আলু/গম/সরিষার জন্য অনুকূল — ভালো ফলনের সম্ভাবনা',
-        priceEffect: 'down',
+        type: "good",
+        icon: "❄️",
+        title: "শীতের আবহাওয়া — রবি ফসলের জন্য উপযুক্ত",
+        detail: "ঠান্ডা আবহাওয়া আলু/গম/সরিষার জন্য অনুকূল — ভালো ফলনের সম্ভাবনা",
+        priceEffect: "down",
         magnitude: 1,
       });
       impactScore -= 1;
     }
-    if (cropBn === 'আম') {
+    if (cropBn === "আম") {
       insights.push({
-        type: 'warning',
-        icon: '❄️',
-        title: 'শীত — আমের কুঁড়ি নষ্ট হওয়ার ঝুঁকি',
-        detail: 'অতিরিক্ত ঠান্ডায় আমের ফুল ও কুঁড়ি ঝরে যেতে পারে',
-        priceEffect: 'up',
+        type: "warning",
+        icon: "❄️",
+        title: "শীত — আমের কুঁড়ি নষ্ট হওয়ার ঝুঁকি",
+        detail: "অতিরিক্ত ঠান্ডায় আমের ফুল ও কুঁড়ি ঝরে যেতে পারে",
+        priceEffect: "up",
         magnitude: 2,
       });
       impactScore += 2;
@@ -498,11 +498,11 @@ export function analyzeWeatherPriceImpact(forecast, cropBn, currentPrice) {
   // High humidity → disease pressure → supply reduction
   if (avgHumid > 85 && rainyDays >= 3) {
     insights.push({
-      type: 'caution',
-      icon: '🦠',
-      title: 'রোগের চাপ — ফসল ক্ষয়ক্ষতির সম্ভাবনা',
-      detail: 'উচ্চ আর্দ্রতা ও বৃষ্টি — ছত্রাক/ব্যাকটেরিয়াল রোগের প্রাদুর্ভাব সম্ভব',
-      priceEffect: 'up',
+      type: "caution",
+      icon: "🦠",
+      title: "রোগের চাপ — ফসল ক্ষয়ক্ষতির সম্ভাবনা",
+      detail: "উচ্চ আর্দ্রতা ও বৃষ্টি — ছত্রাক/ব্যাকটেরিয়াল রোগের প্রাদুর্ভাব সম্ভব",
+      priceEffect: "up",
       magnitude: 1,
     });
     impactScore += 1;
@@ -511,11 +511,11 @@ export function analyzeWeatherPriceImpact(forecast, cropBn, currentPrice) {
   // No significant weather impact
   if (insights.length === 0) {
     insights.push({
-      type: 'neutral',
-      icon: '🌤️',
-      title: 'আবহাওয়ার প্রভাব স্বাভাবিক',
-      detail: 'আবহাওয়া এই ফসলের মূল্যে বিশেষ প্রভাব ফেলছে না',
-      priceEffect: 'neutral',
+      type: "neutral",
+      icon: "🌤️",
+      title: "আবহাওয়ার প্রভাব স্বাভাবিক",
+      detail: "আবহাওয়া এই ফসলের মূল্যে বিশেষ প্রভাব ফেলছে না",
+      priceEffect: "neutral",
       magnitude: 0,
     });
   }
@@ -523,16 +523,16 @@ export function analyzeWeatherPriceImpact(forecast, cropBn, currentPrice) {
   // Clamp impact score
   impactScore = Math.max(-10, Math.min(10, impactScore));
 
-  const impact = impactScore > 2 ? 'price_up' : impactScore < -2 ? 'price_down' : 'neutral';
-  const priceDirectionBn = impact === 'price_up' ? 'মূল্য বাড়তে পারে' :
-                           impact === 'price_down' ? 'মূল্য কমতে পারে' : 'স্থিতিশীল থাকতে পারে';
+  const impact = impactScore > 2 ? "price_up" : impactScore < -2 ? "price_down" : "neutral";
+  const priceDirectionBn =
+    impact === "price_up" ? "মূল্য বাড়তে পারে" : impact === "price_down" ? "মূল্য কমতে পারে" : "স্থিতিশীল থাকতে পারে";
 
   return {
     impact,
     impactScore,
     priceDirectionBn,
     insights,
-    confidence: insights.length > 2 ? 'high' : insights.length > 0 ? 'medium' : 'low',
+    confidence: insights.length > 2 ? "high" : insights.length > 0 ? "medium" : "low",
   };
 }
 
@@ -550,8 +550,7 @@ export function forecastCropPrices(cropBn, month, forecast) {
 
   const weatherImpact = analyzeWeatherPriceImpact(forecast, cropBn, priceData);
   const basePrice = priceData.price;
-  const dailyTrend = priceData.trend === 'up' ? 0.001 :
-                     priceData.trend === 'down' ? -0.001 : 0;
+  const dailyTrend = priceData.trend === "up" ? 0.001 : priceData.trend === "down" ? -0.001 : 0;
 
   const predictions = [];
   for (let d = 0; d < 30; d++) {
@@ -570,11 +569,11 @@ export function forecastCropPrices(cropBn, month, forecast) {
 
     const predictedPrice = basePrice * (1 + drift + weatherEffect + seasonalShift + noise);
 
-    const confidence = d < 7 ? 'high' : d < 14 ? 'medium' : 'low';
+    const confidence = d < 7 ? "high" : d < 14 ? "medium" : "low";
 
     predictions.push({
       day: d + 1,
-      date: new Date(Date.now() + d * 86400000).toISOString().split('T')[0],
+      date: new Date(Date.now() + d * 86400000).toISOString().split("T")[0],
       price: Math.round(predictedPrice * 100) / 100,
       confidence,
     });
@@ -631,7 +630,7 @@ export function simulateCurrentPrice(cropBn, month, _districtId) {
 
   // Simple deterministic hash for daily variation
   const hash = ((dayOfYear * 2654435761) >>> 0) % 1000;
-  const variation = (hash / 1000 - 0.5) * 0.20; // ±10%
+  const variation = (hash / 1000 - 0.5) * 0.2; // ±10%
 
   // Determine if we're in peak or off season
   const isPeakSeason = isCropHarvestSeason(cropBn, month);
@@ -646,26 +645,26 @@ export function simulateCurrentPrice(cropBn, month, _districtId) {
 
   // Calculate trend (compare with "last week" = shift hash)
   const lastWeekHash = (((dayOfYear - 7) * 2654435761) >>> 0) % 1000;
-  const lastWeekVariation = (lastWeekHash / 1000 - 0.5) * 0.20;
+  const lastWeekVariation = (lastWeekHash / 1000 - 0.5) * 0.2;
   const lastWeekPrice = Math.round(interpolatedPrice * (1 + lastWeekVariation) * 100) / 100;
 
   const priceChange = currentPrice - lastWeekPrice;
   const priceChangePercent = Math.round((priceChange / lastWeekPrice) * 100 * 10) / 10;
 
   // Determine trend direction
-  const trend = priceChangePercent > 3 ? 'up' : priceChangePercent < -3 ? 'down' : 'stable';
+  const trend = priceChangePercent > 3 ? "up" : priceChangePercent < -3 ? "down" : "stable";
 
   return {
     crop: cropBn,
     cropEn: cropInfo?.nameEn ?? cropBn,
     price: currentPrice,
-    unit: cropInfo?.unit ?? 'kg',
-    unitBn: cropInfo?.unitBn ?? 'কেজি',
+    unit: cropInfo?.unit ?? "kg",
+    unitBn: cropInfo?.unitBn ?? "কেজি",
     previousWeekPrice: lastWeekPrice,
     priceChange: Math.round(priceChange * 100) / 100,
     priceChangePercent,
     trend,
-    trendBn: trend === 'up' ? 'বাড়ছে' : trend === 'down' ? 'কমছে' : 'স্থিতিশীল',
+    trendBn: trend === "up" ? "বাড়ছে" : trend === "down" ? "কমছে" : "স্থিতিশীল",
     isPeakSeason,
     volatility: baseline.priceVolatility,
     minSupportPrice: baseline.minSupportPrice,
@@ -674,8 +673,8 @@ export function simulateCurrentPrice(cropBn, month, _districtId) {
       high: baseline.off,
       average: baseline.average,
     },
-    source: 'DAM/DAE Reference (Simulated)',
-    lastUpdated: new Date().toISOString().split('T')[0],
+    source: "DAM/DAE Reference (Simulated)",
+    lastUpdated: new Date().toISOString().split("T")[0],
   };
 }
 
@@ -689,7 +688,7 @@ export function simulateCurrentPrice(cropBn, month, _districtId) {
 export function getAllCropPrices(month, districtId) {
   const crops = Object.keys(BASELINE_PRICES);
   return crops
-    .map(crop => simulateCurrentPrice(crop, month, districtId))
+    .map((crop) => simulateCurrentPrice(crop, month, districtId))
     .filter(Boolean)
     .sort((a, b) => b.priceChangePercent - a.priceChangePercent);
 }
@@ -705,21 +704,21 @@ export function compareCropProfitability(month) {
   // Approximate production costs per bigha and yields per bigha
   // These are rough estimates for Bangladesh conditions
   const PRODUCTION_DATA = {
-    'ধান':   { costPerBigha: 8000, yieldKgPerBigha: 800, season: [12,1,2,3,4,6,7,8,9,10,11,3,4,5,6,7,8] },
-    'পাট':   { costPerBigha: 6000, yieldKgPerBigha: 500, season: [3,4,5,6,7] },
-    'আলু':   { costPerBigha: 15000, yieldKgPerBigha: 4000, season: [10,11,12,1,2,3] },
-    'টমেটো': { costPerBigha: 12000, yieldKgPerBigha: 3000, season: [10,11,12,1,2,3] },
-    'বেগুন': { costPerBigha: 10000, yieldKgPerBigha: 2500, season: [10,11,12,1,2,3,3,4,5,6,7] },
-    'সরিষা': { costPerBigha: 5000, yieldKgPerBigha: 400, season: [10,11,12,1,2] },
-    'কলা':   { costPerBigha: 12000, yieldKgPerBigha: 600, season: [1,2,3,4,5,6,7,8,9,10,11,12] },
-    'আম':    { costPerBigha: 5000, yieldKgPerBigha: 2000, season: [2,3,4,5,6,7] },
-    'গম':    { costPerBigha: 6000, yieldKgPerBigha: 600, season: [11,12,1,2,3] },
-    'ভুট্টা': { costPerBigha: 10000, yieldKgPerBigha: 1500, season: [10,11,12,1,2,3,4,3,4,5,6,7,8] },
-    'পেঁয়াজ': { costPerBigha: 18000, yieldKgPerBigha: 2500, season: [10,11,12,1,2,3] },
-    'রসুন':   { costPerBigha: 20000, yieldKgPerBigha: 1200, season: [10,11,12,1,2,3] },
-    'মরিচ':   { costPerBigha: 15000, yieldKgPerBigha: 800, season: [10,11,12,1,2,3,6,7,8,9] },
-    'মসুর ডাল': { costPerBigha: 7000, yieldKgPerBigha: 300, season: [10,11,12,1,2] },
-    'আখ':     { costPerBigha: 25000, yieldKgPerBigha: 8000, season: [3,4,5,6,7,8,9,10,11] },
+    ধান: { costPerBigha: 8000, yieldKgPerBigha: 800, season: [12, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 3, 4, 5, 6, 7, 8] },
+    পাট: { costPerBigha: 6000, yieldKgPerBigha: 500, season: [3, 4, 5, 6, 7] },
+    আলু: { costPerBigha: 15000, yieldKgPerBigha: 4000, season: [10, 11, 12, 1, 2, 3] },
+    টমেটো: { costPerBigha: 12000, yieldKgPerBigha: 3000, season: [10, 11, 12, 1, 2, 3] },
+    বেগুন: { costPerBigha: 10000, yieldKgPerBigha: 2500, season: [10, 11, 12, 1, 2, 3, 3, 4, 5, 6, 7] },
+    সরিষা: { costPerBigha: 5000, yieldKgPerBigha: 400, season: [10, 11, 12, 1, 2] },
+    কলা: { costPerBigha: 12000, yieldKgPerBigha: 600, season: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+    আম: { costPerBigha: 5000, yieldKgPerBigha: 2000, season: [2, 3, 4, 5, 6, 7] },
+    গম: { costPerBigha: 6000, yieldKgPerBigha: 600, season: [11, 12, 1, 2, 3] },
+    ভুট্টা: { costPerBigha: 10000, yieldKgPerBigha: 1500, season: [10, 11, 12, 1, 2, 3, 4, 3, 4, 5, 6, 7, 8] },
+    পেঁয়াজ: { costPerBigha: 18000, yieldKgPerBigha: 2500, season: [10, 11, 12, 1, 2, 3] },
+    রসুন: { costPerBigha: 20000, yieldKgPerBigha: 1200, season: [10, 11, 12, 1, 2, 3] },
+    মরিচ: { costPerBigha: 15000, yieldKgPerBigha: 800, season: [10, 11, 12, 1, 2, 3, 6, 7, 8, 9] },
+    "মসুর ডাল": { costPerBigha: 7000, yieldKgPerBigha: 300, season: [10, 11, 12, 1, 2] },
+    আখ: { costPerBigha: 25000, yieldKgPerBigha: 8000, season: [3, 4, 5, 6, 7, 8, 9, 10, 11] },
   };
 
   const results = [];
@@ -786,9 +785,7 @@ function getSeasonProgress(cropBn, month) {
 
   // Use the first season's typical months as "peak" months
   // This is a simplified model
-  const harvestMonths = seasons
-    .filter(([_, mult]) => mult < 1.0)
-    .flatMap(([season]) => getSeasonMonths(season));
+  const harvestMonths = seasons.filter(([_, mult]) => mult < 1.0).flatMap(([season]) => getSeasonMonths(season));
 
   if (harvestMonths.length === 0) return 0.5;
 
@@ -808,13 +805,13 @@ function getSeasonProgress(cropBn, month) {
  */
 function getSeasonMonths(seasonName) {
   const SEASON_MONTH_MAP = {
-    'বোরো': [12, 1, 2, 3, 4],
-    'আমন': [6, 7, 8, 9, 10, 11],
-    'আউশ': [3, 4, 5, 6, 7, 8],
-    'রবি': [10, 11, 12, 1, 2, 3],
-    'খরিপ-১': [3, 4, 5, 6, 7],
-    'খরিপ-২': [7, 8, 9, 10],
-    'সারা বছর': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    বোরো: [12, 1, 2, 3, 4],
+    আমন: [6, 7, 8, 9, 10, 11],
+    আউশ: [3, 4, 5, 6, 7, 8],
+    রবি: [10, 11, 12, 1, 2, 3],
+    "খরিপ-১": [3, 4, 5, 6, 7],
+    "খরিপ-২": [7, 8, 9, 10],
+    "সারা বছর": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
   };
   return SEASON_MONTH_MAP[seasonName] ?? [];
 }
@@ -835,9 +832,13 @@ export function formatPriceBDT(price) {
  */
 export function getTrendDisplay(trend) {
   switch (trend) {
-    case 'up': return { icon: '📈', color: '#16a34a', label: 'বাড়ছে' };
-    case 'down': return { icon: '📉', color: '#dc2626', label: 'কমছে' };
-    case 'stable': return { icon: '➡️', color: '#d97706', label: 'স্থিতিশীল' };
-    default: return { icon: '❓', color: '#6b7280', label: 'অজানা' };
+    case "up":
+      return { icon: "📈", color: "#16a34a", label: "বাড়ছে" };
+    case "down":
+      return { icon: "📉", color: "#dc2626", label: "কমছে" };
+    case "stable":
+      return { icon: "➡️", color: "#d97706", label: "স্থিতিশীল" };
+    default:
+      return { icon: "❓", color: "#6b7280", label: "অজানা" };
   }
 }

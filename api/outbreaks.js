@@ -73,11 +73,7 @@ async function handlePost(req, res) {
 
   // Hash reporter identity for privacy
   const reporterInput = body.reporter_id || req.headers["x-forwarded-for"] || "anonymous";
-  const reporter_hash = crypto
-    .createHash("sha256")
-    .update(String(reporterInput))
-    .digest("hex")
-    .slice(0, 16);
+  const reporter_hash = crypto.createHash("sha256").update(String(reporterInput)).digest("hex").slice(0, 16);
 
   const entry = {
     district: String(body.district).slice(0, 100),

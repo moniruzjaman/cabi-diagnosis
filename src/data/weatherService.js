@@ -20,46 +20,46 @@ const BD_CENTER = { lat: 23.685, lon: 90.356 };
 
 /** Crop-specific optimal temperature ranges (°C) */
 const CROP_TEMP_RANGES = {
-  'ধান':     { min: 20, max: 35, optimal: 25, nameEn: 'Rice' },
-  'পাট':     { min: 24, max: 38, optimal: 30, nameEn: 'Jute' },
-  'আলু':     { min: 10, max: 25, optimal: 18, nameEn: 'Potato' },
-  'টমেটো':   { min: 15, max: 30, optimal: 24, nameEn: 'Tomato' },
-  'বেগুন':   { min: 20, max: 35, optimal: 28, nameEn: 'Brinjal' },
-  'সরিষা':   { min: 10, max: 28, optimal: 20, nameEn: 'Mustard' },
-  'কলা':     { min: 20, max: 38, optimal: 28, nameEn: 'Banana' },
-  'আম':      { min: 22, max: 38, optimal: 30, nameEn: 'Mango' },
-  'গম':      { min: 10, max: 25, optimal: 18, nameEn: 'Wheat' },
-  'ভুট্টা':   { min: 18, max: 35, optimal: 26, nameEn: 'Maize' },
+  ধান: { min: 20, max: 35, optimal: 25, nameEn: "Rice" },
+  পাট: { min: 24, max: 38, optimal: 30, nameEn: "Jute" },
+  আলু: { min: 10, max: 25, optimal: 18, nameEn: "Potato" },
+  টমেটো: { min: 15, max: 30, optimal: 24, nameEn: "Tomato" },
+  বেগুন: { min: 20, max: 35, optimal: 28, nameEn: "Brinjal" },
+  সরিষা: { min: 10, max: 28, optimal: 20, nameEn: "Mustard" },
+  কলা: { min: 20, max: 38, optimal: 28, nameEn: "Banana" },
+  আম: { min: 22, max: 38, optimal: 30, nameEn: "Mango" },
+  গম: { min: 10, max: 25, optimal: 18, nameEn: "Wheat" },
+  ভুট্টা: { min: 18, max: 35, optimal: 26, nameEn: "Maize" },
 };
 
 /** Crop-specific water needs (mm/week) */
 const CROP_WATER_NEEDS = {
-  'ধান':   50, // standing water, very high
-  'পাট':   35, // moderate-high
-  'আলু':   25, // moderate
-  'টমেটো': 30, // moderate
-  'বেগুন': 30, // moderate
-  'সরিষা': 20, // low-moderate
-  'কলা':   40, // high
-  'আম':    25, // moderate (tree crop)
-  'গম':    20, // low-moderate
-  'ভুট্টা': 35, // moderate-high
+  ধান: 50, // standing water, very high
+  পাট: 35, // moderate-high
+  আলু: 25, // moderate
+  টমেটো: 30, // moderate
+  বেগুন: 30, // moderate
+  সরিষা: 20, // low-moderate
+  কলা: 40, // high
+  আম: 25, // moderate (tree crop)
+  গম: 20, // low-moderate
+  ভুট্টা: 35, // moderate-high
 };
 
 /** Long-term monthly climate averages for Bangladesh (approximate) */
 const BD_CLIMATE_AVERAGES = {
-  1:  { temp: 19, humidity: 72, rain: 10 },   // January - cool, dry
-  2:  { temp: 22, humidity: 65, rain: 20 },   // February
-  3:  { temp: 27, humidity: 62, rain: 40 },   // March
-  4:  { temp: 30, humidity: 68, rain: 80 },   // April
-  5:  { temp: 30, humidity: 76, rain: 160 },  // May - pre-monsoon
-  6:  { temp: 29, humidity: 84, rain: 320 },  // June - monsoon start
-  7:  { temp: 29, humidity: 87, rain: 380 },  // July - peak monsoon
-  8:  { temp: 29, humidity: 86, rain: 320 },  // August
-  9:  { temp: 29, humidity: 83, rain: 250 },  // September
-  10: { temp: 28, humidity: 78, rain: 160 },  // October - post-monsoon
-  11: { temp: 24, humidity: 74, rain: 30 },   // November
-  12: { temp: 20, humidity: 73, rain: 10 },   // December - cool, dry
+  1: { temp: 19, humidity: 72, rain: 10 }, // January - cool, dry
+  2: { temp: 22, humidity: 65, rain: 20 }, // February
+  3: { temp: 27, humidity: 62, rain: 40 }, // March
+  4: { temp: 30, humidity: 68, rain: 80 }, // April
+  5: { temp: 30, humidity: 76, rain: 160 }, // May - pre-monsoon
+  6: { temp: 29, humidity: 84, rain: 320 }, // June - monsoon start
+  7: { temp: 29, humidity: 87, rain: 380 }, // July - peak monsoon
+  8: { temp: 29, humidity: 86, rain: 320 }, // August
+  9: { temp: 29, humidity: 83, rain: 250 }, // September
+  10: { temp: 28, humidity: 78, rain: 160 }, // October - post-monsoon
+  11: { temp: 24, humidity: 74, rain: 30 }, // November
+  12: { temp: 20, humidity: 73, rain: 10 }, // December - cool, dry
 };
 
 // ─── API fetch functions ──────────────────────────────────────────────────────
@@ -74,7 +74,8 @@ const BD_CLIMATE_AVERAGES = {
  * @returns {Promise<Object>} Forecast data
  */
 export async function fetch7DayForecast(lat = BD_CENTER.lat, lon = BD_CENTER.lon) {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+  const url =
+    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
     `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,uv_index_max,relative_humidity_2m_mean` +
     `&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,wind_speed_10m,uv_index` +
     `&timezone=Asia%2FDhaka&forecast_days=7`;
@@ -99,8 +100,9 @@ export async function fetchHistoricalWeather(lat = BD_CENTER.lat, lon = BD_CENTE
   const start = new Date(today);
   start.setDate(start.getDate() - 30);
 
-  const fmt = (d) => d.toISOString().split('T')[0];
-  const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}` +
+  const fmt = (d) => d.toISOString().split("T")[0];
+  const url =
+    `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}` +
     `&start_date=${fmt(start)}&end_date=${fmt(end)}` +
     `&daily=temperature_2m_mean,precipitation_sum,relative_humidity_2m_mean` +
     `&timezone=Asia%2FDhaka`;
@@ -128,7 +130,7 @@ export function parseForecast(raw) {
   const { daily, current } = raw;
   const days = daily.time.map((date, i) => ({
     date,
-    dayOfWeek: new Date(date).toLocaleDateString('bn-BD', { weekday: 'short' }),
+    dayOfWeek: new Date(date).toLocaleDateString("bn-BD", { weekday: "short" }),
     tempMax: Math.round(daily.temperature_2m_max?.[i] ?? 0),
     tempMin: Math.round(daily.temperature_2m_min?.[i] ?? 0),
     rain: Math.round((daily.precipitation_sum?.[i] ?? 0) * 10) / 10,
@@ -139,14 +141,16 @@ export function parseForecast(raw) {
   }));
 
   return {
-    current: current ? {
-      temp: Math.round(current.temperature_2m),
-      feelsLike: Math.round(current.apparent_temperature),
-      humidity: Math.round(current.relative_humidity_2m),
-      rain24h: Math.round((current.precipitation ?? 0) * 10) / 10,
-      windSpeed: Math.round(current.wind_speed_10m),
-      uvIndex: Math.round(current.uv_index),
-    } : null,
+    current: current
+      ? {
+          temp: Math.round(current.temperature_2m),
+          feelsLike: Math.round(current.apparent_temperature),
+          humidity: Math.round(current.relative_humidity_2m),
+          rain24h: Math.round((current.precipitation ?? 0) * 10) / 10,
+          windSpeed: Math.round(current.wind_speed_10m),
+          uvIndex: Math.round(current.uv_index),
+        }
+      : null,
     days,
     weekRainTotal: days.reduce((s, d) => s + d.rain, 0),
     weekAvgTemp: Math.round(days.reduce((s, d) => s + (d.tempMax + d.tempMin) / 2, 0) / days.length),
@@ -171,21 +175,28 @@ export function compareWithClimate(currentWeather, month) {
       current: currentWeather.temp,
       average: avg.temp,
       deviation: currentWeather.temp - avg.temp,
-      status: currentWeather.temp > avg.temp + 3 ? 'hotter' :
-              currentWeather.temp < avg.temp - 3 ? 'cooler' : 'normal',
+      status: currentWeather.temp > avg.temp + 3 ? "hotter" : currentWeather.temp < avg.temp - 3 ? "cooler" : "normal",
     },
     humidity: {
       current: currentWeather.humidity,
       average: avg.humidity,
       deviation: currentWeather.humidity - avg.humidity,
-      status: currentWeather.humidity > avg.humidity + 10 ? 'wetter' :
-              currentWeather.humidity < avg.humidity - 10 ? 'drier' : 'normal',
+      status:
+        currentWeather.humidity > avg.humidity + 10
+          ? "wetter"
+          : currentWeather.humidity < avg.humidity - 10
+            ? "drier"
+            : "normal",
     },
     rain: {
       current: currentWeather.rain24h,
       averageMonthly: avg.rain,
-      status: currentWeather.rain24h > avg.rain / 30 * 2 ? 'heavy' :
-              currentWeather.rain24h < 1 && avg.rain < 30 ? 'dry_season' : 'normal',
+      status:
+        currentWeather.rain24h > (avg.rain / 30) * 2
+          ? "heavy"
+          : currentWeather.rain24h < 1 && avg.rain < 30
+            ? "dry_season"
+            : "normal",
     },
   };
 }
@@ -206,7 +217,7 @@ export function scoreCropWeatherSuitability(cropBn, forecast) {
   const waterNeed = CROP_WATER_NEEDS[cropBn] ?? 30;
 
   if (!range || !forecast?.days?.length) {
-    return { score: 50, label: 'মিশ্র', breakdown: {} };
+    return { score: 50, label: "মিশ্র", breakdown: {} };
   }
 
   // Temperature score (0-40 points)
@@ -238,10 +249,10 @@ export function scoreCropWeatherSuitability(cropBn, forecast) {
   // Humidity/disease risk score (0-30 points)
   let humidScore = 0;
   const avgHumid = forecast.weekAvgHumidity;
-  if (cropBn === 'ধান' || cropBn === 'পাট') {
+  if (cropBn === "ধান" || cropBn === "পাট") {
     // These crops tolerate high humidity
     humidScore = avgHumid > 70 ? 25 : avgHumid > 50 ? 30 : 15;
-  } else if (cropBn === 'আলু' || cropBn === 'গম' || cropBn === 'সরিষা') {
+  } else if (cropBn === "আলু" || cropBn === "গম" || cropBn === "সরিষা") {
     // These crops prefer lower humidity (disease risk)
     humidScore = avgHumid < 60 ? 30 : avgHumid < 75 ? 20 : 8;
   } else {
@@ -250,7 +261,7 @@ export function scoreCropWeatherSuitability(cropBn, forecast) {
   }
 
   const total = Math.round(tempScore + rainScore + humidScore);
-  const label = total >= 75 ? 'চমৎকার' : total >= 55 ? 'ভালো' : total >= 40 ? 'মিশ্র' : 'খারাপ';
+  const label = total >= 75 ? "চমৎকার" : total >= 55 ? "ভালো" : total >= 40 ? "মিশ্র" : "খারাপ";
 
   return {
     score: total,
@@ -260,9 +271,9 @@ export function scoreCropWeatherSuitability(cropBn, forecast) {
       rainScore: Math.round(rainScore),
       humidScore: Math.round(humidScore),
     },
-    tempStatus: avgTemp >= range.min && avgTemp <= range.max ? 'in_range' :
-                avgTemp < range.min ? 'too_cold' : 'too_hot',
-    waterStatus: weeklyRain >= waterNeed * 0.8 ? 'sufficient' : 'deficit',
+    tempStatus:
+      avgTemp >= range.min && avgTemp <= range.max ? "in_range" : avgTemp < range.min ? "too_cold" : "too_hot",
+    waterStatus: weeklyRain >= waterNeed * 0.8 ? "sufficient" : "deficit",
   };
 }
 
@@ -279,19 +290,19 @@ export function forecastDiseasePressure(forecast) {
   const avgHumid = forecast.weekAvgHumidity;
   const avgTemp = forecast.weekAvgTemp;
   const totalRain = forecast.weekRainTotal;
-  const hasRainyDays = forecast.days.filter(d => d.rain > 10).length;
+  const hasRainyDays = forecast.days.filter((d) => d.rain > 10).length;
 
   // Fungal disease pressure
   if (avgHumid > 80 && avgTemp >= 25 && avgTemp <= 32) {
     pressures.push({
-      disease: 'ছত্রাকজনিত রোগ (Blast, Blight, Rust)',
-      pressure: 'high',
+      disease: "ছত্রাকজনিত রোগ (Blast, Blight, Rust)",
+      pressure: "high",
       reason: `${avgHumid}% আর্দ্রতা + ${avgTemp}°C তাপমাত্রা — ছত্রাকের উপযুক্ত`,
     });
   } else if (avgHumid > 70 && avgTemp >= 22) {
     pressures.push({
-      disease: 'ছত্রাকজনিত রোগ',
-      pressure: 'medium',
+      disease: "ছত্রাকজনিত রোগ",
+      pressure: "medium",
       reason: `${avgHumid}% আর্দ্রতা — মাঝারি ঝুঁকি`,
     });
   }
@@ -299,8 +310,8 @@ export function forecastDiseasePressure(forecast) {
   // Bacterial disease pressure
   if (hasRainyDays >= 3 && avgHumid > 80) {
     pressures.push({
-      disease: 'ব্যাকটেরিয়াল রোগ (BLB, Wilt)',
-      pressure: 'high',
+      disease: "ব্যাকটেরিয়াল রোগ (BLB, Wilt)",
+      pressure: "high",
       reason: `${hasRainyDays} দিন বৃষ্টি + উচ্চ আর্দ্রতা — ব্যাকটেরিয়া ছড়ানোর সম্ভাবনা`,
     });
   }
@@ -308,14 +319,14 @@ export function forecastDiseasePressure(forecast) {
   // Viral disease (vector-based)
   if (avgTemp < 22) {
     pressures.push({
-      disease: 'ভাইরাস রোগ (Tungro, Leaf Curl)',
-      pressure: 'medium',
+      disease: "ভাইরাস রোগ (Tungro, Leaf Curl)",
+      pressure: "medium",
       reason: `${avgTemp}°C — জাব পোকা/ফড়িং সক্রিয়`,
     });
   } else if (avgTemp > 32) {
     pressures.push({
-      disease: 'ভাইরাস রোগ (Leaf Curl via Whitefly)',
-      pressure: 'medium',
+      disease: "ভাইরাস রোগ (Leaf Curl via Whitefly)",
+      pressure: "medium",
       reason: `${avgTemp}°C — সাদা মাছি সক্রিয়`,
     });
   }
@@ -323,8 +334,8 @@ export function forecastDiseasePressure(forecast) {
   // Insect pressure
   if (avgTemp > 28 && avgHumid >= 40 && avgHumid <= 80) {
     pressures.push({
-      disease: 'পোকামাকড় (BPH, Stem Borer, Fruit Borer)',
-      pressure: avgTemp > 32 ? 'high' : 'medium',
+      disease: "পোকামাকড় (BPH, Stem Borer, Fruit Borer)",
+      pressure: avgTemp > 32 ? "high" : "medium",
       reason: `${avgTemp}°C + ${avgHumid}% আর্দ্রতা — পোকার উপযুক্ত`,
     });
   }
@@ -332,17 +343,17 @@ export function forecastDiseasePressure(forecast) {
   // Nutrient leaching
   if (totalRain > 100) {
     pressures.push({
-      disease: 'পুষ্টি ঘাটতি (Leaching)',
-      pressure: totalRain > 200 ? 'high' : 'medium',
+      disease: "পুষ্টি ঘাটতি (Leaching)",
+      pressure: totalRain > 200 ? "high" : "medium",
       reason: `${Math.round(totalRain)}mm বৃষ্টি — সার ধুয়ে যাওয়ার ঝুঁকি`,
     });
   }
 
   if (pressures.length === 0) {
     pressures.push({
-      disease: 'সাধারণ',
-      pressure: 'low',
-      reason: 'আবহাওয়া অনুকূল — রোগের চাপ কম',
+      disease: "সাধারণ",
+      pressure: "low",
+      reason: "আবহাওয়া অনুকূল — রোগের চাপ কম",
     });
   }
 
@@ -359,7 +370,7 @@ export function forecastDiseasePressure(forecast) {
 export function estimateIrrigationNeed(cropBn, forecast) {
   const waterNeed = CROP_WATER_NEEDS[cropBn] ?? 30;
   if (!forecast?.days?.length) {
-    return { need: 'unknown', mmDeficit: 0, advice: 'আবহাওয়ার তথ্য নেই' };
+    return { need: "unknown", mmDeficit: 0, advice: "আবহাওয়ার তথ্য নেই" };
   }
 
   const weeklyRain = forecast.weekRainTotal;
@@ -370,23 +381,20 @@ export function estimateIrrigationNeed(cropBn, forecast) {
 
   let need, advice;
   if (deficit <= 0) {
-    need = 'none';
-    advice = 'বৃষ্টির পানি যথেষ্ট — সেচের প্রয়োজন নেই';
+    need = "none";
+    advice = "বৃষ্টির পানি যথেষ্ট — সেচের প্রয়োজন নেই";
   } else if (deficit <= waterNeed * 0.3) {
-    need = 'low';
-    advice = next3DaysRain > 10
-      ? `আসন্ন বৃষ্টি (${Math.round(next3DaysRain)}mm) — সেচ স্থগিত রাখুন`
-      : 'হালকা সেচ দিন — মাটির রস কম';
+    need = "low";
+    advice =
+      next3DaysRain > 10
+        ? `আসন্ন বৃষ্টি (${Math.round(next3DaysRain)}mm) — সেচ স্থগিত রাখুন`
+        : "হালকা সেচ দিন — মাটির রস কম";
   } else if (deficit <= waterNeed * 0.6) {
-    need = 'moderate';
-    advice = next3DaysRain > 20
-      ? `কিছু বৃষ্টি আসছে — তবে পরিমিত সেচ দিন`
-      : 'নিয়মিত সেচ দিন — পানির ঘাটতি আছে';
+    need = "moderate";
+    advice = next3DaysRain > 20 ? `কিছু বৃষ্টি আসছে — তবে পরিমিত সেচ দিন` : "নিয়মিত সেচ দিন — পানির ঘাটতি আছে";
   } else {
-    need = 'critical';
-    advice = next3DaysRain > 15
-      ? 'বৃষ্টি আসতে পারে — তবে জরুরি সেচ দিন'
-      : 'জরুরি সেচ প্রয়োজন — মারাত্মক পানি ঘাটতি';
+    need = "critical";
+    advice = next3DaysRain > 15 ? "বৃষ্টি আসতে পারে — তবে জরুরি সেচ দিন" : "জরুরি সেচ প্রয়োজন — মারাত্মক পানি ঘাটতি";
   }
 
   return {
@@ -412,16 +420,16 @@ export function findSprayWindows(forecast) {
   const windows = [];
   for (const day of forecast.days) {
     if (day.rainProb > 40) continue; // Too likely to rain
-    if (day.windMax > 15) continue;  // Too windy
-    if (day.tempMax > 38) continue;  // Too hot
+    if (day.windMax > 15) continue; // Too windy
+    if (day.tempMax > 38) continue; // Too hot
 
     let quality;
     if (day.rainProb < 20 && day.windMax < 10 && day.uvMax < 8) {
-      quality = 'excellent';
+      quality = "excellent";
     } else if (day.rainProb < 30 && day.windMax < 12) {
-      quality = 'good';
+      quality = "good";
     } else {
-      quality = 'fair';
+      quality = "fair";
     }
 
     windows.push({
@@ -431,8 +439,12 @@ export function findSprayWindows(forecast) {
       rainProb: day.rainProb,
       windMax: day.windMax,
       quality,
-      window: quality === 'excellent' ? 'সকাল ৬-৯টা বা বিকাল ৪-৬টা' :
-              quality === 'good' ? 'সকালে স্প্রে করুন' : 'সতর্কতার সাথে স্প্রে করুন',
+      window:
+        quality === "excellent"
+          ? "সকাল ৬-৯টা বা বিকাল ৪-৬টা"
+          : quality === "good"
+            ? "সকালে স্প্রে করুন"
+            : "সতর্কতার সাথে স্প্রে করুন",
     });
   }
 

@@ -42,6 +42,24 @@ export default async function handler(req, res) {
     };
     if (isNewVisitor) store.uniqueVisitors += 1;
 
+    // Process telemetry events if present
+    if (Array.isArray(body.telemetry)) {
+      if (!store.telemetryStats) {
+        store.telemetryStats = { vitInferenceMs: [], webVitals: {} };
+      }
+      for (const t of body.telemetry) {
+        if (t.category === "vit_inference" && typeof t.durationMs === "number") {
+          store.telemetryStats.vitInferenceMs = [
+            ...(store.telemetryStats.vitInferenceMs || []).slice(-49),
+            t.durationMs,
+          ];
+        } else if (t.category === "web_vital" && t.name && typeof t.valueMs === "number") {
+          store.telemetryStats.webVitals = store.telemetryStats.webVitals || {};
+          store.telemetryStats.webVitals[t.name] = t.valueMs;
+        }
+      }
+    }
+
     await writeStore(store);
 
     return res.status(200).json({
@@ -49,8 +67,13 @@ export default async function handler(req, res) {
       uniqueVisitors: store.uniqueVisitors,
       sections: store.sections,
       visitor: store.visitors[visitorId],
+      telemetryStats: store.telemetryStats || null,
       updatedAt: store.updatedAt,
-      persistence: (process.env.TURSO_DATABASE_URL) ? "turso" : (process.env.VERCEL ? "temporary-instance-storage" : "local-file-storage"),
+      persistence: process.env.TURSO_DATABASE_URL
+        ? "turso"
+        : process.env.VERCEL
+          ? "temporary-instance-storage"
+          : "local-file-storage",
     });
   } catch (err) {
     console.error("Analytics POST error:", err.message);

@@ -27,7 +27,9 @@ function isVercelDeployment(origin) {
 
 function getAllowedOrigins() {
   if (process.env.ALLOWED_ORIGINS) {
-    return process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean);
+    return process.env.ALLOWED_ORIGINS.split(",")
+      .map((o) => o.trim())
+      .filter(Boolean);
   }
   return DEFAULT_PROD_ORIGINS;
 }

@@ -9,8 +9,8 @@
 // This lets the UI render a rich visual diagnosis panel with actual CABI
 // Plantwise Field Guide images — entirely offline.
 
-import { findReferenceImagesForSymptoms, getLibraryStats } from '../data/imageLibrary.js';
-import { diagnoseOffline } from './diagnosticEngine.js';
+import { findReferenceImagesForSymptoms, getLibraryStats } from "../data/imageLibrary.js";
+import { diagnoseOffline } from "./diagnosticEngine.js";
 
 /**
  * Enriches a diagnosis result (from diagnoseOffline) with CABI reference images.
@@ -26,7 +26,7 @@ export async function enrichDiagnosisWithImages(diagnosis, inputData) {
   const symptomTexts = [];
   if (inputData?.symptoms) {
     for (const v of Object.values(inputData.symptoms)) {
-      if (v && String(v) !== 'N/A') symptomTexts.push(String(v));
+      if (v && String(v) !== "N/A") symptomTexts.push(String(v));
     }
   }
   // Also include matched symptoms from the diagnosis itself
@@ -64,14 +64,17 @@ export async function enrichDiagnosisWithImages(diagnosis, inputData) {
   // Step 3: Compute a visual confidence boost
   // If we have ≥3 reference images that match the symptom category, the
   // visual evidence supports the diagnosis — bump confidence descriptor.
-  let visualConfidence = 'none';
-  if (overallImages.length >= 6) visualConfidence = 'high';
-  else if (overallImages.length >= 3) visualConfidence = 'medium';
-  else if (overallImages.length >= 1) visualConfidence = 'low';
+  let visualConfidence = "none";
+  if (overallImages.length >= 6) visualConfidence = "high";
+  else if (overallImages.length >= 3) visualConfidence = "medium";
+  else if (overallImages.length >= 1) visualConfidence = "low";
 
   // Step 4: Library stats (so UI can show "278 images across 9 categories")
   const stats = await getLibraryStats().catch(() => ({
-    totalImages: 0, totalPages: 0, totalCategories: 0, categories: [],
+    totalImages: 0,
+    totalPages: 0,
+    totalCategories: 0,
+    categories: [],
   }));
 
   return {

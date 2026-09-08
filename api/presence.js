@@ -47,10 +47,7 @@ async function handleGet(req, res) {
 
   if (hasTurso()) {
     try {
-      const [onlineStats, dailyStats] = await Promise.all([
-        getOnlineStats(),
-        getDailyStats(days),
-      ]);
+      const [onlineStats, dailyStats] = await Promise.all([getOnlineStats(), getDailyStats(days)]);
       return res.status(200).json({
         onlineCount: onlineStats.onlineCount,
         bySection: onlineStats.bySection,
