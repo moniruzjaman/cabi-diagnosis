@@ -115,9 +115,14 @@ export async function ensureSchema() {
         weather_snapshot TEXT,
         district TEXT,
         image_count INTEGER DEFAULT 0,
+        vit_prediction TEXT,
         created_at TEXT DEFAULT (datetime('now'))
       )
     `);
+    // Migration: add vit_prediction to existing deployments (no-op if already present)
+    try {
+      await db.execute(`ALTER TABLE diagnoses ADD COLUMN vit_prediction TEXT`);
+    } catch { /* column already exists */ }
     await db.execute(`
       CREATE INDEX IF NOT EXISTS idx_diagnoses_crop ON diagnoses(crop)
     `);
@@ -437,8 +442,8 @@ export async function saveDiagnosis(entry) {
   try {
     await ensureSchema();
     const result = await db.execute({
-      sql: `INSERT INTO diagnoses (session_id, crop, disease_name, disease_name_bn, confidence, severity, biotic_abiotic, provider, symptoms, recommendations, weather_snapshot, district, image_count)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO diagnoses (session_id, crop, disease_name, disease_name_bn, confidence, severity, biotic_abiotic, provider, symptoms, recommendations, weather_snapshot, district, image_count, vit_prediction)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         entry.session_id || "",
         entry.crop || "unknown",
@@ -453,6 +458,7 @@ export async function saveDiagnosis(entry) {
         entry.weather_snapshot || null,
         entry.district || null,
         entry.image_count || 0,
+        entry.vit_prediction || null,
       ],
     });
     return result.lastInsertRowid;
@@ -512,6 +518,7 @@ export async function getDiagnoses(filters = {}) {
       weatherSnapshot: row.weather_snapshot,
       district: row.district,
       imageCount: row.image_count,
+      vitPrediction: row.vit_prediction || null,
       createdAt: row.created_at,
     }));
   } catch (err) {

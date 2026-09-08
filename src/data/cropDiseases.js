@@ -639,6 +639,8 @@ export const CROP_NAME_MAP = {
   'Mango': 'আম',
   'Wheat': 'গম',
   'Maize': 'ভুট্টা',
+  // ViT (on-device classifier) crop label aliases
+  'Corn': 'ভুট্টা',
   // Mixed name formats from the CROPS object
   'ধান / Rice': 'ধান',
   'পাট / Jute': 'পাট',

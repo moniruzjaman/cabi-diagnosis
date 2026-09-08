@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { classifyLeaf, preloadModel, isModelReady } from "./vitClassifier";
+import useTTS from "../games/useTTS";
 
 // Color palette per category — keeps Bangla-visible confidence bar
 // consistent with the rest of the diagnose UI.
@@ -121,9 +122,28 @@ function Chip({ entry, onApply, disabled }) {
  *   - theme (object): { primary, primaryDark, text, textMuted, ... }
  *   - autoRun (boolean, default true): start classification as soon as image arrives
  */
-export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun = true }) {
+export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun = true, onResult }) {
   const [state, setState] = useState({ status: 'idle' });
   const cancelledRef = useRef(false);
+  const { speak, stop, speaking, isSupported } = useTTS();
+  const [speakingKey, setSpeakingKey] = useState(null);
+  // Keep onResult in a ref so the run() callback stays stable (avoids
+  // re-creating it when the parent passes a fresh inline handler each render).
+  const onResultRef = useRef(onResult);
+  useEffect(() => { onResultRef.current = onResult; });
+
+  // Toggle speech for a specific prediction chip (tap again to stop).
+  const handleSpeak = useCallback((entry, key) => {
+    if (speaking && speakingKey === key) {
+      stop();
+      setSpeakingKey(null);
+      return;
+    }
+    const label = [entry.cropBn, entry.diseaseBn].filter(Boolean).join(' ') || entry.diseaseEn || entry.label || '';
+    if (!label) return;
+    speak(label);
+    setSpeakingKey(key);
+  }, [speak, stop, speaking, speakingKey]);
 
   const run = useCallback(async (src) => {
     if (!src) return;
@@ -139,6 +159,7 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
         return;
       }
       setState({ status: 'ready', topK: result.topK, inferenceMs: result.inferenceMs });
+      if (typeof onResultRef.current === 'function') onResultRef.current(result.topK);
     } catch (err) {
       if (!cancelledRef.current) {
         setState({ status: 'error', error: err.message || String(err) });
@@ -256,7 +277,38 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {topK.map((entry) => (
-          <Chip key={entry.idx} entry={entry} onApply={onApply} />
+          <div key={entry.idx} style={{ display: 'flex', gap: 6, alignItems: 'stretch' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Chip entry={entry} onApply={onApply} />
+            </div>
+            {isSupported && (
+              <button
+                type="button"
+                title={speaking && speakingKey === entry.idx ? 'বন্ধ করুন' : 'শুনুন'}
+                onClick={() => handleSpeak(entry, entry.idx)}
+                disabled={entry.category === 'invalid'}
+                style={{
+                  flexShrink: 0,
+                  borderRadius: 10,
+                  border: '1px solid rgba(0,0,0,0.08)',
+                  background: CAT_STYLES[entry.category]?.bg || '#eef2f7',
+                  color: CAT_STYLES[entry.category]?.fg || '#475569',
+                  fontWeight: 700,
+                  fontSize: 11,
+                  cursor: 'pointer',
+                  padding: '0 10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  whiteSpace: 'nowrap',
+                  opacity: entry.category === 'invalid' ? 0.5 : 1,
+                }}
+              >
+                <span style={{ fontSize: 13 }}>{speaking && speakingKey === entry.idx ? '⏹️' : '🔊'}</span>
+                {speaking && speakingKey === entry.idx ? 'থামুন' : 'শুনুন'}
+              </button>
+            )}
+          </div>
         ))}
       </div>
     </div>

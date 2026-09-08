@@ -82,6 +82,7 @@ async function handlePost(req, res) {
     weather_snapshot: body.weather_snapshot ? String(body.weather_snapshot).slice(0, 2000) : null,
     district: body.district ? String(body.district).slice(0, 100) : null,
     image_count: Math.min(Math.max(Number(body.image_count) || 0, 0), 10),
+    vit_prediction: body.vit_prediction ? String(body.vit_prediction).slice(0, 4000) : null,
   };
 
   try {

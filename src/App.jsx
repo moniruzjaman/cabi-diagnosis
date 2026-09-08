@@ -626,7 +626,7 @@ function DiagnosisHistory({history,onLoad}){
             <span style={{fontSize:16}}>🌾</span>
             <div style={{textAlign:"left"}}>
               <div style={{fontWeight:700,fontSize:11,color:C.text}}>{h.crop?.split("/")[0]?.trim()||"Unknown"}</div>
-              <div style={{color:C.textMuted,fontSize:10}}>{h.date}</div>
+              <div style={{display:"flex",alignItems:"center",gap:4,color:C.textMuted,fontSize:10}}>{h.date}{h.vitPrediction&&<span title={`ছবি বিশ্লেষণ: ${h.vitPrediction.diseaseBn||h.vitPrediction.disease||''}`}>🛰️</span>}</div>
             </div>
             <span style={{background:C.badgeSuccess,color:C.textSuccess,borderRadius:10,padding:"1px 7px",fontSize:9,fontWeight:700}}>✓</span>
           </button>
@@ -1318,7 +1318,10 @@ function _HomeTab({setActiveTab,history,weather,locationName}){
               <div key={index} style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:14,padding:12}}>
                 <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:4}}>{item.crop?.split("/")[0]?.trim()||"ফসল"}</div>
                 <div style={{fontSize:11,color:C.textMuted}}>{item.district?.split("/")[0]?.trim()||"জেলা নেই"}</div>
-                <div style={{fontSize:11,color:C.textLight,marginTop:6}}>{item.date}</div>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginTop:6}}>
+                  <span style={{fontSize:11,color:C.textLight}}>{item.date}</span>
+                  {item.vitPrediction&&<span title={`ছবি বিশ্লেষণ: ${item.vitPrediction.diseaseBn||item.vitPrediction.disease||''}`} style={{background:C.bgInfo,borderColor:C.borderInfo,borderRadius:999,padding:"1px 7px",fontSize:9,fontWeight:700,color:C.blue}}>🛰️</span>}
+                </div>
               </div>
             ))}
           </div>
@@ -2511,6 +2514,7 @@ const[activeTab,setActiveTab]=useState("home");
   const resultRef=useRef(null);
 
   const[isListening,setIsListening]=useState(false);
+  const[vitPrediction,setVitPrediction]=useState(null);
   const[isSpeaking,setIsSpeaking]=useState(false);
   const[voiceSupported,setVoiceSupported]=useState(false);
   const[ttsSupported,setTtsSupported]=useState(false);
@@ -2846,15 +2850,37 @@ const[activeTab,setActiveTab]=useState("home");
       return next;
     });
   };
+  // Capture the on-device ViT top prediction for LLM grounding, offline engine
+  // boost, and history persistence. Only the top (highest-confidence) entry is
+  // kept — healthy/"no leaf" frames are treated as no prediction.
+  const handleVitResult=(topK)=>{
+    const top=Array.isArray(topK)?topK[0]:null;
+    setVitPrediction(top&&top.category!=='invalid'?{...top}:null);
+  };
   const handleImage=(e)=>{handleImageFile(e.target.files?.[0]);e.target.value="";};
   const removeImage=(idx)=>{
+    const willBeEmpty=(images.length-1)<=0;
     setImages(prev=>prev.filter((_,i)=>i!==idx));
     setImageBase64s(prev=>prev.filter((_,i)=>i!==idx));
+    if(willBeEmpty)setVitPrediction(null);
   };
 
 const handleSubmit=async()=>{
     if(!form.crop||!form.symptoms){setError("অনুগ্রহ করে ফসল এবং লক্ষণ উভয়ই পূরণ করুন।");return;}
     setLoading(true);setError(null);setResult(null);setRecommendedProducts([]);setReferenceImages(null);
+    // Snapshot of the on-device ViT prediction (if any). Used for LLM grounding,
+    // offline engine boost, and history persistence. "Healthy" frames are ignored.
+    const vitSnapshot=vitPrediction&&!vitPrediction.isHealthy
+      ? {
+          crop: vitPrediction.cropEn||vitPrediction.cropBn||null,
+          cropBn: vitPrediction.cropBn||null,
+          disease: vitPrediction.diseaseEn||vitPrediction.diseaseBn||null,
+          diseaseBn: vitPrediction.diseaseBn||null,
+          diseaseEn: vitPrediction.diseaseEn||null,
+          confidence: Number.isFinite(vitPrediction.confidence)?vitPrediction.confidence:null,
+          label: vitPrediction.label||null,
+        }
+      : null;
     
     if (diagnosisMode === "offline") {
       // Use offline diagnosis
@@ -2881,7 +2907,8 @@ const handleSubmit=async()=>{
             temp: weather.temp,
             humidity: weather.humidity,
             rainfall: weather.rain24h
-          } : null
+          } : null,
+          vitPrediction: vitSnapshot
         };
         
         // Perform offline diagnosis (synchronous rule-based engine)
@@ -3008,7 +3035,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
           crop: form.crop,
           district: form.district,
           date: new Date().toLocaleDateString("bn-BD"),
-          resultPreview: banglaText.substring(0, 100)
+          resultPreview: banglaText.substring(0, 100),
+          vitPrediction: vitSnapshot
         };
         const nh = [...history, entry].slice(-10);
         setHistory(nh);
@@ -3025,6 +3053,12 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
     
     // Online diagnosis (existing code)
     const uc = [];
+    // LLM grounding: give the model a deterministic baseline from the on-device
+    // ViT classifier (when available) so its diagnosis is anchored to the local
+    // vision signal rather than starting from a blank slate.
+    const vitGrounding = vitSnapshot
+      ? `🛰️ LOCAL VISION MODEL (deterministic on-device classifier): top prediction is crop "${vitSnapshot.crop||'?'}" — disease "${vitSnapshot.diseaseBn||vitSnapshot.disease||'?'}" with confidence ${vitSnapshot.confidence!=null?Math.round(vitSnapshot.confidence*100)+'%':'n/a'}. Treat this as a strong baseline hint from automated leaf-image classification. Use it to shortlist candidate diseases, but always confirm against the symptom description below.\n\n`
+      : '';
     // Send all images as separate content blocks with labels
     imageBase64s.forEach((b64, idx) => {
       const label = images[idx]?.label || `ছবি ${idx+1}`;
@@ -3033,7 +3067,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
     });
     uc.push({ 
       type: "text", 
-      text: `Crop:${form.crop}\nDistrict:${form.district||locationName||"N/A"}\nSeason:${form.season||"N/A"}\nGrowth:${form.growthStage||"N/A"}\nDuration:${form.duration||"N/A"}\nArea:${form.affectedArea||"N/A"}\nSymptoms:${form.symptoms}\n${imageBase64s.length>0?`${imageBase64s.length} photo(s) attached.`:"No photo."}\n${weatherPromptText(weather,locationName)}\n\nDiagnose using CABI Plantwise 5-step protocol. Use very simple Bangla for farmers. Avoid technical words unless you immediately explain them in plain language. Prefer short icon-led bullets and practical field actions.\n---BANGLA_SECTION---\n[Full Bangla]\n---END_BANGLA---\n---ENGLISH_SECTION---\n[Full English]\n---END_ENGLISH---`} 
+      text: `${vitGrounding}Crop:${form.crop}\nDistrict:${form.district||locationName||"N/A"}\nSeason:${form.season||"N/A"}\nGrowth:${form.growthStage||"N/A"}\nDuration:${form.duration||"N/A"}\nArea:${form.affectedArea||"N/A"}\nSymptoms:${form.symptoms}\n${imageBase64s.length>0?`${imageBase64s.length} photo(s) attached.`:"No photo."}\n${weatherPromptText(weather,locationName)}\n\nDiagnose using CABI Plantwise 5-step protocol. Use very simple Bangla for farmers. Avoid technical words unless you immediately explain them in plain language. Prefer short icon-led bullets and practical field actions.\n---BANGLA_SECTION---\n[Full Bangla]\n---END_BANGLA---\n---ENGLISH_SECTION---\n[Full English]\n---END_ENGLISH---`} 
     );
     try {
       const res = await signedFetch("/api/diagnose", {
@@ -3053,7 +3087,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
       setProvider(data.provider || null);
       if (data.structured) setStructuredResult(data.structured);
       setStep(2);
-      const entry = { crop: form.crop, district: form.district, date: new Date().toLocaleDateString("bn-BD"), resultPreview: bn.slice(0, 80) };
+      const entry = { crop: form.crop, district: form.district, date: new Date().toLocaleDateString("bn-BD"), resultPreview: bn.slice(0, 80), vitPrediction: vitSnapshot };
       const nh = [...history, entry].slice(-10);
       setHistory(nh);
       try { localStorage.setItem("ud-history", JSON.stringify(nh)); } catch {}
@@ -3076,7 +3110,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
             recommendations: data.structured?.key_recommendations?.join('; '),
             weather_snapshot: weather ? JSON.stringify(weather) : null,
             district: form.district || locationName,
-            image_count: images.length
+            image_count: images.length,
+            vit_prediction: vitSnapshot ? JSON.stringify(vitSnapshot) : null
           })
         });
       } catch(e) { /* non-critical, don't block */ void e; }
@@ -3089,7 +3124,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
   };
 
   const stopSpeaking=()=>{window.speechSynthesis?.cancel();setIsSpeaking(false);};
-  const reset=()=>{setForm(f=>{const next={crop:"",district:f.district||"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:f.duration||"",affectedArea:f.affectedArea||""};try{localStorage.setItem('ud-form',JSON.stringify(next));}catch{}return next;});setImages([]);setImageBase64s([]);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setShowMoreCrops(false);setRecommendedProducts([]);setStructuredResult(null);setSymptomMatches(null);setReferenceImages(null);setFollowUpQuestion('');setFollowUpAnswer('');setFollowUpLoading(false);stopSpeaking();};
+  const reset=()=>{setForm(f=>{const next={crop:"",district:f.district||"",season:getCurrentSeason(),growthStage:"",symptoms:"",duration:f.duration||"",affectedArea:f.affectedArea||""};try{localStorage.setItem('ud-form',JSON.stringify(next));}catch{}return next;});setImages([]);setImageBase64s([]);setResult(null);setError(null);setProvider(null);setShowEnglish(false);setStep(1);setShowMoreCrops(false);setRecommendedProducts([]);setStructuredResult(null);setSymptomMatches(null);setReferenceImages(null);setFollowUpQuestion('');setFollowUpAnswer('');setFollowUpLoading(false);setVitPrediction(null);stopSpeaking();};
 
   // Follow-up question handler
   const handleFollowUp=async()=>{
@@ -3381,6 +3416,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                 <VitSuggestions
                   imageDataUrl={images[0]?.url || null}
                   onApply={applyVitPrediction}
+                  onResult={handleVitResult}
                   theme={C}
                 />
                 {/* crop */}
@@ -3643,7 +3679,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                       <button onClick={()=>{setShowEnglish(false);stopSpeaking();}} style={{borderRadius:16,padding:"5px 14px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:!showEnglish?C.primary:"transparent",color:!showEnglish?"#fff":C.textMuted,transition:"all .2s"}}>বাংলা</button>
                       <button onClick={()=>{setShowEnglish(true);stopSpeaking();}} style={{borderRadius:16,padding:"5px 14px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:showEnglish?C.primary:"transparent",color:showEnglish?"#fff":C.textMuted,transition:"all .2s"}}>English</button>
                     </div>
-                    {ttsSupported&&<button onClick={()=>isSpeaking?stopSpeaking():speakResult(showEnglish?result.en:result.bn)} style={{width:36,height:36,borderRadius:"50%",border:`2px solid ${isSpeaking?C.warning:C.primary}`,background:isSpeaking?C.bgWarning:C.bgSuccess,cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{isSpeaking?"⏹":"🔊"}</button>}
+                    {ttsSupported&&<button onClick={()=>isSpeaking?stopSpeaking():speakResult(showEnglish?result.en:result.bn)} style={{height:34,minWidth:0,borderRadius:17,paddingInline:"12px",border:`1.5px solid ${isSpeaking?C.warning:C.primary}`,background:isSpeaking?C.bgWarning:C.bgSuccess,color:isSpeaking?C.warning:C.primaryDark,cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:5,flexShrink:0}}><span style={{fontSize:15}}>{isSpeaking?"⏹️":"🔊"}</span>{isSpeaking?"বন্ধ করুন":"শুনুন"}</button>}
                     {weather&&<span style={{background:C.bgBlue,border:`1px solid ${C.borderBlue}`,borderRadius:20,padding:"3px 8px",color:C.textBlue,fontSize:10}}>🌡️{weather.temp}°C·💧{weather.humidity}%</span>}
                   </div>
                 </div>

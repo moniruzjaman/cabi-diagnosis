@@ -611,6 +611,39 @@ function diagnoseOffline(inputData) {
     }
   }
 
+  // Step 3b: On-device ViT vision boost (Phase 1 companion)
+  // If the local vision classifier returned a prediction for the same crop as
+  // the form, give that disease a deterministic edge over symptom-only matching.
+  // The vision signal enters via inputData.vision (or inputData.vitPrediction).
+  const vision = inputData.vision || inputData.vitPrediction;
+  if (vision && vision.disease && cropDiseaseMatches.length > 0) {
+    const visionCropKey = resolveCropKey(vision.crop) || cropKey;
+    if (cropKey && visionCropKey && visionCropKey === cropKey) {
+      const visionEn = String(vision.disease || '').toLowerCase();
+      const visionBn = String(vision.diseaseBn || '').toLowerCase();
+      // Confidence-boosted bump: higher model confidence → larger edge, but
+      // always leaves room for the CABI symptom gate to veto.
+      const boost = 0.15 + Math.min(Math.max(Number(vision.confidence) || 0, 0), 0.97) * 0.4;
+      let boosted = false;
+      cropDiseaseMatches = cropDiseaseMatches.map((m) => {
+        if (boosted) return m;
+        const dEn = String(m.disease.name || '').toLowerCase();
+        const dBn = String(m.disease.nameBn || '').toLowerCase();
+        const matches =
+          (visionEn && (dEn === visionEn || dEn.includes(visionEn) || visionEn.includes(dEn))) ||
+          (visionBn && (dBn === visionBn || dBn.includes(visionBn) || visionBn.includes(dBn)));
+        if (matches) {
+          boosted = true;
+          return { ...m, matchRatio: Math.min(1, m.matchRatio + boost) };
+        }
+        return m;
+      });
+      if (boosted) {
+        cropDiseaseMatches.sort((a, b) => (b.matchRatio - a.matchRatio) || (b.score - a.score));
+      }
+    }
+  }
+
   // Step 4: Disease triangle assessment (now crop-aware)
   const triangle = assessDiseaseTriangle(hostInfo, pathogenInfo, envInfo, crop);
   
