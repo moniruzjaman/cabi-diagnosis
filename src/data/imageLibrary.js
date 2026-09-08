@@ -10,6 +10,8 @@
 //   WILT, LEAF SPOT, WITCHES' BROOM, CANKER, MOSAIC, YELLOWING OF LEAVES,
 //   DISTORTION OF LEAVES, LITTLE LEAF, GALLS, DRYING/NECROSIS/BLIGHT
 
+import { loadOfflineBundles } from './offlineLoader.js';
+
 // ─── Bengali → English symptom keyword map (for matching) ───────────────────
 // Mirrors the categories used by CABI but in Bengali, since user symptom chips
 // are in Bengali. Each entry maps to one or more CABI categories.
@@ -130,6 +132,24 @@ export async function buildImageIndex(forceRefresh = false) {
       });
     }
   }
+
+  // Attempt to load optional offline bundles and merge
+  try {
+    const offline = await loadOfflineBundles(forceRefresh);
+    if (offline && offline.length > 0) {
+      const map = new Map();
+      for (const e of entries) map.set(e.url || e.image, e);
+      for (const oe of offline) {
+        if (!map.has(oe.url)) map.set(oe.url, oe);
+      }
+      const merged = Array.from(map.values());
+      _imageIndexCache = merged;
+      return merged;
+    }
+  } catch (err) {
+    console.warn('[imageLibrary] failed to merge offline bundles', err.message);
+  }
+
   _imageIndexCache = entries;
   return entries;
 }
