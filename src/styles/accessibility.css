@@ -115,3 +115,71 @@ body {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* ─── Phase 1 Design System Accessibility ─────────────────────────────────── */
+
+/* Card focus-visible */
+.ud-card:focus-visible {
+  outline: 2px solid var(--c-primary, #006028);
+  outline-offset: 2px;
+  border-radius: var(--c-radius-md, 14px);
+}
+
+/* Button active feedback */
+.ud-btn:active {
+  transform: scale(0.97);
+}
+
+/* Chip focus-visible */
+.ud-chip:focus-visible {
+  outline: 2px solid var(--c-primary, #006028);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+/* Tab focus-visible */
+.ud-tabs__item:focus-visible {
+  outline: 2px solid var(--c-primary, #006028);
+  outline-offset: -2px;
+  border-radius: var(--c-radius-md, 14px);
+}
+
+/* Badge focus-visible (when interactive) */
+.ud-badge:focus-visible {
+  outline: 2px solid var(--c-primary, #006028);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+/* Skeleton focus-visible */
+.ud-skeleton:focus-visible {
+  outline: 2px solid var(--c-primary, #006028);
+  outline-offset: 2px;
+}
+
+/* Reduced motion overrides for Phase 1 animations */
+@media (prefers-reduced-motion: reduce) {
+  .ud-card,
+  .ud-btn,
+  .ud-chip,
+  .ud-tabs__indicator,
+  .ud-progress__bar {
+    transition-duration: 0.01ms !important;
+  }
+
+  .ud-enter-fade-up,
+  .ud-enter-scale,
+  .ud-stagger-item {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .ud-glow {
+    animation: none !important;
+  }
+
+  .ud-progress__bar--animated {
+    animation: none !important;
+  }
+}

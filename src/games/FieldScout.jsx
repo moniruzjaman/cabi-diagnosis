@@ -615,6 +615,7 @@ export default function FieldScout() {
             padding: 20,
             fontFamily:
               "'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif",
+            animation: "fadeInUp 0.4s ease",
           }}
         >
           <div

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { buildImageIndex, getLibraryStats } from "../data/imageLibrary";
+import Skeleton from "../components/ui/Skeleton";
 
 // CABI Visual Reference Library
 // Lets users browse the 278 CABI Plantwise Field Guide images offline.
@@ -295,9 +296,17 @@ const VisualDiagnosisLibrary = () => {
 
   if (loading) {
     return (
-      <div style={styles.loadingState}>
-        <div style={{ fontSize: '32px', marginBottom: '8px' }}>📷</div>
-        CABI ভিজ্যুয়াল লাইব্রেরি লোড হচ্ছে...
+      <div style={{padding:20,display:'flex',flexDirection:'column',gap:12,alignItems:'center'}}>
+        <div style={{fontSize:'32px',marginBottom:8}}>📷</div>
+        <Skeleton variant="text" width="60%" height={14}/>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(100px,1fr))',gap:8,width:'100%'}}>
+          {[0,1,2,3,4,5].map(i=>(
+            <div key={i} style={{background:C.bgMuted,borderRadius:10,padding:8,display:'flex',flexDirection:'column',gap:6}}>
+              <Skeleton variant="rectangular" height={80}/>
+              <Skeleton variant="text" width="80%" height={10}/>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

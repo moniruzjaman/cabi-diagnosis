@@ -1,0 +1,422 @@
+/* ==========================================================================
+   Utility Classes — Phase 1 Design System
+   ========================================================================== */
+
+/* ─── Card ────────────────────────────────────────────────────────────────── */
+.ud-card {
+  background: var(--c-bg-card, #ffffff);
+  border: 1px solid var(--c-border, #e2e5ea);
+  border-radius: var(--c-radius-md, 14px);
+  box-shadow: var(--c-shadow, 0 2px 8px rgba(0, 0, 0, 0.06));
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  overflow: hidden;
+}
+
+.ud-card[data-hover="true"]:hover {
+  box-shadow: var(--c-shadow-md, 0 4px 16px rgba(0, 0, 0, 0.08));
+  transform: translateY(-2px);
+}
+
+.ud-card[data-padding="sm"] {
+  padding: 12px;
+}
+
+.ud-card[data-padding="md"] {
+  padding: 16px;
+}
+
+.ud-card[data-padding="lg"] {
+  padding: 24px;
+}
+
+/* ─── Button Reset ────────────────────────────────────────────────────────── */
+.ud-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--c-radius-md, 14px);
+  font-family: var(--c-font-sans, 'Inter', 'Noto Sans Bengali', sans-serif);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+  min-width: 44px;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.ud-btn:active {
+  transform: scale(0.97);
+}
+
+.ud-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.ud-btn--sm {
+  padding: 8px 16px;
+  font-size: 13px;
+  border-radius: var(--c-radius-sm, 10px);
+  min-height: 36px;
+}
+
+.ud-btn--md {
+  padding: 12px 24px;
+  font-size: 15px;
+}
+
+.ud-btn--lg {
+  padding: 16px 32px;
+  font-size: 17px;
+  border-radius: var(--c-radius-lg, 18px);
+  min-height: 52px;
+}
+
+.ud-btn--fullWidth {
+  width: 100%;
+}
+
+.ud-btn--primary {
+  background: var(--c-primary, #006028);
+  color: #ffffff;
+}
+
+.ud-btn--primary:hover:not(:disabled) {
+  background: var(--c-primary-dark, #005322);
+  box-shadow: 0 4px 14px rgba(0, 96, 40, 0.3);
+}
+
+.ud-btn--secondary {
+  background: var(--c-bg-muted, #f0f2f5);
+  color: var(--c-text, #1a1d21);
+  border: 1px solid var(--c-border, #e2e5ea);
+}
+
+.ud-btn--secondary:hover:not(:disabled) {
+  background: var(--c-border, #e2e5ea);
+}
+
+.ud-btn--ghost {
+  background: transparent;
+  color: var(--c-primary, #006028);
+}
+
+.ud-btn--ghost:hover:not(:disabled) {
+  background: var(--c-bg-muted, #f0f2f5);
+}
+
+.ud-btn--danger {
+  background: var(--c-danger, #dc2626);
+  color: #ffffff;
+}
+
+.ud-btn--danger:hover:not(:disabled) {
+  background: #b91c1c;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+}
+
+/* Spinner */
+.ud-btn__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* ─── Chip ────────────────────────────────────────────────────────────────── */
+.ud-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid var(--c-border, #e2e5ea);
+  background: var(--c-bg-muted, #f0f2f5);
+  color: var(--c-text-muted, #5f6672);
+  transition: all 0.2s ease;
+  min-height: 36px;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  font-family: var(--c-font-sans, 'Inter', 'Noto Sans Bengali', sans-serif);
+}
+
+.ud-chip:hover {
+  border-color: var(--c-primary-light, #1a7a3a);
+  color: var(--c-primary, #006028);
+}
+
+.ud-chip--selected {
+  background: var(--c-primary, #006028);
+  color: #ffffff;
+  border-color: var(--c-primary, #006028);
+  box-shadow: 0 2px 8px rgba(0, 96, 40, 0.25);
+}
+
+.ud-chip--selected:hover {
+  background: var(--c-primary-dark, #005322);
+  color: #ffffff;
+}
+
+/* ─── Badge ───────────────────────────────────────────────────────────────── */
+.ud-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  white-space: nowrap;
+  font-family: var(--c-font-sans, 'Inter', 'Noto Sans Bengali', sans-serif);
+}
+
+.ud-badge--sm {
+  padding: 2px 8px;
+  font-size: 10px;
+}
+
+.ud-badge--md {
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+.ud-badge--success {
+  background: var(--badgeSuccess, #dcfce7);
+  color: var(--textSuccess, #14532d);
+}
+
+.ud-badge--warning {
+  background: var(--badgeWarning, #fef3c7);
+  color: var(--textWarning, #92400e);
+}
+
+.ud-badge--danger {
+  background: var(--bgDanger, #fef2f2);
+  color: var(--textDanger, #991b1b);
+}
+
+.ud-badge--info {
+  background: var(--bgInfo, #eff6ff);
+  color: var(--textInfo, #1e40af);
+}
+
+.ud-badge--neutral {
+  background: var(--c-bg-muted, #f0f2f5);
+  color: var(--c-text-muted, #5f6672);
+}
+
+/* ─── Skeleton ────────────────────────────────────────────────────────────── */
+.ud-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--c-bg-muted, #f0f2f5) 0%,
+    var(--c-border, #e2e5ea) 50%,
+    var(--c-bg-muted, #f0f2f5) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--c-radius-sm, 10px);
+}
+
+.ud-skeleton--text {
+  height: 14px;
+  border-radius: 7px;
+}
+
+.ud-skeleton--circular {
+  border-radius: 50%;
+}
+
+.ud-skeleton--rectangular {
+  border-radius: var(--c-radius-md, 14px);
+}
+
+/* ─── Hover Lift ────────────────────────────────────────────────────────────── */
+.ud-hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ud-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--c-shadow-md, 0 4px 16px rgba(0, 0, 0, 0.08));
+}
+
+/* ─── Progress Bar ────────────────────────────────────────────────────────── */
+.ud-progress {
+  width: 100%;
+  height: var(--progress-height, 8px);
+  background: var(--c-bg-muted, #f0f2f5);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.ud-progress__bar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--progress-color, var(--c-primary, #006028));
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.ud-progress__bar--animated::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.8s ease-in-out infinite;
+  background-size: 200% 100%;
+}
+
+/* ─── Tabs ────────────────────────────────────────────────────────────────── */
+.ud-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--c-bg-muted, #f0f2f5);
+  border-radius: var(--c-radius-md, 14px);
+  padding: 4px;
+  position: relative;
+}
+
+.ud-tabs__indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  background: var(--c-bg-card, #ffffff);
+  border-radius: calc(var(--c-radius-md, 14px) - 2px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+}
+
+.ud-tabs__item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  border-radius: calc(var(--c-radius-md, 14px) - 2px);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--c-text-muted, #5f6672);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  position: relative;
+  z-index: 1;
+  min-height: 40px;
+  font-family: var(--c-font-sans, 'Inter', 'Noto Sans Bengali', sans-serif);
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+.ud-tabs__item--active {
+  color: var(--c-primary, #006028);
+  font-weight: 700;
+}
+
+/* ─── Enter Animations ────────────────────────────────────────────────────── */
+.ud-enter-fade-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.ud-enter-scale {
+  animation: scaleIn 0.35s ease forwards;
+}
+
+.ud-stagger-item {
+  opacity: 0;
+  animation: staggerIn 0.45s ease forwards;
+  animation-delay: var(--stagger-delay, 0ms);
+}
+
+/* ─── Glow Effects ────────────────────────────────────────────────────────── */
+.ud-glow {
+  animation: glowPulse 2.5s ease-in-out infinite;
+}
+
+.ud-text-gradient {
+  background: linear-gradient(135deg, var(--c-primary, #006028), var(--c-primary-light, #1a7a3a));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ud-shadow-glow {
+  box-shadow: 0 0 20px var(--c-glow-color, rgba(0, 96, 40, 0.2)),
+              0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Home Animations ────────────────────────────────────────────────────── */
+.hub-card {
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.hub-card:active {
+  transform: scale(0.97);
+}
+
+.weather-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.weather-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--c-shadow-md, 0 4px 16px rgba(0, 0, 0, 0.08));
+}
+
+.weather-emoji-float {
+  animation: floatGentle 4s ease-in-out infinite;
+  will-change: transform;
+  display: inline-block;
+}
+
+.learning-progress-dot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.learning-progress-dot--completed::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--c-success, #16a34a);
+  opacity: 0.5;
+}
+
+.learning-progress-dot--active::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--c-primary, #006028);
+  animation: pulseRing 1.5s ease-out infinite;
+  opacity: 0.6;
+}

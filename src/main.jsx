@@ -2,6 +2,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Component } from "react";
 import App from "./App.jsx";
+import "./styles/accessibility.css";
+import "./styles/animations.css";
+import "./styles/utilities.css";
 
 // ─── Error Boundary ────────────────────────────────────────────────────────────
 class ErrorBoundary extends Component {
