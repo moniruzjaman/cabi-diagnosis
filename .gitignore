@@ -53,3 +53,9 @@ download/
 # Expo mobile (work-in-progress)
 expo-mobile/
 .vercel
+
+# On-device ViT model (Phase 1) — 22 MB ONNX file
+# Tracked directly in git (no LFS needed for a single 22 MB asset).
+# To regenerate: see docs/phase1-vit.md (or the attached notebook).
+# public/models/*.onnx
+

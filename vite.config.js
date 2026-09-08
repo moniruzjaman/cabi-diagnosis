@@ -66,6 +66,11 @@ function removeCrossoriginPlugin() {
 export default defineConfig({
   plugins: [react(), removeCrossoriginPlugin()],
 
+  // onnxruntime-web ships pre-built .wasm binaries. Vite needs to know
+  // they're assets, not source. Without these excludes, the WASM files
+  // are duplicated and renamed in the build output and ORT can't find them.
+  assetsInclude: ["**/*.wasm", "**/*.mjs"],
+
   build: {
     outDir: "dist",
     sourcemap: false,
@@ -80,6 +85,12 @@ export default defineConfig({
         assetFileNames: "assets/[name]-[hash].[ext]",
       },
     },
+  },
+
+  optimizeDeps: {
+    // Pre-bundle onnxruntime-web so the first request doesn't trigger
+    // hundreds of micro-imports during dev.
+    include: ["onnxruntime-web"],
   },
 
   server: {

@@ -4,7 +4,18 @@
 // API responses are NEVER cached to prevent stale diagnostic results
 
 const CACHE_VERSION = 'cabi-v5-' + new Date().toISOString().slice(0, 10);
-const PRECACHE_ASSETS = ["/", "/index.html", "/favicon.png", "/cabi-logo.png", "/favicon.svg", "/manifest.json"];
+const PRECACHE_ASSETS = [
+  "/",
+  "/index.html",
+  "/favicon.png",
+  "/cabi-logo.png",
+  "/favicon.svg",
+  "/manifest.json",
+  // On-device ViT model for offline leaf-disease classification (Phase 1).
+  // 22 MB — precaching it here means the model works on the very first
+  // diagnosis attempt even if the user has never been online.
+  "/models/crop_leaf_diseases_vit.onnx",
+];
 
 // Install — precache essential shell assets, then activate immediately
 self.addEventListener("install", (event) => {
@@ -65,6 +76,25 @@ self.addEventListener("fetch", (event) => {
   // These have content hashes, so cached version is always correct.
   // Regex matches both hex (8+ chars) and base64url hashes that Vite may generate.
   if (url.pathname.match(/\/assets\/[^/]+-[a-zA-Z0-9_-]{4,}\.(js|css|woff2?|png|jpg|jpeg|svg|webp|ico)$/)) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((response) => {
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // For the ViT ONNX model (22 MB) — cache-first so the second diagnosis
+  // is instant. The model is versioned via the cache key, so a deploy with
+  // a new model file is picked up on the next SW activate cycle.
+  if (url.pathname === "/models/crop_leaf_diseases_vit.onnx") {
     event.respondWith(
       caches.match(event.request).then((cached) => {
         if (cached) return cached;

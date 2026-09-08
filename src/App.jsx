@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
 import { diagnoseOffline, enrichDiagnosisWithImages } from "./offline/index";
+import VitSuggestions from "./offline/VitSuggestions";
 import { lightThemeFull, darkThemeFull, getPreferredTheme } from './data/themes';
 import { CROP_CALENDAR, getCurrentRiskAlerts } from './data/cropCalendar';
 import { CROP_DISEASES, matchDiseasesBySymptoms, resolveCropKey, estimateInoculumPressure, getVarietySusceptibility } from './data/cropDiseases';
@@ -2827,6 +2828,24 @@ const[activeTab,setActiveTab]=useState("home");
     img.onerror=()=>{console.error("Image load failed");URL.revokeObjectURL(objectUrl);};
     img.src=objectUrl;
   };
+  // Apply a ViT prediction: pre-fill the form with the predicted crop and a
+  // symptom hint derived from the predicted disease. Read-only — does not
+  // submit. User still runs the CABI 5-step protocol.
+  const applyVitPrediction=(entry)=>{
+    if(!entry||entry.category==='invalid')return;
+    const newCrop=entry.cropEn||entry.cropBn;
+    const hint=entry.diseaseBn||entry.diseaseEn;
+    setForm(f=>{
+      const next={...f};
+      if(newCrop)next.crop=newCrop;
+      // Append hint to existing symptoms if it's a disease; otherwise clear.
+      if(!entry.isHealthy&&hint){
+        const trimmed=(f.symptoms||'').trim();
+        next.symptoms=trimmed?`${trimmed}\n${hint}`:hint;
+      }
+      return next;
+    });
+  };
   const handleImage=(e)=>{handleImageFile(e.target.files?.[0]);e.target.value="";};
   const removeImage=(idx)=>{
     setImages(prev=>prev.filter((_,i)=>i!==idx));
@@ -3358,6 +3377,12 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx+1}. ${it
                     </div>
                   </div>
                 </div>
+                {/* ── On-device ViT suggestions (Phase 1, read-only) ─────── */}
+                <VitSuggestions
+                  imageDataUrl={images[0]?.url || null}
+                  onApply={applyVitPrediction}
+                  theme={C}
+                />
                 {/* crop */}
                 <div style={{background:C.bgCard,borderRadius:16,padding:14,marginBottom:10,border:`1px solid ${C.border}`,boxShadow:C.shadow}}>
                   <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:10}}>🌱 ফসল নির্বাচন *</div>
