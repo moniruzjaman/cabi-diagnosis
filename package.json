@@ -55,5 +55,8 @@
     "globals": "^17.6.0",
     "prettier": "^3.8.3",
     "vite": "^5.4.2"
+  },
+  "allowScripts": {
+    "protobufjs@7.6.6": true
   }
 }
