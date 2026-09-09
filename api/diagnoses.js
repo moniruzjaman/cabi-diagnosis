@@ -10,7 +10,7 @@ import { saveDiagnosis, getDiagnoses, hasTurso } from "./_lib/turso.js";
 import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
 import { createRateLimiter } from "./_lib/rateLimit.js";
 import { parseBody } from "./_lib/validation.js";
-import { requireSignedRequest } from "./_lib/requestSigning.js";
+import { requireSignedRequest, verifyRequestToken } from "./_lib/requestSigning.js";
 
 const diagnosesLimiter = createRateLimiter({ windowMs: 60_000, maxRequests: 30 });
 
@@ -79,6 +79,16 @@ const methodHandlers = {
   POST: handlePost,
 };
 
+function requireProtectedRead(req, res) {
+  if (!process.env.VERCEL) return false;
+  const token = req.headers["x-request-signature"] || "";
+  if (!token || !verifyRequestToken(token)) {
+    res.status(403).json({ error: "Invalid or missing request signature" });
+    return true;
+  }
+  return false;
+}
+
 export default async function handler(req, res) {
   if (handleCORSPreflight(req, res, "GET, POST, OPTIONS")) return;
   setCORSHeaders(req, res, "GET, POST, OPTIONS");
@@ -88,6 +98,8 @@ export default async function handler(req, res) {
     res.setHeader("Allow", "GET, POST, OPTIONS");
     return res.status(405).json({ error: "Method not allowed" });
   }
+
+  if (req.method === "GET" && requireProtectedRead(req, res)) return;
 
   if (!hasTurso()) {
     return res.status(503).json({ error: "Database not configured", persistence: "none" });

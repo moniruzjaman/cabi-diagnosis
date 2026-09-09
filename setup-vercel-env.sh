@@ -91,6 +91,15 @@ add_env_var "GEMINI_API_KEY" "Google Gemini API Key — https://aistudio.google.
 add_env_var "GROQ_API_KEY" "Groq API Key — https://console.groq.com/keys" "required"
 add_env_var "OPENROUTER_API_KEY" "OpenRouter API Key — https://openrouter.ai/keys" "required"
 
+# ═══ Free-tier AI safety policy ═══
+echo -e "${GREEN}═══ Free-tier AI safety policy ═══${NC}"
+add_env_var "AI_MAX_ATTEMPTS" "Maximum provider attempts per diagnosis (default 5)" "optional"
+add_env_var "AI_MAX_REQUESTS_PER_DAY" "Maximum diagnosis requests per day (default 250)" "optional"
+add_env_var "AI_MAX_VISION_REQUESTS_PER_DAY" "Maximum image diagnosis requests per day (default 100)" "optional"
+add_env_var "AI_MAX_OUTPUT_TOKENS" "Maximum model output tokens (default 2200)" "optional"
+add_env_var "AI_MAX_IMAGE_BYTES" "Maximum image payload bytes (default 6000000)" "optional"
+add_env_var "AI_REQUEST_TIMEOUT_MS" "Maximum provider deadline in milliseconds (default 25000)" "optional"
+
 # ═══ Turso Database ═══
 echo -e "${GREEN}═══ Turso Database ═══${NC}"
 echo -e "Required for persistent analytics, feedback, and presence tracking."

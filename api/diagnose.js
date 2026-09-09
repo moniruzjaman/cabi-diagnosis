@@ -8,8 +8,10 @@ import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
 import { diagnoseLimiter } from "./_lib/rateLimit.js";
 import { parseBody, validateDiagnoseMessages } from "./_lib/validation.js";
 import { requireSignedRequest } from "./_lib/requestSigning.js";
+import { getFreeTierPolicy, reserveRequest } from "./_lib/freeTierPolicy.js";
+import { runOrchestration } from "./_lib/orchestrator.js";
+import { recordDiagnosisEvent, summarizeMessages } from "./_lib/observability.js";
 
-const REQUEST_TIMEOUT_MS = 30_000; // 30 second overall timeout
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SYSTEM PROMPT — CABI READY RECKONER + EXCLUSION LOGIC (FULL)
@@ -702,7 +704,7 @@ Capture clearer photos of the whole plant, front and back of leaves, and stem ba
 }
 
 // ─── Provider: Google Gemini 2.5 Flash ─────────────────────────────────────
-async function tryGemini(messages, withVision = true, systemPrompt = SYSTEM_PROMPT) {
+async function tryGemini(messages, withVision = true, systemPrompt = SYSTEM_PROMPT, maxOutputTokens = 3000) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY not set");
 
@@ -724,7 +726,7 @@ async function tryGemini(messages, withVision = true, systemPrompt = SYSTEM_PROM
   const body = {
     system_instruction: { parts: [{ text: systemPrompt }] },
     contents: [{ role: "user", parts }],
-    generationConfig: { maxOutputTokens: 3000, temperature: 0.3 },
+    generationConfig: { maxOutputTokens, temperature: 0.3 },
   };
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`;
@@ -742,13 +744,13 @@ async function tryGemini(messages, withVision = true, systemPrompt = SYSTEM_PROM
 }
 
 // ─── Provider 2: Groq Llama 4 Scout ──────────────────────────────────────────
-async function tryGroq(messages, systemPrompt = SYSTEM_PROMPT) {
+async function tryGroq(messages, systemPrompt = SYSTEM_PROMPT, maxOutputTokens = 3000) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY not set");
 
   const body = {
     model: "meta-llama/llama-4-scout-17b-16e-instruct",
-    max_tokens: 3000,
+    max_tokens: maxOutputTokens,
     temperature: 0.3,
     messages: [{ role: "system", content: systemPrompt }, ...toOpenAIMessages(compressMessages(messages))],
   };
@@ -796,6 +798,79 @@ async function tryOpenRouter(messages, modelId, systemPrompt = SYSTEM_PROMPT, ex
 }
 
 // ─── Main Handler ─────────────────────────────────────────────────────────────
+function normalizeProviderResult(result) {
+  const structured = extractStructuredJson(result.text);
+  const cleanText = structured ? stripStructuredJson(result.text) : result.text;
+  return { ...result, structured, content: [{ type: "text", text: cleanText }] };
+}
+
+function createProviderRoutes({ messages, imageAttached, systemPrompt, policy }) {
+  const routes = [
+    {
+      id: imageAttached ? "gemini-vision" : "gemini-text",
+      requiresVision: imageAttached,
+      enabled: Boolean(process.env.GEMINI_API_KEY),
+      run: async () => normalizeProviderResult(await tryGemini(messages, imageAttached, systemPrompt, policy.maxOutputTokens)),
+    },
+    {
+      id: imageAttached ? "openrouter-vision" : "openrouter-text",
+      enabled: Boolean(process.env.OPENROUTER_API_KEY),
+      run: async () => {
+        const models = imageAttached ? OPENROUTER_VISION_MODELS : OPENROUTER_TEXT_MODELS;
+        return normalizeProviderResult(await tryOpenRouter(messages, models[0], systemPrompt, {
+          models: models.slice(1),
+          route: "fallback",
+          max_tokens: policy.maxOutputTokens,
+          provider: { allow_fallbacks: true, sort: "throughput" },
+        }));
+      },
+    },
+    {
+      id: "groq-text",
+      textOnly: true,
+      allowWithImage: true,
+      enabled: Boolean(process.env.GROQ_API_KEY),
+      degraded: imageAttached,
+      run: async () => {
+        const result = normalizeProviderResult(await tryGroq(messages, systemPrompt, policy.maxOutputTokens));
+        if (imageAttached) result.content[0].text += "\\n\\n---\\nProvisional response: generated from the text description after vision fallback.";
+        return result;
+      },
+    },
+    {
+      id: "openrouter-text-fallback",
+      textOnly: true,
+      allowWithImage: true,
+      enabled: Boolean(process.env.OPENROUTER_API_KEY),
+      degraded: imageAttached,
+      run: async () => {
+        const result = normalizeProviderResult(await tryOpenRouter(messages, OPENROUTER_TEXT_MODELS[0], systemPrompt, {
+          models: OPENROUTER_TEXT_MODELS.slice(1),
+          route: "fallback",
+          max_tokens: policy.maxOutputTokens,
+          provider: { allow_fallbacks: true, sort: "throughput" },
+        }));
+        if (imageAttached) result.content[0].text += "\\n\\n---\\nProvisional response: generated from the text description after vision fallback.";
+        return result;
+      },
+    },
+    {
+      id: "gemini-text-fallback",
+      textOnly: true,
+      allowWithImage: true,
+      enabled: Boolean(process.env.GEMINI_API_KEY),
+      degraded: imageAttached,
+      run: async () => {
+        const result = normalizeProviderResult(await tryGemini(messages, false, systemPrompt, policy.maxOutputTokens));
+        if (imageAttached) result.content[0].text += "\\n\\n---\\n⚠️ Image analysis unavailable. Diagnosis based on description only.";
+        return result;
+      },
+    },
+  ];
+
+  return routes;
+}
+
 export default async function handler(req, res) {
   // CORS
   if (handleCORSPreflight(req, res, "POST, OPTIONS")) return;
@@ -826,140 +901,64 @@ export default async function handler(req, res) {
   const messages = validation.messages;
   const imageAttached = validation.imageCount > 0;
 
-  // Overall timeout wrapper — suppresses unhandled rejections from the losing promise
-  const withTimeout = (promise, label) => {
-    let timeoutId;
-    const timeoutPromise = new Promise((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error(`${label} timed out`)), REQUEST_TIMEOUT_MS);
+  const policy = getFreeTierPolicy();
+  const usage = summarizeMessages(messages);
+  if (usage.imageBytes > policy.maxImageBytes) {
+    return res.status(413).json({
+      error: "Image payload exceeds the safe free-tier limit",
+      maxImageBytes: policy.maxImageBytes,
     });
-    return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
-  };
+  }
 
-  const attempts = [];
+  const reservation = reserveRequest({ hasImage: imageAttached });
+  if (!reservation.allowed) {
+    const fallbackText = buildEmergencyDiagnosis(messages, imageAttached);
+    return res.status(200).json({
+      content: [{ type: "text", text: fallbackText }],
+      structured: null,
+      provider: "Emergency CABI fallback (free-tier cap)",
+      attempts: [`policy: ${reservation.reason}`],
+      degraded: true,
+    });
+  }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // WATERFALL: Gemini 2.5 Flash → OpenRouter Qwen-VL → Groq Llama4 → OR text → Gemini text → Emergency
-  // Gemini is primary because it has the best free vision quality for agriculture.
-  // ═══════════════════════════════════════════════════════════════════════════
+  const routes = createProviderRoutes({ messages, imageAttached, systemPrompt, policy });
 
-  // ─── 1. Gemini 2.5 Flash (best free vision model — primary) ────────────
-  try {
-    const r = await withTimeout(tryGemini(messages, imageAttached, systemPrompt), "Gemini 2.5 Flash");
-    const structured = extractStructuredJson(r.text);
-    const cleanText = structured ? stripStructuredJson(r.text) : r.text;
-    return res.status(200).json({ content: [{ type: "text", text: cleanText }], structured, provider: r.provider, attempts });
-  } catch (e) { attempts.push(`Gemini 2.5 Flash: ${e.message}`); }
+  const result = await runOrchestration({
+    routes,
+    hasImage: imageAttached,
+    policy,
+    timeoutMs: policy.requestTimeoutMs,
+    onAttempt: async (event) => recordDiagnosisEvent({
+      route: event.route.id,
+      provider: event.route.id.split("-")[0],
+      success: event.ok,
+      latencyMs: event.latencyMs,
+      hasImage: event.hasImage,
+      error: event.error,
+    }),
+    emergency: async () => ({
+      content: [{ type: "text", text: buildEmergencyDiagnosis(messages, imageAttached) }],
+      structured: null,
+      provider: "Emergency CABI fallback",
+    }),
+  });
 
-  // ─── 2. OpenRouter Qwen-VL smart route (vision or text) ────────────────
-  try {
-    const primaryModel = imageAttached ? OPENROUTER_VISION_MODELS[0] : OPENROUTER_TEXT_MODELS[0];
-    const fallbackModels = imageAttached ? OPENROUTER_VISION_MODELS.slice(1) : OPENROUTER_TEXT_MODELS.slice(1);
-    const r = await withTimeout(
-      tryOpenRouter(messages, primaryModel, systemPrompt, {
-        models: fallbackModels,
-        route: "fallback",
-        provider: { allow_fallbacks: true, sort: "throughput" },
-      }),
-      "OpenRouter"
-    );
-    const structured = extractStructuredJson(r.text);
-    const cleanText = structured ? stripStructuredJson(r.text) : r.text;
-    return res.status(200).json({ content: [{ type: "text", text: cleanText }], structured, provider: r.provider, attempts });
-  } catch (e) { attempts.push(`OpenRouter smart route: ${e.message}`); }
+  recordDiagnosisEvent({
+    route: result.route,
+    provider: result.provider,
+    success: result.route !== "emergency",
+    degraded: result.degraded,
+    latencyMs: result.latencyMs,
+  });
 
-  // ─── 3. Groq Llama 4 Scout (fast text, no vision) ──────────────────────
-  try {
-    const r = await withTimeout(tryGroq(messages, systemPrompt), "Groq");
-    const structured = extractStructuredJson(r.text);
-    const cleanText = structured ? stripStructuredJson(r.text) : r.text;
-    return res.status(200).json({ content: [{ type: "text", text: cleanText }], structured, provider: r.provider, attempts });
-  } catch (e) { attempts.push(`Groq: ${e.message}`); }
-
-  // ─── 4. OpenRouter text-only fallback ───────────────────────────────────
-  try {
-    const r = await withTimeout(
-      tryOpenRouter(messages, OPENROUTER_TEXT_MODELS[0], systemPrompt, {
-        models: OPENROUTER_TEXT_MODELS.slice(1),
-        route: "fallback",
-        provider: { allow_fallbacks: true, sort: "throughput" },
-      }),
-      "OpenRouter text"
-    );
-    const note = imageAttached
-      ? "\n\n---\nProvisional response: this answer was generated from the text description after the vision path fell back."
-      : "";
-    const structured = extractStructuredJson(r.text);
-    const cleanText = structured ? stripStructuredJson(r.text) : r.text;
-    return res.status(200).json({ content: [{ type: "text", text: cleanText + note }], structured, provider: r.provider, attempts });
-  } catch (e) { attempts.push(`OpenRouter text: ${e.message}`); }
-
-  // ─── 5. Gemini text-only fallback (always try, even without images) ───
-  try {
-    const r = await withTimeout(tryGemini(messages, false, systemPrompt), "Gemini text");
-    const note = imageAttached
-      ? "\n\n---\n⚠️ ছবি বিশ্লেষণ এই মুহূর্তে সম্ভব হয়নি। বর্ণনার ভিত্তিতে রোগ নির্ণয় করা হয়েছে।\n*(Image analysis unavailable. Diagnosis based on description only.)*"
-      : "";
-    const structured = extractStructuredJson(r.text);
-    const cleanText = structured ? stripStructuredJson(r.text) : r.text;
-    return res.status(200).json({ content: [{ type: "text", text: cleanText + note }], structured, provider: r.provider, attempts });
-  } catch (e) { attempts.push(`Gemini text: ${e.message}`); }
-
-  // ─── 6. Emergency offline-style fallback ────────────────────────────────
-  const fallbackText = buildEmergencyDiagnosis(messages, imageAttached);
-  const emergencyStructured = {
-    disease_name: "Unknown — emergency fallback",
-    disease_name_bn: "অজানা — জরুরি বিকল্প বিশ্লেষণ",
-    confidence: "low",
-    confidence_pct: 20,
-    severity: "moderate",
-    urgency: "within_3_days",
-    biotic_abiotic: "uncertain",
-    cause_type: "other",
-    etl_exceeded: false,
-    action_required: true,
-    gate_results: {
-      a_insects: "uncertain", a_reason: "Could not determine — please inspect plant",
-      b_virus: "uncertain", b_reason: "Could not determine — check for mosaic patterns",
-      c_bacteria: "uncertain", c_reason: "Could not determine — check for water-soaked margins",
-      d_fungi: "uncertain", d_reason: "Could not determine — check for fruiting bodies",
-    },
-    top_candidates: [
-      { rank: 1, name_bn: "অজানা (সম্ভাব্য ছত্রাক/পোকা)", name_en: "Unknown (possible fungal/pest)", scientific_name: "N/A", confidence_pct: 20, key_feature: "Cannot determine without clearer description or image" },
-      { rank: 2, name_bn: "পুষ্টি ঘাটতি", name_en: "Nutrient Deficiency", scientific_name: "N/A", confidence_pct: 15, key_feature: "Symmetric symptoms on leaf halves suggest possible abiotic cause" },
-    ],
-    disease_triangle: {
-      host_score: 5, pathogen_score: 5, environment_score: 5,
-      host_note: "Cannot assess without crop/variety information",
-      pathogen_note: "Cannot assess without symptom detail",
-      environment_note: "Cannot assess without weather data",
-    },
-    field_confirmation: {
-      test_bn: "নিচের ধাপে মাঠে পরীক্ষা করুন",
-      steps_bn: [
-        "পাতার উল্টোপাশে পোকা, ডিম, জাল বা কালো দানা আছে কি না দেখুন",
-        "দাগ পানিভেজা কিনারা থেকে শুরু হলে ব্যাকটেরিয়া সন্দেহ করুন",
-        "দাগ মাকু বা হীরা আকৃতির হলে ব্লাস্ট সন্দেহ করুন",
-        "উপসর্গ দুই পাশ সমান হলে পুষ্টি ঘাটতি বিবেচনা করুন",
-      ],
-    },
-    ipm_recommendations: [
-      { priority: 1, type: "monitoring", action_bn: "পাতার সামনে-পেছন, কান্ডের গোড়া ও শিকড়ের ছবি তুলুন", timing: "এখনই" },
-      { priority: 2, type: "cultural", action_bn: "আক্রান্ত অংশ আলাদা করে রাখুন — ছড়িয়ে পড়া ঠেকান", timing: "এখনই" },
-      { priority: 3, type: "monitoring", action_bn: "কোনো কীটনাশক প্রয়োগের আগে কারণ নিশ্চিত করুন", timing: "নিশ্চিত হওয়ার পর" },
-    ],
-    chemical_options: [],
-    prevention_bn: "কারণ নিশ্চিত না হওয়া পর্যন্ত রাসায়নিক প্রয়োগ থেকে বিরত থাকুন।",
-    dae_consult_bn: "দ্রুত ক্ষয়ক্ষতি বাড়লে বা কারণ বোঝা না গেলে অবশ্যই স্থানীয় DAE কর্মকর্তার সাথে যোগাযোগ করুন।",
-    key_recommendations: [
-      "পাতার উল্টোপাশে পোকা/ডিম দেখুন",
-      "দাগ পানিভেজা কিনারা হলে ব্যাকটেরিয়া সন্দেহ করুন",
-      "DAE কর্মকর্তাকে দেখান",
-    ],
-  };
   return res.status(200).json({
-    content: [{ type: "text", text: fallbackText }],
-    structured: emergencyStructured,
-    provider: "Emergency CABI fallback",
-    attempts,
+    content: result.content,
+    structured: result.structured,
+    provider: result.provider,
+    attempts: result.attempts,
+    requestRoute: result.route,
+    degraded: result.degraded,
+    usage,
   });
 }
