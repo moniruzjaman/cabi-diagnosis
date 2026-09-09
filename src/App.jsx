@@ -18,7 +18,7 @@ import OnboardingFlow from "./components/OnboardingFlow";
 import OutbreakList from "./components/OutbreakList";
 import VisualDiagnosisLibrary from "./components/VisualDiagnosisLibrary";
 import { computeEnsembleScore } from "./data/agronomicEngine";
-import { lookupMoA, FRAC_GROUPS, IRAC_GROUPS } from "./data/moaDatabase";
+import { lookupMoA } from "./data/moaDatabase";
 import { getRegisteredProducts } from "./data/pesticideRegistry";
 import "./styles/accessibility.css";
 
