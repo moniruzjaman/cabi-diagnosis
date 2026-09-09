@@ -1,4 +1,4 @@
-  /**
+/**
  * Diagnoses API — Save and query diagnosis records.
  *
  * POST  /api/diagnoses  — Save a diagnosis record (signed + rate-limited)
@@ -50,9 +50,7 @@ function sanitizeString(value, maxLength) {
  * Returns { entry } on success or { error } when required fields are missing.
  */
 export function sanitizeDiagnosisEntry(body = {}) {
-  const missing = REQUIRED_FIELDS.find(
-    (field) => typeof body[field] !== "string" || body[field].trim() === ""
-  );
+  const missing = REQUIRED_FIELDS.find((field) => typeof body[field] !== "string" || body[field].trim() === "");
   if (missing) return { error: `${missing} is required` };
 
   const entry = {};
