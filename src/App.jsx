@@ -5637,8 +5637,11 @@ function CABIGuideTab() {
                     />
                   </div>
                 ))}
-          {/* Registered Pesticides & MoA Interactive Search Lookup */}
-          <MoAPesticideRegistryView C={C} />
+              </div>
+              {/* Registered Pesticides & MoA Interactive Search Lookup */}
+              <MoAPesticideRegistryView C={C} />
+            </div>
+          )}
         </div>
       )}
     </div>
