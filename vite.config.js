@@ -83,8 +83,20 @@ export default defineConfig({
         entryFileNames: "assets/[name]-[hash].js",
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: "assets/[name]-[hash].[ext]",
+        // Split large vendor deps into their own cached chunks
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("onnxruntime")) return "onnxruntime";
+            if (id.includes("react") || id.includes("scheduler")) return "react-vendor";
+            if (id.includes("@libsql") || id.includes("libsql")) return "libsql";
+            if (id.includes("localforage")) return "localforage";
+            return "vendor";
+          }
+        },
       },
     },
+    // onnxruntime-web and friends are legitimately large; 1 MiB per chunk is fine
+    chunkSizeWarningLimit: 1024,
   },
 
   optimizeDeps: {
