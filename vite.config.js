@@ -69,7 +69,7 @@ export default defineConfig({
   // onnxruntime-web ships pre-built .wasm binaries. Vite needs to know
   // they're assets, not source. Without these excludes, the WASM files
   // are duplicated and renamed in the build output and ORT can't find them.
-  assetsInclude: ["**/*.wasm", "**/*.mjs"],
+  assetsInclude: ["**/*.wasm"],
 
   build: {
     outDir: "dist",
