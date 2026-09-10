@@ -4,6 +4,10 @@
   "installCommand": "npm install",
   "rewrites": [
     {
+      "source": "/api/metrics",
+      "destination": "/api/health?endpoint=metrics"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
