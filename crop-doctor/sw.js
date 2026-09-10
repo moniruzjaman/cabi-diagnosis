@@ -1,187 +1,157 @@
-/* ==========================================================================
-   Crop Doctor — Service Worker
-   100% offline-first. After first visit, the entire app is available
-   with no network connection.
-   ========================================================================== */
+/* crop-doctor Service Worker — 100% offline after first visit */
 
-const CACHE_VERSION = 'v1.0.0';
-const CACHE_NAME = 'crop-doctor-' + CACHE_VERSION;
-const DATA_CACHE_NAME = 'crop-doctor-data-' + CACHE_VERSION;
+const CACHE_NAME = 'crop-doctor-v1';
+const OFFLINE_URL = '/index.html';
 
-// Core app shell — must be cached for offline use
-const CORE_ASSETS = [
+const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/style.css',
   '/app.js',
   '/manifest.webmanifest',
+  '/robots.txt',
+  '/404.html',
+  '/privacy.html',
+  '/about.html',
+  '/netlify.toml',
   '/assets/icons/icon.svg',
   '/assets/icons/maskable-192.png',
   '/assets/icons/maskable-512.png',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/apple-touch-icon.png',
-  '/assets/img/og-image.jpg',
+  '/assets/img/photo-01.svg',
+  '/assets/img/photo-02.svg',
+  '/assets/img/photo-03.svg',
+  '/assets/img/photo-04.svg',
+  '/assets/img/photo-05.svg',
+  '/assets/img/photo-06.svg',
+  '/assets/img/photo-07.svg',
+  '/assets/img/photo-08.svg',
+  '/assets/img/photo-09.svg',
+  '/assets/img/photo-10.svg',
+  '/assets/img/photo-11.svg',
+  '/assets/img/og-image.svg',
   '/assets/img/screenshot-home.png',
   '/assets/img/screenshot-diagnosis.png',
   '/assets/img/screenshot-result.png',
-  // Field photos
-  '/assets/img/rice-blast.svg',
-  '/assets/img/wheat-rust.svg',
-  '/assets/img/maize-streak.svg',
-  '/assets/img/jute-die-back.svg',
-  '/assets/img/tomato-early-blight.svg',
-  '/assets/img/brinjal-fruit-rot.svg',
-  '/assets/img/potato-late-blight.svg',
-  '/assets/img/mango-anthracnose.svg',
-  '/assets/img/banana-bunchy-top.svg',
-  '/assets/img/cotton-boll-weevil.svg',
-  '/assets/img/chili-mosaic.svg',
-  // Crop photos
-  '/assets/img/crop-rice.svg',
-  '/assets/img/crop-wheat.svg',
-  '/assets/img/crop-maize.svg',
-  '/assets/img/crop-jute.svg',
-  '/assets/img/crop-tomato.svg',
-  '/assets/img/crop-brinjal.svg',
-  '/assets/img/crop-potato.svg',
-  '/assets/img/crop-mango.svg',
-  '/assets/img/crop-banana.svg',
-  '/assets/img/crop-cotton.svg',
-  '/assets/img/crop-chili.svg',
-  // Static pages
-  '/privacy.html',
-  '/about.html',
-  '/404.html',
-  '/robots.txt'
+  // Google Fonts
+  'https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap'
+];
+
+const FONT_URLS = [
+  'https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap',
+  'https://fonts.gstatic.com/s/notosansbengali/v25/lJwG-pwuc9SASdW67g8rl2f4lJTWjUwqmu9CaZv3mYU.woff2',
+  'https://fonts.gstatic.com/s/notosansbengali/v25/lJwH-pwuc9SASdW67g8rl2f4lJTWjUwqmu9CaZv3mYU.woff2',
+  'https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_fvQtMwMc3eYIvl.css'
 ];
 
 // Install — cache everything
-self.addEventListener('install', function(event) {
-  console.log('[SW] Install — caching all core assets');
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        console.log('[SW] Caching core assets:', CORE_ASSETS.length, 'files');
-        return cache.addAll(CORE_ASSETS);
-      })
-      .then(function() {
-        return self.skipWaiting();
-      })
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.addAll(ASSETS_TO_CACHE);
+      await self.skipWaiting();
+    })()
   );
 });
 
 // Activate — clean up old caches
-self.addEventListener('activate', function(event) {
-  console.log('[SW] Activate');
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys()
-      .then(function(cacheNames) {
-        return Promise.all(
-          cacheNames.map(function(name) {
-            if (name !== CACHE_NAME && name !== DATA_CACHE_NAME) {
-              console.log('[SW] Deleting old cache:', name);
-              return caches.delete(name);
-            }
-          })
-        );
-      })
-      .then(function() {
-        return self.clients.claim();
-      })
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((name) => {
+          if (name !== CACHE_NAME) {
+            return caches.delete(name);
+          }
+        })
+      );
+    }).then(() => {
+      return self.clients.claim();
+    })
   );
 });
 
-// Fetch — cache-first, falling back to network
-self.addEventListener('fetch', function(event) {
-  var request = event.request;
-  var url = request.url;
-
-  // Skip cross-origin requests (e.g. Google Fonts)
-  if (url.indexOf(location.origin) !== 0 && url.indexOf('http') === 0) {
-    // Only cache same-origin; let cross-origin fall through to network
-    if (request.destination === 'font' ||
-        url.indexOf('googleapis.com') !== -1 ||
-        url.indexOf('gstatic.com') !== -1) {
-      // Allow fonts to load from network (they're preloaded in HTML)
+// Fetch — cache-first strategy (100% offline after first visit)
+self.addEventListener('fetch', (event) => {
+  // Skip cross-origin requests
+  if (event.request.url.startsWith('http')) {
+    const url = new URL(event.request.url);
+    if (url.origin !== location.origin && !url.hostname.includes('fonts.')) {
       return;
     }
-    // Block other cross-origin requests
-    event.respondWith(fetch(request).catch(function() { return; }));
-    return;
   }
 
-  // Handle navigation requests (HTML pages)
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      caches.match(CACHE_NAME + '/index.html')
-        .then(function(response) {
-          if (response) {
-            return response;
-          }
-          // First visit — try network, then fall back to cached 404
-          return fetch(request)
-            .then(function(networkResponse) {
-              if (networkResponse && networkResponse.status === 200) {
-                return networkResponse;
-              }
-              throw new Error('Network response failed');
-            })
-            .catch(function() {
-              return caches.match('/404.html');
-            });
-        })
-    );
-    return;
-  }
-
-  // Cache-first for all other requests (CSS, JS, fonts, images)
   event.respondWith(
-    caches.match(request)
-      .then(function(response) {
-        if (response) {
-          return response;
-        }
-
-        // Not in cache — fetch from network and cache the response
-        return fetch(request)
-          .then(function(networkResponse) {
-            // Cache the response if valid
-            if (networkResponse &&
-                networkResponse.status === 200 &&
-                networkResponse.type !== 'opaque') {
-
-              var responseToCache = networkResponse.clone();
-              caches.open(CACHE_NAME)
-                .then(function(cache) {
-                  cache.put(request, responseToCache);
-                });
+    caches.match(event.request).then((cachedResponse) => {
+      // Return cached version immediately
+      if (cachedResponse) {
+        // Also try to update cache in background
+        event.waitUntil(
+          fetch(event.request).then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, networkResponse.clone());
+              });
             }
-            return networkResponse;
+          }).catch(() => {
+            // Network failed — serve from cache (offline mode)
           })
-          .catch(function() {
-            // If both cache and network fail, try to serve a fallback
-            if (request.destination === 'image') {
-              return caches.match('/assets/img/screenshot-home.png');
-            }
-            return undefined;
+        );
+        return cachedResponse;
+      }
+
+      // Not in cache — try network
+      return fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 &&
+            networkResponse.type === 'basic') {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
           });
-      })
+        }
+        return networkResponse;
+      }).catch(() => {
+        // Completely offline — return fallback
+        if (event.request.mode === 'navigate') {
+          return caches.match(OFFLINE_URL);
+        }
+        // Return a transparent pixel for images
+        if (event.request.destination === 'image') {
+          return new Response(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="%230a3d1f"/><text x="100" y="100" font-family="sans-serif" font-size="14" fill="%23fff" text-anchor="middle">Image unavailable offline</text></svg>',
+            { headers: { 'Content-Type': 'image/svg+xml' } }
+          );
+        }
+      });
+    })
   );
 });
 
-// Listen for messages from the app (e.g. to skip waiting)
-self.addEventListener('message', function(event) {
+// Handle messages from the app
+self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+});
 
-  // Reload clients after new SW takes control
-  if (event.data && event.data.type === 'RELOAD_CLIENTS') {
-    self.clients.matchAll().then(function(clients) {
-      clients.forEach(function(client) {
-        client.postMessage({ type: 'SW_UPDATED' });
-      });
-    });
-  }
+// Handle push notifications (future)
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  const data = event.data.json();
+  const options = {
+    body: data.body || 'নতুন আপডেট প্রয়োজন হতে পারে',
+    icon: '/assets/icons/icon-192.png',
+    badge: '/assets/icons/icon-192.png',
+    tag: data.tag || 'crop-doctor-notification',
+    data: { url: data.url || '/' }
+  };
+  event.waitUntil(self.registration.showNotification(data.title || 'Crop Doctor', options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(self.clients.openWindow(event.notification.data.url));
 });
