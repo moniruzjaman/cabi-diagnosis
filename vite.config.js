@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import { readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
 
@@ -64,7 +65,7 @@ function removeCrossoriginPlugin() {
 }
 
 export default defineConfig({
-  plugins: [react(), removeCrossoriginPlugin()],
+  plugins: [react(), tailwindcss(), removeCrossoriginPlugin()],
 
   // onnxruntime-web ships pre-built .wasm binaries. Vite needs to know
   // they're assets, not source. Without these excludes, the WASM files
@@ -87,7 +88,11 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes("node_modules")) {
             if (id.includes("onnxruntime")) return "onnxruntime";
+            if (id.includes("motion") || id.includes("framer")) return "motion";
+            if (id.includes("lucide")) return "lucide";
             if (id.includes("react") || id.includes("scheduler")) return "react-vendor";
+            if (id.includes("jspdf")) return "jspdf";
+            if (id.includes("tailwind") || id.includes("agrichem")) return "agrichem";
             if (id.includes("@libsql") || id.includes("libsql")) return "libsql";
             if (id.includes("localforage")) return "localforage";
             return "vendor";
