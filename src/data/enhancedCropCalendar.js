@@ -12,20 +12,20 @@
  * Consumes: cropCalendar.js, weatherService.js, cropPriceService.js
  */
 
-import { CROP_CALENDAR, getCurrentCrops, getCurrentRiskAlerts } from './cropCalendar.js';
+import { CROP_CALENDAR, getCurrentCrops, getCurrentRiskAlerts } from "./cropCalendar.js";
 import {
   scoreCropWeatherSuitability,
   forecastDiseasePressure,
   estimateIrrigationNeed,
   findSprayWindows,
   compareWithClimate,
-} from './weatherService.js';
+} from "./weatherService.js";
 import {
   simulateCurrentPrice,
   getAllCropPrices,
   compareCropProfitability,
   formatPriceBDT,
-} from './cropPriceService.js';
+} from "./cropPriceService.js";
 
 // ─── Main integration functions ───────────────────────────────────────────────
 
@@ -65,14 +65,14 @@ export function generateCropAnalysis({ forecast, currentWeather, month }) {
   const riskAlerts = getCurrentRiskAlerts();
 
   // Build per-crop analysis
-  const cropDetails = CROP_CALENDAR.map(crop => {
+  const cropDetails = CROP_CALENDAR.map((crop) => {
     const priceData = simulateCurrentPrice(crop.crop, currentMonth);
     const weatherScore = scoreCropWeatherSuitability(crop.crop, forecast);
     const irrigation = estimateIrrigationNeed(crop.crop, forecast);
-    const isActive = activeCrops.some(ac => ac.crop === crop.crop);
+    const isActive = activeCrops.some((ac) => ac.crop === crop.crop);
 
     // Determine current season for this crop
-    const activeSeasons = crop.seasons.filter(s => s.months.includes(currentMonth));
+    const activeSeasons = crop.seasons.filter((s) => s.months.includes(currentMonth));
     const currentSeason = activeSeasons[0] || null;
 
     // Combined recommendation score
@@ -88,9 +88,7 @@ export function generateCropAnalysis({ forecast, currentWeather, month }) {
     // Off-season crops get a hard ceiling of 35 regardless of weather/price score.
     // This keeps them out of top-N recommendation lists while still allowing them
     // to appear in the full crop calendar browse view.
-    const rawScore = Math.round(
-      (weatherNorm * 0.40 + priceNorm * 0.30 + calendarNorm * 0.30) * 100
-    );
+    const rawScore = Math.round((weatherNorm * 0.4 + priceNorm * 0.3 + calendarNorm * 0.3) * 100);
     const combinedScore = isActive ? rawScore : Math.min(rawScore, 35);
 
     return {
@@ -141,9 +139,9 @@ export function getTopRecommendations(analysis, n = 3) {
   // Off-season crops (mustard, potato in May etc.) must never appear here,
   // regardless of their weather or price scores.
   return analysis.cropDetails
-    .filter(crop => crop.isActive)
+    .filter((crop) => crop.isActive)
     .slice(0, n)
-    .map(crop => ({
+    .map((crop) => ({
       crop: crop.crop,
       cropEn: crop.cropEn,
       icon: crop.icon,
@@ -162,8 +160,8 @@ export function getTopRecommendations(analysis, n = 3) {
  * @returns {Object|null} Side-by-side comparison
  */
 export function compareCrops(crop1Bn, crop2Bn, analysis) {
-  const c1 = analysis?.cropDetails?.find(c => c.crop === crop1Bn);
-  const c2 = analysis?.cropDetails?.find(c => c.crop === crop2Bn);
+  const c1 = analysis?.cropDetails?.find((c) => c.crop === crop1Bn);
+  const c2 = analysis?.cropDetails?.find((c) => c.crop === crop2Bn);
 
   if (!c1 || !c2) return null;
 
@@ -174,21 +172,21 @@ export function compareCrops(crop1Bn, crop2Bn, analysis) {
         crop1: c1.weather.score,
         crop2: c2.weather.score,
         winner: c1.weather.score >= c2.weather.score ? crop1Bn : crop2Bn,
-        label: 'আবহাওয়া উপযুক্ততা',
+        label: "আবহাওয়া উপযুক্ততা",
       },
       price: {
         crop1: c1.price?.price ?? 0,
         crop2: c2.price?.price ?? 0,
-        trend1: c1.price?.trend ?? 'stable',
-        trend2: c2.price?.trend ?? 'stable',
+        trend1: c1.price?.trend ?? "stable",
+        trend2: c2.price?.trend ?? "stable",
         winner: (c1.price?.price ?? 0) >= (c2.price?.price ?? 0) ? crop1Bn : crop2Bn,
-        label: 'বর্তমান মূল্য',
+        label: "বর্তমান মূল্য",
       },
       combined: {
         crop1: c1.combinedScore,
         crop2: c2.combinedScore,
         winner: c1.combinedScore >= c2.combinedScore ? crop1Bn : crop2Bn,
-        label: 'সামগ্রিক মূল্যায়ন',
+        label: "সামগ্রিক মূল্যায়ন",
       },
     },
   };
@@ -204,7 +202,7 @@ export function compareCrops(crop1Bn, crop2Bn, analysis) {
  * @returns {Object} Seasonal advisory
  */
 export function generateSeasonalAdvisory(cropBn, analysis) {
-  const cropDetail = analysis?.cropDetails?.find(c => c.crop === cropBn);
+  const cropDetail = analysis?.cropDetails?.find((c) => c.crop === cropBn);
   if (!cropDetail) return null;
 
   const advisories = [];
@@ -212,64 +210,64 @@ export function generateSeasonalAdvisory(cropBn, analysis) {
   // Weather advisory
   if (cropDetail.weather.score >= 70) {
     advisories.push({
-      type: 'weather',
-      level: 'good',
-      icon: '☀️',
-      title: 'আবহাওয়া অনুকূল',
+      type: "weather",
+      level: "good",
+      icon: "☀️",
+      title: "আবহাওয়া অনুকূল",
       text: `${cropBn} চাষের জন্য আবহাওয়া ভালো (স্কোর: ${cropDetail.weather.score}/100)`,
     });
   } else if (cropDetail.weather.score >= 45) {
     advisories.push({
-      type: 'weather',
-      level: 'caution',
-      icon: '⚠️',
-      title: 'আবহাওয়া মাঝারি',
+      type: "weather",
+      level: "caution",
+      icon: "⚠️",
+      title: "আবহাওয়া মাঝারি",
       text: `${cropBn} চাষের জন্য আবহাওয়া মাঝারি — অতিরিক্ত যত্ন প্রয়োজন`,
     });
   } else {
     advisories.push({
-      type: 'weather',
-      level: 'warning',
-      icon: '🔴',
-      title: 'আবহাওয়া অনুপযুক্ত',
+      type: "weather",
+      level: "warning",
+      icon: "🔴",
+      title: "আবহাওয়া অনুপযুক্ত",
       text: `${cropBn} চাষের জন্য আবহাওয়া ভালো নয় (স্কোর: ${cropDetail.weather.score}/100)`,
     });
   }
 
   // Irrigation advisory
-  if (cropDetail.irrigation.need === 'critical') {
+  if (cropDetail.irrigation.need === "critical") {
     advisories.push({
-      type: 'irrigation',
-      level: 'urgent',
-      icon: '💧',
-      title: 'জরুরি সেচ প্রয়োজন',
+      type: "irrigation",
+      level: "urgent",
+      icon: "💧",
+      title: "জরুরি সেচ প্রয়োজন",
       text: cropDetail.irrigation.advice,
     });
-  } else if (cropDetail.irrigation.need === 'moderate') {
+  } else if (cropDetail.irrigation.need === "moderate") {
     advisories.push({
-      type: 'irrigation',
-      level: 'caution',
-      icon: '💧',
-      title: 'পরিমিত সেচ দিন',
+      type: "irrigation",
+      level: "caution",
+      icon: "💧",
+      title: "পরিমিত সেচ দিন",
       text: cropDetail.irrigation.advice,
     });
   }
 
   // Price advisory
-  if (cropDetail.price?.trend === 'up') {
+  if (cropDetail.price?.trend === "up") {
     advisories.push({
-      type: 'price',
-      level: 'good',
-      icon: '📈',
-      title: 'মূল্য বাড়ছে',
+      type: "price",
+      level: "good",
+      icon: "📈",
+      title: "মূল্য বাড়ছে",
       text: `${cropBn} এর মূল্য বাড়ছে — ${formatPriceBDT(cropDetail.price.price)}/${cropDetail.price.unitBn}`,
     });
-  } else if (cropDetail.price?.trend === 'down') {
+  } else if (cropDetail.price?.trend === "down") {
     advisories.push({
-      type: 'price',
-      level: 'caution',
-      icon: '📉',
-      title: 'মূল্য কমছে',
+      type: "price",
+      level: "caution",
+      icon: "📉",
+      title: "মূল্য কমছে",
       text: `${cropBn} এর মূল্য কমছে — মজুত করে রাখার কথা ভাবুন`,
     });
   }
@@ -278,11 +276,11 @@ export function generateSeasonalAdvisory(cropBn, analysis) {
   if (cropDetail.currentSeason?.keyDiseases?.length) {
     const diseases = cropDetail.currentSeason.keyDiseases.slice(0, 3);
     advisories.push({
-      type: 'disease',
-      level: 'caution',
-      icon: '🦠',
-      title: 'রোগের ঝুঁকি',
-      text: `এই মৌসুমের প্রধান রোগ: ${diseases.join(', ')}`,
+      type: "disease",
+      level: "caution",
+      icon: "🦠",
+      title: "রোগের ঝুঁকি",
+      text: `এই মৌসুমের প্রধান রোগ: ${diseases.join(", ")}`,
     });
   }
 
@@ -290,11 +288,11 @@ export function generateSeasonalAdvisory(cropBn, analysis) {
   if (analysis.sprayWindows?.length > 0) {
     const best = analysis.sprayWindows[0];
     advisories.push({
-      type: 'spray',
-      level: 'info',
-      icon: '🧴',
-      title: 'স্প্রে করার সময়',
-      text: `${best.dayOfWeek}: ${best.window} (${best.quality === 'excellent' ? 'চমৎকার' : best.quality === 'good' ? 'ভালো' : 'মোটামুটি'})`,
+      type: "spray",
+      level: "info",
+      icon: "🧴",
+      title: "স্প্রে করার সময়",
+      text: `${best.dayOfWeek}: ${best.window} (${best.quality === "excellent" ? "চমৎকার" : best.quality === "good" ? "ভালো" : "মোটামুটি"})`,
     });
   }
 
@@ -310,38 +308,38 @@ export function generateSeasonalAdvisory(cropBn, analysis) {
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
 function getRecommendationLabel(score) {
-  if (score >= 75) return 'বাগানে যান! 🌱';
-  if (score >= 60) return 'ভালো সময় ✅';
-  if (score >= 45) return 'সতর্কতার সাথে ⚠️';
-  if (score >= 30) return 'অনুপযুক্ত ❌';
-  return 'এড়িয়ে চলুন 🚫';
+  if (score >= 75) return "বাগানে যান! 🌱";
+  if (score >= 60) return "ভালো সময় ✅";
+  if (score >= 45) return "সতর্কতার সাথে ⚠️";
+  if (score >= 30) return "অনুপযুক্ত ❌";
+  return "এড়িয়ে চলুন 🚫";
 }
 
 function buildRecommendationReasons(crop, _analysis) {
   const reasons = [];
 
   if (crop.isActive) {
-    reasons.push('✅ এই মৌসুমে চাষ হচ্ছে');
+    reasons.push("✅ এই মৌসুমে চাষ হচ্ছে");
   }
 
   if (crop.weather.score >= 65) {
     reasons.push(`☀️ আবহাওয়া অনুকূল (${crop.weather.score}/100)`);
   }
 
-  if (crop.price?.trend === 'up') {
+  if (crop.price?.trend === "up") {
     reasons.push(`📈 মূল্য বাড়ছে`);
   }
 
   if (crop.price?.isPeakSeason) {
-    reasons.push('🌾 ফসল তোলার মৌসুম');
+    reasons.push("🌾 ফসল তোলার মৌসুম");
   }
 
-  if (crop.irrigation.need === 'none' || crop.irrigation.need === 'low') {
-    reasons.push('💧 সেচের প্রয়োজন কম');
+  if (crop.irrigation.need === "none" || crop.irrigation.need === "low") {
+    reasons.push("💧 সেচের প্রয়োজন কম");
   }
 
   if (reasons.length === 0) {
-    reasons.push('ℹ️ বিস্তারিত দেখুন');
+    reasons.push("ℹ️ বিস্তারিত দেখুন");
   }
 
   return reasons;

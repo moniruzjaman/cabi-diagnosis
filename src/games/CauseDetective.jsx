@@ -1,41 +1,53 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from "react";
 import { CAUSE_DETECTIVE_IMAGES } from "./imageMap";
 import useTTS from "./useTTS";
 import SymptomImageGallery from "./SymptomImageGallery";
 
 /* ── Design Tokens ── */
 const C = {
-  primary: "#006028", primaryLight: "#1a7a3a", primaryDark: "#005322",
-  accent: "#f59e0b", bg: "#f5fbf6", bgCard: "#ffffff", bgMuted: "#eff5f0",
-  text: "#171d1a", textMuted: "#3f493f", textLight: "#6f7a6e",
-  border: "#becabc", success: "#16a34a", warning: "#d97706", danger: "#dc2626", blue: "#2563eb",
-  shadow: "0 8px 24px rgba(0,33,9,0.08)", shadowMd: "0 16px 40px rgba(0,33,9,0.10)",
+  primary: "#006028",
+  primaryLight: "#1a7a3a",
+  primaryDark: "#005322",
+  accent: "#f59e0b",
+  bg: "#f5fbf6",
+  bgCard: "#ffffff",
+  bgMuted: "#eff5f0",
+  text: "#171d1a",
+  textMuted: "#3f493f",
+  textLight: "#6f7a6e",
+  border: "#becabc",
+  success: "#16a34a",
+  warning: "#d97706",
+  danger: "#dc2626",
+  blue: "#2563eb",
+  shadow: "0 8px 24px rgba(0,33,9,0.08)",
+  shadowMd: "0 16px 40px rgba(0,33,9,0.10)",
 };
 
 const CAUSES = ["অপুষ্টি", "পোকা", "ছত্রাক", "ব্যাকটেরিয়া", "ভাইরাস"];
 
 const CAUSE_COLORS = {
-  "অপুষ্টি": "#2563eb",
-  "পোকা": "#d97706",
-  "ছত্রাক": "#7c3aed",
-  "ব্যাকটেরিয়া": "#dc2626",
-  "ভাইরাস": "#0891b2",
+  অপুষ্টি: "#2563eb",
+  পোকা: "#d97706",
+  ছত্রাক: "#7c3aed",
+  ব্যাকটেরিয়া: "#dc2626",
+  ভাইরাস: "#0891b2",
 };
 
 const CAUSE_BG = {
-  "অপুষ্টি": "rgba(37,99,235,0.10)",
-  "পোকা": "rgba(217,119,6,0.10)",
-  "ছত্রাক": "rgba(124,58,237,0.10)",
-  "ব্যাকটেরিয়া": "rgba(220,38,38,0.10)",
-  "ভাইরাস": "rgba(8,145,178,0.10)",
+  অপুষ্টি: "rgba(37,99,235,0.10)",
+  পোকা: "rgba(217,119,6,0.10)",
+  ছত্রাক: "rgba(124,58,237,0.10)",
+  ব্যাকটেরিয়া: "rgba(220,38,38,0.10)",
+  ভাইরাস: "rgba(8,145,178,0.10)",
 };
 
 const CAUSE_EMOJI = {
-  "অপুষ্টি": "🧪",
-  "পোকা": "🐛",
-  "ছত্রাক": "🍄",
-  "ব্যাকটেরিয়া": "🦠",
-  "ভাইরাস": "🧬",
+  অপুষ্টি: "🧪",
+  পোকা: "🐛",
+  ছত্রাক: "🍄",
+  ব্যাকটেরিয়া: "🦠",
+  ভাইরাস: "🧬",
 };
 
 /* ── Helper ── */
@@ -44,7 +56,8 @@ const toBn = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮
 /* ── Round Data ── */
 const ROUNDS = [
   {
-    crop: "ধান (Rice)", icon: "🌾",
+    crop: "ধান (Rice)",
+    icon: "🌾",
     symptom: "নতুন পাতা হলুদ হচ্ছে কিন্তু শিরা সবুজ আছে। পুরনো পাতা স্বাভাবিক।",
     clues: [
       { text: "শুধু নতুন পাতা আক্রান্ত", pointsTo: "অপুষ্টি" },
@@ -57,7 +70,8 @@ const ROUNDS = [
     explanation: "এটি জিংক (Zn) অভাব। নতুন পাতা হলুদ কিন্তু শিরা সবুজ — এটি জিংক অভাবের ক্লাসিক লক্ষণ।",
   },
   {
-    crop: "ধান (Rice)", icon: "🌾",
+    crop: "ধান (Rice)",
+    icon: "🌾",
     symptom: "পাতায় মাকু আকৃতির ধূসর দাগ দেখা দিচ্ছে। আর্দ্রতা বেশি থাকলে দ্রুত ছড়ায়।",
     clues: [
       { text: "দাগ মাকু (diamond) আকৃতির", pointsTo: "ছত্রাক" },
@@ -70,8 +84,10 @@ const ROUNDS = [
     explanation: "এটি ধানের ব্লাস্ট রোগ (Magnaporthe oryzae)। মাকু আকৃতির দাগ এর বৈশিষ্ট্য।",
   },
   {
-    crop: "ধান (Rice)", icon: "🌾",
-    symptom: "পাতার কিনারা থেকে হলুদ হয়ে পানিভেজা দাগের মতো শুকিয়ে যাচ্ছে। সকালে দেখলে ব্যাকটেরিয়াল স্লাইম দেখা যায়।",
+    crop: "ধান (Rice)",
+    icon: "🌾",
+    symptom:
+      "পাতার কিনারা থেকে হলুদ হয়ে পানিভেজা দাগের মতো শুকিয়ে যাচ্ছে। সকালে দেখলে ব্যাকটেরিয়াল স্লাইম দেখা যায়।",
     clues: [
       { text: "কিনারা থেকে শুরু হয়", pointsTo: "ব্যাকটেরিয়া" },
       { text: "পাতার গায়ে সরু পানিভেজা রেখা", pointsTo: "ব্যাকটেরিয়া" },
@@ -83,7 +99,8 @@ const ROUNDS = [
     explanation: "এটি ব্যাকটেরিয়াল লিফ ব্লাইট (Xanthomonas oryzae)। কিনারা থেকে শুরু হওয়া এর বৈশিষ্ট্য।",
   },
   {
-    crop: "সরিষা (Mustard)", icon: "🌼",
+    crop: "সরিষা (Mustard)",
+    icon: "🌼",
     symptom: "নতুন পাতা কুঁকড়ে গেছে, গাছে মিষ্টি আঠা জমেছে, পিঁপড়া দেখা যাচ্ছে।",
     clues: [
       { text: "পাতা কুঁকড়ানো ও বাঁকানো", pointsTo: "পোকা" },
@@ -96,7 +113,8 @@ const ROUNDS = [
     explanation: "এটি জাব পোকা / এফিড (Aphid)। পাতা কুঁকড়ানো, মধুরস ও পিঁপড়া — তিনটিই এফিডের লক্ষণ।",
   },
   {
-    crop: "টমেটো (Tomato)", icon: "🍅",
+    crop: "টমেটো (Tomato)",
+    icon: "🍅",
     symptom: "পাতায় মোজেইক প্যাটার্ন (সবুজ-হলুদ দাগ), গাছ বামন হয়েছে, ফল বিকৃত।",
     clues: [
       { text: "মোজেইক (সোনালি) প্যাটার্ন", pointsTo: "ভাইরাস" },
@@ -109,7 +127,8 @@ const ROUNDS = [
     explanation: "এটি টমেটো লিফ কার্ল ভাইরাস (ToLCV)। মোজেইক প্যাটার্ন ও বামনতা ভাইরাসের লক্ষণ।",
   },
   {
-    crop: "আলু (Potato)", icon: "🥔",
+    crop: "আলু (Potato)",
+    icon: "🥔",
     symptom: "পানিভেজা দাগ দ্রুত বড় হয়ে সমস্ত পাতা কালো হয়ে যাচ্ছে। ঠান্ডা ও ভেজা আবহাওয়ায় দ্রুত ছড়ায়।",
     clues: [
       { text: "খুব দ্রুত ছড়ায় (২৪ ঘন্টায়)", pointsTo: "ছত্রাক" },
@@ -122,7 +141,8 @@ const ROUNDS = [
     explanation: "এটি আলুর লেট ব্লাইট (Phytophthora infestans)। ইতিহাসের সবচেয়ে ধ্বংসাত্মক ছত্রাক রোগ।",
   },
   {
-    crop: "ধান (Rice)", icon: "🌾",
+    crop: "ধান (Rice)",
+    icon: "🌾",
     symptom: "গাছের গোড়ায় বাদামি পোকা জমে আছে, গাছ হপার বার্ন (পোড়া) দেখাচ্ছে।",
     clues: [
       { text: "গাছের গোড়ায় বাদামি পোকা", pointsTo: "পোকা" },
@@ -135,7 +155,8 @@ const ROUNDS = [
     explanation: "এটি বাদামি গাছফড়িং (Brown Planthopper)। হপার বার্ন এর বৈশিষ্ট্য।",
   },
   {
-    crop: "বেগুন (Brinjal)", icon: "🍆",
+    crop: "বেগুন (Brinjal)",
+    icon: "🍆",
     symptom: "ফুল ও ছোট ফল ঝরে পড়ছে, ফল বিকৃত হচ্ছে। কাণ্ডমাথাও শুকিয়ে মরে যাচ্ছে।",
     clues: [
       { text: "ফুল ঝরা + ফল বিকৃতি", pointsTo: "অপুষ্টি" },
@@ -176,7 +197,9 @@ function injectStyles() {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════ */
 export default function CauseDetective() {
-  useEffect(() => { injectStyles(); }, []);
+  useEffect(() => {
+    injectStyles();
+  }, []);
 
   /* ── State ── */
   const [phase, setPhase] = useState("start");
@@ -187,8 +210,11 @@ export default function CauseDetective() {
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [highScore, setHighScore] = useState(() => {
-    try { return parseInt(localStorage.getItem("game-cause-detective-high")) || 0; }
-    catch { return 0; }
+    try {
+      return parseInt(localStorage.getItem("game-cause-detective-high")) || 0;
+    } catch {
+      return 0;
+    }
   });
   const [roundResults, setRoundResults] = useState([]);
   const [flipping, setFlipping] = useState(null);
@@ -233,51 +259,59 @@ export default function CauseDetective() {
     setScorePop(null);
   }, []);
 
-  const revealClue = useCallback((idx) => {
-    if (answered || revealedClues.has(idx) || flipping !== null) return;
-    setFlipping(idx);
-    setTimeout(() => {
-      setRevealedClues((prev) => {
-        const next = new Set(prev);
-        next.add(idx);
-        return next;
-      });
-      setFlipping(null);
-    }, 350);
-  }, [answered, revealedClues, flipping]);
+  const revealClue = useCallback(
+    (idx) => {
+      if (answered || revealedClues.has(idx) || flipping !== null) return;
+      setFlipping(idx);
+      setTimeout(() => {
+        setRevealedClues((prev) => {
+          const next = new Set(prev);
+          next.add(idx);
+          return next;
+        });
+        setFlipping(null);
+      }, 350);
+    },
+    [answered, revealedClues, flipping],
+  );
 
-  const selectCause = useCallback((cause) => {
-    if (answered || eliminatedCauses.has(cause)) return;
-    const newAttempts = attempts + 1;
-    setAttempts(newAttempts);
+  const selectCause = useCallback(
+    (cause) => {
+      if (answered || eliminatedCauses.has(cause)) return;
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
 
-    if (cause === round.answer) {
-      const bonus = newAttempts === 1 ? 5 : 0;
-      const points = 15 + bonus;
-      const newScore = score + points;
-      setAnswered(true);
-      setScore(newScore);
-      setLastPoints({ base: 15, bonus });
-      setScorePop(points);
-      setTimeout(() => setScorePop(null), 1200);
-      setRoundResults((prev) => [
-        ...prev,
-        { round: roundIdx + 1, crop: round.crop, correct: true, attempts: newAttempts, points },
-      ]);
-      if (newScore > highScore) {
-        setHighScore(newScore);
-        try { localStorage.setItem("game-cause-detective-high", String(newScore)); } catch {}
+      if (cause === round.answer) {
+        const bonus = newAttempts === 1 ? 5 : 0;
+        const points = 15 + bonus;
+        const newScore = score + points;
+        setAnswered(true);
+        setScore(newScore);
+        setLastPoints({ base: 15, bonus });
+        setScorePop(points);
+        setTimeout(() => setScorePop(null), 1200);
+        setRoundResults((prev) => [
+          ...prev,
+          { round: roundIdx + 1, crop: round.crop, correct: true, attempts: newAttempts, points },
+        ]);
+        if (newScore > highScore) {
+          setHighScore(newScore);
+          try {
+            localStorage.setItem("game-cause-detective-high", String(newScore));
+          } catch {}
+        }
+      } else {
+        setEliminatedCauses((prev) => {
+          const next = new Set(prev);
+          next.add(cause);
+          return next;
+        });
+        setShaking(cause);
+        setTimeout(() => setShaking(null), 500);
       }
-    } else {
-      setEliminatedCauses((prev) => {
-        const next = new Set(prev);
-        next.add(cause);
-        return next;
-      });
-      setShaking(cause);
-      setTimeout(() => setShaking(null), 500);
-    }
-  }, [answered, eliminatedCauses, attempts, score, highScore, round, roundIdx]);
+    },
+    [answered, eliminatedCauses, attempts, score, highScore, round, roundIdx],
+  );
 
   const nextRound = useCallback(() => {
     if (roundIdx + 1 >= ROUNDS.length) {
@@ -315,8 +349,7 @@ export default function CauseDetective() {
           {/* Description */}
           <div style={styles.descCard}>
             <p style={styles.descText}>
-              ফসলের লক্ষণ দেখে সঠিক কারণ চিহ্নিত করুন। ক্লু কার্ড খুলুন, প্রমাণ সংগ্রহ করুন এবং
-              সিদ্ধান্ত নিন!
+              ফসলের লক্ষণ দেখে সঠিক কারণ চিহ্নিত করুন। ক্লু কার্ড খুলুন, প্রমাণ সংগ্রহ করুন এবং সিদ্ধান্ত নিন!
             </p>
             <div style={styles.ruleList}>
               {[
@@ -337,12 +370,15 @@ export default function CauseDetective() {
           {/* Categories */}
           <div style={styles.catWrap}>
             {CAUSES.map((c) => (
-              <span key={c} style={{
-                ...styles.catChip,
-                borderColor: CAUSE_COLORS[c],
-                color: CAUSE_COLORS[c],
-                background: CAUSE_BG[c],
-              }}>
+              <span
+                key={c}
+                style={{
+                  ...styles.catChip,
+                  borderColor: CAUSE_COLORS[c],
+                  color: CAUSE_COLORS[c],
+                  background: CAUSE_BG[c],
+                }}
+              >
                 {CAUSE_EMOJI[c]} {c}
               </span>
             ))}
@@ -376,10 +412,19 @@ export default function CauseDetective() {
 
     let medal = "🎖️";
     let rank = "চমৎকার!";
-    if (pct >= 90) { medal = "🏆"; rank = "অসাধারণ!"; }
-    else if (pct >= 70) { medal = "🥇"; rank = "চমৎকার!"; }
-    else if (pct >= 50) { medal = "🥈"; rank = "ভালো!"; }
-    else if (pct >= 30) { medal = "🥉"; rank = "নোট খারাপ না!"; }
+    if (pct >= 90) {
+      medal = "🏆";
+      rank = "অসাধারণ!";
+    } else if (pct >= 70) {
+      medal = "🥇";
+      rank = "চমৎকার!";
+    } else if (pct >= 50) {
+      medal = "🥈";
+      rank = "ভালো!";
+    } else if (pct >= 30) {
+      medal = "🥉";
+      rank = "নোট খারাপ না!";
+    }
 
     return (
       <div style={styles.root}>
@@ -388,7 +433,9 @@ export default function CauseDetective() {
           <div style={{ fontSize: 64, animation: "ud-bounce .6s ease-out" }}>{medal}</div>
 
           {/* Title */}
-          <h1 className="ud-headline" style={styles.title}>খেলা শেষ!</h1>
+          <h1 className="ud-headline" style={styles.title}>
+            খেলা শেষ!
+          </h1>
           <p style={{ ...styles.subtitle, marginBottom: 4 }}>{rank}</p>
 
           {/* Score Card */}
@@ -426,11 +473,7 @@ export default function CauseDetective() {
           </div>
 
           {/* High Score */}
-          {isNewHigh && (
-            <div style={styles.newHighBadge}>
-              🎉 নতুন রেকর্ড! সর্বোচ্চ: {toBn(highScore)}
-            </div>
-          )}
+          {isNewHigh && <div style={styles.newHighBadge}>🎉 নতুন রেকর্ড! সর্বোচ্চ: {toBn(highScore)}</div>}
 
           {/* Round Summary */}
           <div style={styles.summaryWrap}>
@@ -438,11 +481,15 @@ export default function CauseDetective() {
             {roundResults.map((r, i) => (
               <div key={i} style={styles.summaryRow}>
                 <span style={styles.summaryRound}>{toBn(r.round)}.</span>
-                <span style={styles.summaryCrop}>{ROUNDS[i].icon} {ROUNDS[i].crop}</span>
-                <span style={{
-                  ...styles.summaryPts,
-                  color: r.attempts === 1 ? C.success : C.accent,
-                }}>
+                <span style={styles.summaryCrop}>
+                  {ROUNDS[i].icon} {ROUNDS[i].crop}
+                </span>
+                <span
+                  style={{
+                    ...styles.summaryPts,
+                    color: r.attempts === 1 ? C.success : C.accent,
+                  }}
+                >
                   +{toBn(r.points)}
                 </span>
               </div>
@@ -466,9 +513,7 @@ export default function CauseDetective() {
   return (
     <div style={styles.root}>
       {/* Score Pop */}
-      {scorePop && (
-        <div style={styles.scorePopFloat}>+{toBn(scorePop)}</div>
-      )}
+      {scorePop && <div style={styles.scorePopFloat}>+{toBn(scorePop)}</div>}
 
       <div style={styles.playWrap}>
         {/* ── Header ── */}
@@ -476,24 +521,20 @@ export default function CauseDetective() {
           <div style={styles.roundTag}>
             রাউন্ড <strong>{toBn(roundIdx + 1)}</strong> / {toBn(ROUNDS.length)}
           </div>
-          <div style={styles.scoreTag}>
-            ⭐ {toBn(score)}
-          </div>
+          <div style={styles.scoreTag}>⭐ {toBn(score)}</div>
         </div>
 
         {/* ── Progress Dots ── */}
         <div style={styles.dotRow}>
           {ROUNDS.map((_, i) => (
-            <div key={i} style={{
-              ...styles.dot,
-              background:
-                i < roundIdx
-                  ? C.success
-                  : i === roundIdx
-                    ? C.primary
-                    : C.border,
-              transform: i === roundIdx ? "scale(1.25)" : "scale(1)",
-            }} />
+            <div
+              key={i}
+              style={{
+                ...styles.dot,
+                background: i < roundIdx ? C.success : i === roundIdx ? C.primary : C.border,
+                transform: i === roundIdx ? "scale(1.25)" : "scale(1)",
+              }}
+            />
           ))}
         </div>
 
@@ -501,7 +542,9 @@ export default function CauseDetective() {
         <div style={styles.cropCard}>
           <div style={styles.cropRow}>
             <span style={styles.cropIcon}>{round.icon}</span>
-            <span className="ud-headline" style={styles.cropName}>{round.crop}</span>
+            <span className="ud-headline" style={styles.cropName}>
+              {round.crop}
+            </span>
           </div>
           <div style={styles.symptomBox}>
             <span style={styles.symptomLabel}>লক্ষণ:</span>
@@ -510,22 +553,27 @@ export default function CauseDetective() {
         </div>
 
         {/* Symptom Images */}
-        <SymptomImageGallery 
-          images={CAUSE_DETECTIVE_IMAGES[roundIdx] || []} 
-          label={round.symptom}
-        />
+        <SymptomImageGallery images={CAUSE_DETECTIVE_IMAGES[roundIdx] || []} label={round.symptom} />
 
         {/* Audio helper */}
         {isSupported && (
           <button
             onClick={() => speak(`${round.crop}। ${round.symptom}`)}
             style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              width: "100%", padding: "10px 14px", borderRadius: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              width: "100%",
+              padding: "10px 14px",
+              borderRadius: 12,
               border: `1.5px solid ${speaking ? C.success : C.border}`,
               background: speaking ? "#f0fdf4" : C.bgMuted,
               color: speaking ? C.success : C.textMuted,
-              fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 16,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              marginBottom: 16,
             }}
           >
             <span style={{ fontSize: 18 }}>🔊</span>
@@ -535,7 +583,10 @@ export default function CauseDetective() {
 
         {/* ── Clue Cards ── */}
         <div style={styles.sectionLabel}>
-          🔎 ক্লু কার্ড <span style={styles.clueCount}>({toBn(revealedCount)}/{toBn(5)})</span>
+          🔎 ক্লু কার্ড{" "}
+          <span style={styles.clueCount}>
+            ({toBn(revealedCount)}/{toBn(5)})
+          </span>
         </div>
         <p style={styles.clueHint}>
           {allCluesRevealed
@@ -576,11 +627,13 @@ export default function CauseDetective() {
                 {isRevealed ? (
                   <div>
                     <div style={styles.clueText}>{clue.text}</div>
-                    <div style={{
-                      ...styles.clueBadge,
-                      background: causeColor,
-                      color: "#fff",
-                    }}>
+                    <div
+                      style={{
+                        ...styles.clueBadge,
+                        background: causeColor,
+                        color: "#fff",
+                      }}
+                    >
                       {CAUSE_EMOJI[clue.pointsTo]} {clue.pointsTo}
                     </div>
                   </div>
@@ -598,9 +651,7 @@ export default function CauseDetective() {
         {/* ── Cause Selection ── */}
         <div style={styles.sectionLabel}>
           🎯 কারণ নির্বাচন করুন
-          {!answered && attempts > 0 && (
-            <span style={styles.attemptTag}>চেষ্টা: {toBn(attempts)}</span>
-          )}
+          {!answered && attempts > 0 && <span style={styles.attemptTag}>চেষ্টা: {toBn(attempts)}</span>}
         </div>
 
         <div style={styles.causeGrid}>
@@ -623,20 +674,12 @@ export default function CauseDetective() {
                   color: isCorrect ? "#fff" : isEliminated ? "#9ca3af" : color,
                   opacity: isEliminated ? 0.6 : 1,
                   cursor: isEliminated || isCorrect || answered ? "default" : "pointer",
-                  animation: isShaking
-                    ? "ud-shake .5s ease-in-out"
-                    : isCorrect
-                      ? "ud-bounce .5s ease-out"
-                      : "none",
+                  animation: isShaking ? "ud-shake .5s ease-in-out" : isCorrect ? "ud-bounce .5s ease-out" : "none",
                   transform: isCorrect ? "scale(1.05)" : "none",
                 }}
               >
-                {isEliminated && (
-                  <span style={styles.xOverlay}>✕</span>
-                )}
-                {isCorrect && (
-                  <span style={styles.checkOverlay}>✓</span>
-                )}
+                {isEliminated && <span style={styles.xOverlay}>✕</span>}
+                {isCorrect && <span style={styles.checkOverlay}>✓</span>}
                 <span style={{ fontSize: 22, lineHeight: 1 }}>{CAUSE_EMOJI[cause]}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, marginTop: 2 }}>{cause}</span>
               </button>

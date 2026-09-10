@@ -46,7 +46,6 @@
   }
 }
 
-/* Minimum touch target size for interactive elements (WCAG 2.5.5) */
 button,
 [role="button"],
 input[type="checkbox"],
@@ -55,6 +54,14 @@ select,
 a {
   min-height: 44px;
   min-width: 44px;
+  touch-action: manipulation;
+}
+
+/* Micro-interaction polish for mobile touch feedback */
+button:active:not(:disabled),
+[role="button"]:active:not(:disabled) {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
 }
 
 /* Ensure sufficient color contrast for form labels */

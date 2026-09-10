@@ -157,13 +157,28 @@ function generateGrid(cols, rows, infectedRate) {
 function getWPattern(cols, rows) {
   const pattern = [];
   if (rows >= 4) {
-    [[0,0],[0,cols-1],[1,1],[1,cols-2],[2,Math.floor(cols/2)],[3,0],[3,cols-1]].forEach(
-      ([r, c]) => { if (r < rows) pattern.push(r * cols + c); }
-    );
+    [
+      [0, 0],
+      [0, cols - 1],
+      [1, 1],
+      [1, cols - 2],
+      [2, Math.floor(cols / 2)],
+      [3, 0],
+      [3, cols - 1],
+    ].forEach(([r, c]) => {
+      if (r < rows) pattern.push(r * cols + c);
+    });
   } else if (rows >= 3) {
-    [[0,0],[0,cols-1],[1,1],[1,cols-2],[2,0],[2,cols-1]].forEach(
-      ([r, c]) => { if (r < rows) pattern.push(r * cols + c); }
-    );
+    [
+      [0, 0],
+      [0, cols - 1],
+      [1, 1],
+      [1, cols - 2],
+      [2, 0],
+      [2, cols - 1],
+    ].forEach(([r, c]) => {
+      if (r < rows) pattern.push(r * cols + c);
+    });
   }
   return pattern;
 }
@@ -275,7 +290,7 @@ export default function FieldScout() {
         setTimeout(() => setSubPhase("deciding"), 700);
       }
     },
-    [grid, gridData, inspectedCount, subPhase]
+    [grid, gridData, inspectedCount, subPhase],
   );
 
   const completeInspection = useCallback(() => {
@@ -287,8 +302,7 @@ export default function FieldScout() {
     (action) => {
       const inspected = grid.filter((p) => p.inspected);
       const infected = inspected.filter((p) => p.status === "infected");
-      const rate =
-        inspected.length > 0 ? (infected.length / inspected.length) * 100 : 0;
+      const rate = inspected.length > 0 ? (infected.length / inspected.length) * 100 : 0;
       setObservedRate(rate);
 
       const isCorrect = action === scenario.correctAction;
@@ -303,7 +317,7 @@ export default function FieldScout() {
       setRoundScores((prev) => [...prev, pts]);
       setPhase("result");
     },
-    [grid, scenario]
+    [grid, scenario],
   );
 
   const nextRound = useCallback(() => {
@@ -327,16 +341,10 @@ export default function FieldScout() {
 
   // ── computed for deciding sub-phase ──
   const inspectedPoints = useMemo(() => grid.filter((p) => p.inspected), [grid]);
-  const infectedFound = useMemo(
-    () => inspectedPoints.filter((p) => p.status === "infected"),
-    [inspectedPoints]
-  );
+  const infectedFound = useMemo(() => inspectedPoints.filter((p) => p.status === "infected"), [inspectedPoints]);
   const calcRate = useMemo(
-    () =>
-      inspectedPoints.length > 0
-        ? (infectedFound.length / inspectedPoints.length) * 100
-        : 0,
-    [inspectedPoints, infectedFound]
+    () => (inspectedPoints.length > 0 ? (infectedFound.length / inspectedPoints.length) * 100 : 0),
+    [inspectedPoints, infectedFound],
   );
 
   /* ═══════════════════════════════════════════════════════════
@@ -354,8 +362,7 @@ export default function FieldScout() {
             alignItems: "center",
             justifyContent: "center",
             padding: 20,
-            fontFamily:
-              "'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif",
+            fontFamily: "'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif",
           }}
         >
           <div
@@ -593,14 +600,8 @@ export default function FieldScout() {
      RENDER — Result Screen
      ═══════════════════════════════════════════════════════════ */
   if (phase === "result") {
-    const _advice =
-      decision === "treat"
-        ? scenario.treatAdvice
-        : scenario.monitorAdvice;
-    const correctAdvice =
-      scenario.correctAction === "treat"
-        ? scenario.treatAdvice
-        : scenario.monitorAdvice;
+    const _advice = decision === "treat" ? scenario.treatAdvice : scenario.monitorAdvice;
+    const correctAdvice = scenario.correctAction === "treat" ? scenario.treatAdvice : scenario.monitorAdvice;
 
     return (
       <>
@@ -613,8 +614,7 @@ export default function FieldScout() {
             alignItems: "center",
             justifyContent: "center",
             padding: 20,
-            fontFamily:
-              "'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif",
+            fontFamily: "'Noto Sans Bengali','Hind Siliguri',system-ui,sans-serif",
           }}
         >
           <div
@@ -660,8 +660,7 @@ export default function FieldScout() {
                 animation: "fs-popIn 0.5s ease-out 0.3s both",
               }}
             >
-              আপনি "{decision === "treat" ? "চিকিৎসা করুন" : "পর্যবেক্ষণ করুন"}"
-              বেছে নিয়েছেন
+              আপনি "{decision === "treat" ? "চিকিৎসা করুন" : "পর্যবেক্ষণ করুন"}" বেছে নিয়েছেন
             </div>
 
             {/* Score Breakdown */}
@@ -684,9 +683,7 @@ export default function FieldScout() {
                   marginBottom: 6,
                 }}
               >
-                <span style={{ fontSize: 13, color: C.textMuted }}>
-                  সিদ্ধান্ত {roundCorrect ? "সঠিক" : "ভুল"}
-                </span>
+                <span style={{ fontSize: 13, color: C.textMuted }}>সিদ্ধান্ত {roundCorrect ? "সঠিক" : "ভুল"}</span>
                 <span
                   style={{
                     fontSize: 14,
@@ -704,9 +701,7 @@ export default function FieldScout() {
                   marginBottom: 8,
                 }}
               >
-                <span style={{ fontSize: 13, color: C.textMuted }}>
-                  নমুনা নির্ভুলতা বোনাস
-                </span>
+                <span style={{ fontSize: 13, color: C.textMuted }}>নমুনা নির্ভুলতা বোনাস</span>
                 <span
                   style={{
                     fontSize: 14,
@@ -725,9 +720,7 @@ export default function FieldScout() {
                 }}
               />
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>
-                  মোট
-                </span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>মোট</span>
                 <span
                   style={{
                     fontSize: 16,
@@ -763,29 +756,15 @@ export default function FieldScout() {
                 {roundCorrect ? "✓" : "✗"} ব্যাখ্যা
               </div>
               <div style={{ fontSize: 13, color: C.textMuted, lineHeight: 1.7 }}>
-                <span style={{ fontWeight: 600, color: C.text }}>
-                  প্রকৃত সংক্রমণের হার:
-                </span>{" "}
-                {scenario.infectedRate}%
+                <span style={{ fontWeight: 600, color: C.text }}>প্রকৃত সংক্রমণের হার:</span> {scenario.infectedRate}%
                 <br />
-                <span style={{ fontWeight: 600, color: C.text }}>
-                  আপনার পর্যবেশন:
-                </span>{" "}
-                {observedRate.toFixed(1)}% (
-                {inspectedPoints.length}টি নমুনায় {infectedFound.length}টি
-                আক্রান্ত)
+                <span style={{ fontWeight: 600, color: C.text }}>আপনার পর্যবেশন:</span> {observedRate.toFixed(1)}% (
+                {inspectedPoints.length}টি নমুনায় {infectedFound.length}টি আক্রান্ত)
                 <br />
-                <span style={{ fontWeight: 600, color: C.text }}>
-                  ETL:
-                </span>{" "}
-                {scenario.etl}
+                <span style={{ fontWeight: 600, color: C.text }}>ETL:</span> {scenario.etl}
                 <br />
-                <span style={{ fontWeight: 600, color: C.text }}>
-                  সঠিক সিদ্ধান্ত:
-                </span>{" "}
-                {scenario.correctAction === "treat"
-                  ? "চিকিৎসা করুন"
-                  : "পর্যবেক্ষণ করুন"}
+                <span style={{ fontWeight: 600, color: C.text }}>সঠিক সিদ্ধান্ত:</span>{" "}
+                {scenario.correctAction === "treat" ? "চিকিৎসা করুন" : "পর্যবেক্ষণ করুন"}
               </div>
             </div>
 
@@ -817,11 +796,8 @@ export default function FieldScout() {
                 animation: "fs-popIn 0.5s ease-out 0.7s both",
               }}
             >
-              মোট স্কোর:{" "}
-              <span style={{ fontWeight: 800, color: C.primary, fontSize: 18 }}>
-                {score}
-              </span>{" "}
-              / {(round + 1) * 30}
+              মোট স্কোর: <span style={{ fontWeight: 800, color: C.primary, fontSize: 18 }}>{score}</span> /{" "}
+              {(round + 1) * 30}
             </div>
 
             {/* Next Round Button */}
@@ -850,9 +826,7 @@ export default function FieldScout() {
                 e.currentTarget.style.transform = "scale(1)";
               }}
             >
-              {round + 1 >= TOTAL_ROUNDS
-                ? "🏆 ফলাফল দেখুন"
-                : `➡️ রাউন্ড ${round + 2}`}
+              {round + 1 >= TOTAL_ROUNDS ? "🏆 ফলাফল দেখুন" : `➡️ রাউন্ড ${round + 2}`}
             </button>
           </div>
         </div>
@@ -928,12 +902,8 @@ export default function FieldScout() {
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
             <span style={{ fontSize: 32 }}>{scenario.icon}</span>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>
-                {scenario.crop}
-              </div>
-              <div style={{ fontSize: 13, color: C.danger, fontWeight: 600 }}>
-                🐛 {scenario.pest}
-              </div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>{scenario.crop}</div>
+              <div style={{ fontSize: 13, color: C.danger, fontWeight: 600 }}>🐛 {scenario.pest}</div>
             </div>
           </div>
           <div
@@ -955,9 +925,7 @@ export default function FieldScout() {
               <div style={{ fontSize: 11, color: C.textLight, fontWeight: 600, marginBottom: 2 }}>
                 ETL (সীমাস্থায়ী স্তর)
               </div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: C.warning }}>
-                📊 {scenario.etl}
-              </div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: C.warning }}>📊 {scenario.etl}</div>
             </div>
             <div
               style={{
@@ -968,33 +936,34 @@ export default function FieldScout() {
                 padding: "10px 12px",
               }}
             >
-              <div style={{ fontSize: 11, color: C.textLight, fontWeight: 600, marginBottom: 2 }}>
-                জমির আয়তন
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>
-                📏 {scenario.fieldSize}
-              </div>
+              <div style={{ fontSize: 11, color: C.textLight, fontWeight: 600, marginBottom: 2 }}>জমির আয়তন</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>📏 {scenario.fieldSize}</div>
             </div>
           </div>
         </div>
 
         {/* Symptom Images */}
-        <SymptomImageGallery
-          images={FIELD_SCOUT_IMAGES[round % 6] || []}
-          label={scenario.pest}
-        />
+        <SymptomImageGallery images={FIELD_SCOUT_IMAGES[round % 6] || []} label={scenario.pest} />
 
         {/* Audio helper */}
         {isSupported && (
           <button
             onClick={() => speak(`${scenario.crop}। ${scenario.pest}। ইটিএল: ${scenario.etl}`)}
             style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              width: "100%", padding: "10px 14px", borderRadius: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              width: "100%",
+              padding: "10px 14px",
+              borderRadius: 12,
               border: `1.5px solid ${speaking ? C.success : C.border}`,
               background: speaking ? "#f0fdf4" : C.bgMuted,
               color: speaking ? C.success : C.textMuted,
-              fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 12,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              marginBottom: 12,
             }}
           >
             <span style={{ fontSize: 18 }}>🔊</span>
@@ -1013,9 +982,7 @@ export default function FieldScout() {
               animation: "fs-fadeIn 0.4s ease-out 0.2s both",
             }}
           >
-            <div style={{ fontSize: 13, fontWeight: 600, color: C.textMuted }}>
-              🔍 নমুনা পয়েন্ট ট্যাপ করুন
-            </div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: C.textMuted }}>🔍 নমুনা পয়েন্ট ট্যাপ করুন</div>
             <div
               style={{
                 fontSize: 14,
@@ -1024,8 +991,8 @@ export default function FieldScout() {
                   inspectedCount >= MAX_INSPECTIONS
                     ? C.accent
                     : inspectedCount >= MIN_INSPECTIONS
-                    ? C.primary
-                    : C.textMuted,
+                      ? C.primary
+                      : C.textMuted,
               }}
             >
               {inspectedCount}/{MAX_INSPECTIONS}
@@ -1055,7 +1022,9 @@ export default function FieldScout() {
               alignItems: "center",
             }}
           >
-            <span>🌱 মাঠের নমুনা গ্রিড ({cols}×{rows})</span>
+            <span>
+              🌱 মাঠের নমুনা গ্রিড ({cols}×{rows})
+            </span>
             {subPhase === "inspecting" && (
               <button
                 onClick={() => setShowHint((h) => !h)}
@@ -1098,10 +1067,7 @@ export default function FieldScout() {
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    cursor:
-                      subPhase === "inspecting" && !point.inspected
-                        ? "pointer"
-                        : "default",
+                    cursor: subPhase === "inspecting" && !point.inspected ? "pointer" : "default",
                     transition: "all 0.2s",
                     animation: point.inspected ? "fs-popIn 0.35s ease-out" : "none",
                     position: "relative",
@@ -1119,9 +1085,7 @@ export default function FieldScout() {
                             boxShadow: "0 2px 8px rgba(22,163,74,0.15)",
                           }
                       : {
-                          background: isWHint
-                            ? `linear-gradient(135deg, #fef3c7, #fef9c3)`
-                            : C.bgCard,
+                          background: isWHint ? `linear-gradient(135deg, #fef3c7, #fef9c3)` : C.bgCard,
                           border: `2px dashed ${isWHint ? C.accent : C.border}`,
                           boxShadow: "none",
                         }),
@@ -1288,11 +1252,7 @@ export default function FieldScout() {
                     textAlign: "center",
                   }}
                 >
-                  <div
-                    style={{ fontSize: 24, fontWeight: 800, color: C.blue }}
-                  >
-                    {inspectedPoints.length}
-                  </div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: C.blue }}>{inspectedPoints.length}</div>
                   <div
                     style={{
                       fontSize: 11,
@@ -1312,11 +1272,7 @@ export default function FieldScout() {
                     textAlign: "center",
                   }}
                 >
-                  <div
-                    style={{ fontSize: 24, fontWeight: 800, color: C.danger }}
-                  >
-                    {infectedFound.length}
-                  </div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: C.danger }}>{infectedFound.length}</div>
                   <div
                     style={{
                       fontSize: 11,
@@ -1374,8 +1330,7 @@ export default function FieldScout() {
                   textAlign: "center",
                   fontSize: 32,
                   fontWeight: 900,
-                  color:
-                    calcRate >= scenario.etlValue ? C.danger : C.success,
+                  color: calcRate >= scenario.etlValue ? C.danger : C.success,
                   marginBottom: 16,
                 }}
               >
@@ -1458,8 +1413,7 @@ export default function FieldScout() {
                     width: 4,
                     height: 4,
                     borderRadius: "50%",
-                    backgroundColor:
-                      calcRate >= scenario.etlValue ? C.danger : C.success,
+                    backgroundColor: calcRate >= scenario.etlValue ? C.danger : C.success,
                     transform: "translateX(-50%)",
                     boxShadow: "0 0 4px currentColor",
                   }}
@@ -1598,9 +1552,8 @@ export default function FieldScout() {
               margin: "0 auto",
             }}
           >
-            💡 <strong>W-প্যাটার্ন:</strong> হলুদ ঘরগুলো হলো
-            প্রস্তাবিত নমুনা সংগ্রহের পয়েন্ট। এটি পুরো মাঠকে প্রতিনিধিত্বমূলকভাবে
-            কভার করে।
+            💡 <strong>W-প্যাটার্ন:</strong> হলুদ ঘরগুলো হলো প্রস্তাবিত নমুনা সংগ্রহের পয়েন্ট। এটি পুরো মাঠকে
+            প্রতিনিধিত্বমূলকভাবে কভার করে।
           </div>
         )}
       </div>

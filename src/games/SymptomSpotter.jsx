@@ -5,31 +5,140 @@ import SymptomImageGallery from "./SymptomImageGallery";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
-  primary: "#006028", primaryLight: "#1a7a3a", primaryDark: "#005322",
-  accent: "#f59e0b", accentLight: "#fbbf24", accentDark: "#d97706",
-  bg: "#f5fbf6", bgCard: "#ffffff", bgMuted: "#eff5f0",
-  text: "#171d1a", textMuted: "#3f493f", textLight: "#6f7a6e",
-  border: "#becabc", success: "#16a34a", warning: "#d97706", danger: "#dc2626", blue: "#2563eb",
-  shadow: "0 8px 24px rgba(0,33,9,0.08)", shadowMd: "0 16px 40px rgba(0,33,9,0.10)",
+  primary: "#006028",
+  primaryLight: "#1a7a3a",
+  primaryDark: "#005322",
+  accent: "#f59e0b",
+  accentLight: "#fbbf24",
+  accentDark: "#d97706",
+  bg: "#f5fbf6",
+  bgCard: "#ffffff",
+  bgMuted: "#eff5f0",
+  text: "#171d1a",
+  textMuted: "#3f493f",
+  textLight: "#6f7a6e",
+  border: "#becabc",
+  success: "#16a34a",
+  warning: "#d97706",
+  danger: "#dc2626",
+  blue: "#2563eb",
+  shadow: "0 8px 24px rgba(0,33,9,0.08)",
+  shadowMd: "0 16px 40px rgba(0,33,9,0.10)",
 };
 
 const SCENARIOS = [
-  { crop: "ধান (Rice)", icon: "🌾", symptom: "ধানের মাকু আকৃতির ধূসর দাগ", correct: "ব্লাস্ট (Blast)", wrong: ["ব্যাকটেরিয়াল লিফ ব্লাইট", "শিথ ব্লাইট", "পাতামোড়া পোকা"] },
-  { crop: "ধান (Rice)", icon: "🌾", symptom: "পাতার কিনারা হলুদ-বাদামি", correct: "ব্যাকটেরিয়াল লিফ ব্লাইট", wrong: ["ব্লাস্ট", "শিথ ব্লাইট", "খইরা রোগ"] },
-  { crop: "ধান (Rice)", icon: "🌾", symptom: "কান্ডে ডিম্বাকৃতি ধূসর দাগ", correct: "শিথ ব্লাইট", wrong: ["ব্লাস্ট", "পাতামোড়া পোকা", "ব্যাকটেরিয়াল লিফ ব্লাইট"] },
-  { crop: "ধান (Rice)", icon: "🌾", symptom: "নতুন পাতায় বাদামি মরচে দাগ, বৃদ্ধি থমকে", correct: "জিংক অভাব (খইরা)", wrong: ["নাইট্রোজেন অভাব", "আয়রন অভাব", "বোরন অভাব"] },
-  { crop: "ধান (Rice)", icon: "🌾", symptom: "নিচের পাতা হলুদ, বৃদ্ধি কম", correct: "নাইট্রোজেন অভাব", wrong: ["জিংক অভাব", "আয়রন অভাব", "পটাশিয়াম অভাব"] },
-  { crop: "টমেটো (Tomato)", icon: "🍅", symptom: "কালো বৃত্তাকার দাগ, হলুদ বলয়", correct: "আর্লি ব্লাইট", wrong: ["লেট ব্লাইট", "পাউডারি মিলডিউ", "ব্যাকটেরিয়াল উইল্ট"] },
-  { crop: "টমেটো (Tomato)", icon: "🍅", symptom: "পানিভেজা দাগ দ্রুত কালো হয়", correct: "লেট ব্লাইট", wrong: ["আর্লি ব্লাইট", "পাউডারি মিলডিউ", "সেপ্টোরিয়া"] },
-  { crop: "আলু (Potato)", icon: "🥔", symptom: "পানিভেজা দাগ দ্রুত বড় হয়, পাতা ঝরে", correct: "লেট ব্লাইট", wrong: ["আর্লি ব্লাইট", "ব্যাকটেরিয়াল উইল্ট", "টিউবার রট"] },
-  { crop: "সরিষা (Mustard)", icon: "🌼", symptom: "পাতা কুঁকড়ানো, মধুরস, পিঁপড়া", correct: "জাব পোকা (Aphid)", wrong: ["থ্রিপস", "ডায়মন্ড ব্যাক মথ", "সাদা মাছি"] },
-  { crop: "বেগুন (Brinjal)", icon: "🍆", symptom: "পাতায় সূক্ষ্ম জাল, হলুদ ও ঝরা", correct: "লাল মাকড়সা মাইট", wrong: ["থ্রিপস", "জাব পোকা", "সাদা মাছি"] },
-  { crop: "বেগুন (Brinjal)", icon: "🍆", symptom: "পাতায় রুপালি দাগ", correct: "থ্রিপস", wrong: ["মাইট", "জাব পোকা", "মাজরা পোকা"] },
-  { crop: "বাঁধাকপি (Cabbage)", icon: "🥬", symptom: "পাতায় অনিয়মিত ছিদ্র, লার্ভা", correct: "ডায়মন্ড ব্যাক মথ", wrong: ["ক্যাবেজ ম্যাগট", "আফিড", "থ্রিপস"] },
-  { crop: "ধান (Rice)", icon: "🌾", symptom: "মরা ডিল, সাদা শীষ", correct: "মাজরা পোকা", wrong: ["বাদামি গাছফড়িং", "পাতামোড়া পোকা", "ব্লাস্ট"] },
-  { crop: "ধান (Rice)", icon: "🌾", symptom: "পাতা মোড়ানো (সুতার মতো)", correct: "পাতামোড়া পোকা", wrong: ["মাজরা পোকা", "ব্লাস্ট", "গাছফড়িং"] },
-  { crop: "সবজি (Vegetables)", icon: "🥬", symptom: "পাতায় সাদা গুঁড়া আবরণ", correct: "পাউডারি মিলডিউ", wrong: ["ডাউনি মিলডিউ", "আর্লি ব্লাইট", "ব্যাকটেরিয়াল স্পট"] },
-  { crop: "সরিষা (Mustard)", icon: "🌼", symptom: "ফুল ঝরা, ফল বিকৃত", correct: "বোরন অভাব", wrong: ["নাইট্রোজেন অভাব", "ফসফরাস অভাব", "পটাশিয়াম অভাব"] },
+  {
+    crop: "ধান (Rice)",
+    icon: "🌾",
+    symptom: "ধানের মাকু আকৃতির ধূসর দাগ",
+    correct: "ব্লাস্ট (Blast)",
+    wrong: ["ব্যাকটেরিয়াল লিফ ব্লাইট", "শিথ ব্লাইট", "পাতামোড়া পোকা"],
+  },
+  {
+    crop: "ধান (Rice)",
+    icon: "🌾",
+    symptom: "পাতার কিনারা হলুদ-বাদামি",
+    correct: "ব্যাকটেরিয়াল লিফ ব্লাইট",
+    wrong: ["ব্লাস্ট", "শিথ ব্লাইট", "খইরা রোগ"],
+  },
+  {
+    crop: "ধান (Rice)",
+    icon: "🌾",
+    symptom: "কান্ডে ডিম্বাকৃতি ধূসর দাগ",
+    correct: "শিথ ব্লাইট",
+    wrong: ["ব্লাস্ট", "পাতামোড়া পোকা", "ব্যাকটেরিয়াল লিফ ব্লাইট"],
+  },
+  {
+    crop: "ধান (Rice)",
+    icon: "🌾",
+    symptom: "নতুন পাতায় বাদামি মরচে দাগ, বৃদ্ধি থমকে",
+    correct: "জিংক অভাব (খইরা)",
+    wrong: ["নাইট্রোজেন অভাব", "আয়রন অভাব", "বোরন অভাব"],
+  },
+  {
+    crop: "ধান (Rice)",
+    icon: "🌾",
+    symptom: "নিচের পাতা হলুদ, বৃদ্ধি কম",
+    correct: "নাইট্রোজেন অভাব",
+    wrong: ["জিংক অভাব", "আয়রন অভাব", "পটাশিয়াম অভাব"],
+  },
+  {
+    crop: "টমেটো (Tomato)",
+    icon: "🍅",
+    symptom: "কালো বৃত্তাকার দাগ, হলুদ বলয়",
+    correct: "আর্লি ব্লাইট",
+    wrong: ["লেট ব্লাইট", "পাউডারি মিলডিউ", "ব্যাকটেরিয়াল উইল্ট"],
+  },
+  {
+    crop: "টমেটো (Tomato)",
+    icon: "🍅",
+    symptom: "পানিভেজা দাগ দ্রুত কালো হয়",
+    correct: "লেট ব্লাইট",
+    wrong: ["আর্লি ব্লাইট", "পাউডারি মিলডিউ", "সেপ্টোরিয়া"],
+  },
+  {
+    crop: "আলু (Potato)",
+    icon: "🥔",
+    symptom: "পানিভেজা দাগ দ্রুত বড় হয়, পাতা ঝরে",
+    correct: "লেট ব্লাইট",
+    wrong: ["আর্লি ব্লাইট", "ব্যাকটেরিয়াল উইল্ট", "টিউবার রট"],
+  },
+  {
+    crop: "সরিষা (Mustard)",
+    icon: "🌼",
+    symptom: "পাতা কুঁকড়ানো, মধুরস, পিঁপড়া",
+    correct: "জাব পোকা (Aphid)",
+    wrong: ["থ্রিপস", "ডায়মন্ড ব্যাক মথ", "সাদা মাছি"],
+  },
+  {
+    crop: "বেগুন (Brinjal)",
+    icon: "🍆",
+    symptom: "পাতায় সূক্ষ্ম জাল, হলুদ ও ঝরা",
+    correct: "লাল মাকড়সা মাইট",
+    wrong: ["থ্রিপস", "জাব পোকা", "সাদা মাছি"],
+  },
+  {
+    crop: "বেগুন (Brinjal)",
+    icon: "🍆",
+    symptom: "পাতায় রুপালি দাগ",
+    correct: "থ্রিপস",
+    wrong: ["মাইট", "জাব পোকা", "মাজরা পোকা"],
+  },
+  {
+    crop: "বাঁধাকপি (Cabbage)",
+    icon: "🥬",
+    symptom: "পাতায় অনিয়মিত ছিদ্র, লার্ভা",
+    correct: "ডায়মন্ড ব্যাক মথ",
+    wrong: ["ক্যাবেজ ম্যাগট", "আফিড", "থ্রিপস"],
+  },
+  {
+    crop: "ধান (Rice)",
+    icon: "🌾",
+    symptom: "মরা ডিল, সাদা শীষ",
+    correct: "মাজরা পোকা",
+    wrong: ["বাদামি গাছফড়িং", "পাতামোড়া পোকা", "ব্লাস্ট"],
+  },
+  {
+    crop: "ধান (Rice)",
+    icon: "🌾",
+    symptom: "পাতা মোড়ানো (সুতার মতো)",
+    correct: "পাতামোড়া পোকা",
+    wrong: ["মাজরা পোকা", "ব্লাস্ট", "গাছফড়িং"],
+  },
+  {
+    crop: "সবজি (Vegetables)",
+    icon: "🥬",
+    symptom: "পাতায় সাদা গুঁড়া আবরণ",
+    correct: "পাউডারি মিলডিউ",
+    wrong: ["ডাউনি মিলডিউ", "আর্লি ব্লাইট", "ব্যাকটেরিয়াল স্পট"],
+  },
+  {
+    crop: "সরিষা (Mustard)",
+    icon: "🌼",
+    symptom: "ফুল ঝরা, ফল বিকৃত",
+    correct: "বোরন অভাব",
+    wrong: ["নাইট্রোজেন অভাব", "ফসফরাস অভাব", "পটাশিয়াম অভাব"],
+  },
 ];
 
 const TOTAL_ROUNDS = 10;
@@ -66,7 +175,9 @@ function saveHighScore(score) {
   try {
     const prev = getHighScore();
     if (score > prev) localStorage.setItem(STORAGE_KEY, score);
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 }
 
 function resultMessage(score) {
@@ -180,23 +291,15 @@ function ChoiceButton({ label, index, state, onClick, disabled }) {
           fontSize: 14,
           fontWeight: 700,
           flexShrink: 0,
-          background: state === "correct"
-            ? C.success
-            : state === "wrong"
-            ? C.danger
-            : C.bgMuted,
+          background: state === "correct" ? C.success : state === "wrong" ? C.danger : C.bgMuted,
           color: state === "correct" || state === "wrong" ? "#fff" : C.textMuted,
         }}
       >
         {labels[index]}
       </span>
       <span style={{ flex: 1, lineHeight: 1.45 }}>{label}</span>
-      {state === "correct" && (
-        <span style={{ fontSize: 20, animation: "ss-popIn 0.4s ease-out" }}>✅</span>
-      )}
-      {state === "wrong" && (
-        <span style={{ fontSize: 20, animation: "ss-popIn 0.3s ease-out" }}>❌</span>
-      )}
+      {state === "correct" && <span style={{ fontSize: 20, animation: "ss-popIn 0.4s ease-out" }}>✅</span>}
+      {state === "wrong" && <span style={{ fontSize: 20, animation: "ss-popIn 0.3s ease-out" }}>❌</span>}
     </button>
   );
 }
@@ -208,8 +311,8 @@ function TimerBar({ timeLeft, max }) {
   const barColor = isLow
     ? `linear-gradient(90deg, ${C.danger}, #f87171)`
     : pct < 40
-    ? `linear-gradient(90deg, ${C.warning}, #fbbf24)`
-    : `linear-gradient(90deg, ${C.success}, ${C.accentLight})`;
+      ? `linear-gradient(90deg, ${C.warning}, #fbbf24)`
+      : `linear-gradient(90deg, ${C.success}, ${C.accentLight})`;
 
   return (
     <div
@@ -247,7 +350,7 @@ export default function SymptomSpotter() {
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [timeLeft, setTimeLeft] = useState(TIME_PER_Q);
-  const [answers, setAnswers] = useState([]);        // {chosen, correct, isCorrect, timeBonus}
+  const [answers, setAnswers] = useState([]); // {chosen, correct, isCorrect, timeBonus}
   const [selectedIdx, setSelectedIdx] = useState(null); // index into choices[]
   const [locked, setLocked] = useState(false);
   const [scorePop, setScorePop] = useState(false);
@@ -271,11 +374,16 @@ export default function SymptomSpotter() {
   }, [qIdx, phase]);
 
   /* ── inject keyframes on mount ─────────── */
-  useEffect(() => { injectStyles(); }, []);
+  useEffect(() => {
+    injectStyles();
+  }, []);
 
   /* ── timer ─────────────────────────────── */
   const clearTimer = useCallback(() => {
-    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
   }, []);
 
   useEffect(() => {
@@ -307,49 +415,52 @@ export default function SymptomSpotter() {
   }, [locked]);
 
   /* ── handle answer ─────────────────────── */
-  const handleAnswer = useCallback((choiceIdx) => {
-    if (locked) return;
-    setLocked(true);
-    clearTimer();
-    setSelectedIdx(choiceIdx);
+  const handleAnswer = useCallback(
+    (choiceIdx) => {
+      if (locked) return;
+      setLocked(true);
+      clearTimer();
+      setSelectedIdx(choiceIdx);
 
-    const chosen = choiceIdx !== null ? choices[choiceIdx] : null;
-    const isCorrect = chosen === currentQ.correct;
+      const chosen = choiceIdx !== null ? choices[choiceIdx] : null;
+      const isCorrect = chosen === currentQ.correct;
 
-    let gained = 0;
-    if (isCorrect) {
-      gained = 10;
-      if (streak >= 2) gained += 5;
-    } else {
-      gained = -3;
-    }
-
-    const newScore = score + gained;
-    setScore(newScore);
-    setStreak(isCorrect ? streak + 1 : 0);
-    if (isCorrect) setScorePop(true);
-
-    const entry = { chosen, correct: currentQ.correct, isCorrect, gained };
-    setAnswers((prev) => [...prev, entry]);
-
-    // move to next after delay
-    setTimeout(() => {
-      setScorePop(false);
-      if (qIdx + 1 >= TOTAL_ROUNDS) {
-        // game over — check high score BEFORE saving
-        const prevHigh = getHighScore();
-        const isNew = newScore > prevHigh && newScore > 0;
-        saveHighScore(newScore);
-        setIsNewHigh(isNew);
-        setPhase("result");
+      let gained = 0;
+      if (isCorrect) {
+        gained = 10;
+        if (streak >= 2) gained += 5;
       } else {
-        setQIdx((i) => i + 1);
-        setTimeLeft(TIME_PER_Q);
-        setSelectedIdx(null);
-        setLocked(false);
+        gained = -3;
       }
-    }, 1400);
-  }, [locked, clearTimer, choices, currentQ, score, streak, qIdx]);
+
+      const newScore = score + gained;
+      setScore(newScore);
+      setStreak(isCorrect ? streak + 1 : 0);
+      if (isCorrect) setScorePop(true);
+
+      const entry = { chosen, correct: currentQ.correct, isCorrect, gained };
+      setAnswers((prev) => [...prev, entry]);
+
+      // move to next after delay
+      setTimeout(() => {
+        setScorePop(false);
+        if (qIdx + 1 >= TOTAL_ROUNDS) {
+          // game over — check high score BEFORE saving
+          const prevHigh = getHighScore();
+          const isNew = newScore > prevHigh && newScore > 0;
+          saveHighScore(newScore);
+          setIsNewHigh(isNew);
+          setPhase("result");
+        } else {
+          setQIdx((i) => i + 1);
+          setTimeLeft(TIME_PER_Q);
+          setSelectedIdx(null);
+          setLocked(false);
+        }
+      }, 1400);
+    },
+    [locked, clearTimer, choices, currentQ, score, streak, qIdx],
+  );
 
   /* ── handle timeout ────────────────────── */
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -461,30 +572,49 @@ export default function SymptomSpotter() {
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
               <span style={{ fontSize: 48 }}>{currentQ.icon}</span>
               <div>
-                <div style={{ fontSize: 14, color: C.textLight, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: C.textLight,
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                  }}
+                >
                   ফসল
                 </div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: C.primary, fontFamily: "'Plus Jakarta Sans','Noto Sans Bengali',sans-serif" }}>
+                <div
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 700,
+                    color: C.primary,
+                    fontFamily: "'Plus Jakarta Sans','Noto Sans Bengali',sans-serif",
+                  }}
+                >
                   {currentQ.crop}
                 </div>
               </div>
             </div>
 
             <div style={{ ...styles.symptomBox(C) }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: C.textLight, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: C.textLight,
+                  marginBottom: 6,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                }}
+              >
                 🔬 লক্ষণ
               </div>
-              <div style={{ fontSize: 17, fontWeight: 600, color: C.text, lineHeight: 1.55 }}>
-                {currentQ.symptom}
-              </div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: C.text, lineHeight: 1.55 }}>{currentQ.symptom}</div>
             </div>
           </div>
 
           {/* Symptom Images */}
-          <SymptomImageGallery 
-            images={SYMPTOM_SPOTTER_IMAGES[currentQ.correct] || []} 
-            label={currentQ.symptom}
-          />
+          <SymptomImageGallery images={SYMPTOM_SPOTTER_IMAGES[currentQ.correct] || []} label={currentQ.symptom} />
 
           {/* Audio helper for illiterate farmers */}
           {isSupported && (
@@ -585,7 +715,16 @@ export default function SymptomSpotter() {
           <div style={{ textAlign: "center", marginBottom: 28 }}>
             <div style={{ fontSize: 64, marginBottom: 8 }}>{msg.emoji}</div>
             <h1 style={{ ...styles.title(C), margin: "0 0 4px" }}>খেলা শেষ!</h1>
-            <p style={{ color: msg.color, fontSize: 15, fontWeight: 600, lineHeight: 1.5, maxWidth: 300, margin: "0 auto" }}>
+            <p
+              style={{
+                color: msg.color,
+                fontSize: 15,
+                fontWeight: 600,
+                lineHeight: 1.5,
+                maxWidth: 300,
+                margin: "0 auto",
+              }}
+            >
               {msg.text}
             </p>
           </div>
@@ -607,29 +746,26 @@ export default function SymptomSpotter() {
 
           {/* stats row */}
           <div style={styles.statsRow(C)}>
-            <StatBox
-              C={C}
-              icon="✅"
-              label="সঠিক"
-              value={`${totalCorrect}/${TOTAL_ROUNDS}`}
-              accent={C.success}
-            />
-            <StatBox
-              C={C}
-              icon="📊"
-              label="নির্ভুলতা"
-              value={`${accuracy}%`}
-              accent={C.blue}
-            />
+            <StatBox C={C} icon="✅" label="সঠিক" value={`${totalCorrect}/${TOTAL_ROUNDS}`} accent={C.success} />
+            <StatBox C={C} icon="📊" label="নির্ভুলতা" value={`${accuracy}%`} accent={C.blue} />
             <StatBox
               C={C}
               icon="🔥"
               label="সর্বোচ্চ স্ট্রিক"
-              value={Math.max(0, ...answers.map((_, i) => {
-                let s = 0, mx = 0;
-                answers.forEach((a, j) => { if (j <= i) { s = a.isCorrect ? s + 1 : 0; mx = Math.max(mx, s); } });
-                return mx;
-              }))}
+              value={Math.max(
+                0,
+                ...answers.map((_, i) => {
+                  let s = 0,
+                    mx = 0;
+                  answers.forEach((a, j) => {
+                    if (j <= i) {
+                      s = a.isCorrect ? s + 1 : 0;
+                      mx = Math.max(mx, s);
+                    }
+                  });
+                  return mx;
+                }),
+              )}
               accent={C.accentDark}
             />
           </div>
@@ -674,12 +810,14 @@ export default function SymptomSpotter() {
                       </span>
                     )}
                   </span>
-                  <span style={{
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: a.gained >= 0 ? C.success : C.danger,
-                    flexShrink: 0,
-                  }}>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: a.gained >= 0 ? C.success : C.danger,
+                      flexShrink: 0,
+                    }}
+                  >
                     {a.gained >= 0 ? `+${a.gained}` : a.gained}
                   </span>
                 </div>
@@ -712,13 +850,15 @@ function Rule({ icon, text }) {
 
 function StatBox({ C, icon, label, value, accent }) {
   return (
-    <div style={{
-      flex: 1,
-      textAlign: "center",
-      padding: "14px 8px",
-      borderRadius: 14,
-      background: C.bgMuted,
-    }}>
+    <div
+      style={{
+        flex: 1,
+        textAlign: "center",
+        padding: "14px 8px",
+        borderRadius: 14,
+        background: C.bgMuted,
+      }}
+    >
       <div style={{ fontSize: 20, marginBottom: 4 }}>{icon}</div>
       <div style={{ fontSize: 22, fontWeight: 800, color: accent, lineHeight: 1.1 }}>{value}</div>
       <div style={{ fontSize: 12, color: "#6f7a6e", fontWeight: 600, marginTop: 3 }}>{label}</div>

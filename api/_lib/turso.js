@@ -122,7 +122,9 @@ export async function ensureSchema() {
     // Migration: add vit_prediction to existing deployments (no-op if already present)
     try {
       await db.execute(`ALTER TABLE diagnoses ADD COLUMN vit_prediction TEXT`);
-    } catch { /* column already exists */ }
+    } catch {
+      /* column already exists */
+    }
     await db.execute(`
       CREATE INDEX IF NOT EXISTS idx_diagnoses_crop ON diagnoses(crop)
     `);
@@ -194,8 +196,8 @@ export async function readStore() {
           ...DEFAULT_DATA,
           totalVisits: Number(row.total_visits) || 0,
           uniqueVisitors: Number(row.unique_visitors) || 0,
-          visitors: typeof row.visitors === "string" ? JSON.parse(row.visitors) : (row.visitors || {}),
-          sections: typeof row.sections === "string" ? JSON.parse(row.sections) : (row.sections || {}),
+          visitors: typeof row.visitors === "string" ? JSON.parse(row.visitors) : row.visitors || {},
+          sections: typeof row.sections === "string" ? JSON.parse(row.sections) : row.sections || {},
           updatedAt: row.updated_at || null,
         };
       }
@@ -303,14 +305,31 @@ export async function upsertPresence(visitorId, section, userAgent, ipHash, coun
                 section = ?, user_agent = ?, ip_hash = ?, country = ?,
                 is_pwa = ?, last_heartbeat = ?
               WHERE id = ?`,
-        args: [section || "home", (userAgent || "").slice(0, 500), ipHash, (country || "").slice(0, 100), isPwa ? 1 : 0, now, existing.rows[0].id],
+        args: [
+          section || "home",
+          (userAgent || "").slice(0, 500),
+          ipHash,
+          (country || "").slice(0, 100),
+          isPwa ? 1 : 0,
+          now,
+          existing.rows[0].id,
+        ],
       });
     } else {
       // Insert new
       await db.execute({
         sql: `INSERT INTO presence_log (visitor_id, section, user_agent, ip_hash, country, is_pwa, last_heartbeat, created_at)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        args: [visitorId, section || "home", (userAgent || "").slice(0, 500), ipHash, (country || "").slice(0, 100), isPwa ? 1 : 0, now, now],
+        args: [
+          visitorId,
+          section || "home",
+          (userAgent || "").slice(0, 500),
+          ipHash,
+          (country || "").slice(0, 100),
+          isPwa ? 1 : 0,
+          now,
+          now,
+        ],
       });
     }
   } catch (err) {
@@ -600,9 +619,16 @@ export async function getOutbreaks(filters = {}) {
   }
 }
 
-// ─── Disease statistics ─────────────────────────────────────────
+const _diseaseStatsCache = new Map();
+const CACHE_TTL_MS = 60000; // 60s cache
 
 export async function getDiseaseStats(days = 30) {
+  const cacheKey = `stats_${days}`;
+  const cached = _diseaseStatsCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return cached.data;
+  }
+
   const db = getTursoClient();
   if (!db) return { topCrops: [], topDiseases: [], byDistrict: [], byBioticAbiotic: {}, trend: [] };
 
@@ -640,7 +666,7 @@ export async function getDiseaseStats(days = 30) {
       args: [since],
     });
 
-    return {
+    const result = {
       topCrops: cropsResult.rows.map((r) => ({ crop: r.crop, count: Number(r.count) })),
       topDiseases: diseasesResult.rows.map((r) => ({ diseaseName: r.disease_name, count: Number(r.count) })),
       byDistrict: districtResult.rows.map((r) => ({ district: r.district, count: Number(r.count) })),
@@ -648,6 +674,8 @@ export async function getDiseaseStats(days = 30) {
       trend: trendResult.rows.map((r) => ({ date: r.day, count: Number(r.count) })),
       days,
     };
+    _diseaseStatsCache.set(cacheKey, { timestamp: Date.now(), data: result });
+    return result;
   } catch (err) {
     console.error("Turso getDiseaseStats error:", err.message);
     return { topCrops: [], topDiseases: [], byDistrict: [], byBioticAbiotic: {}, trend: [], days };

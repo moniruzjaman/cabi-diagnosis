@@ -18,16 +18,40 @@ class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#f4f6f8",padding:24,textAlign:"center",fontFamily:"'Inter','Noto Sans Bengali',sans-serif"}}>
-          <div style={{fontSize:64,marginBottom:16}}>🌿</div>
-          <h1 style={{fontSize:22,color:"#006028",marginBottom:8}}>কিছু একটা সমস্যা হয়েছে</h1>
-          <p style={{fontSize:14,color:"#5f6672",maxWidth:360,lineHeight:1.6,marginBottom:20}}>
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#f4f6f8",
+            padding: 24,
+            textAlign: "center",
+            fontFamily: "'Inter','Noto Sans Bengali',sans-serif",
+          }}
+        >
+          <div style={{ fontSize: 64, marginBottom: 16 }}>🌿</div>
+          <h1 style={{ fontSize: 22, color: "#006028", marginBottom: 8 }}>কিছু একটা সমস্যা হয়েছে</h1>
+          <p style={{ fontSize: 14, color: "#5f6672", maxWidth: 360, lineHeight: 1.6, marginBottom: 20 }}>
             অ্যাপে একটি অপ্রত্যাশিত সমস্যা দেখা দিয়েছে। দয়া করে পাতাটি রিফ্রেশ করুন।
-            <br/><span style={{fontSize:12,color:"#8e95a2"}}>An unexpected error occurred. Please refresh the page.</span>
+            <br />
+            <span style={{ fontSize: 12, color: "#8e95a2" }}>
+              An unexpected error occurred. Please refresh the page.
+            </span>
           </p>
           <button
             onClick={() => window.location.reload()}
-            style={{padding:"12px 28px",background:"#006028",color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:600,cursor:"pointer"}}
+            style={{
+              padding: "12px 28px",
+              background: "#006028",
+              color: "#fff",
+              border: "none",
+              borderRadius: 12,
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
           >
             🔄 রিফ্রেশ করুন / Refresh
           </button>
@@ -43,5 +67,5 @@ createRoot(document.getElementById("root")).render(
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
-  </StrictMode>
+  </StrictMode>,
 );

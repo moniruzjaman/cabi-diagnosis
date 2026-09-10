@@ -36,33 +36,20 @@ function getSigningSecret() {
   const tursoToken = process.env.TURSO_AUTH_TOKEN || "";
 
   if (tursoUrl && tursoToken) {
-    _cachedSecret = crypto
-      .createHmac("sha256", "cabi-signing-v1")
-      .update(`${tursoUrl}|${tursoToken}`)
-      .digest("hex");
+    _cachedSecret = crypto.createHmac("sha256", "cabi-signing-v1").update(`${tursoUrl}|${tursoToken}`).digest("hex");
     return _cachedSecret;
   }
 
   // Fallback: derive from AI API keys
-  const keys = [
-    process.env.GEMINI_API_KEY,
-    process.env.GROQ_API_KEY,
-    process.env.OPENROUTER_API_KEY,
-  ].filter(Boolean);
+  const keys = [process.env.GEMINI_API_KEY, process.env.GROQ_API_KEY, process.env.OPENROUTER_API_KEY].filter(Boolean);
 
   if (keys.length > 0) {
-    _cachedSecret = crypto
-      .createHmac("sha256", "cabi-signing-v1-fallback")
-      .update(keys.join("|"))
-      .digest("hex");
+    _cachedSecret = crypto.createHmac("sha256", "cabi-signing-v1-fallback").update(keys.join("|")).digest("hex");
     return _cachedSecret;
   }
 
   // Dev-only: fixed salt
-  _cachedSecret = crypto
-    .createHash("sha256")
-    .update("cabi-diagnosis-v4-dev-signing-key")
-    .digest("hex");
+  _cachedSecret = crypto.createHash("sha256").update("cabi-diagnosis-v4-dev-signing-key").digest("hex");
   return _cachedSecret;
 }
 
@@ -78,10 +65,7 @@ const TOKEN_VALIDITY_MS = 2 * 60 * 60 * 1000; // 2 hours
 export function generateRequestToken() {
   const secret = getSigningSecret();
   const timestamp = Date.now();
-  const signature = crypto
-    .createHmac("sha256", secret)
-    .update(`${timestamp}`)
-    .digest("hex");
+  const signature = crypto.createHmac("sha256", secret).update(`${timestamp}`).digest("hex");
 
   return `${timestamp}.${signature}`;
 }
@@ -107,10 +91,7 @@ export function verifyRequestToken(token) {
 
   // Verify HMAC
   const secret = getSigningSecret();
-  const expected = crypto
-    .createHmac("sha256", secret)
-    .update(`${timestamp}`)
-    .digest("hex");
+  const expected = crypto.createHmac("sha256", secret).update(`${timestamp}`).digest("hex");
 
   // Constant-time comparison to prevent timing attacks
   try {

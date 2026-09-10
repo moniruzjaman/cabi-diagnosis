@@ -10,69 +10,69 @@
 //   WILT, LEAF SPOT, WITCHES' BROOM, CANKER, MOSAIC, YELLOWING OF LEAVES,
 //   DISTORTION OF LEAVES, LITTLE LEAF, GALLS, DRYING/NECROSIS/BLIGHT
 
-import { loadOfflineBundles } from './offlineLoader.js';
+import { loadOfflineBundles } from "./offlineLoader.js";
 
 // ─── Bengali → English symptom keyword map (for matching) ───────────────────
 // Mirrors the categories used by CABI but in Bengali, since user symptom chips
 // are in Bengali. Each entry maps to one or more CABI categories.
 export const BENGALI_SYMPTOM_CATEGORY_MAP = {
   // Wilt
-  'গাছ নেতিয়ে': ['Wilt', 'Drying/necrosis/blight'],
-  'গাছ মরছে': ['Wilt', 'Drying/necrosis/blight'],
-  'গাছ শুকিয়ে': ['Wilt', 'Drying/necrosis/blight'],
-  'শিকড় পচা': ['Wilt'],
-  'পাতা ঝরে': ['Wilt', 'Yellowing of leaves'],
+  "গাছ নেতিয়ে": ["Wilt", "Drying/necrosis/blight"],
+  "গাছ মরছে": ["Wilt", "Drying/necrosis/blight"],
+  "গাছ শুকিয়ে": ["Wilt", "Drying/necrosis/blight"],
+  "শিকড় পচা": ["Wilt"],
+  "পাতা ঝরে": ["Wilt", "Yellowing of leaves"],
   // Leaf spot
-  'পাতায় বাদামি গোলাকার দাগ': ['Leaf spot'],
-  'পাতায় ধূসর মাকু আকৃতির দাগ': ['Leaf spot'],
-  'পাতায় তেলতেলে': ['Leaf spot'],
-  'পাতায় দাগ': ['Leaf spot'],
-  'ফলে দাগ': ['Leaf spot'],
-  'আলুর গায়ে খসখসে দাগ': ['Leaf spot'],
+  "পাতায় বাদামি গোলাকার দাগ": ["Leaf spot"],
+  "পাতায় ধূসর মাকু আকৃতির দাগ": ["Leaf spot"],
+  "পাতায় তেলতেলে": ["Leaf spot"],
+  "পাতায় দাগ": ["Leaf spot"],
+  "ফলে দাগ": ["Leaf spot"],
+  "আলুর গায়ে খসখসে দাগ": ["Leaf spot"],
   // Mosaic
-  'পাতায় মোজেইক': ['Mosaic'],
-  'মোজেইক': ['Mosaic'],
+  "পাতায় মোজেইক": ["Mosaic"],
+  মোজেইক: ["Mosaic"],
   // Yellowing
-  'পাতা হলুদ হয়ে যাচ্ছে': ['Yellowing of leaves'],
-  'পাতা হলুদ': ['Yellowing of leaves'],
-  'হলুদ হয়ে যাচ্ছে': ['Yellowing of leaves'],
+  "পাতা হলুদ হয়ে যাচ্ছে": ["Yellowing of leaves"],
+  "পাতা হলুদ": ["Yellowing of leaves"],
+  "হলুদ হয়ে যাচ্ছে": ["Yellowing of leaves"],
   // Distortion
-  'পাতা কুঁকড়িয়ে ও বাঁকিয়ে যাচ্ছে': ['Distortion of leaves'],
-  'পাতা কুঁকড়িয়ে': ['Distortion of leaves'],
-  'পাতা বাঁকিয়ে': ['Distortion of leaves'],
-  'পাতা কুঁচকে': ['Distortion of leaves'],
+  "পাতা কুঁকড়িয়ে ও বাঁকিয়ে যাচ্ছে": ["Distortion of leaves"],
+  "পাতা কুঁকড়িয়ে": ["Distortion of leaves"],
+  "পাতা বাঁকিয়ে": ["Distortion of leaves"],
+  "পাতা কুঁচকে": ["Distortion of leaves"],
   // Little leaf / Witches' broom
-  'গাছ বামন': ['Little leaf', 'Witches\' broom'],
-  'পাতা ছোট হয়ে': ['Little leaf'],
+  "গাছ বামন": ["Little leaf", "Witches' broom"],
+  "পাতা ছোট হয়ে": ["Little leaf"],
   // Galls
-  'শিকড় ফুলে': ['Galls'],
-  'গাঁট ফুলে': ['Galls'],
+  "শিকড় ফুলে": ["Galls"],
+  "গাঁট ফুলে": ["Galls"],
   // Canker
-  'কান্ডে কালো দাগ': ['Canker', 'Drying/necrosis/blight'],
-  'কান্ডের গোড়া পচে কালো বা বাদামি': ['Canker', 'Drying/necrosis/blight'],
-  'কাণ্ড পচে': ['Canker', 'Drying/necrosis/blight'],
+  "কান্ডে কালো দাগ": ["Canker", "Drying/necrosis/blight"],
+  "কান্ডের গোড়া পচে কালো বা বাদামি": ["Canker", "Drying/necrosis/blight"],
+  "কাণ্ড পচে": ["Canker", "Drying/necrosis/blight"],
   // Drying / necrosis / blight
-  'পাতা শুকিয়ে': ['Drying/necrosis/blight'],
-  'পাতা পোড়া': ['Drying/necrosis/blight'],
-  'আগায় শুকিয়ে যাওয়া': ['Drying/necrosis/blight'],
-  'শীষ শুকিয়ে যাওয়া': ['Drying/necrosis/blight'],
-  'শীষ চিটা': ['Drying/necrosis/blight'],
-  'ফল পচে': ['Drying/necrosis/blight'],
+  "পাতা শুকিয়ে": ["Drying/necrosis/blight"],
+  "পাতা পোড়া": ["Drying/necrosis/blight"],
+  "আগায় শুকিয়ে যাওয়া": ["Drying/necrosis/blight"],
+  "শীষ শুকিয়ে যাওয়া": ["Drying/necrosis/blight"],
+  "শীষ চিটা": ["Drying/necrosis/blight"],
+  "ফল পচে": ["Drying/necrosis/blight"],
 };
 
 // ─── Cause → CABI category mapping ──────────────────────────────────────────
 // Used when the diagnostic engine has determined a likely cause (fungal/bacterial/viral)
 // to filter reference images by both symptom AND causal agent.
 export const CAUSE_TO_CATEGORY_HINT = {
-  fungal:    ['Leaf spot', 'Drying/necrosis/blight', 'Wilt', 'Canker'],
-  bacterial: ['Wilt', 'Drying/necrosis/blight', 'Leaf spot'],
-  viral:     ['Mosaic', 'Distortion of leaves', 'Yellowing of leaves'],
-  insect:    ['Distortion of leaves', 'Drying/necrosis/blight', 'Galls'],
-  oomycete:  ['Drying/necrosis/blight', 'Wilt', 'Leaf spot'],
-  nematode:  ['Galls', 'Wilt', 'Yellowing of leaves'],
-  phytoplasma: ['Little leaf', 'Witches\' broom', 'Yellowing of leaves'],
-  nutrient:  ['Yellowing of leaves', 'Drying/necrosis/blight'],
-  abiotic:   ['Yellowing of leaves', 'Drying/necrosis/blight', 'Wilt'],
+  fungal: ["Leaf spot", "Drying/necrosis/blight", "Wilt", "Canker"],
+  bacterial: ["Wilt", "Drying/necrosis/blight", "Leaf spot"],
+  viral: ["Mosaic", "Distortion of leaves", "Yellowing of leaves"],
+  insect: ["Distortion of leaves", "Drying/necrosis/blight", "Galls"],
+  oomycete: ["Drying/necrosis/blight", "Wilt", "Leaf spot"],
+  nematode: ["Galls", "Wilt", "Yellowing of leaves"],
+  phytoplasma: ["Little leaf", "Witches' broom", "Yellowing of leaves"],
+  nutrient: ["Yellowing of leaves", "Drying/necrosis/blight"],
+  abiotic: ["Yellowing of leaves", "Drying/necrosis/blight", "Wilt"],
 };
 
 // ─── In-memory cache of loaded database ─────────────────────────────────────
@@ -90,13 +90,13 @@ let _imageIndexCache = null;
 export async function loadCabiDatabase(forceRefresh = false) {
   if (_dbCache && !forceRefresh) return _dbCache;
   try {
-    const res = await fetch('/database.json', { cache: 'force-cache' });
+    const res = await fetch("/database.json", { cache: "force-cache" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     _dbCache = await res.json();
     return _dbCache;
   } catch (e) {
-    console.warn('[imageLibrary] Could not load /database.json:', e.message);
-    _dbCache = { metadata: { source: 'CABI Plantwise Diagnostic Field Guide' }, diagnostic_keys: [] };
+    console.warn("[imageLibrary] Could not load /database.json:", e.message);
+    _dbCache = { metadata: { source: "CABI Plantwise Diagnostic Field Guide" }, diagnostic_keys: [] };
     return _dbCache;
   }
 }
@@ -119,7 +119,7 @@ export async function buildImageIndex(forceRefresh = false) {
   const entries = [];
   for (const page of db.diagnostic_keys || []) {
     const category = page.symptom_category || null;
-    const textPreview = (page.text_preview || '').replace(/\s+/g, ' ').trim();
+    const textPreview = (page.text_preview || "").replace(/\s+/g, " ").trim();
     const keywords = textPreview.toLowerCase();
     for (const img of page.images || []) {
       entries.push({
@@ -147,7 +147,7 @@ export async function buildImageIndex(forceRefresh = false) {
       return merged;
     }
   } catch (err) {
-    console.warn('[imageLibrary] failed to merge offline bundles', err.message);
+    console.warn("[imageLibrary] failed to merge offline bundles", err.message);
   }
 
   _imageIndexCache = entries;
@@ -164,28 +164,28 @@ export function getCachedImageIndex() {
 
 // ─── Category normalization helpers ─────────────────────────────────────────
 const CATEGORY_ALIASES = {
-  'drying/necrosis/blight': 'Drying/necrosis/blight',
-  'drying': 'Drying/necrosis/blight',
-  'necrosis': 'Drying/necrosis/blight',
-  'blight': 'Drying/necrosis/blight',
-  'leaf spot': 'Leaf spot',
-  'leafspot': 'Leaf spot',
-  'spot': 'Leaf spot',
-  'wilt': 'Wilt',
-  'wilting': 'Wilt',
-  'mosaic': 'Mosaic',
-  'yellowing of leaves': 'Yellowing of leaves',
-  'yellowing': 'Yellowing of leaves',
-  'distortion of leaves': 'Distortion of leaves',
-  'distortion': 'Distortion of leaves',
-  'little leaf': 'Little leaf',
-  'littleleaf': 'Little leaf',
-  'witches\' broom': 'Witches\' broom',
-  'witches broom': 'Witches\' broom',
-  'canker': 'Canker',
-  'galls': 'Galls',
-  'gall': 'Galls',
-  'swelling': 'Galls',
+  "drying/necrosis/blight": "Drying/necrosis/blight",
+  drying: "Drying/necrosis/blight",
+  necrosis: "Drying/necrosis/blight",
+  blight: "Drying/necrosis/blight",
+  "leaf spot": "Leaf spot",
+  leafspot: "Leaf spot",
+  spot: "Leaf spot",
+  wilt: "Wilt",
+  wilting: "Wilt",
+  mosaic: "Mosaic",
+  "yellowing of leaves": "Yellowing of leaves",
+  yellowing: "Yellowing of leaves",
+  "distortion of leaves": "Distortion of leaves",
+  distortion: "Distortion of leaves",
+  "little leaf": "Little leaf",
+  littleleaf: "Little leaf",
+  "witches' broom": "Witches' broom",
+  "witches broom": "Witches' broom",
+  canker: "Canker",
+  galls: "Galls",
+  gall: "Galls",
+  swelling: "Galls",
 };
 
 function normalizeCategory(cat) {
@@ -206,10 +206,8 @@ function normalizeCategory(cat) {
  */
 export async function findImagesByCategory(categories, opts = {}) {
   const { limit = 12, preferDiversePages = true, index = null } = opts;
-  const idx = index || await buildImageIndex();
-  const normalizedCats = (categories || [])
-    .map(normalizeCategory)
-    .filter(Boolean);
+  const idx = index || (await buildImageIndex());
+  const normalizedCats = (categories || []).map(normalizeCategory).filter(Boolean);
   if (normalizedCats.length === 0) return [];
 
   const seen = new Set();
@@ -238,10 +236,8 @@ export async function findImagesByCategory(categories, opts = {}) {
  */
 export async function findImagesByKeywords(keywords, opts = {}) {
   const { limit = 12, index = null } = opts;
-  const idx = index || await buildImageIndex();
-  const lowerKeywords = (keywords || [])
-    .filter(Boolean)
-    .map(k => k.toLowerCase());
+  const idx = index || (await buildImageIndex());
+  const lowerKeywords = (keywords || []).filter(Boolean).map((k) => k.toLowerCase());
   if (lowerKeywords.length === 0) return [];
 
   const scored = [];
@@ -253,7 +249,7 @@ export async function findImagesByKeywords(keywords, opts = {}) {
     if (score > 0) scored.push({ entry, score });
   }
   scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, limit).map(s => s.entry);
+  return scored.slice(0, limit).map((s) => s.entry);
 }
 
 /**
@@ -270,18 +266,16 @@ export async function findImagesByKeywords(keywords, opts = {}) {
  */
 export async function findReferenceImagesForSymptoms(symptomText, opts = {}) {
   const { cause = null, limit = 8 } = opts;
-  const symptoms = Array.isArray(symptomText)
-    ? symptomText
-    : [symptomText];
+  const symptoms = Array.isArray(symptomText) ? symptomText : [symptomText];
   if (symptoms.length === 0) return [];
 
   // Step 1: Find matching CABI categories from Bengali keyword map
   const matchedCategories = new Set();
   for (const s of symptoms) {
-    const lower = String(s || '').toLowerCase();
+    const lower = String(s || "").toLowerCase();
     for (const [bnKey, cats] of Object.entries(BENGALI_SYMPTOM_CATEGORY_MAP)) {
       if (lower.includes(bnKey) || s === bnKey) {
-        cats.forEach(c => matchedCategories.add(c));
+        cats.forEach((c) => matchedCategories.add(c));
       }
     }
   }
@@ -309,7 +303,7 @@ export async function findReferenceImagesForSymptoms(symptomText, opts = {}) {
 
   // Step 5: Score by category match strength
   const catArr = [...matchedCategories];
-  const scored = matches.map(entry => {
+  const scored = matches.map((entry) => {
     let score = 1;
     if (entry.category && catArr.includes(entry.category)) score += 5;
     if (cause && CAUSE_TO_CATEGORY_HINT[cause]?.includes(entry.category)) score += 2;
@@ -317,7 +311,7 @@ export async function findReferenceImagesForSymptoms(symptomText, opts = {}) {
   });
   scored.sort((a, b) => b.score - a.score);
 
-  return scored.slice(0, limit).map(s => s.entry);
+  return scored.slice(0, limit).map((s) => s.entry);
 }
 
 /**

@@ -39,8 +39,8 @@ export default function useTTS() {
 
     const {
       lang = "bn-BD",
-      rate = 0.82,           // slower for warmth & clarity — like a caring teacher
-      pitch = 1.2,           // higher, warmer tone — friendly & approachable
+      rate = 0.82, // slower for warmth & clarity — like a caring teacher
+      pitch = 1.2, // higher, warmer tone — friendly & approachable
       volume = 1,
       prependFriendly = false,
     } = opts;
@@ -71,7 +71,9 @@ export default function useTTS() {
     const voices = window.speechSynthesis.getVoices();
     if (voices.length > 0) {
       // Priority: Bengali female → Bengali any → Hindi female → Hindi any → default
-      const bnFemale = voices.find((v) => v.lang.startsWith("bn") && /female|woman|zira|tanvi|swara|lekha/i.test(v.name));
+      const bnFemale = voices.find(
+        (v) => v.lang.startsWith("bn") && /female|woman|zira|tanvi|swara|lekha/i.test(v.name),
+      );
       const bnAny = voices.find((v) => v.lang.startsWith("bn"));
       const hiFemale = voices.find((v) => v.lang.startsWith("hi") && /female|woman|zira|swara/i.test(v.name));
       const hiAny = voices.find((v) => v.lang.startsWith("hi"));
@@ -94,8 +96,7 @@ export default function useTTS() {
     }
   }, []);
 
-  const isSupported =
-    typeof window !== "undefined" && !!window.speechSynthesis;
+  const isSupported = typeof window !== "undefined" && !!window.speechSynthesis;
 
   return { speak, stop, speaking, isSupported, voicesReady };
 }

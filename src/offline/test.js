@@ -1,5 +1,5 @@
 // Test script for offline diagnosis engine
-import { diagnoseOffline } from './diagnosticEngine.js';
+import { diagnoseOffline } from "./diagnosticEngine.js";
 
 // Test case 1: Nitrogen deficiency symptoms (English - original test)
 const testData1 = {
@@ -7,21 +7,21 @@ const testData1 = {
     leafSymptoms: "older leaves yellowing uniformly, symmetrical pattern",
     distribution: "uniform across field",
     progression: "no progression",
-    signs: "no insect signs, no fungal growth"
+    signs: "no insect signs, no fungal growth",
   },
   hostInfo: {
     varietySusceptibility: "medium",
-    growthStage: "vegetative"
+    growthStage: "vegetative",
   },
   pathogenInfo: {
     inoculumPressure: "low",
-    recentHistory: "none"
+    recentHistory: "none",
   },
   envInfo: {
     temp: 28,
     humidity: 70,
-    rainfall: 10
-  }
+    rainfall: 10,
+  },
 };
 
 // Test case 2: Fungal disease symptoms (English - original test)
@@ -30,21 +30,21 @@ const testData2 = {
     leafSymptoms: "spindle-shaped lesions with gray center and brown border",
     distribution: "irregular, focal points",
     progression: "spreading from field edge",
-    signs: "gray powdery growth on lesions"
+    signs: "gray powdery growth on lesions",
   },
   hostInfo: {
     varietySusceptibility: "high",
-    growthStage: "tillering"
+    growthStage: "tillering",
   },
   pathogenInfo: {
     inoculumPressure: "medium",
-    recentHistory: "present in area"
+    recentHistory: "present in area",
   },
   envInfo: {
     temp: 26,
     humidity: 85,
-    rainfall: 5
-  }
+    rainfall: 5,
+  },
 };
 
 // Test case 3: Bengali symptoms - Rice blast (NEW)
@@ -53,22 +53,22 @@ const testData3 = {
     leafSymptoms: "পাতায় ধূসর মাকু আকৃতির দাগ (ব্লাস্ট)",
     distribution: "বিক্ষিপ্তভাবে ছড়িয়ে",
     progression: "3-5 দিন ধরে",
-    signs: "পাতায় বাদামি গোলাকার দাগ"
+    signs: "পাতায় বাদামি গোলাকার দাগ",
   },
   crop: "ধান",
   hostInfo: {
     varietySusceptibility: "medium",
-    growthStage: "vegetative"
+    growthStage: "vegetative",
   },
   pathogenInfo: {
     inoculumPressure: "low",
-    recentHistory: "none"
+    recentHistory: "none",
   },
   envInfo: {
     temp: 28,
     humidity: 85,
-    rainfall: 5
-  }
+    rainfall: 5,
+  },
 };
 
 // Test case 4: Bengali symptoms - Tomato bacterial wilt (NEW)
@@ -77,22 +77,22 @@ const testData4 = {
     leafSymptoms: "পাতা হলুদ হয়ে যাচ্ছে",
     distribution: "প্রায় 25%",
     progression: "1-2 দিন আগে",
-    signs: "গাছ দিনে নেতিয়ে পড়ে, রাতে সতেজ হয়"
+    signs: "গাছ দিনে নেতিয়ে পড়ে, রাতে সতেজ হয়",
   },
   crop: "টমেটো",
   hostInfo: {
     varietySusceptibility: "medium",
-    growthStage: "vegetative"
+    growthStage: "vegetative",
   },
   pathogenInfo: {
     inoculumPressure: "low",
-    recentHistory: "none"
+    recentHistory: "none",
   },
   envInfo: {
     temp: 32,
     humidity: 80,
-    rainfall: 20
-  }
+    rainfall: 20,
+  },
 };
 
 // Test case 5: Bengali symptoms with crop in English (NEW)
@@ -101,22 +101,22 @@ const testData5 = {
     leafSymptoms: "পাতায় সাদা গুঁড়া",
     distribution: "প্রায় 10%",
     progression: "1 সপ্তাহ",
-    signs: "পাতায় তেলতেলে"
+    signs: "পাতায় তেলতেলে",
   },
   crop: "Potato",
   hostInfo: {
     varietySusceptibility: "medium",
-    growthStage: "vegetative"
+    growthStage: "vegetative",
   },
   pathogenInfo: {
     inoculumPressure: "low",
-    recentHistory: "none"
+    recentHistory: "none",
   },
   envInfo: {
     temp: 18,
     humidity: 90,
-    rainfall: 30
-  }
+    rainfall: 30,
+  },
 };
 
 // Run tests — results available via return values
