@@ -19,11 +19,11 @@ export const PWAInstallButton: React.FC = () => {
       <button
         id="pwa-install-btn"
         onClick={install}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-xs cursor-pointer select-none"
+        className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-xs cursor-pointer select-none"
         title={language === 'bn' ? 'ফোনে বা কম্পিউটারে অ্যাপটি ইনস্টল করুন' : 'Install app on phone or desktop'}
       >
         <Download className="w-3.5 h-3.5" />
-        <span>{language === 'bn' ? 'ইনস্টল' : 'Install'}</span>
+        <span className="hidden sm:inline">{language === 'bn' ? 'ইনস্টল' : 'Install'}</span>
       </button>
     );
   }
@@ -35,11 +35,11 @@ export const PWAInstallButton: React.FC = () => {
         <button
           id="pwa-install-ios-btn"
           onClick={() => setShowIOSGuide(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-600/40 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs transition shadow-xs cursor-pointer select-none"
+          className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl border border-emerald-600/40 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs transition shadow-xs cursor-pointer select-none"
           title={language === 'bn' ? 'আইফোনে ইনস্টল করুন' : 'Install on iPhone/iPad'}
         >
           <Download className="w-3.5 h-3.5 text-emerald-700" />
-          <span>{language === 'bn' ? 'অ্যাপ ইনস্টল' : 'Install'}</span>
+          <span className="hidden sm:inline">{language === 'bn' ? 'অ্যাপ ইনস্টল' : 'Install'}</span>
         </button>
 
         {showIOSGuide && (

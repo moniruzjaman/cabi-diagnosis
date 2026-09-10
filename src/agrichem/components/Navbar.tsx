@@ -61,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Main Header Row */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
+        <div className="flex items-center justify-between h-16 gap-2 sm:gap-4">
           {/* Logo / Brand */}
           <div 
             id="brand-logo"
@@ -73,12 +73,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-lg text-slate-900 tracking-tight leading-none">{t('app_title')}</span>
-                <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                <span className="font-bold text-base sm:text-lg text-slate-900 tracking-tight leading-none">{t('app_title')}</span>
+                <span className="hidden sm:inline-block text-xs font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
                   {language === 'bn' ? 'প্রো' : 'Pro'}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium">{t('app_subtitle')}</p>
+              <p className="hidden sm:block text-[11px] text-slate-500 font-medium">{t('app_subtitle')}</p>
             </div>
           </div>
 
@@ -106,12 +106,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Action Items */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Share Platform Button */}
             <button
               id="header-share-btn"
               onClick={onOpenShare}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-emerald-800 font-semibold text-xs transition shadow-2xs cursor-pointer select-none"
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-emerald-800 font-semibold text-xs transition shadow-2xs cursor-pointer select-none"
               title={language === 'bn' ? 'সোশ্যাল মিডিয়ায় বা সহকর্মীদের সাথে শেয়ার করুন' : 'Share AgriChem Pro'}
             >
               <Share2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -125,12 +125,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="language-toggle-btn"
               onClick={toggleLanguage}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-600/30 bg-emerald-50 hover:bg-emerald-100/90 text-emerald-900 font-bold text-xs transition shadow-2xs cursor-pointer select-none"
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl border border-emerald-600/30 bg-emerald-50 hover:bg-emerald-100/90 text-emerald-900 font-bold text-xs transition shadow-2xs cursor-pointer select-none"
               title={language === 'en' ? 'বাংলা ভাষায় পরিবর্তন করুন (Switch to Bangla)' : 'Switch interface to English'}
               aria-label="Toggle language between Bangla and English"
             >
               <Languages className="w-4 h-4 text-emerald-700 shrink-0" />
-              <span className="font-bold tracking-tight">{language === 'en' ? 'বাংলা' : 'English'}</span>
+              <span className="hidden sm:inline font-bold tracking-tight">{language === 'en' ? 'বাংলা' : 'English'}</span>
               <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-200/80 text-emerald-800 uppercase font-semibold">
                 {language === 'en' ? 'BN' : 'EN'}
               </span>

@@ -259,7 +259,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <div>
                 <label className="text-[11px] text-slate-600 block mb-1">
                   {language === 'bn' ? 'জমির পরিমাণ' : 'Field Area'}
