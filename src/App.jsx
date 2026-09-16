@@ -28,7 +28,6 @@ const CauseDetective = React.lazy(() => import("./games/CauseDetective"));
 const DiseaseTriangle = React.lazy(() => import("./games/DiseaseTriangle"));
 const FieldScout = React.lazy(() => import("./games/FieldScout"));
 const IPMCommander = React.lazy(() => import("./games/IPMCommander"));
-const AgriChemApp = React.lazy(() => import("./agrichem/AgriChemApp"));
 import useTTS from "./games/useTTS";
 import { initPerformanceMonitoring } from "./utils/performanceTelemetry";
 
@@ -7888,7 +7887,6 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
     { id: "learn", label: "শিখুন", icon: "📖" },
     { id: "diagnose", label: "নির্ণয়", icon: "🔬" },
     { id: "library", label: "ভান্ডার", icon: "📚" },
-    { id: "agrichem", label: "এগ্রিকেম", icon: "🧪" },
   ];
   const feedbackContext =
     activeTab === "diagnose"
@@ -7905,9 +7903,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               ? "CABI Guide"
               : activeTab === "learn"
                 ? "Learn"
-                : activeTab === "agrichem"
-                  ? "AgriChem Chemical Database"
-                  : "Home";
+                : "Home";
   const feedbackSummary =
     activeTab === "diagnose" && result
       ? `${form.crop || "Unknown crop"} | ${form.district || locationName || "Unknown district"} | ${(result.bn || result.en || "").slice(0, 160)}`
@@ -7925,9 +7921,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   ? `Saved reports: ${history.length}`
                   : activeTab === "learn"
                     ? "Learn section: Guide + Games"
-                    : activeTab === "agrichem"
-                      ? "AgriChem Pro chemical database tab"
-                      : "General app feedback";
+                    : "General app feedback";
 
   return (
     <div style={{ minHeight: "100svh", background: C.bg, width: "100%", display: "flex", flexDirection: "column" }}>
@@ -10618,18 +10612,6 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                 </div>
               )}
 
-              {/* ── AGRICHEM tab (AgriChem Pro — chemical database embedded app) ── */}
-              {activeTab === "agrichem" && (
-                <React.Suspense
-                  fallback={
-                    <div style={{ textAlign: "center", padding: 40, color: C.textMuted }}>
-                      এগ্রিকেম লোড হচ্ছে...
-                    </div>
-                  }
-                >
-                  <AgriChemApp />
-                </React.Suspense>
-              )}
             </div>
           </div>
 
@@ -10679,6 +10661,18 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   </button>
                 );
               })}
+              {/* External AgriChem Pro link — opens in new tab */}
+              <a
+                href="https://agrichem-pro.live"
+                target="_blank"
+                rel="noreferrer"
+                className="bottom-nav-item"
+                aria-label="এগ্রিকেম প্রো — নতুন ট্যাবে খুলুন"
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textDecoration: "none", color: "inherit" }}
+              >
+                <span className="nav-icon">🧪</span>
+                <span>এগ্রিকেম</span>
+              </a>
             </nav>
           )}
 
