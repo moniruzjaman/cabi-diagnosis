@@ -3,6 +3,7 @@
  *
  * Tokens are aligned with C_LIGHT in App.jsx for visual consistency.
  * Includes tinted backgrounds and borders for dark-mode compatibility.
+ * Bangladesh Flag Colors: Green #006A4E, Red #F42A41
  */
 
 export const lightTheme = {
@@ -12,12 +13,12 @@ export const lightTheme = {
   text: "#1a1d21",
   textMuted: "#5f6672",
   textLight: "#8e95a2",
-  primary: "#006028",
-  primaryDark: "#005322",
-  primaryLight: "#1a7a3a",
+  primary: "#006A4E",
+  primaryDark: "#00553d",
+  primaryLight: "#1a8a5e",
   border: "#e2e5ea",
   shadow: "0 2px 8px rgba(0,0,0,0.06)",
-  danger: "#dc2626",
+  danger: "#F42A41",
   warning: "#d97706",
   success: "#16a34a",
   blue: "#2563eb",
@@ -30,14 +31,14 @@ export const darkTheme = {
   text: "#e2e8f0",
   textMuted: "#94a3b8",
   textLight: "#94a3b8",
-  primary: "#22c55e",
-  primaryDark: "#16a34a",
-  primaryLight: "#4ade80",
+  primary: "#4ade80",
+  primaryDark: "#22c55e",
+  primaryLight: "#86efac",
   border: "#475569",
   shadow: "0 1px 3px rgba(0,0,0,0.3)",
-  danger: "#ef4444",
+  danger: "#f87171",
   warning: "#f59e0b",
-  success: "#22c55e",
+  success: "#4ade80",
   blue: "#3b82f6",
 };
 
@@ -110,10 +111,10 @@ export const lightThemeFull = {
   accentDark: "#d97706",
   bgHeader: "#ffffff",
   bgNav: "#f0f2f5",
-  borderFocus: "#1a7a3a",
+  borderFocus: "#1a8a5e",
   shadowMd: "0 4px 16px rgba(0,0,0,0.08)",
   shadowLg: "0 8px 32px rgba(0,0,0,0.12)",
-  heroGradient: "linear-gradient(135deg, #006028 0%, #0a8c3f 50%, #16a34a 100%)",
+  heroGradient: "linear-gradient(135deg, #006A4E 0%, #0a8c54 50%, #16a34a 100%)",
   game1: "#7c3aed",
   game2: "#0891b2",
   game3: "#ea580c",
@@ -128,7 +129,7 @@ export const darkThemeFull = {
   accentDark: "#d97706",
   bgHeader: "#1e293b",
   bgNav: "#1e293b",
-  borderFocus: "#22c55e",
+  borderFocus: "#4ade80",
   shadowMd: "0 4px 16px rgba(0,0,0,0.3)",
   shadowLg: "0 8px 32px rgba(0,0,0,0.4)",
   heroGradient: "linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%)",

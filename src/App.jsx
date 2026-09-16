@@ -35,9 +35,9 @@ import { initPerformanceMonitoring } from "./utils/performanceTelemetry";
 const GLOBAL_STYLE = `
   /* Fonts loaded via <link> in index.html for faster rendering */
   :root {
-    --c-primary: #006028;
-    --c-primary-light: #1a7a3a;
-    --c-primary-dark: #005322;
+    --c-primary: #006A4E;
+    --c-primary-light: #1a8a5e;
+    --c-primary-dark: #00553d;
     --c-primary-x-dark: #002109;
     --c-accent: #f59e0b;
     --c-accent-light: #fbbf24;
@@ -51,10 +51,10 @@ const GLOBAL_STYLE = `
     --c-text-muted: #5f6672;
     --c-text-light: #8e95a2;
     --c-border: #e2e5ea;
-    --c-border-focus: #1a7a3a;
+    --c-border-focus: #1a8a5e;
     --c-success: #16a34a;
     --c-warning: #d97706;
-    --c-danger: #dc2626;
+    --c-danger: #F42A41;
     --c-blue: #2563eb;
     --c-shadow: 0 2px 8px rgba(0,0,0,0.06);
     --c-shadow-md: 0 4px 16px rgba(0,0,0,0.08);
@@ -67,8 +67,8 @@ const GLOBAL_STYLE = `
     --c-radius-lg: 18px;
     --c-radius-xl: 24px;
     --c-transition: all 0.2s ease;
-    --c-glow-color: rgba(26,122,58,0.3);
-    --c-glow-color-strong: rgba(26,122,58,0.6);
+    --c-glow-color: rgba(26,138,94,0.3);
+    --c-glow-color-strong: rgba(26,138,94,0.6);
     --c-nav-height: 60px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -112,9 +112,9 @@ if (typeof document !== "undefined" && !document.getElementById("ud-gs")) {
 // NOTE: C is now dynamic — set inside the main component based on darkMode state.
 // Static references to C outside the component (like SECTION_META) use the light theme defaults.
 const C_LIGHT = {
-  primary: "#006028",
-  primaryLight: "#1a7a3a",
-  primaryDark: "#005322",
+  primary: "#006A4E",
+  primaryLight: "#1a8a5e",
+  primaryDark: "#00553d",
   primaryXDark: "#002109",
   accent: "#f59e0b",
   accentLight: "#fbbf24",
@@ -128,15 +128,15 @@ const C_LIGHT = {
   textMuted: "#5f6672",
   textLight: "#8e95a2",
   border: "#e2e5ea",
-  borderFocus: "#1a7a3a",
+  borderFocus: "#1a8a5e",
   success: "#16a34a",
   warning: "#d97706",
-  danger: "#dc2626",
+  danger: "#F42A41",
   blue: "#2563eb",
   shadow: "0 2px 8px rgba(0,0,0,0.06)",
   shadowMd: "0 4px 16px rgba(0,0,0,0.08)",
   shadowLg: "0 8px 32px rgba(0,0,0,0.12)",
-  heroGradient: "linear-gradient(135deg, #006028 0%, #0a8c3f 50%, #16a34a 100%)",
+  heroGradient: "linear-gradient(135deg, #006A4E 0%, #0a8c54 50%, #16a34a 100%)",
   game1: "#7c3aed",
   game2: "#0891b2",
   game3: "#ea580c",
