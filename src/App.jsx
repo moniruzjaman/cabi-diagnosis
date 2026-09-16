@@ -10663,14 +10663,14 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               })}
               {/* External AgriChem Pro link — opens in new tab */}
               <a
-                href="https://agrichem-pro.live"
+                href="https://agrichem-guide.vercel.app/"
                 target="_blank"
                 rel="noreferrer"
                 className="bottom-nav-item"
                 aria-label="এগ্রিকেম প্রো — নতুন ট্যাবে খুলুন"
                 style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textDecoration: "none", color: "inherit" }}
               >
-                <span className="nav-icon">🧪</span>
+                <span className="nav-icon" style={{ fontSize: 20 }}>🌿</span>
                 <span>এগ্রিকেম</span>
               </a>
             </nav>
