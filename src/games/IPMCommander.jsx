@@ -5,9 +5,9 @@ import SymptomImageGallery from "./SymptomImageGallery";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
-  primary: "#006028",
-  primaryLight: "#1a7a3a",
-  primaryDark: "#005322",
+  primary: "#006A4E",
+  primaryLight: "#1a8a5e",
+  primaryDark: "#00553d",
   accent: "#f59e0b",
   bg: "#f5fbf6",
   bgCard: "#ffffff",
@@ -18,7 +18,7 @@ const C = {
   border: "#becabc",
   success: "#16a34a",
   warning: "#d97706",
-  danger: "#dc2626",
+  danger: "#F42A41",
   blue: "#2563eb",
   shadow: "0 8px 24px rgba(0,33,9,0.08)",
   shadowMd: "0 16px 40px rgba(0,33,9,0.10)",
@@ -37,7 +37,7 @@ const KS = `
 @keyframes ipmConfetti{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(120px) rotate(360deg);opacity:0}}
 @keyframes ipmBounceIn{0%{transform:scale(0) rotate(-12deg);opacity:0}50%{transform:scale(1.15) rotate(3deg)}70%{transform:scale(.95) rotate(-1deg)}100%{transform:scale(1) rotate(0);opacity:1}}
 @keyframes ipmFlipIn{0%{transform:rotateY(90deg);opacity:.3}100%{transform:rotateY(0);opacity:1}}
-@keyframes ipmSlotPulse{0%,100%{border-color:#becabc}50%{border-color:#006028}}
+@keyframes ipmSlotPulse{0%,100%{border-color:#becabc}50%{border-color:#006A4E}}
 `;
 if (typeof document !== "undefined" && !document.getElementById("ipm-ks")) {
   const s = document.createElement("style");
