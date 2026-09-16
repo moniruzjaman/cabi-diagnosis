@@ -3,6 +3,11 @@
  *
  * Tokens are aligned with C_LIGHT in App.jsx for visual consistency.
  * Includes tinted backgrounds and borders for dark-mode compatibility.
+ *
+ * Palette rationale (Sep 2026 logo refresh): primary green + danger red
+ * are drawn from the app icon (also the colors of the Bangladesh flag);
+ * accent gold is sampled from the logo's leaf highlight. Backgrounds stay
+ * white/near-white as the neutral canvas the green/red/gold sit on.
  */
 
 export const lightTheme = {
@@ -12,12 +17,12 @@ export const lightTheme = {
   text: "#1a1d21",
   textMuted: "#5f6672",
   textLight: "#8e95a2",
-  primary: "#006028",
-  primaryDark: "#005322",
-  primaryLight: "#1a7a3a",
+  primary: "#046A1A",
+  primaryDark: "#023E11",
+  primaryLight: "#2D9D14",
   border: "#e2e5ea",
   shadow: "0 2px 8px rgba(0,0,0,0.06)",
-  danger: "#dc2626",
+  danger: "#E6010A",
   warning: "#d97706",
   success: "#16a34a",
   blue: "#2563eb",
@@ -30,12 +35,12 @@ export const darkTheme = {
   text: "#e2e8f0",
   textMuted: "#94a3b8",
   textLight: "#94a3b8",
-  primary: "#22c55e",
-  primaryDark: "#16a34a",
-  primaryLight: "#4ade80",
+  primary: "#2D9D14",
+  primaryDark: "#1a7a3a",
+  primaryLight: "#8fdb2c",
   border: "#475569",
   shadow: "0 1px 3px rgba(0,0,0,0.3)",
-  danger: "#ef4444",
+  danger: "#ff4d4a",
   warning: "#f59e0b",
   success: "#22c55e",
   blue: "#3b82f6",
@@ -104,16 +109,16 @@ const darkTints = {
 
 export const lightThemeFull = {
   ...lightTheme,
-  primaryXDark: "#002109",
-  accent: "#f59e0b",
-  accentLight: "#fbbf24",
-  accentDark: "#d97706",
+  primaryXDark: "#011a08",
+  accent: "#F0B90B",
+  accentLight: "#F8E36F",
+  accentDark: "#B8860B",
   bgHeader: "#ffffff",
   bgNav: "#f0f2f5",
   borderFocus: "#1a7a3a",
   shadowMd: "0 4px 16px rgba(0,0,0,0.08)",
   shadowLg: "0 8px 32px rgba(0,0,0,0.12)",
-  heroGradient: "linear-gradient(135deg, #006028 0%, #0a8c3f 50%, #16a34a 100%)",
+  heroGradient: "linear-gradient(135deg, #023E11 0%, #046A1A 50%, #2D9D14 100%)",
   game1: "#7c3aed",
   game2: "#0891b2",
   game3: "#ea580c",
@@ -123,15 +128,15 @@ export const lightThemeFull = {
 export const darkThemeFull = {
   ...darkTheme,
   primaryXDark: "#052e16",
-  accent: "#f59e0b",
-  accentLight: "#fbbf24",
-  accentDark: "#d97706",
+  accent: "#f7d354",
+  accentLight: "#F8E36F",
+  accentDark: "#B8860B",
   bgHeader: "#1e293b",
   bgNav: "#1e293b",
   borderFocus: "#22c55e",
   shadowMd: "0 4px 16px rgba(0,0,0,0.3)",
   shadowLg: "0 8px 32px rgba(0,0,0,0.4)",
-  heroGradient: "linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%)",
+  heroGradient: "linear-gradient(135deg, #052e16 0%, #0a6b1f 50%, #2D9D14 100%)",
   game1: "#8b5cf6",
   game2: "#06b6d4",
   game3: "#f97316",
