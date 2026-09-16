@@ -4,9 +4,17 @@
 // a chip pre-fills the diagnosis form with the predicted crop + disease
 // but does NOT auto-submit — the user stays in control per CABI
 // protocol ("exclusion" step). This is the Phase 1 contract.
+//
+// Phase 2 additions:
+//   - 🔊 TTS uses buildVitAnnouncement / buildVitTopKSummary for nicer
+//     Bangla phrasing (avoids redundant "পাতায়" prefix)
+//   - "🔊 সব শুনুন" top-K summary button in the card header
+//   - Honors prefers-reduced-motion via useSyncExternalStore
+//   - Theme-aware colors via the theme prop
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { classifyLeaf, preloadModel, isModelReady } from "./vitClassifier";
+import { buildVitAnnouncement, buildVitTopKSummary } from "./vitIntegration";
 import useTTS from "../games/useTTS";
 
 // Color palette per category — keeps Bangla-visible confidence bar
@@ -135,6 +143,8 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
   });
 
   // Toggle speech for a specific prediction chip (tap again to stop).
+  // Phase 2: now uses buildVitAnnouncement for friendlier Bangla phrasing
+  // (avoids redundant "পাতায় পাতার" when disease name starts with পাতা).
   const handleSpeak = useCallback(
     (entry, key) => {
       if (speaking && speakingKey === key) {
@@ -142,12 +152,43 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
         setSpeakingKey(null);
         return;
       }
-      const label = [entry.cropBn, entry.diseaseBn].filter(Boolean).join(" ") || entry.diseaseEn || entry.label || "";
-      if (!label) return;
-      speak(label);
+      const text = buildVitAnnouncement(entry) ||
+        [entry.cropBn, entry.diseaseBn].filter(Boolean).join(" ") ||
+        entry.diseaseEn || entry.label || "";
+      if (!text) return;
+      speak(text);
       setSpeakingKey(key);
     },
     [speak, stop, speaking, speakingKey],
+  );
+
+  // Phase 2: top-K summary button — reads all 3 in one utterance.
+  const handleSpeakTopK = useCallback(() => {
+    if (!state.topK) return;
+    if (speaking && speakingKey === "all") {
+      stop();
+      setSpeakingKey(null);
+      return;
+    }
+    const text = buildVitTopKSummary(state.topK);
+    if (!text) return;
+    speak(text);
+    setSpeakingKey("all");
+  }, [speak, stop, speaking, speakingKey, state.topK]);
+
+  // Phase 2: honor prefers-reduced-motion via useSyncExternalStore so
+  // we don't trip the react-hooks/set-state-in-effect lint rule.
+  const reducedMotion = useSyncExternalStore(
+    (cb) => {
+      if (typeof window === "undefined" || !window.matchMedia) return () => {};
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      mq.addEventListener?.("change", cb);
+      return () => mq.removeEventListener?.("change", cb);
+    },
+    () => (typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false),
+    () => false, // SSR fallback
   );
 
   const run = useCallback(async (src) => {
@@ -205,16 +246,18 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
           <span style={{ fontSize: 11, color: "#0f766e", fontWeight: 600 }}>Offline</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div
-            style={{
-              width: 14,
-              height: 14,
-              border: "2px solid #0f766e",
-              borderTopColor: "transparent",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-            }}
-          />
+          {!reducedMotion && (
+            <div
+              style={{
+                width: 14,
+                height: 14,
+                border: "2px solid #0f766e",
+                borderTopColor: "transparent",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+              }}
+            />
+          )}
           <span style={{ fontSize: 12, color: T.textMuted || "#5f6672" }}>
             পাতার ছবি বিশ্লেষণ চলছে… (প্রথমবার মডেল লোড হতে ১০-১৫ সেকেন্ড লাগতে পারে)
           </span>
@@ -284,22 +327,47 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
           <span style={badgeStyle}>🛰️ Local AI Vision</span>
           <span style={{ fontSize: 11, color: "#0f766e", fontWeight: 600 }}>Offline · {inferenceMs}ms</span>
         </div>
-        <button
-          type="button"
-          onClick={() => run(imageDataUrl)}
-          title="পুনরায় বিশ্লেষণ করুন"
-          style={{
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            fontSize: 14,
-            color: "#0f766e",
-            padding: 2,
-            lineHeight: 1,
-          }}
-        >
-          🔄
-        </button>
+        <div style={{ display: "flex", gap: 4 }}>
+          {isSupported && topK.length > 1 && (
+            <button
+              type="button"
+              onClick={handleSpeakTopK}
+              title={speaking && speakingKey === "all" ? "থামুন" : "সব শুনুন"}
+              style={{
+                background: speaking && speakingKey === "all" ? "#0f766e" : "transparent",
+                color: speaking && speakingKey === "all" ? "#fff" : "#0f766e",
+                border: "1px solid #0f766e",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontSize: 11,
+                fontWeight: 600,
+                padding: "3px 8px",
+                lineHeight: 1,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              {speaking && speakingKey === "all" ? "⏹️" : "🔊"} সব শুনুন
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => run(imageDataUrl)}
+            title="পুনরায় বিশ্লেষণ করুন"
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontSize: 14,
+              color: "#0f766e",
+              padding: 2,
+              lineHeight: 1,
+            }}
+          >
+            🔄
+          </button>
+        </div>
       </div>
       <div style={{ fontSize: 11, color: T.textMuted || "#5f6672", marginBottom: 8, lineHeight: 1.4 }}>
         মডেলের প্রস্তাব — যেকোনো একটিতে চাপ দিলে ফসল ও রোগ ফিল্ডে বসে যাবে, তারপর আপনি নিজে যাচাই করবেন।

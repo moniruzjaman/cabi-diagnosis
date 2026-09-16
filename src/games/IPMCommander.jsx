@@ -611,8 +611,9 @@ export default function IPMCommander() {
           }
         }, 800);
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps -- speak from useTTS has unstable ref; isSupported already in deps
+       
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- speak from useTTS has unstable ref; isSupported already in deps
     [selectedCardIdx, shuffledCards, slots, isSupported],
   );
 

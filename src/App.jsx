@@ -18,8 +18,9 @@ import OnboardingFlow from "./components/OnboardingFlow";
 import OutbreakList from "./components/OutbreakList";
 import VisualDiagnosisLibrary from "./components/VisualDiagnosisLibrary";
 import { computeEnsembleScore } from "./data/agronomicEngine";
-import { lookupMoA, FRAC_GROUPS, IRAC_GROUPS } from "./data/moaDatabase";
+import { lookupMoA } from "./data/moaDatabase";
 import { getRegisteredProducts } from "./data/pesticideRegistry";
+import { PESTICIDES_DATABASE as AGRICHEM_DATABASE } from "./agrichem/data/pesticidesData";
 import "./styles/accessibility.css";
 
 const SymptomSpotter = React.lazy(() => import("./games/SymptomSpotter"));
@@ -27,6 +28,7 @@ const CauseDetective = React.lazy(() => import("./games/CauseDetective"));
 const DiseaseTriangle = React.lazy(() => import("./games/DiseaseTriangle"));
 const FieldScout = React.lazy(() => import("./games/FieldScout"));
 const IPMCommander = React.lazy(() => import("./games/IPMCommander"));
+const AgriChemApp = React.lazy(() => import("./agrichem/AgriChemApp"));
 import useTTS from "./games/useTTS";
 import { initPerformanceMonitoring } from "./utils/performanceTelemetry";
 
@@ -1143,7 +1145,7 @@ function renderInline(text) {
       return (
         <div key={li} style={{ fontWeight: 700, color: C.primaryDark, fontSize: 14, marginTop: 10, marginBottom: 4 }}>
           {renderTokens(t)}
-        </div>
+         </div>
       );
     }
     if (/^[-•*]\s/.test(line))
@@ -5638,7 +5640,7 @@ function CABIGuideTab() {
                   </div>
                 ))}
               </div>
-            </div>
+           </div>
           )}
 
           {/* Registered Pesticides & MoA Interactive Search Lookup */}
@@ -5662,6 +5664,26 @@ function MoAPesticideRegistryView({ C }) {
     const moa = lookupMoA(p.activeIngredient);
     return moa && moa.type === selectedMoaFilter;
   });
+
+  // ── AgriChem Pro database (DAE approved 187+ products) integration ──
+  const q = query.trim().toLowerCase();
+  const agrichemResults = q
+    ? AGRICHEM_DATABASE.filter((p) => {
+        const haystack = [
+          p.commonName,
+          p.tradeName,
+          p.registrationNo,
+          p.formulation,
+          p.type,
+          ...(p.crops || []),
+          ...(p.pests || []),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(q);
+      })
+    : [];
 
   return (
     <div
@@ -5806,6 +5828,52 @@ function MoAPesticideRegistryView({ C }) {
               </div>
             );
           })
+        )}
+
+        {/* ── AgriChem Pro database results (shared chemical database) ── */}
+        {q && (
+          <div style={{ marginTop: 14, borderTop: `1px dashed ${C.border}`, paddingTop: 12 }}>
+            <div style={{ fontWeight: 800, fontSize: 13, color: "#047857", marginBottom: 2 }}>
+              🌿 এগ্রিকেম প্রো ডাটাবেস — মিল পাওয়া ফলাফল ({agrichemResults.length})
+            </div>
+            {agrichemResults.length === 0 ? (
+              <div style={{ fontSize: 11, color: C.textMuted, padding: "8px 0" }}>
+                এগ্রিকেম ডাটাবেসে এই অনুসন্ধানের জন্য কিছু পাওয়া যায়নি।
+              </div>
+            ) : (
+              <div style={{ display: "grid", gap: 8, maxHeight: 300, overflowY: "auto", paddingRight: 4 }}>
+                {agrichemResults.slice(0, 20).map((p) => (
+                  <div key={p.id} style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "9px 12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                      <div>
+                        <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: p.type === "Fungicide" ? "#dcfce7" : "#feefc3", color: p.type === "Fungicide" ? "#166534" : "#92400e", marginRight: 6 }}>
+                          {p.type}
+                        </span>
+                        <strong style={{ fontSize: 13, color: C.text }}>{p.tradeName}</strong>
+                        <span style={{ fontSize: 10, color: C.textMuted, marginLeft: 6 }}>
+                          {p.commonName}
+                          {p.formulation ? ` (${p.formulation})` : ""}
+                        </span>
+                      </div>
+                      {p.moaCode && (
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: String(p.moaCode).startsWith("F") ? "#ede9fe" : "#fef3c7", color: String(p.moaCode).startsWith("F") ? "#6d28d9" : "#b45309" }}>
+                          {p.moaCode}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 11, color: C.text, marginTop: 4 }}>
+                      🌾 <strong>ফসল:</strong> {(p.crops || []).join(", ") || "—"} · 🐛 <strong>লক্ষ্য:</strong> {(p.pests || []).join(", ") || "—"}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#006028", fontWeight: 700, marginTop: 3 }}>
+                      📏 <strong>মাত্রা:</strong> {p.dosageRate}
+                      {p.phiDays != null ? <span style={{ fontWeight: 400, color: C.textMuted }}> · PHI: {p.phiDays} দিন</span> : null}
+                      {p.toxicityClass ? <span style={{ fontWeight: 400, color: C.textMuted }}> · WHO: {p.toxicityClass}</span> : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -7820,6 +7888,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
     { id: "learn", label: "শিখুন", icon: "📖" },
     { id: "diagnose", label: "নির্ণয়", icon: "🔬" },
     { id: "library", label: "ভান্ডার", icon: "📚" },
+    { id: "agrichem", label: "এগ্রিকেম", icon: "🧪" },
   ];
   const feedbackContext =
     activeTab === "diagnose"
@@ -7836,7 +7905,9 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               ? "CABI Guide"
               : activeTab === "learn"
                 ? "Learn"
-                : "Home";
+                : activeTab === "agrichem"
+                  ? "AgriChem Chemical Database"
+                  : "Home";
   const feedbackSummary =
     activeTab === "diagnose" && result
       ? `${form.crop || "Unknown crop"} | ${form.district || locationName || "Unknown district"} | ${(result.bn || result.en || "").slice(0, 160)}`
@@ -7854,7 +7925,9 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   ? `Saved reports: ${history.length}`
                   : activeTab === "learn"
                     ? "Learn section: Guide + Games"
-                    : "General app feedback";
+                    : activeTab === "agrichem"
+                      ? "AgriChem Pro chemical database tab"
+                      : "General app feedback";
 
   return (
     <div style={{ minHeight: "100svh", background: C.bg, width: "100%", display: "flex", flexDirection: "column" }}>
@@ -10543,6 +10616,19 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* ── AGRICHEM tab (AgriChem Pro — chemical database embedded app) ── */}
+              {activeTab === "agrichem" && (
+                <React.Suspense
+                  fallback={
+                    <div style={{ textAlign: "center", padding: 40, color: C.textMuted }}>
+                      এগ্রিকেম লোড হচ্ছে...
+                    </div>
+                  }
+                >
+                  <AgriChemApp />
+                </React.Suspense>
               )}
             </div>
           </div>

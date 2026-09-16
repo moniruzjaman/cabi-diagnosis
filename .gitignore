@@ -33,6 +33,7 @@ npm-debug.log*
 src/App.jsx.backup
 
 # AI agent directories (not part of the app, bloats repo)
+.serena/
 .agents/
 .claude/
 .continue/

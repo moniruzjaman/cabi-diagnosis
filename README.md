@@ -217,6 +217,10 @@ npm run lint:fix
 
 Open [http://localhost:5173](http://localhost:5173)
 
+### Vision orchestration and privacy
+
+The cloud diagnosis path is free-tier-first and sequential, with conservative request/image caps, provider fallbacks, bounded timeouts, and redacted telemetry. Uploaded crop images are transient inference input only; diagnosis results and minimized metadata are stored, never the images themselves. See [`docs/vision-orchestration.md`](docs/vision-orchestration.md) for provider integration, limits, privacy boundaries, and troubleshooting.
+
 ---
 
 ## Environment Variables
