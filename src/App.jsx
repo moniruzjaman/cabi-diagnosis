@@ -5803,7 +5803,7 @@ function MoAPesticideRegistryView({ C }) {
                 <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>
                   🏢 <strong>কোম্পানি:</strong> {prod.company} · 🌾 <strong>ফসল:</strong> {prod.crops} · 🐛 <strong>লক্ষ্য:</strong> {prod.pest}
                 </div>
-                <div style={{ fontSize: 11, color: "#006028", fontWeight: 700, marginTop: 4 }}>
+                <div style={{ fontSize: 11, color: "#006A4E", fontWeight: 700, marginTop: 4 }}>
                   📏 <strong>সুপারিশকৃত মাত্রা:</strong> {prod.dosage}
                 </div>
 
@@ -5863,7 +5863,7 @@ function MoAPesticideRegistryView({ C }) {
                     <div style={{ fontSize: 11, color: C.text, marginTop: 4 }}>
                       🌾 <strong>ফসল:</strong> {(p.crops || []).join(", ") || "—"} · 🐛 <strong>লক্ষ্য:</strong> {(p.pests || []).join(", ") || "—"}
                     </div>
-                    <div style={{ fontSize: 11, color: "#006028", fontWeight: 700, marginTop: 3 }}>
+                    <div style={{ fontSize: 11, color: "#006A4E", fontWeight: 700, marginTop: 3 }}>
                       📏 <strong>মাত্রা:</strong> {p.dosageRate}
                       {p.phiDays != null ? <span style={{ fontWeight: 400, color: C.textMuted }}> · PHI: {p.phiDays} দিন</span> : null}
                       {p.toxicityClass ? <span style={{ fontWeight: 400, color: C.textMuted }}> · WHO: {p.toxicityClass}</span> : null}
@@ -6097,7 +6097,7 @@ function ShareAndInstallBar() {
             padding: "7px 14px",
             borderRadius: 50,
             border: "none",
-            background: "linear-gradient(135deg,#16a34a,#006028)",
+            background: "linear-gradient(135deg,#16a34a,#006A4E)",
             color: "#fff",
             fontSize: 11,
             fontWeight: 800,
