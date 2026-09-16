@@ -4,6 +4,10 @@
   "installCommand": "npm install",
   "rewrites": [
     {
+      "source": "/api/market-prices",
+      "destination": "/api/crop-prices?mode=market"
+    },
+    {
       "source": "/api/metrics",
       "destination": "/api/health?endpoint=metrics"
     },

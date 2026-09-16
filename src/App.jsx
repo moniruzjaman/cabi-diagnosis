@@ -1145,7 +1145,7 @@ function renderInline(text) {
       return (
         <div key={li} style={{ fontWeight: 700, color: C.primaryDark, fontSize: 14, marginTop: 10, marginBottom: 4 }}>
           {renderTokens(t)}
-        </div>
+         </div>
       );
     }
     if (/^[-•*]\s/.test(line))
@@ -5640,10 +5640,11 @@ function CABIGuideTab() {
                   </div>
                 ))}
               </div>
-              {/* Registered Pesticides & MoA Interactive Search Lookup */}
-              <MoAPesticideRegistryView C={C} />
-            </div>
+           </div>
           )}
+
+          {/* Registered Pesticides & MoA Interactive Search Lookup */}
+          <MoAPesticideRegistryView C={C} />
         </div>
       )}
     </div>
@@ -6732,6 +6733,82 @@ function GameHub() {
             </span>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Market Price Ticker ───────────────────────────────────────────────────────
+function MarketPriceTicker({ C }) {
+  const [prices, setPrices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [tickerOffset, setTickerOffset] = useState(0);
+
+  useEffect(() => {
+    async function fetchPrices() {
+      try {
+        const res = await fetch('/api/market-prices');
+        if (res.ok) {
+          const data = await res.json();
+          setPrices(data.prices || []);
+        }
+      } catch {
+        // fallback: show nothing silently
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPrices();
+  }, []);
+
+  // Animate ticker scroll
+  useEffect(() => {
+    if (prices.length === 0) return;
+    const interval = setInterval(() => {
+      setTickerOffset(prev => (prev + 1) % prices.length);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [prices]);
+
+  if (loading || prices.length === 0) return null;
+
+  return (
+    <div style={{
+      background: `linear-gradient(135deg, ${C.primaryDark} 0%, ${C.primary} 100%)`,
+      borderRadius: 12,
+      padding: '10px 14px',
+      marginBottom: 12,
+      color: '#fff',
+      overflow: 'hidden',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+        <span style={{ fontSize: 14 }}>📊</span>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.5, opacity: 0.85 }}>
+          বাজার মূল্য (DAM) — আজকের দর
+        </span>
+        <span style={{ fontSize: 9, marginLeft: 'auto', opacity: 0.65 }}>dam.gov.bd</span>
+      </div>
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
+        {prices.map((p, i) => (
+          <div
+            key={i}
+            style={{
+              flexShrink: 0,
+              background: 'rgba(255,255,255,0.15)',
+              borderRadius: 8,
+              padding: '6px 10px',
+              minWidth: 120,
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 2 }}>{p.commodity}</div>
+            <div style={{ fontSize: 10, opacity: 0.85 }}>{p.market}</div>
+            <div style={{ fontSize: 12, fontWeight: 800, marginTop: 3 }}>
+              ৳{p.retail_price_min}–{p.retail_price_max}
+              <span style={{ fontSize: 9, opacity: 0.75 }}>/কেজি</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -8036,6 +8113,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   coords={coords}
                 />
               )}
+              {activeTab === "home" && <MarketPriceTicker C={C} />}
               {activeTab === "home" &&
                 (() => {
                   const alerts = getCurrentRiskAlerts();
