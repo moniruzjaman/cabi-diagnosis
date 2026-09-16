@@ -58,6 +58,21 @@ export async function ensureSchema() {
       )
     `);
 
+    // Market Prices (dam.gov.bd)
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS market_prices (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        commodity TEXT,
+        market TEXT,
+        retail_price_min REAL,
+        retail_price_max REAL,
+        wholesale_price_min REAL,
+        wholesale_price_max REAL,
+        date TEXT,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Feedback entries
     await db.execute(`
       CREATE TABLE IF NOT EXISTS feedback_entries (

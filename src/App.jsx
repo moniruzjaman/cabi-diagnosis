@@ -20,6 +20,7 @@ import VisualDiagnosisLibrary from "./components/VisualDiagnosisLibrary";
 import { computeEnsembleScore } from "./data/agronomicEngine";
 import { lookupMoA } from "./data/moaDatabase";
 import { getRegisteredProducts } from "./data/pesticideRegistry";
+import { PESTICIDES_DATABASE as AGRICHEM_DATABASE } from "./agrichem/data/pesticidesData";
 import "./styles/accessibility.css";
 
 const SymptomSpotter = React.lazy(() => import("./games/SymptomSpotter"));
@@ -1143,7 +1144,7 @@ function renderInline(text) {
       return (
         <div key={li} style={{ fontWeight: 700, color: C.primaryDark, fontSize: 14, marginTop: 10, marginBottom: 4 }}>
           {renderTokens(t)}
-        </div>
+         </div>
       );
     }
     if (/^[-•*]\s/.test(line))
@@ -5638,10 +5639,11 @@ function CABIGuideTab() {
                   </div>
                 ))}
               </div>
-              {/* Registered Pesticides & MoA Interactive Search Lookup */}
-              <MoAPesticideRegistryView C={C} />
-            </div>
+           </div>
           )}
+
+          {/* Registered Pesticides & MoA Interactive Search Lookup */}
+          <MoAPesticideRegistryView C={C} />
         </div>
       )}
     </div>
@@ -5661,6 +5663,26 @@ function MoAPesticideRegistryView({ C }) {
     const moa = lookupMoA(p.activeIngredient);
     return moa && moa.type === selectedMoaFilter;
   });
+
+  // ── AgriChem Pro database (DAE approved 187+ products) integration ──
+  const q = query.trim().toLowerCase();
+  const agrichemResults = q
+    ? AGRICHEM_DATABASE.filter((p) => {
+        const haystack = [
+          p.commonName,
+          p.tradeName,
+          p.registrationNo,
+          p.formulation,
+          p.type,
+          ...(p.crops || []),
+          ...(p.pests || []),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(q);
+      })
+    : [];
 
   return (
     <div
@@ -5805,6 +5827,52 @@ function MoAPesticideRegistryView({ C }) {
               </div>
             );
           })
+        )}
+
+        {/* ── AgriChem Pro database results (shared chemical database) ── */}
+        {q && (
+          <div style={{ marginTop: 14, borderTop: `1px dashed ${C.border}`, paddingTop: 12 }}>
+            <div style={{ fontWeight: 800, fontSize: 13, color: "#047857", marginBottom: 2 }}>
+              🌿 এগ্রিকেম প্রো ডাটাবেস — মিল পাওয়া ফলাফল ({agrichemResults.length})
+            </div>
+            {agrichemResults.length === 0 ? (
+              <div style={{ fontSize: 11, color: C.textMuted, padding: "8px 0" }}>
+                এগ্রিকেম ডাটাবেসে এই অনুসন্ধানের জন্য কিছু পাওয়া যায়নি।
+              </div>
+            ) : (
+              <div style={{ display: "grid", gap: 8, maxHeight: 300, overflowY: "auto", paddingRight: 4 }}>
+                {agrichemResults.slice(0, 20).map((p) => (
+                  <div key={p.id} style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "9px 12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                      <div>
+                        <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: p.type === "Fungicide" ? "#dcfce7" : "#feefc3", color: p.type === "Fungicide" ? "#166534" : "#92400e", marginRight: 6 }}>
+                          {p.type}
+                        </span>
+                        <strong style={{ fontSize: 13, color: C.text }}>{p.tradeName}</strong>
+                        <span style={{ fontSize: 10, color: C.textMuted, marginLeft: 6 }}>
+                          {p.commonName}
+                          {p.formulation ? ` (${p.formulation})` : ""}
+                        </span>
+                      </div>
+                      {p.moaCode && (
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: String(p.moaCode).startsWith("F") ? "#ede9fe" : "#fef3c7", color: String(p.moaCode).startsWith("F") ? "#6d28d9" : "#b45309" }}>
+                          {p.moaCode}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 11, color: C.text, marginTop: 4 }}>
+                      🌾 <strong>ফসল:</strong> {(p.crops || []).join(", ") || "—"} · 🐛 <strong>লক্ষ্য:</strong> {(p.pests || []).join(", ") || "—"}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#006028", fontWeight: 700, marginTop: 3 }}>
+                      📏 <strong>মাত্রা:</strong> {p.dosageRate}
+                      {p.phiDays != null ? <span style={{ fontWeight: 400, color: C.textMuted }}> · PHI: {p.phiDays} দিন</span> : null}
+                      {p.toxicityClass ? <span style={{ fontWeight: 400, color: C.textMuted }}> · WHO: {p.toxicityClass}</span> : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -6664,6 +6732,82 @@ function GameHub() {
             </span>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Market Price Ticker ───────────────────────────────────────────────────────
+function MarketPriceTicker({ C }) {
+  const [prices, setPrices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [tickerOffset, setTickerOffset] = useState(0);
+
+  useEffect(() => {
+    async function fetchPrices() {
+      try {
+        const res = await fetch('/api/market-prices');
+        if (res.ok) {
+          const data = await res.json();
+          setPrices(data.prices || []);
+        }
+      } catch {
+        // fallback: show nothing silently
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPrices();
+  }, []);
+
+  // Animate ticker scroll
+  useEffect(() => {
+    if (prices.length === 0) return;
+    const interval = setInterval(() => {
+      setTickerOffset(prev => (prev + 1) % prices.length);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [prices]);
+
+  if (loading || prices.length === 0) return null;
+
+  return (
+    <div style={{
+      background: `linear-gradient(135deg, ${C.primaryDark} 0%, ${C.primary} 100%)`,
+      borderRadius: 12,
+      padding: '10px 14px',
+      marginBottom: 12,
+      color: '#fff',
+      overflow: 'hidden',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+        <span style={{ fontSize: 14 }}>📊</span>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.5, opacity: 0.85 }}>
+          বাজার মূল্য (DAM) — আজকের দর
+        </span>
+        <span style={{ fontSize: 9, marginLeft: 'auto', opacity: 0.65 }}>dam.gov.bd</span>
+      </div>
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
+        {prices.map((p, i) => (
+          <div
+            key={i}
+            style={{
+              flexShrink: 0,
+              background: 'rgba(255,255,255,0.15)',
+              borderRadius: 8,
+              padding: '6px 10px',
+              minWidth: 120,
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 2 }}>{p.commodity}</div>
+            <div style={{ fontSize: 10, opacity: 0.85 }}>{p.market}</div>
+            <div style={{ fontSize: 12, fontWeight: 800, marginTop: 3 }}>
+              ৳{p.retail_price_min}–{p.retail_price_max}
+              <span style={{ fontSize: 9, opacity: 0.75 }}>/কেজি</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -7963,6 +8107,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   coords={coords}
                 />
               )}
+              {activeTab === "home" && <MarketPriceTicker C={C} />}
               {activeTab === "home" &&
                 (() => {
                   const alerts = getCurrentRiskAlerts();
@@ -10466,6 +10611,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   )}
                 </div>
               )}
+
             </div>
           </div>
 
@@ -10515,6 +10661,18 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   </button>
                 );
               })}
+              {/* External AgriChem Pro link — opens in new tab */}
+              <a
+                href="https://agrichem-guide.vercel.app/"
+                target="_blank"
+                rel="noreferrer"
+                className="bottom-nav-item"
+                aria-label="এগ্রিকেম প্রো — নতুন ট্যাবে খুলুন"
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textDecoration: "none", color: "inherit" }}
+              >
+                <span className="nav-icon" style={{ fontSize: 20 }}>🌿</span>
+                <span>এগ্রিকেম</span>
+              </a>
             </nav>
           )}
 
