@@ -8246,6 +8246,9 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                     {CABI_GAMES.map((game, i) => {
                       const guideStep = CABI_GUIDE.protocol.steps.find((s) => parseInt(s.num) === game.step);
                       const isExpanded = expandedLearnStep === game.id;
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {CABI_GAMES.map((game, i) => {
+                      const guideStep = CABI_GUIDE.protocol.steps.find((s) => parseInt(s.num) === game.step);
                       return (
                         <div
                           key={game.id}
@@ -8280,11 +8283,26 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                                 width: 52,
                                 height: 52,
                                 borderRadius: 14,
+                            padding: 20,
+                            boxShadow: C.shadow,
+                            border: `1px solid ${game.color}40`,
+                            animation: `popIn .4s ease ${i * 0.08}s both`,
+                          }}
+                        >
+                          {/* Step header with number and icon */}
+                          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+                            <div
+                              style={{
+                                position: "relative",
+                                width: 56,
+                                height: 56,
+                                borderRadius: 16,
                                 background: game.bg,
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 fontSize: 26,
+                                fontSize: 28,
                                 boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
                                 flexShrink: 0,
                               }}
@@ -8297,6 +8315,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                                   right: -4,
                                   width: 22,
                                   height: 22,
+                                  width: 24,
+                                  height: 24,
                                   borderRadius: 8,
                                   background: C.bgCard,
                                   border: `2px solid ${game.color}`,
@@ -8304,6 +8324,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                                   alignItems: "center",
                                   justifyContent: "center",
                                   fontSize: 10,
+                                  fontSize: 11,
                                   fontWeight: 800,
                                   color: game.color,
                                   boxShadow: C.shadow,
@@ -8318,6 +8339,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                                 style={{
                                   fontWeight: 800,
                                   fontSize: 17,
+                                  fontSize: 18,
                                   color: C.text,
                                   marginBottom: 4,
                                   lineHeight: 1.3,
@@ -8333,6 +8355,11 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                               </div>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                              <div style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>
+                                {game.desc}
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                               <span
                                 style={{
                                   fontSize: 10,
@@ -8443,6 +8470,72 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                               </button>
                             </div>
                           )}
+                            </div>
+                          </div>
+
+                          {/* Guide content for this step */}
+                          {guideStep && (
+                            <div
+                              style={{
+                                background: C[guideStep.bgKey] || C.bgMuted,
+                                border: `1px solid ${C[guideStep.borderKey] || C.border}`,
+                                borderRadius: 12,
+                                padding: 16,
+                                marginBottom: 16,
+                              }}
+                            >
+                              <p style={{ fontSize: 13, color: C.text, lineHeight: 1.7, marginBottom: 10 }}>
+                                {guideStep.desc}
+                              </p>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                                {guideStep.points.map((pt, j) => (
+                                  <div
+                                    key={j}
+                                    style={{ display: "flex", gap: 8, fontSize: 12, color: C.text }}
+                                  >
+                                    <span
+                                      style={{
+                                        color: guideStep.color,
+                                        fontWeight: 700,
+                                        flexShrink: 0,
+                                      }}
+                                    >
+                                      ✓
+                                    </span>
+                                    <span>{pt}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Play button */}
+                          <button
+                            onClick={() => setActiveGame(game.id)}
+                            style={{
+                              width: "100%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: 10,
+                              padding: "14px 20px",
+                              borderRadius: 12,
+                              border: "none",
+                              background: `linear-gradient(135deg,${game.color},${game.color}dd)`,
+                              color: "#fff",
+                              fontSize: 15,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              boxShadow: `0 6px 16px ${game.color}40`,
+                              transition: "transform .15s ease, box-shadow .15s ease",
+                            }}
+                            onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.98)")}
+                            onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                          >
+                            <span style={{ fontSize: 20 }}>▶</span>
+                            <span>এখন খেলুন — {game.title}</span>
+                          </button>
                         </div>
                       );
                     })}
