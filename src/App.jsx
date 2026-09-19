@@ -926,6 +926,114 @@ const CABI_GUIDE = {
   ],
 };
 
+// ─── CABI Games data (module-level for Learn tab + GameHub) ───────────────────
+const CABI_GAMES = [
+  {
+    id: "symptom-spotter",
+    title: "লক্ষণ লক্ষ্য",
+    en: "Symptom Spotter",
+    step: 1,
+    icon: "👁️",
+    color: "#2563eb",
+    bg: "linear-gradient(135deg,#1e40af,#2563eb)",
+    desc: "ফসলের লক্ষণ চিনুন — পাতার দাগ, রং ও আকৃতি থেকে রোগ শনাক্ত করুন",
+    difficulty: "সহজ",
+    duration: "৫-১০ মিনিট",
+    Component: SymptomSpotter,
+  },
+  {
+    id: "cause-detective",
+    title: "কারণ খুঁজো",
+    en: "Cause Detective",
+    step: 2,
+    icon: "🔬",
+    color: "#7c3aed",
+    bg: "linear-gradient(135deg,#4c1d95,#7c3aed)",
+    desc: "CABI বর্জন পদ্ধতি — ক্লু থেকে সঠিক কারণ নির্ণয় করুন",
+    difficulty: "মধ্যম",
+    duration: "১০-১৫ মিনিট",
+    Component: CauseDetective,
+  },
+  {
+    id: "disease-triangle",
+    title: "রোগ ত্রিভুজ",
+    en: "Disease Triangle",
+    step: 3,
+    icon: "🔺",
+    color: "#d97706",
+    bg: "linear-gradient(135deg,#92400e,#d97706)",
+    desc: "পোষক, রোগজীবাণু ও পরিবেশ — তিনটি উপাদান মেলান",
+    difficulty: "মধ্যম",
+    duration: "১০-১৫ মিনিট",
+    Component: DiseaseTriangle,
+  },
+  {
+    id: "field-scout",
+    title: "মাঠ পরীক্ষক",
+    en: "Field Scout",
+    step: 4,
+    icon: "🧪",
+    color: "#16a34a",
+    bg: "linear-gradient(135deg,#065f46,#16a34a)",
+    desc: "W-pattern স্যাম্পলিং ও ETL থ্রেশহোল্ড সিদ্ধান্ত",
+    difficulty: "কঠিন",
+    duration: "১০-১৫ মিনিট",
+    Component: FieldScout,
+  },
+  {
+    id: "ipm-commander",
+    title: "IPM কমান্ডার",
+    en: "IPM Commander",
+    step: 5,
+    icon: "🌿",
+    color: "#0891b2",
+    bg: "linear-gradient(135deg,#0e7490,#0891b2)",
+    desc: "IPM পিরামিড অনুসরণ করে সঠিক চিকিৎসা সিদ্ধান্ত নিন",
+    difficulty: "কঠিন",
+    duration: "১০-১৫ মিনিট",
+    Component: IPMCommander,
+  },
+];
+
+const EXTERNAL_GAMES = [
+  {
+    id: "dhan-doctor",
+    title: "ধানের ডাক্তার",
+    en: "Dhan Doctor Simulation",
+    icon: "🌾",
+    color: "#0891b2",
+    bg: "linear-gradient(135deg,#0c4a6e,#0891b2)",
+    desc: "ধানের ৫টি প্রধান রোগ চিহ্নিত করুন",
+    difficulty: "মধ্যম",
+    duration: "১৫-২০ মিনিট",
+    src: "https://game-diagnosis.space.z.ai/",
+  },
+  {
+    id: "smart-krishok",
+    title: "স্মার্ট কৃষক ৩.০",
+    en: "Smart Farmer Decision Game",
+    icon: "👨‍🌾",
+    color: "#7c3aed",
+    bg: "linear-gradient(135deg,#4c1d95,#7c3aed)",
+    desc: "কৃষি সিদ্ধান্ত গ্রহণের দক্ষতা বাড়ান",
+    difficulty: "কঠিন",
+    duration: "২০-৩০ মিনিট",
+    src: "https://game-diagnosis.space.z.ai/",
+  },
+  {
+    id: "plant-clinic",
+    title: "প্ল্যান্ট ক্লিনিক",
+    en: "Plant Clinic Simulation",
+    icon: "🏥",
+    color: "#ea580c",
+    bg: "linear-gradient(135deg,#7c2d12,#ea580c)",
+    desc: "CABI প্রোটোকল অনুশীলন ও পরামর্শ দিন",
+    difficulty: "সহজ",
+    duration: "১০-১৫ মিনিট",
+    src: "https://game-diagnosis.space.z.ai/",
+  },
+];
+
 // ─── Library data ─────────────────────────────────────────────────────────────
 const LIBRARY = {
   pests: [
@@ -6242,116 +6350,8 @@ function ShareAndInstallBar() {
 }
 
 // ─── 🎮 GAME HUB ─────────────────────────────────────────────────────────────
-function GameHub() {
-  const [activeGame, setActiveGame] = useState(null);
+function GameHub({ activeGame, setActiveGame }) {
   const { speak, stop: _stopGame, speaking, isSupported } = useTTS();
-
-  const CABI_GAMES = [
-    {
-      id: "symptom-spotter",
-      title: "লক্ষণ লক্ষ্য",
-      en: "Symptom Spotter",
-      step: 1,
-      icon: "👁️",
-      color: "#2563eb",
-      bg: "linear-gradient(135deg,#1e40af,#2563eb)",
-      desc: "ফসলের লক্ষণ চিনুন — পাতার দাগ, রং ও আকৃতি থেকে রোগ শনাক্ত করুন",
-      difficulty: "সহজ",
-      duration: "৫-১০ মিনিট",
-      Component: SymptomSpotter,
-    },
-    {
-      id: "cause-detective",
-      title: "কারণ খুঁজো",
-      en: "Cause Detective",
-      step: 2,
-      icon: "🔬",
-      color: "#7c3aed",
-      bg: "linear-gradient(135deg,#4c1d95,#7c3aed)",
-      desc: "CABI বর্জন পদ্ধতি — ক্লু থেকে সঠিক কারণ নির্ণয় করুন",
-      difficulty: "মধ্যম",
-      duration: "১০-১৫ মিনিট",
-      Component: CauseDetective,
-    },
-    {
-      id: "disease-triangle",
-      title: "রোগ ত্রিভুজ",
-      en: "Disease Triangle",
-      step: 3,
-      icon: "🔺",
-      color: "#d97706",
-      bg: "linear-gradient(135deg,#92400e,#d97706)",
-      desc: "পোষক, রোগজীবাণু ও পরিবেশ — তিনটি উপাদান মেলান",
-      difficulty: "মধ্যম",
-      duration: "১০-১৫ মিনিট",
-      Component: DiseaseTriangle,
-    },
-    {
-      id: "field-scout",
-      title: "মাঠ পরীক্ষক",
-      en: "Field Scout",
-      step: 4,
-      icon: "🧪",
-      color: "#16a34a",
-      bg: "linear-gradient(135deg,#065f46,#16a34a)",
-      desc: "W-pattern স্যাম্পলিং ও ETL থ্রেশহোল্ড সিদ্ধান্ত",
-      difficulty: "কঠিন",
-      duration: "১০-১৫ মিনিট",
-      Component: FieldScout,
-    },
-    {
-      id: "ipm-commander",
-      title: "IPM কমান্ডার",
-      en: "IPM Commander",
-      step: 5,
-      icon: "🌿",
-      color: "#0891b2",
-      bg: "linear-gradient(135deg,#0e7490,#0891b2)",
-      desc: "IPM পিরামিড অনুসরণ করে সঠিক চিকিৎসা সিদ্ধান্ত নিন",
-      difficulty: "কঠিন",
-      duration: "১০-১৫ মিনিট",
-      Component: IPMCommander,
-    },
-  ];
-
-  const EXTERNAL_GAMES = [
-    {
-      id: "dhan-doctor",
-      title: "ধানের ডাক্তার",
-      en: "Dhan Doctor Simulation",
-      icon: "🌾",
-      color: C.game2,
-      bg: "linear-gradient(135deg,#0c4a6e,#0891b2)",
-      desc: "ধানের ৫টি প্রধান রোগ চিহ্নিত করুন",
-      difficulty: "মধ্যম",
-      duration: "১৫-২০ মিনিট",
-      src: "https://game-diagnosis.space.z.ai/",
-    },
-    {
-      id: "smart-krishok",
-      title: "স্মার্ট কৃষক ৩.০",
-      en: "Smart Farmer Decision Game",
-      icon: "👨‍🌾",
-      color: C.game1,
-      bg: "linear-gradient(135deg,#4c1d95,#7c3aed)",
-      desc: "কৃষি সিদ্ধান্ত গ্রহণের দক্ষতা বাড়ান",
-      difficulty: "কঠিন",
-      duration: "২০-৩০ মিনিট",
-      src: "https://game-diagnosis.space.z.ai/",
-    },
-    {
-      id: "plant-clinic",
-      title: "প্ল্যান্ট ক্লিনিক",
-      en: "Plant Clinic Simulation",
-      icon: "🏥",
-      color: C.game3,
-      bg: "linear-gradient(135deg,#7c2d12,#ea580c)",
-      desc: "CABI প্রোটোকল অনুশীলন ও পরামর্শ দিন",
-      difficulty: "সহজ",
-      duration: "১০-১৫ মিনিট",
-      src: "https://game-diagnosis.space.z.ai/",
-    },
-  ];
 
   if (activeGame) {
     const game = CABI_GAMES.find((g) => g.id === activeGame);
@@ -6872,6 +6872,12 @@ export default function UdbhidGoenda() {
   const [followUpQuestion, setFollowUpQuestion] = useState("");
   const [followUpAnswer, setFollowUpAnswer] = useState("");
   const [followUpLoading, setFollowUpLoading] = useState(false);
+
+  // Game state (shared between Learn tab and GameHub)
+  const [activeGame, setActiveGame] = useState(null);
+
+  // Learn tab accordion state
+  const [expandedLearnStep, setExpandedLearnStep] = useState(null);
 
   const fileRef = useRef();
   const recognitionRef = useRef(null);
@@ -8236,6 +8242,10 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                       CABI প্রোটোকল ধাপে ধাপে পড়ুন, প্রতিটি ধাপে গেম খেলে দক্ষ হন।
                     </p>
                   </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {CABI_GAMES.map((game, i) => {
+                      const guideStep = CABI_GUIDE.protocol.steps.find((s) => parseInt(s.num) === game.step);
+                      const isExpanded = expandedLearnStep === game.id;
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {CABI_GAMES.map((game, i) => {
                       const guideStep = CABI_GUIDE.protocol.steps.find((s) => parseInt(s.num) === game.step);
@@ -8245,6 +8255,34 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                           style={{
                             background: C.bgCard,
                             borderRadius: 18,
+                            boxShadow: C.shadow,
+                            border: `1px solid ${game.color}40`,
+                            animation: `popIn .4s ease ${i * 0.08}s both`,
+                            overflow: "hidden",
+                          }}
+                        >
+                          {/* Step header - clickable to toggle */}
+                          <button
+                            onClick={() => setExpandedLearnStep(isExpanded ? null : game.id)}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 14,
+                              padding: "16px 20px",
+                              border: "none",
+                              background: isExpanded ? `${game.color}10` : "transparent",
+                              cursor: "pointer",
+                              width: "100%",
+                              textAlign: "left",
+                            }}
+                            aria-expanded={isExpanded}
+                          >
+                            <div
+                              style={{
+                                position: "relative",
+                                width: 52,
+                                height: 52,
+                                borderRadius: 14,
                             padding: 20,
                             boxShadow: C.shadow,
                             border: `1px solid ${game.color}40`,
@@ -8263,6 +8301,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
+                                fontSize: 26,
                                 fontSize: 28,
                                 boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
                                 flexShrink: 0,
@@ -8274,6 +8313,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                                   position: "absolute",
                                   top: -4,
                                   right: -4,
+                                  width: 22,
+                                  height: 22,
                                   width: 24,
                                   height: 24,
                                   borderRadius: 8,
@@ -8282,6 +8323,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
+                                  fontSize: 10,
                                   fontSize: 11,
                                   fontWeight: 800,
                                   color: game.color,
@@ -8296,6 +8338,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                                 className="ud-headline"
                                 style={{
                                   fontWeight: 800,
+                                  fontSize: 17,
                                   fontSize: 18,
                                   color: C.text,
                                   marginBottom: 4,
@@ -8307,6 +8350,11 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                               <div style={{ fontSize: 11, color: C.textLight, marginBottom: 2 }}>
                                 {game.en}
                               </div>
+                              <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.5 }}>
+                                {game.desc}
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                               <div style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>
                                 {game.desc}
                               </div>
@@ -8334,6 +8382,94 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                               >
                                 ⏱ {game.duration}
                               </span>
+                              <span
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: "50%",
+                                  background: isExpanded ? game.color : C.bgMuted,
+                                  color: isExpanded ? "#fff" : C.textLight,
+                                  fontSize: 14,
+                                  fontWeight: 700,
+                                  transition: "all .2s ease",
+                                }}
+                              >
+                                {isExpanded ? "−" : "+"}
+                              </span>
+                            </div>
+                          </button>
+
+                          {/* Collapsible content */}
+                          {isExpanded && (
+                            <div style={{ padding: "0 20px 20px", animation: "fadeIn .2s ease" }}>
+                              {/* Guide content for this step */}
+                              {guideStep && (
+                                <div
+                                  style={{
+                                    background: C[guideStep.bgKey] || C.bgMuted,
+                                    border: `1px solid ${C[guideStep.borderKey] || C.border}`,
+                                    borderRadius: 12,
+                                    padding: 16,
+                                    marginBottom: 16,
+                                  }}
+                                >
+                                  <p style={{ fontSize: 13, color: C.text, lineHeight: 1.7, marginBottom: 10 }}>
+                                    {guideStep.desc}
+                                  </p>
+                                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                                    {guideStep.points.map((pt, j) => (
+                                      <div
+                                        key={j}
+                                        style={{ display: "flex", gap: 8, fontSize: 12, color: C.text }}
+                                      >
+                                        <span
+                                          style={{
+                                            color: guideStep.color,
+                                            fontWeight: 700,
+                                            flexShrink: 0,
+                                          }}
+                                        >
+                                          ✓
+                                        </span>
+                                        <span>{pt}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Play button */}
+                              <button
+                                onClick={() => setActiveGame(game.id)}
+                                style={{
+                                  width: "100%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  gap: 10,
+                                  padding: "14px 20px",
+                                  borderRadius: 12,
+                                  border: "none",
+                                  background: `linear-gradient(135deg,${game.color},${game.color}dd)`,
+                                  color: "#fff",
+                                  fontSize: 15,
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                  boxShadow: `0 6px 16px ${game.color}40`,
+                                  transition: "transform .15s ease, box-shadow .15s ease",
+                                }}
+                                onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.98)")}
+                                onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                              >
+                                <span style={{ fontSize: 20 }}>▶</span>
+                                <span>এখন খেলুন — {game.title}</span>
+                              </button>
+                            </div>
+                          )}
                             </div>
                           </div>
 
@@ -10504,7 +10640,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               {/* ── GAME HUB ─────────────────────────────────────────────── */}
               {activeTab === "game" && (
                 <div>
-                  <GameHub />
+                  <GameHub activeGame={activeGame} setActiveGame={setActiveGame} />
                   <button
                     onClick={() => setActiveTab("learn")}
                     style={{
