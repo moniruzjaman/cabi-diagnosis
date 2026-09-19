@@ -797,6 +797,47 @@ async function tryOpenRouter(messages, modelId, systemPrompt = SYSTEM_PROMPT, ex
   return { text: data?.choices?.[0]?.message?.content || "No response.", provider: `OpenRouter / ${resolvedModel}${providerName}` };
 }
 
+// ─── Provider: KrishiAI Gateway (shared free-tier text fallback, unstructured) ──
+// This is a bonus last-resort tier, tried only after all four of this app's own
+// paid-tier providers (Gemini x2, OpenRouter x2, Groq) have already failed. The
+// gateway (api.krishiai.live) always uses its own fixed bilingual system prompt —
+// it has no way to follow this app's CABI 14/30-field structured diagnosis schema,
+// and it has no vision support at all. So this route is deliberately textOnly,
+// always marked degraded, and its output is expected to have structured: null
+// (same shape the emergency fallback already produces). The point isn't schema
+// fidelity — it's giving one more real, free AI-generated answer instead of
+// dropping straight to the 100% static emergency text.
+async function tryKrishiGateway(messages) {
+  const token = process.env.KRISHI_GATEWAY_TOKEN;
+  if (!token) throw new Error("KRISHI_GATEWAY_TOKEN not set");
+
+  const message = extractPlainUserText(messages).trim();
+  if (!message) throw new Error("No text content available for gateway fallback");
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  let res;
+  try {
+    res = await fetch("https://api.krishiai.live/v1/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Krishi-Token": token },
+      body: JSON.stringify({ message, language: "bn" }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || `KrishiGateway HTTP ${res.status}`);
+  if (!data?.reply) throw new Error("KrishiGateway returned an empty reply");
+
+  return {
+    text: `${data.reply}\n\n---\n⚠️ এটি একটি সাধারণ পরামর্শ, CABI কাঠামোবদ্ধ নির্ণয় নয়। নিশ্চিত রোগ নির্ণয়ের জন্য স্থানীয় DAE কর্মকর্তার সাথে যোগাযোগ করুন।`,
+    provider: `KrishiAI Gateway (${data.model || "free"}) — unstructured`,
+  };
+}
+
 // ─── Main Handler ─────────────────────────────────────────────────────────────
 function normalizeProviderResult(result) {
   const structured = extractStructuredJson(result.text);
@@ -865,6 +906,14 @@ function createProviderRoutes({ messages, imageAttached, systemPrompt, policy })
         if (imageAttached) result.content[0].text += "\n\n---\n⚠️ Image analysis unavailable. Diagnosis based on description only.";
         return result;
       },
+    },
+    {
+      id: "krishi-gateway-text",
+      textOnly: true,
+      allowWithImage: true,
+      enabled: Boolean(process.env.KRISHI_GATEWAY_TOKEN),
+      degraded: true,
+      run: async () => normalizeProviderResult(await tryKrishiGateway(messages)),
     },
   ];
 
