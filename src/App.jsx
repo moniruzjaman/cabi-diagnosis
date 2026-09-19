@@ -6350,8 +6350,7 @@ function ShareAndInstallBar() {
 }
 
 // ─── 🎮 GAME HUB ─────────────────────────────────────────────────────────────
-function GameHub() {
-  const [activeGame, setActiveGame] = useState(null);
+function GameHub({ activeGame, setActiveGame }) {
   const { speak, stop: _stopGame, speaking, isSupported } = useTTS();
 
   if (activeGame) {
@@ -6873,6 +6872,9 @@ export default function UdbhidGoenda() {
   const [followUpQuestion, setFollowUpQuestion] = useState("");
   const [followUpAnswer, setFollowUpAnswer] = useState("");
   const [followUpLoading, setFollowUpLoading] = useState(false);
+
+  // Game state (shared between Learn tab and GameHub)
+  const [activeGame, setActiveGame] = useState(null);
 
   const fileRef = useRef();
   const recognitionRef = useRef(null);
@@ -10505,7 +10507,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               {/* ── GAME HUB ─────────────────────────────────────────────── */}
               {activeTab === "game" && (
                 <div>
-                  <GameHub />
+                  <GameHub activeGame={activeGame} setActiveGame={setActiveGame} />
                   <button
                     onClick={() => setActiveTab("learn")}
                     style={{
