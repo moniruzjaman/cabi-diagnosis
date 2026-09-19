@@ -6876,6 +6876,9 @@ export default function UdbhidGoenda() {
   // Game state (shared between Learn tab and GameHub)
   const [activeGame, setActiveGame] = useState(null);
 
+  // Learn tab accordion state
+  const [expandedLearnStep, setExpandedLearnStep] = useState(null);
+
   const fileRef = useRef();
   const recognitionRef = useRef(null);
   const resultRef = useRef(null);
@@ -8239,34 +8242,49 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                       CABI প্রোটোকল ধাপে ধাপে পড়ুন, প্রতিটি ধাপে গেম খেলে দক্ষ হন।
                     </p>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     {CABI_GAMES.map((game, i) => {
                       const guideStep = CABI_GUIDE.protocol.steps.find((s) => parseInt(s.num) === game.step);
+                      const isExpanded = expandedLearnStep === game.id;
                       return (
                         <div
                           key={game.id}
                           style={{
                             background: C.bgCard,
                             borderRadius: 18,
-                            padding: 20,
                             boxShadow: C.shadow,
                             border: `1px solid ${game.color}40`,
                             animation: `popIn .4s ease ${i * 0.08}s both`,
+                            overflow: "hidden",
                           }}
                         >
-                          {/* Step header with number and icon */}
-                          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+                          {/* Step header - clickable to toggle */}
+                          <button
+                            onClick={() => setExpandedLearnStep(isExpanded ? null : game.id)}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 14,
+                              padding: "16px 20px",
+                              border: "none",
+                              background: isExpanded ? `${game.color}10` : "transparent",
+                              cursor: "pointer",
+                              width: "100%",
+                              textAlign: "left",
+                            }}
+                            aria-expanded={isExpanded}
+                          >
                             <div
                               style={{
                                 position: "relative",
-                                width: 56,
-                                height: 56,
-                                borderRadius: 16,
+                                width: 52,
+                                height: 52,
+                                borderRadius: 14,
                                 background: game.bg,
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                fontSize: 28,
+                                fontSize: 26,
                                 boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
                                 flexShrink: 0,
                               }}
@@ -8277,15 +8295,15 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                                   position: "absolute",
                                   top: -4,
                                   right: -4,
-                                  width: 24,
-                                  height: 24,
+                                  width: 22,
+                                  height: 22,
                                   borderRadius: 8,
                                   background: C.bgCard,
                                   border: `2px solid ${game.color}`,
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
-                                  fontSize: 11,
+                                  fontSize: 10,
                                   fontWeight: 800,
                                   color: game.color,
                                   boxShadow: C.shadow,
@@ -8299,7 +8317,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                                 className="ud-headline"
                                 style={{
                                   fontWeight: 800,
-                                  fontSize: 18,
+                                  fontSize: 17,
                                   color: C.text,
                                   marginBottom: 4,
                                   lineHeight: 1.3,
@@ -8310,11 +8328,11 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                               <div style={{ fontSize: 11, color: C.textLight, marginBottom: 2 }}>
                                 {game.en}
                               </div>
-                              <div style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>
+                              <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.5 }}>
                                 {game.desc}
                               </div>
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                               <span
                                 style={{
                                   fontSize: 10,
@@ -8337,72 +8355,94 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                               >
                                 ⏱ {game.duration}
                               </span>
+                              <span
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: "50%",
+                                  background: isExpanded ? game.color : C.bgMuted,
+                                  color: isExpanded ? "#fff" : C.textLight,
+                                  fontSize: 14,
+                                  fontWeight: 700,
+                                  transition: "all .2s ease",
+                                }}
+                              >
+                                {isExpanded ? "−" : "+"}
+                              </span>
                             </div>
-                          </div>
+                          </button>
 
-                          {/* Guide content for this step */}
-                          {guideStep && (
-                            <div
-                              style={{
-                                background: C[guideStep.bgKey] || C.bgMuted,
-                                border: `1px solid ${C[guideStep.borderKey] || C.border}`,
-                                borderRadius: 12,
-                                padding: 16,
-                                marginBottom: 16,
-                              }}
-                            >
-                              <p style={{ fontSize: 13, color: C.text, lineHeight: 1.7, marginBottom: 10 }}>
-                                {guideStep.desc}
-                              </p>
-                              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                                {guideStep.points.map((pt, j) => (
-                                  <div
-                                    key={j}
-                                    style={{ display: "flex", gap: 8, fontSize: 12, color: C.text }}
-                                  >
-                                    <span
-                                      style={{
-                                        color: guideStep.color,
-                                        fontWeight: 700,
-                                        flexShrink: 0,
-                                      }}
-                                    >
-                                      ✓
-                                    </span>
-                                    <span>{pt}</span>
+                          {/* Collapsible content */}
+                          {isExpanded && (
+                            <div style={{ padding: "0 20px 20px", animation: "fadeIn .2s ease" }}>
+                              {/* Guide content for this step */}
+                              {guideStep && (
+                                <div
+                                  style={{
+                                    background: C[guideStep.bgKey] || C.bgMuted,
+                                    border: `1px solid ${C[guideStep.borderKey] || C.border}`,
+                                    borderRadius: 12,
+                                    padding: 16,
+                                    marginBottom: 16,
+                                  }}
+                                >
+                                  <p style={{ fontSize: 13, color: C.text, lineHeight: 1.7, marginBottom: 10 }}>
+                                    {guideStep.desc}
+                                  </p>
+                                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                                    {guideStep.points.map((pt, j) => (
+                                      <div
+                                        key={j}
+                                        style={{ display: "flex", gap: 8, fontSize: 12, color: C.text }}
+                                      >
+                                        <span
+                                          style={{
+                                            color: guideStep.color,
+                                            fontWeight: 700,
+                                            flexShrink: 0,
+                                          }}
+                                        >
+                                          ✓
+                                        </span>
+                                        <span>{pt}</span>
+                                      </div>
+                                    ))}
                                   </div>
-                                ))}
-                              </div>
+                                </div>
+                              )}
+
+                              {/* Play button */}
+                              <button
+                                onClick={() => setActiveGame(game.id)}
+                                style={{
+                                  width: "100%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  gap: 10,
+                                  padding: "14px 20px",
+                                  borderRadius: 12,
+                                  border: "none",
+                                  background: `linear-gradient(135deg,${game.color},${game.color}dd)`,
+                                  color: "#fff",
+                                  fontSize: 15,
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                  boxShadow: `0 6px 16px ${game.color}40`,
+                                  transition: "transform .15s ease, box-shadow .15s ease",
+                                }}
+                                onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.98)")}
+                                onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                              >
+                                <span style={{ fontSize: 20 }}>▶</span>
+                                <span>এখন খেলুন — {game.title}</span>
+                              </button>
                             </div>
                           )}
-
-                          {/* Play button */}
-                          <button
-                            onClick={() => setActiveGame(game.id)}
-                            style={{
-                              width: "100%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: 10,
-                              padding: "14px 20px",
-                              borderRadius: 12,
-                              border: "none",
-                              background: `linear-gradient(135deg,${game.color},${game.color}dd)`,
-                              color: "#fff",
-                              fontSize: 15,
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              boxShadow: `0 6px 16px ${game.color}40`,
-                              transition: "transform .15s ease, box-shadow .15s ease",
-                            }}
-                            onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.98)")}
-                            onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                          >
-                            <span style={{ fontSize: 20 }}>▶</span>
-                            <span>এখন খেলুন — {game.title}</span>
-                          </button>
                         </div>
                       );
                     })}
