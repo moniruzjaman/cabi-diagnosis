@@ -833,7 +833,7 @@ function createProviderRoutes({ messages, imageAttached, systemPrompt, policy })
       degraded: imageAttached,
       run: async () => {
         const result = normalizeProviderResult(await tryGroq(messages, systemPrompt, policy.maxOutputTokens));
-        if (imageAttached) result.content[0].text += "\\n\\n---\\nProvisional response: generated from the text description after vision fallback.";
+        if (imageAttached) result.content[0].text += "\n\n---\nProvisional response: generated from the text description after vision fallback.";
         return result;
       },
     },
@@ -850,7 +850,7 @@ function createProviderRoutes({ messages, imageAttached, systemPrompt, policy })
           max_tokens: policy.maxOutputTokens,
           provider: { allow_fallbacks: true, sort: "throughput" },
         }));
-        if (imageAttached) result.content[0].text += "\\n\\n---\\nProvisional response: generated from the text description after vision fallback.";
+        if (imageAttached) result.content[0].text += "\n\n---\nProvisional response: generated from the text description after vision fallback.";
         return result;
       },
     },
@@ -862,7 +862,7 @@ function createProviderRoutes({ messages, imageAttached, systemPrompt, policy })
       degraded: imageAttached,
       run: async () => {
         const result = normalizeProviderResult(await tryGemini(messages, false, systemPrompt, policy.maxOutputTokens));
-        if (imageAttached) result.content[0].text += "\\n\\n---\\n⚠️ Image analysis unavailable. Diagnosis based on description only.";
+        if (imageAttached) result.content[0].text += "\n\n---\n⚠️ Image analysis unavailable. Diagnosis based on description only.";
         return result;
       },
     },
