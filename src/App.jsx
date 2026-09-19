@@ -4872,7 +4872,7 @@ function CABIGuideTab() {
   const [section, setSection] = useState("protocol");
   const [database, setDatabase] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { speak: _speakGuide, stop: _stopGuide, speaking: _guideSpeaking, isSupported: guideTtsReady } = useTTS();
+  const { speak, stop: _stopGuide, speaking: _guideSpeaking, isSupported: guideTtsReady } = useTTS();
   const [_activeStep, _setActiveStep] = useState(null);
 
   useEffect(() => {
@@ -8202,7 +8202,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                 </div>
               )}
 
-              {/* ── LEARN sub-view (Guide + Games) ────────────────────── */}
+              {/* ── LEARN hub: routes to GUIDE and GAME tabs ────────────── */}
               {activeTab === "learn" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 14, animation: "fadeIn .3s ease" }}>
                   <div
@@ -8237,172 +8237,56 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                     </p>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    {CABI_GAMES.map((game, i) => {
-                      const guideStep = CABI_GUIDE.protocol.steps.find((s) => parseInt(s.num) === game.step);
-                      return (
-                        <div
-                          key={game.id}
-                          style={{
-                            background: C.bgCard,
-                            borderRadius: 18,
-                            padding: 20,
-                            boxShadow: C.shadow,
-                            border: `1px solid ${game.color}40`,
-                            animation: `popIn .4s ease ${i * 0.08}s both`,
-                          }}
-                        >
-                          {/* Step header with number and icon */}
-                          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
-                            <div
-                              style={{
-                                position: "relative",
-                                width: 56,
-                                height: 56,
-                                borderRadius: 16,
-                                background: game.bg,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: 28,
-                                boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-                                flexShrink: 0,
-                              }}
-                            >
-                              {game.icon}
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: -4,
-                                  right: -4,
-                                  width: 24,
-                                  height: 24,
-                                  borderRadius: 8,
-                                  background: C.bgCard,
-                                  border: `2px solid ${game.color}`,
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  fontSize: 11,
-                                  fontWeight: 800,
-                                  color: game.color,
-                                  boxShadow: C.shadow,
-                                }}
-                              >
-                                ধা.{game.step}
-                              </div>
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div
-                                className="ud-headline"
-                                style={{
-                                  fontWeight: 800,
-                                  fontSize: 18,
-                                  color: C.text,
-                                  marginBottom: 4,
-                                  lineHeight: 1.3,
-                                }}
-                              >
-                                ধাপ {game.step}: {game.title}
-                              </div>
-                              <div style={{ fontSize: 11, color: C.textLight, marginBottom: 2 }}>
-                                {game.en}
-                              </div>
-                              <div style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>
-                                {game.desc}
-                              </div>
-                            </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                              <span
-                                style={{
-                                  fontSize: 10,
-                                  color: C.textLight,
-                                  background: C.bgMuted,
-                                  padding: "2px 8px",
-                                  borderRadius: 10,
-                                }}
-                              >
-                                ⚡ {game.difficulty}
-                              </span>
-                              <span
-                                style={{
-                                  fontSize: 10,
-                                  color: C.textLight,
-                                  background: C.bgMuted,
-                                  padding: "2px 8px",
-                                  borderRadius: 10,
-                                }}
-                              >
-                                ⏱ {game.duration}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Guide content for this step */}
-                          {guideStep && (
-                            <div
-                              style={{
-                                background: C[guideStep.bgKey] || C.bgMuted,
-                                border: `1px solid ${C[guideStep.borderKey] || C.border}`,
-                                borderRadius: 12,
-                                padding: 16,
-                                marginBottom: 16,
-                              }}
-                            >
-                              <p style={{ fontSize: 13, color: C.text, lineHeight: 1.7, marginBottom: 10 }}>
-                                {guideStep.desc}
-                              </p>
-                              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                                {guideStep.points.map((pt, j) => (
-                                  <div
-                                    key={j}
-                                    style={{ display: "flex", gap: 8, fontSize: 12, color: C.text }}
-                                  >
-                                    <span
-                                      style={{
-                                        color: guideStep.color,
-                                        fontWeight: 700,
-                                        flexShrink: 0,
-                                      }}
-                                    >
-                                      ✓
-                                    </span>
-                                    <span>{pt}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Play button */}
-                          <button
-                            onClick={() => setActiveGame(game.id)}
-                            style={{
-                              width: "100%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: 10,
-                              padding: "14px 20px",
-                              borderRadius: 12,
-                              border: "none",
-                              background: `linear-gradient(135deg,${game.color},${game.color}dd)`,
-                              color: "#fff",
-                              fontSize: 15,
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              boxShadow: `0 6px 16px ${game.color}40`,
-                              transition: "transform .15s ease, box-shadow .15s ease",
-                            }}
-                            onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.98)")}
-                            onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                          >
-                            <span style={{ fontSize: 20 }}>▶</span>
-                            <span>এখন খেলুন — {game.title}</span>
-                          </button>
+                    <button
+                      onClick={() => setActiveTab("guide")}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 14,
+                        background: C.bgCard,
+                        border: `1px solid ${C.border}`,
+                        borderRadius: 18,
+                        padding: 20,
+                        textAlign: "left",
+                        cursor: "pointer",
+                        boxShadow: C.shadow,
+                      }}
+                    >
+                      <div style={{ fontSize: 32, flexShrink: 0 }}>📖</div>
+                      <div>
+                        <div style={{ fontWeight: 800, fontSize: 16, color: C.text, marginBottom: 3 }}>
+                          CABI Plantwise প্রোটোকল পড়ুন
                         </div>
-                      );
-                    })}
+                        <div style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>
+                          ৫-ধাপ রোগ নির্ণয় পদ্ধতি বিস্তারিত পড়ুন
+                        </div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("game")}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 14,
+                        background: C.bgCard,
+                        border: `1px solid ${C.border}`,
+                        borderRadius: 18,
+                        padding: 20,
+                        textAlign: "left",
+                        cursor: "pointer",
+                        boxShadow: C.shadow,
+                      }}
+                    >
+                      <div style={{ fontSize: 32, flexShrink: 0 }}>🎮</div>
+                      <div>
+                        <div style={{ fontWeight: 800, fontSize: 16, color: C.text, marginBottom: 3 }}>
+                          গেম খেলে অনুশীলন করুন
+                        </div>
+                        <div style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5 }}>
+                          ৫টি ইন্টারেক্টিভ গেমে প্রতিটি ধাপ অনুশীলন করুন
+                        </div>
+                      </div>
+                    </button>
                   </div>
                 </div>
               )}
