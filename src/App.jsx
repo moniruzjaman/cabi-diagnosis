@@ -10290,11 +10290,11 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                 target="_blank"
                 rel="noreferrer"
                 className="bottom-nav-item"
-                aria-label="এগ্রিকেম প্রো — নতুন ট্যাবে খুলুন"
+                aria-label="বালাইনাশক গাইড — নতুন ট্যাবে খুলুন"
                 style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textDecoration: "none", color: "inherit" }}
               >
                 <span className="nav-icon" style={{ fontSize: 20 }}>🌿</span>
-                <span>এগ্রিকেম</span>
+                <span>বালাইনাশক</span>
               </a>
             </nav>
           )}
