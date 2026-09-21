@@ -58,6 +58,23 @@ export async function ensureSchema() {
       )
     `);
 
+    // Defensive migration: older deployments may have created analytics_state
+    // before visitors/sections existed in the CREATE TABLE above. No-op on any
+    // database that already has them (checked via PRAGMA, not just try/catch,
+    // so this never spams "duplicate column" warnings on every cold start).
+    try {
+      const colInfo = await db.execute("PRAGMA table_info(analytics_state)");
+      const existingCols = new Set(colInfo.rows.map((r) => r.name));
+      if (!existingCols.has("visitors")) {
+        await db.execute("ALTER TABLE analytics_state ADD COLUMN visitors TEXT DEFAULT '{}'");
+      }
+      if (!existingCols.has("sections")) {
+        await db.execute("ALTER TABLE analytics_state ADD COLUMN sections TEXT DEFAULT '{}'");
+      }
+    } catch (migErr) {
+      console.warn("Turso analytics_state migration warning:", migErr.message);
+    }
+
     // Market Prices (dam.gov.bd)
     await db.execute(`
       CREATE TABLE IF NOT EXISTS market_prices (
