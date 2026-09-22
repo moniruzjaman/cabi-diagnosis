@@ -1,59 +1,67 @@
+```
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+*.class
+*.exe
+*.dll
+*.so
+*.a
+*.out
+
 # Dependencies
 node_modules/
-
-# Build output
-dist/
-.vercel/
-
-# Environment variables — NEVER commit these
+venv/
+.venv/
 .env
 .env.local
-.env.production
-.env.*.local
+*.env.*
 
-# Local data storage (analytics JSON)
-.data/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs
+# Build directories
+dist/
+build/
+target/
 *.log
-npm-debug.log*
-
-# IDE
-.vscode/
-.idea/
+*.tmp
 *.swp
 *.swo
 
-# Backup files
-*.backup
-src/App.jsx.backup
+# Editors
+.vscode/
+.idea/
 
-# AI agent directories (not part of the app, bloats repo)
-.serena/
-.agents/
-.claude/
-.continue/
-.qwen/
-.mcp.json
-skills/
-skills-lock.json
+# System files
+.DS_Store
+Thumbs.db
 
-# Worklog (local dev artifact)
-worklog.md
+# Coverage
+coverage/
+htmlcov/
+.coverage
 
-# Download directory (generated)
-download/
+# Python specific
+.mypy_cache/
+.pytest_cache/
 
-# Expo mobile (work-in-progress)
-expo-mobile/
-.vercel
-
-# On-device ViT model (Phase 1) — 22 MB ONNX file
-# Tracked directly in git (no LFS needed for a single 22 MB asset).
-# To regenerate: see docs/phase1-vit.md (or the attached notebook).
-# public/models/*.onnx
-
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+```
