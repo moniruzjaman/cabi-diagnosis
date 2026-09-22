@@ -19,6 +19,7 @@ import OutbreakList from "./components/OutbreakList";
 import VisualDiagnosisLibrary from "./components/VisualDiagnosisLibrary";
 import { HeroStakeholderSection } from "./components/HeroStakeholderSection";
 import UnifiedLearnResourceHub from "./components/UnifiedLearnResourceHub";
+import AgriChemApp from "./agrichem/AgriChemApp";
 import { computeEnsembleScore } from "./data/agronomicEngine";
 import { lookupMoA } from "./data/moaDatabase";
 import { getRegisteredProducts } from "./data/pesticideRegistry";
@@ -5548,7 +5549,7 @@ function MoAPesticideRegistryView({ C }) {
     return moa && moa.type === selectedMoaFilter;
   });
 
-  // ── AgriChem Pro database (DAE approved 187+ products) integration ──
+  // ── Pesticide guide database (DAE approved 187+ products) integration ──
   const q = query.trim().toLowerCase();
   const agrichemResults = q
     ? AGRICHEM_DATABASE.filter((p) => {
@@ -5713,15 +5714,15 @@ function MoAPesticideRegistryView({ C }) {
           })
         )}
 
-        {/* ── AgriChem Pro database results (shared chemical database) ── */}
+        {/* ── Pesticide guide database results (shared chemical database) ── */}
         {q && (
           <div style={{ marginTop: 14, borderTop: `1px dashed ${C.border}`, paddingTop: 12 }}>
             <div style={{ fontWeight: 800, fontSize: 13, color: "#047857", marginBottom: 2 }}>
-              🌿 এগ্রিকেম প্রো ডাটাবেস — মিল পাওয়া ফলাফল ({agrichemResults.length})
+              🌿 বালাইনাশক ডাটাবেস — মিল পাওয়া ফলাফল ({agrichemResults.length})
             </div>
             {agrichemResults.length === 0 ? (
               <div style={{ fontSize: 11, color: C.textMuted, padding: "8px 0" }}>
-                এগ্রিকেম ডাটাবেসে এই অনুসন্ধানের জন্য কিছু পাওয়া যায়নি।
+                বালাইনাশক ডাটাবেসে এই অনুসন্ধানের জন্য কিছু পাওয়া যায়নি।
               </div>
             ) : (
               <div style={{ display: "grid", gap: 8, maxHeight: 300, overflowY: "auto", paddingRight: 4 }}>
@@ -7771,6 +7772,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
     { id: "learn", label: "শিখুন", icon: "📖" },
     { id: "diagnose", label: "নির্ণয়", icon: "🔬" },
     { id: "library", label: "ভান্ডার", icon: "📚" },
+    { id: "pesticide", label: "বালাইনাশক", icon: "🌿" },
   ];
   const feedbackContext =
     activeTab === "diagnose"
@@ -7785,9 +7787,11 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
             ? "Information Library"
             : activeTab === "guide"
               ? "CABI Guide"
-              : activeTab === "learn"
-                ? "Learn"
-                : "Home";
+              : activeTab === "pesticide"
+                ? "Pesticide Guide"
+                : activeTab === "learn"
+                  ? "Learn"
+                  : "Home";
   const feedbackSummary =
     activeTab === "diagnose" && result
       ? `${form.crop || "Unknown crop"} | ${form.district || locationName || "Unknown district"} | ${(result.bn || result.en || "").slice(0, 160)}`
@@ -10089,6 +10093,9 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                 />
               )}
 
+              {/* ── PESTICIDE GUIDE (embedded, previously an external link) ── */}
+              {activeTab === "pesticide" && <AgriChemApp />}
+
               {/* ── GAME HUB (Playing to Practice) ────────────────────────────────────────────────── */}
               {activeTab === "game" && (
                 <UnifiedLearnResourceHub
@@ -10284,18 +10291,6 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   </button>
                 );
               })}
-              {/* External AgriChem Pro link — opens in new tab */}
-              <a
-                href="https://agrichem-guide.vercel.app/"
-                target="_blank"
-                rel="noreferrer"
-                className="bottom-nav-item"
-                aria-label="বালাইনাশক গাইড — নতুন ট্যাবে খুলুন"
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textDecoration: "none", color: "inherit" }}
-              >
-                <span className="nav-icon" style={{ fontSize: 20 }}>🌿</span>
-                <span>বালাইনাশক</span>
-              </a>
             </nav>
           )}
 
