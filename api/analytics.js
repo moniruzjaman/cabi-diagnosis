@@ -111,3 +111,22 @@ async function handleGet(req, res) {
     return res.status(500).json({ error: "Failed to fetch analytics" });
   }
 }
+
+// Export helper functions for use in other API routes
+export async function getVisitorStats(visitorId) {
+  try {
+    const store = await readStore();
+    const visitor = store.visitors[visitorId];
+    
+    return {
+      visits: visitor?.visits || 1,
+      sections: store.sections || {},
+      totalVisits: store.totalVisits || 1,
+      uniqueVisitors: store.uniqueVisitors || 1,
+      visitors: store.visitors || {},
+    };
+  } catch (error) {
+    console.error("Error getting visitor stats:", error);
+    return { visits: 1, sections: {}, totalVisits: 1, uniqueVisitors: 1 };
+  }
+}

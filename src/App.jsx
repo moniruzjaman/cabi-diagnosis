@@ -6790,6 +6790,47 @@ export default function UdbhidGoenda() {
     }
   });
 
+  // Auto-fetch visitor stats and user profile from API on mount
+  useEffect(() => {
+    const initializeUserData = async () => {
+      try {
+        // Fetch visitor stats and profile from API
+        const response = await fetch("/api/user-profile");
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Update visitor stats if available
+          if (data.visitorStats) {
+            setVisitorStats(data.visitorStats);
+            try {
+              localStorage.setItem("ud-visitor-stats", JSON.stringify(data.visitorStats));
+            } catch {}
+          }
+          
+          // Update visitor ID if available
+          if (data.visitorId) {
+            setVisitorId(data.visitorId);
+            try {
+              localStorage.setItem("ud-visitor-id", data.visitorId);
+            } catch {}
+          }
+          
+          // Auto-fetch user email if available
+          if (data.email && !userEmail) {
+            setUserEmail(data.email);
+            try {
+              localStorage.setItem("ud-user-email", data.email);
+            } catch {}
+          }
+        }
+      } catch (error) {
+        console.log("Could not fetch user profile, using local storage");
+      }
+    };
+    
+    initializeUserData();
+  }, []);
+
   useEffect(() => {
     initPerformanceMonitoring();
   }, []);
