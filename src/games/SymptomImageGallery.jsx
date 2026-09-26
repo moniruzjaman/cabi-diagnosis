@@ -42,7 +42,7 @@ export default function SymptomImageGallery({ images, label = "লক্ষণ�
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "scale(1.05)";
-              e.currentTarget.style.borderColor = "#006028";
+              e.currentTarget.style.borderColor = "#006A4E";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "scale(1)";

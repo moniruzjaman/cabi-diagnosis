@@ -3,6 +3,7 @@
  *
  * Tokens are aligned with C_LIGHT in App.jsx for visual consistency.
  * Includes tinted backgrounds and borders for dark-mode compatibility.
+ * Bangladesh Flag Colors: Green #006A4E, Red #F42A41
  *
  * Palette rationale (Sep 2026 logo refresh): primary green + danger red
  * are drawn from the app icon (also the colors of the Bangladesh flag);
@@ -17,6 +18,12 @@ export const lightTheme = {
   text: "#1a1d21",
   textMuted: "#5f6672",
   textLight: "#8e95a2",
+  primary: "#006A4E",
+  primaryDark: "#00553d",
+  primaryLight: "#1a8a5e",
+  border: "#e2e5ea",
+  shadow: "0 2px 8px rgba(0,0,0,0.06)",
+  danger: "#F42A41",
   primary: "#046A1A",
   primaryDark: "#023E11",
   primaryLight: "#2D9D14",
@@ -35,6 +42,12 @@ export const darkTheme = {
   text: "#e2e8f0",
   textMuted: "#94a3b8",
   textLight: "#94a3b8",
+  primary: "#4ade80",
+  primaryDark: "#22c55e",
+  primaryLight: "#86efac",
+  border: "#475569",
+  shadow: "0 1px 3px rgba(0,0,0,0.3)",
+  danger: "#f87171",
   primary: "#2D9D14",
   primaryDark: "#1a7a3a",
   primaryLight: "#8fdb2c",
@@ -42,7 +55,7 @@ export const darkTheme = {
   shadow: "0 1px 3px rgba(0,0,0,0.3)",
   danger: "#ff4d4a",
   warning: "#f59e0b",
-  success: "#22c55e",
+  success: "#4ade80",
   blue: "#3b82f6",
 };
 
@@ -115,9 +128,10 @@ export const lightThemeFull = {
   accentDark: "#B8860B",
   bgHeader: "#ffffff",
   bgNav: "#f0f2f5",
-  borderFocus: "#1a7a3a",
+  borderFocus: "#1a8a5e",
   shadowMd: "0 4px 16px rgba(0,0,0,0.08)",
   shadowLg: "0 8px 32px rgba(0,0,0,0.12)",
+  heroGradient: "linear-gradient(135deg, #006A4E 0%, #0a8c54 50%, #16a34a 100%)",
   heroGradient: "linear-gradient(135deg, #023E11 0%, #046A1A 50%, #2D9D14 100%)",
   game1: "#7c3aed",
   game2: "#0891b2",
@@ -133,7 +147,7 @@ export const darkThemeFull = {
   accentDark: "#B8860B",
   bgHeader: "#1e293b",
   bgNav: "#1e293b",
-  borderFocus: "#22c55e",
+  borderFocus: "#4ade80",
   shadowMd: "0 4px 16px rgba(0,0,0,0.3)",
   shadowLg: "0 8px 32px rgba(0,0,0,0.4)",
   heroGradient: "linear-gradient(135deg, #052e16 0%, #0a6b1f 50%, #2D9D14 100%)",
