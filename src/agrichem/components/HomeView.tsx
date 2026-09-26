@@ -601,8 +601,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </span>
             <h3 className="text-xl sm:text-2xl font-black text-white">
               {language === 'bn' 
-                ? 'এগ্রিকেম প্রো শেয়ার করে নিরাপদ ও বিষমুক্ত কৃষিতে অবদান রাখুন' 
-                : 'Share AgriChem Pro & Promote Safe Chemical Stewardship'}
+                ? 'বালাইনাশক নির্দেশিকা শেয়ার করে নিরাপদ ও বিষমুক্ত কৃষিতে অবদান রাখুন' 
+                : 'Share Pesticide Guide & Promote Safe Chemical Stewardship'}
             </h3>
             <p className="text-xs text-emerald-100 max-w-xl">
               {language === 'bn'

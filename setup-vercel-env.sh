@@ -91,6 +91,14 @@ add_env_var "GEMINI_API_KEY" "Google Gemini API Key — https://aistudio.google.
 add_env_var "GROQ_API_KEY" "Groq API Key — https://console.groq.com/keys" "required"
 add_env_var "OPENROUTER_API_KEY" "OpenRouter API Key — https://openrouter.ai/keys" "required"
 
+# ═══ Bonus free-tier fallback ═══
+echo -e "${GREEN}═══ Bonus free-tier fallback ═══${NC}"
+echo -e "Optional last-resort tier, tried only after all four providers above fail."
+echo -e "Shares the krishi-ai-gateway Cloudflare Worker used by other KrishiAI apps."
+echo ""
+
+add_env_var "KRISHI_GATEWAY_TOKEN" "KrishiAI Gateway token (matches KRISHI_API_TOKEN on the gateway Worker)" "optional"
+
 # ═══ Free-tier AI safety policy ═══
 echo -e "${GREEN}═══ Free-tier AI safety policy ═══${NC}"
 add_env_var "AI_MAX_ATTEMPTS" "Maximum provider attempts per diagnosis (default 5)" "optional"
