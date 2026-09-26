@@ -1,1 +1,12 @@
-@import "tailwindcss";
+/*
+ * Deliberately NOT importing the full "tailwindcss" entry (which bundles
+ * Preflight, Tailwind's global base-style reset). This module is mounted
+ * inside a much larger app (App.jsx) that relies on plain browser defaults
+ * in many places via inline styles, not Tailwind - a global Preflight reset
+ * would risk subtly changing margins/button/list styling app-wide, well
+ * outside this module's own screens. Importing just theme + utilities keeps
+ * every Tailwind utility class here (bg-emerald-600, flex, etc.) working
+ * exactly the same, with zero effect on anything outside this subtree.
+ */
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";

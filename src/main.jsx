@@ -33,6 +33,7 @@ class ErrorBoundary extends Component {
         >
           <div style={{ fontSize: 64, marginBottom: 16 }}>🌿</div>
           <h1 style={{ fontSize: 22, color: "#006A4E", marginBottom: 8 }}>কিছু একটা সমস্যা হয়েছে</h1>
+          <h1 style={{ fontSize: 22, color: "#046A1A", marginBottom: 8 }}>কিছু একটা সমস্যা হয়েছে</h1>
           <p style={{ fontSize: 14, color: "#5f6672", maxWidth: 360, lineHeight: 1.6, marginBottom: 20 }}>
             অ্যাপে একটি অপ্রত্যাশিত সমস্যা দেখা দিয়েছে। দয়া করে পাতাটি রিফ্রেশ করুন।
             <br />
@@ -45,6 +46,7 @@ class ErrorBoundary extends Component {
             style={{
               padding: "12px 28px",
               background: "#006A4E",
+              background: "#046A1A",
               color: "#fff",
               border: "none",
               borderRadius: 12,
