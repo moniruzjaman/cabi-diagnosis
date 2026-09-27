@@ -10,3 +10,65 @@
  */
 @import "tailwindcss/theme.css";
 @import "tailwindcss/utilities.css";
+
+/* Enable class-based dark mode for Tailwind 4.
+ * The ThemeContext applies 'dark' class to <html> when dark mode is active.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Global accessibility: focus-visible rings ──────────────────────────
+ * Every focusable element inside the AgriChem subtree gets a clear emerald
+ * focus ring when navigated via keyboard (focus-visible), but NOT when
+ * clicked via mouse (focus). This is the WCAG 2.4.7 standard.
+ */
+.agrichem-root *:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Remove default outline only when mouse-clicked (Tailwind's focus:outline-none
+ * is applied per-component, but this is the safety net). */
+.agrichem-root *:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ─── Smooth scrolling for in-page anchor links ────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ─── Reduced motion: respect user preference ────────────────────────────
+ * Users with vestibular disorders or motion sensitivity can set
+ * "Reduce Motion" in their OS. We honor it by disabling all transitions.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .agrichem-root *,
+  .agrichem-root *::before,
+  .agrichem-root *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Custom scrollbar styling for long lists ────────────────────────────
+ * Matches the emerald brand color and looks polished on desktop.
+ * Mobile browsers ignore this and use their native overlay scrollbar.
+ */
+.agrichem-root .agrichem-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.agrichem-root .agrichem-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.agrichem-root .agrichem-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+.agrichem-root .agrichem-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+

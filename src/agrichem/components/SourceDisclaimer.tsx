@@ -87,26 +87,26 @@ export const SourceDisclaimer: React.FC<SourceDisclaimerProps> = ({
   if (variant === 'compact') {
     return (
       <div
-        className={`bg-emerald-50/60 border border-emerald-200/70 rounded-xl p-3.5 flex items-start gap-3 ${className}`}
+        className={`bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-900/50 rounded-xl p-3.5 flex items-start gap-3 transition-colors duration-200 ${className}`}
       >
-        <div className="shrink-0 w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-          <ShieldCheck className="w-4 h-4 text-emerald-700" />
+        <div className="shrink-0 w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center">
+          <ShieldCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-800">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-800 dark:text-emerald-400">
               {t.source}
             </span>
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-white border border-emerald-200 px-1.5 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-900/60 px-1.5 py-0.5 rounded-full">
               <Calendar className="w-2.5 h-2.5" />
               {language === 'bn' ? `${PTAC_MEETING_BN} PTAC` : `${PTAC_MEETING} PTAC`}
             </span>
           </div>
-          <p className="text-[11px] text-slate-700 leading-relaxed mt-1.5">
+          <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed mt-1.5">
             {t.body}
           </p>
-          <p className="text-[10px] text-slate-500 mt-1.5 italic flex items-start gap-1">
-            <FileText className="w-3 h-3 text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1.5 italic flex items-start gap-1">
+            <FileText className="w-3 h-3 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
             <span>{t.disclaimer}</span>
           </p>
         </div>
@@ -114,7 +114,7 @@ export const SourceDisclaimer: React.FC<SourceDisclaimerProps> = ({
           href={DAE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 hover:text-emerald-900 hover:bg-white px-2 py-1 rounded-lg border border-emerald-200 transition"
+          className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 hover:bg-white dark:hover:bg-slate-800 px-2 py-1 rounded-lg border border-emerald-200 dark:border-emerald-900/60 transition"
           title={language === 'bn' ? 'DAE ওয়েবসাইট খুলুন' : 'Open DAE website'}
         >
           <span>{t.view}</span>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ChemicalProduct, RegulatoryAlert, AppTab } from './types';
 import { INITIAL_REGULATORY_ALERTS } from './data/regulatoryAlertsData';
 import { Navbar } from './components/Navbar';
@@ -130,9 +131,17 @@ export default function App() {
   const showDatabaseError = currentTabNeedsDatabase && databaseError && products.length === 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-emerald-100 selection:text-emerald-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-sans text-slate-900 dark:text-slate-100 selection:bg-emerald-100 dark:selection:bg-emerald-900/50 selection:text-emerald-900 dark:selection:text-emerald-100 transition-colors duration-200">
       {/* Dynamic Tab & SEO Meta */}
       <DocumentMeta activeTab={activeTab} />
+
+      {/* Accessibility: Skip-to-content link — visible only when focused via keyboard */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-emerald-700 focus:text-white focus:rounded-xl focus:text-sm focus:font-bold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+      >
+        {language === 'bn' ? 'মূল কন্টেন্টে যান' : 'Skip to main content'}
+      </a>
 
       {/* Navigation Bar */}
       <Navbar
@@ -146,8 +155,16 @@ export default function App() {
         totalProductsCount={products.length}
       />
 
-      {/* Main View Area */}
-      <main className="flex-1">
+      {/* Main View Area — wrapped in AnimatePresence for subtle tab transitions */}
+      <main id="main-content" className="flex-1" role="main">
+        <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+        >
         {activeTab === 'home' && (
           <HomeView
             products={products}
@@ -249,6 +266,8 @@ export default function App() {
             onDeleteAlert={handleDeleteAlert}
           />
         )}
+        </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Global Modals */}
@@ -287,7 +306,7 @@ export default function App() {
       />
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 mt-12 py-8 text-xs text-slate-500">
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-auto py-8 text-xs text-slate-500 dark:text-slate-400 transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           {/* Brand + Quick Nav */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -364,7 +383,7 @@ export default function App() {
           <SourceDisclaimer variant="compact" />
 
           {/* Bottom copyright line */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-[10px] text-slate-400">
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 dark:text-slate-500">
             <span>
               {language === 'bn'
                 ? '© কৃষি সম্প্রসারণ অধিদপ্তর (DAE) — অনুমোদিত তথ্য ভাণ্ডার'

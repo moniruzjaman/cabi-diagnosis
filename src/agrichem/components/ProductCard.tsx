@@ -69,7 +69,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div 
       id={`product-card-${product.id}`}
-      className="bg-white border border-slate-200 rounded-xl p-5 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between group"
+      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-md dark:hover:shadow-emerald-900/20 transition-all flex flex-col justify-between group dark:text-slate-100"
     >
       <div>
         {/* Top Badges */}
@@ -101,14 +101,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </p>
 
         {/* Reg & Manufacturer */}
-        <div className="mt-2.5 pt-2.5 border-t border-slate-100 text-xs text-slate-500 space-y-1">
+        <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-slate-400">{language === 'bn' ? 'নিবন্ধন নং:' : 'Reg No:'}</span>
-            <span className="font-mono font-medium text-slate-700">{product.registrationNo}</span>
+            <span className="text-slate-400 dark:text-slate-500">{language === 'bn' ? 'নিবন্ধন নং:' : 'Reg No:'}</span>
+            <span className="font-mono font-medium text-slate-700 dark:text-slate-300">{product.registrationNo}</span>
           </div>
           <div className="flex items-start justify-between gap-2">
-            <span className="text-slate-400 shrink-0">{language === 'bn' ? 'কোম্পানি:' : 'Holder:'}</span>
-            <span className="font-medium text-slate-700 text-right truncate" title={product.registrationHolder}>
+            <span className="text-slate-400 dark:text-slate-500 shrink-0">{language === 'bn' ? 'কোম্পানি:' : 'Holder:'}</span>
+            <span className="font-medium text-slate-700 dark:text-slate-300 text-right truncate" title={product.registrationHolder}>
               {product.registrationHolder}
             </span>
           </div>

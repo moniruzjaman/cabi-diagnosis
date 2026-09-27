@@ -1,8 +1,10 @@
 import React from 'react';
-import { 
+import {
   Home,
-  FlaskConical, 
-  Database, 
+  FlaskConical,
+  Database,
+  Sun,
+  Moon,
   Calculator, 
   RotateCw, 
   ShieldCheck, 
@@ -15,6 +17,7 @@ import {
   Share2
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { AppTab } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -40,9 +43,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   totalProductsCount
 }) => {
   const { language, toggleLanguage, t, formatNum } = useLanguage();
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-xs">
+    <header className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-xs transition-colors duration-200">
       {/* Top Banner */}
       <div className="bg-emerald-900 text-emerald-100 text-xs px-4 py-1.5 flex flex-wrap justify-between items-center gap-2">
         <div className="flex items-center gap-2">
@@ -135,6 +139,24 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-200/80 text-emerald-800 uppercase font-semibold">
                 {language === 'en' ? 'BN' : 'EN'}
               </span>
+            </button>
+
+            {/* Dark / Light Theme Toggle Button */}
+            <button
+              id="theme-toggle-btn"
+              onClick={toggleTheme}
+              className="flex items-center justify-center p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-emerald-800 transition shadow-2xs cursor-pointer select-none"
+              title={language === 'bn'
+                ? (resolvedTheme === 'dark' ? 'লাইট মোডে যান' : 'ডার্ক মোডে যান')
+                : (resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode')}
+              aria-label={language === 'bn'
+                ? (resolvedTheme === 'dark' ? 'লাইট মোডে যান' : 'ডার্ক মোডে যান')
+                : (resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode')}
+            >
+              {resolvedTheme === 'dark'
+                ? <Sun className="w-4 h-4 text-amber-500 transition-transform hover:scale-110" />
+                : <Moon className="w-4 h-4 text-slate-600 transition-transform hover:scale-110" />
+              }
             </button>
 
             {/* Push Notifications & Alerts Button */}

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../context/LanguageContext';
+import { useToast } from './Toast';
 import { AppTab } from '../types';
 
 interface ShareModalProps {
@@ -31,6 +32,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   defaultTab = 'home'
 }) => {
   const { language } = useLanguage();
+  const { toast } = useToast();
   const [selectedTarget, setSelectedTarget] = useState<AppTab>(defaultTab);
   const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
@@ -126,9 +128,19 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           text: `${currentTitle} - ${currentDesc}`,
           url: shareUrl
         });
+        toast({
+          title: language === 'bn' ? 'শেয়ার সম্পন্ন' : 'Shared successfully',
+          variant: 'success',
+        });
       } catch {
-        // User cancelled or share failed
+        // User cancelled — no toast needed
       }
+    } else {
+      toast({
+        title: language === 'bn' ? 'শেয়ার সমর্থিত নয়' : 'Sharing not supported',
+        description: language === 'bn' ? 'অন্য মাধ্যম ব্যবহার করুন' : 'Try another method',
+        variant: 'warning',
+      });
     }
   };
 
@@ -137,6 +149,16 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     navigator.clipboard.writeText(shareUrl).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
+      toast({
+        title: language === 'bn' ? 'লিংক কপি হয়েছে' : 'Link copied',
+        description: language === 'bn' ? 'যেকোনো জায়গায় পেস্ট করুন' : 'Paste anywhere to share',
+        variant: 'success',
+      });
+    }).catch(() => {
+      toast({
+        title: language === 'bn' ? 'কপি ব্যর্থ' : 'Copy failed',
+        variant: 'error',
+      });
     });
   };
 

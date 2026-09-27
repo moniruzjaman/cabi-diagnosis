@@ -1,15 +1,18 @@
 {
+  "id": "/?source=pwa",
   "name": "উদ্ভিদ গোয়েন্দা — Plant Detective",
   "short_name": "উদ্ভিদ গোয়েন্দা",
-  "description": "CABI Plantwise প্রোটোকল দিয়ে ফসলের রোগ নির্ণয় করুন — বাংলাদেশের কৃষকদের জন্য",
-  "start_url": "/",
+  "description": "CABI Plantwise প্রোটোকল দিয়ে ফসলের রোগ নির্ণয় করুন — বাংলাদেশের কৃষকদের জন্য। ৫,৬২৪+ নিবন্ধিত বালাইনাশক ডাটাবেস, মাত্রা ক্যালকুলেটর, ও অফলাইন ফিল্ড গাইড।",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
   "background_color": "#ffffff",
   "theme_color": "#046A1A",
   "orientation": "portrait-primary",
   "lang": "bn",
-  "categories": ["agriculture", "education", "utilities"],
+  "dir": "ltr",
+  "categories": ["agriculture", "education", "utilities", "productivity"],
   "prefer_related_applications": false,
   "icons": [
     {
@@ -40,22 +43,50 @@
       "type": "image/png"
     }
   ],
-  "screenshots": [],
+  "screenshots": [
+    {
+      "src": "/og-share.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "উদ্ভিদ গোয়েন্দা — স্মার্ট ফসল রোগ নির্ণয় ড্যাশবোর্ড"
+    }
+  ],
   "shortcuts": [
     {
       "name": "রোগ নির্ণয়",
-      "url": "/?tab=diagnose",
-      "description": "ফসলের ছবি দিয়ে রোগ চিনুন"
+      "short_name": "নির্ণয়",
+      "description": "ফসলের ছবি দিয়ে রোগ চিনুন",
+      "url": "/?tab=diagnose&source=shortcut",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "বালাইনাশক ডাটাবেস",
+      "short_name": "বালাইনাশক",
+      "description": "৫,৬২৪+ নিবন্ধিত বালাইনাশক অনুসন্ধান করুন",
+      "url": "/?tab=agrichem&source=shortcut",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
     },
     {
       "name": "গেম হাব",
-      "url": "/?tab=game",
-      "description": "CABI প্রোটোকল গেম খেলুন"
+      "short_name": "গেম",
+      "description": "CABI প্রোটোকল গেম খেলুন",
+      "url": "/?tab=game&source=shortcut",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
     },
     {
       "name": "CABI গাইড",
-      "url": "/?tab=guide",
-      "description": "CABI Plantwise গাইড পড়ুন"
+      "short_name": "গাইড",
+      "description": "CABI Plantwise গাইড পড়ুন",
+      "url": "/?tab=guide&source=shortcut",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "file_handlers": [],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "edge_side_panel": {
+    "preferred_width": 480
+  }
 }
