@@ -23,7 +23,7 @@ import AgriChemApp from "./agrichem/AgriChemApp";
 import { computeEnsembleScore } from "./data/agronomicEngine";
 import { lookupMoA } from "./data/moaDatabase";
 import { getRegisteredProducts } from "./data/pesticideRegistry";
-import { PESTICIDES_DATABASE as AGRICHEM_DATABASE } from "./agrichem/data/pesticidesData";
+import { PESTICIDES_DATABASE_OFFICIAL as AGRICHEM_DATABASE } from "./agrichem/data/pesticideMapper";
 import "./styles/accessibility.css";
 
 const SymptomSpotter = React.lazy(() => import("./games/SymptomSpotter"));
@@ -5549,7 +5549,7 @@ function MoAPesticideRegistryView({ C }) {
     return moa && moa.type === selectedMoaFilter;
   });
 
-  // ── Pesticide guide database (DAE approved 187+ products) integration ──
+  // ── Pesticide guide database (DAE approved 5,624 products) integration ──
   const q = query.trim().toLowerCase();
   const agrichemResults = q
     ? AGRICHEM_DATABASE.filter((p) => {

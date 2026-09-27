@@ -57,7 +57,8 @@ export const CATEGORY_TRANSLATIONS: Record<string, string> = {
   'Miticide': 'মাকড়নাশক',
   'Bio Pesticide': 'জৈব বালাইনাশক',
   'Stored Grain': 'গুদামজাত শস্য সংরক্ষণ',
-  'Rodenticide': 'ইঁদুরনাশক'
+  'Rodenticide': 'ইঁদুরনাশক',
+  'Public Health': 'জনস্বাস্থ্য কীটনাশক'
 };
 
 export const RISK_TRANSLATIONS: Record<string, string> = {

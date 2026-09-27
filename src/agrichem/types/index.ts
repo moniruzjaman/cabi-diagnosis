@@ -5,7 +5,8 @@ export type ChemicalType =
   | 'Miticide'
   | 'Bio Pesticide'
   | 'Stored Grain'
-  | 'Rodenticide';
+  | 'Rodenticide'
+  | 'Public Health';
 
 export interface ChemicalProduct {
   id: string;

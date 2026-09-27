@@ -46,6 +46,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         return 'bg-indigo-100 text-indigo-800 border-indigo-200';
       case 'Rodenticide':
         return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'Public Health':
+        return 'bg-cyan-100 text-cyan-800 border-cyan-200';
       default:
         return 'bg-slate-100 text-slate-800 border-slate-200';
     }

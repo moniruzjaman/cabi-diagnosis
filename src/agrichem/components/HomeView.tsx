@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Database, 
   Calculator, 
@@ -39,15 +39,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const { language, t, formatNum, transCrop } = useLanguage();
   const [activePreviewFeature, setActivePreviewFeature] = useState<number>(0);
 
-  // Popular crops for quick navigation
-  const popularCrops = [
-    { en: 'Rice', bn: 'ধান', count: 28 },
-    { en: 'Potato', bn: 'আলু', count: 18 },
-    { en: 'Tomato', bn: 'টমেটো', count: 16 },
-    { en: 'Brinjal', bn: 'বেগুন', count: 15 },
-    { en: 'Mango', bn: 'আম', count: 12 },
-    { en: 'Chilli', bn: 'মরিচ', count: 11 }
-  ];
+  // Popular crops for quick navigation — counts are derived live from the
+  // mounted products database so they always reflect the official DAE
+  // registry, regardless of which dataset is currently wired up in App.tsx.
+  const popularCrops = useMemo(() => {
+    const targets: Array<{ en: string; bn: string }> = [
+      { en: 'Rice', bn: 'ধান' },
+      { en: 'Potato', bn: 'আলু' },
+      { en: 'Tomato', bn: 'টমেটো' },
+      { en: 'Brinjal', bn: 'বেগুন' },
+      { en: 'Mango', bn: 'আম' },
+      { en: 'Chilli', bn: 'মরিচ' },
+    ];
+    return targets.map((c) => ({
+      ...c,
+      count: products.filter((p) => p.crops.includes(c.en)).length,
+    }));
+  }, [products]);
 
   // Feature definitions with detailed summaries for the Hero Section
   const features = [

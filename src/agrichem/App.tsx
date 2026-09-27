@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChemicalProduct, RegulatoryAlert, AppTab } from './types';
-import { PESTICIDES_DATABASE } from './data/pesticidesData';
+import { PESTICIDES_DATABASE_OFFICIAL } from './data/pesticideMapper';
 import { INITIAL_REGULATORY_ALERTS } from './data/regulatoryAlertsData';
 import { Navbar } from './components/Navbar';
 import { HomeView } from './components/HomeView';
@@ -31,7 +31,7 @@ import {
 
 export default function App() {
   const { language } = useLanguage();
-  const [products] = useState<ChemicalProduct[]>(PESTICIDES_DATABASE);
+  const [products] = useState<ChemicalProduct[]>(PESTICIDES_DATABASE_OFFICIAL);
   const [activeTab, setActiveTab] = useState<AppTab>('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -92,7 +92,7 @@ export default function App() {
         unreadAlertCount={unreadAlertCount}
         onOpenAlerts={() => setActiveTab('alerts')}
         onOpenShare={() => setIsShareModalOpen(true)}
-        totalProductsCount={187}
+        totalProductsCount={products.length}
       />
 
       {/* Main View Area */}
@@ -106,7 +106,7 @@ export default function App() {
               setActiveTab('database');
             }}
             onOpenShareModal={() => setIsShareModalOpen(true)}
-            totalProductsCount={187}
+            totalProductsCount={products.length}
           />
         )}
 
