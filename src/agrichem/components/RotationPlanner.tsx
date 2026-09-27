@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { exportRotationSchedulePDF } from '../utils/pdfExport';
 import { useLanguage } from '../context/LanguageContext';
+import { SourceDisclaimer } from './SourceDisclaimer';
 
 interface RotationPlannerProps {
   products: ChemicalProduct[];
@@ -220,7 +221,9 @@ export const RotationPlanner: React.FC<RotationPlannerProps> = ({ products }) =>
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-bold text-slate-900 text-base">
-              {transCrop(selectedCrop)}-এ {selectedPest}-এর জন্য অনুমোদিত MoA গ্রুপসমূহ
+              {language === 'bn'
+                ? `${transCrop(selectedCrop)}-এ ${selectedPest}-এর জন্য অনুমোদিত MoA গ্রুপসমূহ`
+                : `Approved MoA Groups for ${selectedPest} on ${transCrop(selectedCrop)}`}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
               {language === 'bn'
@@ -486,6 +489,9 @@ export const RotationPlanner: React.FC<RotationPlannerProps> = ({ products }) =>
           </div>
         </div>
       </div>
+
+      {/* Source attribution — DAE registry citation */}
+      <SourceDisclaimer variant="compact" />
     </div>
   );
 };

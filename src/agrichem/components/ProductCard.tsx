@@ -174,40 +174,40 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <button
           id={`btn-calc-${product.id}`}
           onClick={() => onOpenCalculator(product)}
-          className="flex flex-col items-center justify-center p-1.5 text-xs text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg border border-slate-200 transition cursor-pointer"
-          title="Calculate field dosage and tank mix"
+          className="group/btn flex flex-col items-center justify-center p-1.5 text-xs text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg border border-slate-200 hover:border-emerald-200 transition cursor-pointer"
+          title={language === 'bn' ? 'মাঠ পর্যায়ের মাত্রা ও ট্যাংক মিশ্রণ ক্যালকুলেটর' : 'Calculate field dosage and tank mix'}
         >
-          <Calculator className="w-4 h-4 text-emerald-600 mb-0.5" />
+          <Calculator className="w-4 h-4 text-emerald-600 mb-0.5 transition-transform group-hover/btn:scale-110" />
           <span className="text-[10px] font-medium">{language === 'bn' ? 'মাত্রা হিসাব' : 'Dosage'}</span>
         </button>
 
         <button
           id={`btn-safety-${product.id}`}
           onClick={() => onOpenSafety(product)}
-          className="flex flex-col items-center justify-center p-1.5 text-xs text-slate-700 hover:text-amber-700 hover:bg-amber-50 rounded-lg border border-slate-200 transition cursor-pointer"
-          title="Safety precautions and PPE checklist"
+          className="group/btn flex flex-col items-center justify-center p-1.5 text-xs text-slate-700 hover:text-amber-700 hover:bg-amber-50 rounded-lg border border-slate-200 hover:border-amber-200 transition cursor-pointer"
+          title={language === 'bn' ? 'সুরক্ষা সতর্কতা ও পিপিই চেকলিস্ট' : 'Safety precautions and PPE checklist'}
         >
-          <ShieldCheck className="w-4 h-4 text-amber-600 mb-0.5" />
+          <ShieldCheck className="w-4 h-4 text-amber-600 mb-0.5 transition-transform group-hover/btn:scale-110" />
           <span className="text-[10px] font-medium">{language === 'bn' ? 'সুরক্ষা' : 'Safety'}</span>
         </button>
 
         <button
           id={`btn-pdf-${product.id}`}
           onClick={() => exportSingleProductPDF(product)}
-          className="flex flex-col items-center justify-center p-1.5 text-xs text-slate-700 hover:text-blue-700 hover:bg-blue-50 rounded-lg border border-slate-200 transition cursor-pointer"
-          title="Export offline field card PDF"
+          className="group/btn flex flex-col items-center justify-center p-1.5 text-xs text-slate-700 hover:text-blue-700 hover:bg-blue-50 rounded-lg border border-slate-200 hover:border-blue-200 transition cursor-pointer"
+          title={language === 'bn' ? 'অফলাইন ফিল্ড কার্ড PDF ডাউনলোড' : 'Export offline field card PDF'}
         >
-          <FileDown className="w-4 h-4 text-blue-600 mb-0.5" />
+          <FileDown className="w-4 h-4 text-blue-600 mb-0.5 transition-transform group-hover/btn:scale-110" />
           <span className="text-[10px] font-medium">{language === 'bn' ? 'কার্ড PDF' : 'PDF Card'}</span>
         </button>
 
         <button
           id={`btn-details-${product.id}`}
           onClick={() => onSelectProduct(product)}
-          className="flex flex-col items-center justify-center p-1.5 text-xs bg-slate-900 text-white hover:bg-emerald-700 rounded-lg transition cursor-pointer"
-          title="View full chemical dossier"
+          className="group/btn flex flex-col items-center justify-center p-1.5 text-xs bg-slate-900 text-white hover:bg-emerald-700 rounded-lg transition cursor-pointer"
+          title={language === 'bn' ? 'সম্পূর্ণ রাসায়নিক ডসিয়ার দেখুন' : 'View full chemical dossier'}
         >
-          <Info className="w-4 h-4 mb-0.5" />
+          <Info className="w-4 h-4 mb-0.5 transition-transform group-hover/btn:scale-110" />
           <span className="text-[10px] font-medium">{language === 'bn' ? 'বিস্তারিত' : 'Details'}</span>
         </button>
       </div>

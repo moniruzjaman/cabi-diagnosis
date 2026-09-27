@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { exportSingleProductPDF } from '../utils/pdfExport';
 import { useLanguage } from '../context/LanguageContext';
+import { SourceDisclaimer } from './SourceDisclaimer';
 
 interface SafetyViewProps {
   products: ChemicalProduct[];
@@ -25,8 +26,21 @@ interface SafetyViewProps {
 
 export const SafetyView: React.FC<SafetyViewProps> = ({ products, onOpenSafetyModal }) => {
   const { language, t, formatNum } = useLanguage();
-  const [selectedProduct, setSelectedProduct] = useState<ChemicalProduct>(products[0]);
+  // Guard against empty products array during the initial lazy-load of the
+  // 5,624-record database. Without this, `products[0]` throws "Cannot
+  // read properties of undefined" the first time the Safety tab is opened.
+  const [selectedProduct, setSelectedProduct] = useState<ChemicalProduct | null>(
+    products[0] || null
+  );
   const [checks, setChecks] = useState<{ [key: string]: boolean }>({});
+
+  // Once the database finishes loading and `products` becomes non-empty,
+  // auto-select the first product so the UI has something to display.
+  React.useEffect(() => {
+    if (!selectedProduct && products.length > 0) {
+      setSelectedProduct(products[0]);
+    }
+  }, [products, selectedProduct]);
 
   const toggleCheck = (id: string) => {
     setChecks((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -91,11 +105,13 @@ export const SafetyView: React.FC<SafetyViewProps> = ({ products, onOpenSafetyMo
       title: language === 'bn' ? 'শারীরিক বিশোধন ও গোসল' : 'Personal Decontamination', 
       desc: language === 'bn' ? 'হাত, মুখমণ্ডল ও সারা শরীর প্রচুর ঠান্ডা পানি ও সাবান দিয়ে ধুয়ে গোসল করুন। ব্যবহৃত কাপড় পরিবারের কাপড় থেকে আলাদা ধোবেন।' : 'Wash hands, face, and body with cold water and soap immediately. Wash spray clothes separately from family laundry.' 
     },
-    { 
-      id: 'c10', 
-      phase: language === 'bn' ? 'স্প্রে পরবর্তী' : 'Post-Spray', 
-      title: language === 'bn' ? 'জমিতে প্রবেশের ব্যবধান (REI) ও লাল নিশানা' : 'Field Re-Entry & PHI Warning', 
-      desc: language === 'bn' ? 'জমির চারপাশে লাল ফিতা বা সতর্কীকরণ সাইনবোর্ড টানিয়ে রাখুন যাতে নির্দিষ্ট সময়ের পূর্বে কোনো মানুষ বা গবাদিপশু জমিতে না ঢোকে।' : 'Field Re-Entry & PHI Warning' 
+    {
+      id: 'c10',
+      phase: language === 'bn' ? 'স্প্রে পরবর্তী' : 'Post-Spray',
+      title: language === 'bn' ? 'জমিতে প্রবেশের ব্যবধান (REI) ও লাল নিশানা' : 'Field Re-Entry & PHI Warning',
+      desc: language === 'bn'
+        ? 'জমির চারপাশে লাল ফিতা বা সতর্কীকরণ সাইনবোর্ড টানিয়ে রাখুন যাতে নির্দিষ্ট সময়ের পূর্বে কোনো মানুষ বা গবাদিপশু জমিতে না ঢোকে।'
+        : 'Tie red warning tape or signage around the field so no people or livestock enter before the Restricted Entry Interval (REI) has elapsed.'
     }
   ];
 
@@ -336,43 +352,54 @@ export const SafetyView: React.FC<SafetyViewProps> = ({ products, onOpenSafetyMo
           </h3>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 items-center">
-          <select
-            value={selectedProduct.id}
-            onChange={(e) => {
-              const found = products.find((p) => p.id === e.target.value);
-              if (found) setSelectedProduct(found);
-            }}
-            className="w-full sm:w-80 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-          >
-            {products.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.tradeName} ({p.commonName})
-              </option>
-            ))}
-          </select>
+        {selectedProduct ? (
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
+            <select
+              value={selectedProduct.id}
+              onChange={(e) => {
+                const found = products.find((p) => p.id === e.target.value);
+                if (found) setSelectedProduct(found);
+              }}
+              className="w-full sm:w-80 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              {products.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.tradeName} ({p.commonName})
+                </option>
+              ))}
+            </select>
 
-          <button
-            onClick={() => onOpenSafetyModal(selectedProduct)}
-            className="w-full sm:w-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <ShieldAlert className="w-4 h-4" />
-            <span>
-              {language === 'bn' 
-                ? `${selectedProduct.tradeName}-এর সুরক্ষা চেকলিস্ট দেখুন` 
-                : `Open Safety Checklist for ${selectedProduct.tradeName}`}
-            </span>
-          </button>
+            <button
+              onClick={() => onOpenSafetyModal(selectedProduct)}
+              className="w-full sm:w-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <ShieldAlert className="w-4 h-4" />
+              <span>
+                {language === 'bn'
+                  ? `${selectedProduct.tradeName}-এর সুরক্ষা চেকলিস্ট দেখুন`
+                  : `Open Safety Checklist for ${selectedProduct.tradeName}`}
+              </span>
+            </button>
 
-          <button
-            onClick={() => exportSingleProductPDF(selectedProduct)}
-            className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold border border-slate-300 transition flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <FileDown className="w-4 h-4 text-blue-600" />
-            <span>{language === 'bn' ? 'পিডিএফ সেফটি শিট ডাউনলোড' : 'Download PDF Safety Sheet'}</span>
-          </button>
-        </div>
+            <button
+              onClick={() => exportSingleProductPDF(selectedProduct)}
+              className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold border border-slate-300 transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <FileDown className="w-4 h-4 text-blue-600" />
+              <span>{language === 'bn' ? 'পিডিএফ সেফটি শিট ডাউনলোড' : 'Download PDF Safety Sheet'}</span>
+            </button>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-xs text-slate-500">
+            {language === 'bn'
+              ? 'ডাটাবেস লোড হওয়া পর্যন্ত অপেক্ষা করুন...'
+              : 'Waiting for database to load...'}
+          </div>
+        )}
       </div>
+
+      {/* Source attribution — DAE registry citation */}
+      <SourceDisclaimer variant="compact" />
     </div>
   );
 };

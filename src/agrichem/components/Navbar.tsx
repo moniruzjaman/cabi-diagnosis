@@ -95,9 +95,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition"
               />
               {searchQuery && (
-                <button 
+                <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 bg-slate-200 hover:bg-slate-300 rounded-full w-4 h-4 flex items-center justify-center"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-rose-700 bg-slate-200 hover:bg-rose-100 rounded-full w-6 h-6 flex items-center justify-center transition-colors"
+                  aria-label={language === 'bn' ? '�ন্ধান মুছুন' : 'Clear search'}
                 >
                   ✕
                 </button>
@@ -144,9 +145,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="Regulatory compliance updates & seasonal alerts"
             >
               {unreadAlertCount > 0 ? (
-                <BellRing className="w-5 h-5 text-amber-600 animate-bounce" />
+                <BellRing className="w-5 h-5 text-amber-600 transition-transform hover:scale-110" />
               ) : (
-                <Bell className="w-5 h-5" />
+                <Bell className="w-5 h-5 transition-transform hover:scale-110" />
               )}
               {unreadAlertCount > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 bg-amber-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center">
@@ -189,9 +190,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="tab-btn-calculator"
             onClick={() => setActiveTab('calculator')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'calculator'
-                ? 'bg-emerald-600 text-white shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -202,9 +203,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="tab-btn-rotation"
             onClick={() => setActiveTab('rotation')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'rotation'
-                ? 'bg-emerald-600 text-white shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -215,9 +216,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="tab-btn-safety"
             onClick={() => setActiveTab('safety')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'safety'
-                ? 'bg-emerald-600 text-white shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -228,9 +229,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="tab-btn-guidebook"
             onClick={() => setActiveTab('guidebook')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'guidebook'
-                ? 'bg-emerald-600 text-white shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -241,9 +242,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="tab-btn-alerts"
             onClick={() => setActiveTab('alerts')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'alerts'
-                ? 'bg-emerald-600 text-white shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >

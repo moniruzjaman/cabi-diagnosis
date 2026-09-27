@@ -5603,7 +5603,7 @@ function MoAPesticideRegistryView({ C }) {
     return moa && moa.type === selectedMoaFilter;
   });
 
-  // ── Pesticide guide database (DAE approved 5,624 products) integration ──
+  // ── Pesticide guide database (DAE-approved, full registry) integration ──
   const q = query.trim().toLowerCase();
   const agrichemResults = q && agrichemDatabase
     ? agrichemDatabase.filter((p) => {
@@ -5781,7 +5781,7 @@ function MoAPesticideRegistryView({ C }) {
             </div>
             {agrichemDbLoading ? (
               <div style={{ fontSize: 11, color: C.textMuted, padding: "8px 0" }}>
-                ⏳ ৫,৬২৪ টি নিবন্ধিত পণ্যের ডাটাবেস লোড হচ্ছে...
+                ⏳ নিবন্ধিত বালাইনাশক ডাটাবেস লোড হচ্ছে...
               </div>
             ) : agrichemDbError ? (
               <div style={{ fontSize: 11, color: "#dc2626", padding: "8px 0" }}>

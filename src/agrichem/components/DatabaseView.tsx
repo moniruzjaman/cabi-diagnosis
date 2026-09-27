@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { exportCropGuidePDF } from '../utils/pdfExport';
 import { useLanguage } from '../context/LanguageContext';
+import { SourceDisclaimer } from './SourceDisclaimer';
 
 interface DatabaseViewProps {
   products: ChemicalProduct[];
@@ -153,7 +154,7 @@ export const DatabaseView: React.FC<DatabaseViewProps> = ({
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             {language === 'bn'
               ? '৫,৬২৪ টি নিবন্ধিত বালাইনাশক ডাউনলোড হচ্ছে। কয়েক সেকেন্ড অপেক্ষা করুন।'
-              : 'Downloading 5,624 registered pesticides. This takes a few seconds.'}
+              : 'Downloading the DAE-registered pesticide database. This takes a few seconds.'}
           </p>
         </div>
       </div>
@@ -396,6 +397,9 @@ export const DatabaseView: React.FC<DatabaseViewProps> = ({
           </button>
         </div>
       )}
+
+      {/* Source attribution — DAE registry citation */}
+      <SourceDisclaimer variant="compact" />
     </div>
   );
 };

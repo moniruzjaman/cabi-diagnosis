@@ -15,6 +15,7 @@ import { NotificationCenter } from './components/NotificationCenter';
 import { DocumentMeta } from './components/DocumentMeta';
 import { useLanguage } from './context/LanguageContext';
 import { LoadingScreen } from './components/LoadingScreen';
+import { SourceDisclaimer } from './components/SourceDisclaimer';
 import {
   FlaskConical,
   ShieldCheck,
@@ -287,47 +288,91 @@ export default function App() {
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 mt-12 py-8 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
-              <FlaskConical className="w-4 h-4" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+          {/* Brand + Quick Nav */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-sm transition-transform hover:scale-105">
+                <FlaskConical className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-900">
+                  {language === 'bn' ? 'বালাইনাশক নির্দেশিকা' : 'Pesticide Guide'}
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  {language === 'bn'
+                    ? 'ফিল্ড কন্ট্রোলস ও ডাটাবেস গাইডবুক'
+                    : 'Field Controls & Database Guidebook'}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="font-bold text-slate-900">
-                {language === 'bn' ? 'বালাইনাশক নির্দেশিকা — ফিল্ড কন্ট্রোলস ও ডাটাবেস গাইডবুক' : 'Pesticide Guide — Field Controls & Database Guidebook'}
-              </p>
-              <p className="text-[11px] text-slate-400">
-                {language === 'bn' ? 'কৃষি সম্প্রসারণ অধিদপ্তর (DAE) অনুমোদিত অফিসিয়াল রেফারেন্স ডাটাবেস' : 'Department of Agricultural Extension (DAE) Official Reference Data'}
-              </p>
+
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+              <button
+                onClick={() => setActiveTab('home')}
+                className="group relative hover:text-emerald-700 cursor-pointer font-bold text-slate-800 transition"
+              >
+                {language === 'bn' ? 'হোম' : 'Home'}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-600 group-hover:w-full transition-all" />
+              </button>
+              <button
+                onClick={() => setActiveTab('database')}
+                className="group relative hover:text-emerald-700 cursor-pointer transition"
+              >
+                {language === 'bn' ? 'রাসায়নিক ডিরেক্টরি' : 'Chemical Directory'}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-600 group-hover:w-full transition-all" />
+              </button>
+              <button
+                onClick={() => setActiveTab('rotation')}
+                className="group relative hover:text-emerald-700 cursor-pointer transition"
+              >
+                {language === 'bn' ? 'MoA ঘূর্ণন' : 'MoA Rotation'}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-600 group-hover:w-full transition-all" />
+              </button>
+              <button
+                onClick={() => setActiveTab('safety')}
+                className="group relative hover:text-emerald-700 cursor-pointer transition"
+              >
+                {language === 'bn' ? 'পিপিই চেকলিস্ট' : 'PPE Checklists'}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-600 group-hover:w-full transition-all" />
+              </button>
+              <button
+                onClick={() => setActiveTab('guidebook')}
+                className="group relative hover:text-emerald-700 cursor-pointer transition"
+              >
+                {language === 'bn' ? 'ফিল্ড ক্যালিব্রেশন' : 'Field Calibration'}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-600 group-hover:w-full transition-all" />
+              </button>
+              <button
+                onClick={() => setActiveTab('alerts')}
+                className="group relative hover:text-emerald-700 cursor-pointer transition"
+              >
+                {language === 'bn' ? 'নিয়ন্ত্রক নোটিফিকেশন' : 'Compliance Alerts'}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-600 group-hover:w-full transition-all" />
+              </button>
+              <button
+                onClick={() => setIsShareModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:shadow-sm font-bold border border-emerald-200 cursor-pointer transition"
+              >
+                <Share2 className="w-3.5 h-3.5 text-emerald-600 transition-transform group-hover:rotate-12" />
+                <span>{language === 'bn' ? 'শেয়ার করুন' : 'Share'}</span>
+              </button>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-xs">
-            <button onClick={() => setActiveTab('home')} className="hover:text-emerald-700 cursor-pointer font-bold text-slate-800">
-              {language === 'bn' ? 'হোম' : 'Home'}
-            </button>
-            <button onClick={() => setActiveTab('database')} className="hover:text-emerald-700 cursor-pointer">
-              {language === 'bn' ? 'রাসায়নিক ডিরেক্টরি' : 'Chemical Directory'}
-            </button>
-            <button onClick={() => setActiveTab('rotation')} className="hover:text-emerald-700 cursor-pointer">
-              {language === 'bn' ? 'MoA ঘূর্ণন' : 'MoA Rotation'}
-            </button>
-            <button onClick={() => setActiveTab('safety')} className="hover:text-emerald-700 cursor-pointer">
-              {language === 'bn' ? 'পিপিই চেকলিস্ট' : 'PPE Checklists'}
-            </button>
-            <button onClick={() => setActiveTab('guidebook')} className="hover:text-emerald-700 cursor-pointer">
-              {language === 'bn' ? 'ফিল্ড ক্যালিব্রেশন' : 'Field Calibration'}
-            </button>
-            <button onClick={() => setActiveTab('alerts')} className="hover:text-emerald-700 cursor-pointer">
-              {language === 'bn' ? 'নিয়ন্ত্রক নোটিফিকেশন' : 'Compliance Alerts'}
-            </button>
-            <button
-              onClick={() => setIsShareModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold border border-emerald-200 cursor-pointer transition"
-            >
-              <Share2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{language === 'bn' ? 'শেয়ার করুন' : 'Share'}</span>
-            </button>
+          {/* Source attribution disclaimer — single source of truth */}
+          <SourceDisclaimer variant="compact" />
+
+          {/* Bottom copyright line */}
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-[10px] text-slate-400">
+            <span>
+              {language === 'bn'
+                ? '© কৃষি সম্প্রসারণ অধিদপ্তর (DAE) — অনুমোদিত তথ্য ভাণ্ডার'
+                : '© Department of Agricultural Extension (DAE) — Approved Reference'}
+            </span>
+            <span className="font-mono">
+              {language === 'bn' ? 'সংস্করণ 4.0.0' : 'v4.0.0'}
+            </span>
           </div>
         </div>
       </footer>

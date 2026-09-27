@@ -124,9 +124,15 @@ export const SafetyChecklistModal: React.FC<SafetyChecklistModalProps> = ({
               <span className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider block">
                 {language === 'bn' ? 'ফসল তোলার বিরতি (PHI)' : 'Pre-Harvest Interval (PHI)'}
               </span>
-              <span className="text-xl font-black text-emerald-950 mt-1 block">
-                {formatNum(product.phiDays || 14)} {language === 'bn' ? 'দিন' : 'Days'}
-              </span>
+              {product.phiDays ? (
+                <span className="text-xl font-black text-emerald-950 mt-1 block">
+                  {formatNum(product.phiDays)} {language === 'bn' ? 'দিন' : 'Days'}
+                </span>
+              ) : (
+                <span className="text-base font-bold text-slate-600 mt-1 block italic">
+                  {language === 'bn' ? 'লেবেল দেখুন' : 'See label'}
+                </span>
+              )}
               <span className="text-[11px] text-emerald-700">
                 {language === 'bn' ? 'ফসল কাটার পূর্ববর্তী সর্বনিম্ন অপেক্ষমাণ সময়' : 'Minimum waiting period before food harvest'}
               </span>
@@ -136,9 +142,15 @@ export const SafetyChecklistModal: React.FC<SafetyChecklistModalProps> = ({
               <span className="text-[10px] uppercase font-bold text-blue-800 tracking-wider block">
                 {language === 'bn' ? 'জমিতে পুনঃপ্রবেশ বিরতি (REI)' : 'Restricted Entry Interval (REI)'}
               </span>
-              <span className="text-xl font-black text-blue-950 mt-1 block">
-                {formatNum(product.reiHours || 24)} {language === 'bn' ? 'ঘণ্টা' : 'Hours'}
-              </span>
+              {product.reiHours ? (
+                <span className="text-xl font-black text-blue-950 mt-1 block">
+                  {formatNum(product.reiHours)} {language === 'bn' ? 'ঘণ্টা' : 'Hours'}
+                </span>
+              ) : (
+                <span className="text-base font-bold text-slate-600 mt-1 block italic">
+                  {language === 'bn' ? 'লেবেল দেখুন' : 'See label'}
+                </span>
+              )}
               <span className="text-[11px] text-blue-700">
                 {language === 'bn' ? 'স্প্রে করার পর শ্রমিক ও শিশুদের প্রবেশের নিষেধাজ্ঞা' : 'Keep workers & children out of treated field'}
               </span>

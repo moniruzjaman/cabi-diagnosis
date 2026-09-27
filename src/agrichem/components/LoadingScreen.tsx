@@ -41,8 +41,8 @@ export const LoadingScreen: React.FC = () => {
           </h2>
           <p className="text-sm text-slate-500 max-w-md">
             {language === 'bn'
-              ? 'কৃষি সম্প্রসারণ অধিদপ্তর (DAE) অনুমোদিত ৫,৬২৪ টি নিবন্ধিত পণ্যের অফিসিয়াল ডাটাবেস ডাউনলোড হচ্ছে। প্রথমবার একটু সময় নেবে, এরপর ব্রাউজার ক্যাশে থাকবে।'
-              : 'Downloading the official DAE registry of 5,624 registered products. First load takes a moment, then it caches in your browser for instant access.'}
+              ? 'কৃষি সম্প্রসারণ অধিদপ্তর (DAE) অনুমোদিত অফিসিয়াল নিবন্ধিত বালাইনাশক ডাটাবেস ডাউনলোড হচ্ছে। প্রথমবার একটু সময় নেবে, এরপর ব্রাউজার ক্যাশে থাকবে।'
+              : 'Downloading the official DAE registry of registered pesticides. First load takes a moment, then it caches in your browser for instant access.'}
           </p>
         </div>
 

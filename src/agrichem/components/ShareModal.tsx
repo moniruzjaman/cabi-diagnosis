@@ -51,16 +51,16 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     home: {
       titleEn: 'Pesticide Guide — Smart Crop Chemical & Pest Management Suite',
       titleBn: 'বালাইনাশক নির্দেশিকা — আধুনিক বালাইনাশক ও বালাই ব্যবস্থাপনা প্ল্যাটফর্ম',
-      descEn: 'DAE-registered 5,624 pesticides, knapsack sprayer tank calculator, MoA rotation planner, WHO safety protocols & offline field manual.',
-      descBn: 'বাংলাদেশে মাঠ ফসলের জন্য ডিএই নিবন্ধিত ৫,৬২৪+ বালাইনাশক ডাটাবেস, স্প্রেয়ার ট্যাংক ক্যালকুলেটর, প্রতিরোধ রোধে MoA রোটেশন ও পকেট বুক।',
+      descEn: 'DAE-registered pesticides, knapsack sprayer tank calculator, MoA rotation planner, WHO safety protocols & offline field manual.',
+      descBn: 'বাংলাদেশে মাঠ ফসলের জন্য ডিএই নিবন্ধিত বালাইনাশক ডাটাবেস, স্প্রেয়ার ট্যাংক ক্যালকুলেটর, প্রতিরোধ রোধে MoA রোটেশন ও পকেট বুক।',
       tag: '#PesticideGuide #BangladeshFarming #CropProtection',
       icon: Sparkles
     },
     database: {
       titleEn: 'Pesticide Guide — DAE Chemical & Pesticide Catalog',
       titleBn: 'বালাইনাশক নির্দেশিকা — অনুমোদিত বালাইনাশক ডাটাবেস',
-      descEn: 'Search 5,624 approved active ingredients, trade names, approved crops, and mode-of-action codes.',
-      descBn: 'ফসল, বালাই, ট্রেড নাম ও MoA কোড দিয়ে ডিএই নিবন্ধিত ৫,৬২৪+ বালাইনাশকের অনুমোদন তালিকা দেখুন।',
+      descEn: 'Search DAE-approved active ingredients, trade names, approved crops, and mode-of-action codes.',
+      descBn: 'ফসল, বালাই, ট্রেড নাম ও MoA কোড দিয়ে ডিএই নিবন্ধিত বালাইনাশকের অনুমোদন তালিকা দেখুন।',
       tag: '#PesticideDatabase #DAE #AgriTech',
       icon: Database
     },

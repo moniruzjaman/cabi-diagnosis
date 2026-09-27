@@ -20,6 +20,7 @@ import {
 import { motion } from 'motion/react';
 import { useLanguage } from '../context/LanguageContext';
 import { ChemicalProduct, AppTab } from '../types';
+import { SourceDisclaimer } from './SourceDisclaimer';
 
 interface HomeViewProps {
   products: ChemicalProduct[];
@@ -69,13 +70,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
       id: 'database' as AppTab,
       titleEn: 'DAE Registered Chemical Database',
       titleBn: 'ডিএই নিবন্ধিত রাসায়নিক ডাটাবেস',
-      subtitleEn: '5,624 Approved Formulations & Active Ingredients',
-      subtitleBn: '৫,৬২৪+ অনুমোদিত সক্রিয় উপাদান ও বাণিজ্য নাম',
+      subtitleEn: `${formatNum(totalProductsCount)} Approved Formulations & Active Ingredients`,
+      subtitleBn: `${formatNum(totalProductsCount)}+ অনুমোদিত সক্রিয় উপাদান ও বাণিজ্য নাম`,
       descEn: 'Instant search across Bangladesh DAE-registered insecticides, fungicides, herbicides, and miticides. Includes verified trade names, target pests, label application rates, PHI (Pre-Harvest Interval) and REI safety windows.',
       descBn: 'কৃষি সম্প্রসারণ অধিদপ্তর (DAE) নিবন্ধিত কীটনাশক, ছত্রাকনাশক, আগাছানাশক ও মাকড়নাশকের পূর্ণাঙ্গ তালিকা। অনুমোদিত বাণিজ্য নাম, লক্ষ্য বালাই, প্রতি হেক্টরে সঠিক প্রয়োগ মাত্রা, ফসল তোলার নিরাপদ বিরতি (PHI) ও রি-এন্ট্রি সময়কাল দেখুন।',
       icon: Database,
-      badgeEn: '5,624 Dossiers',
-      badgeBn: '৫,৬২৪ রাসায়নিক',
+      badgeEn: `${formatNum(totalProductsCount)} Dossiers`,
+      badgeBn: `${formatNum(totalProductsCount)} রাসায়নিক`,
       themeColor: 'from-emerald-500 to-emerald-700',
       textColor: 'text-emerald-700',
       bgColor: 'bg-emerald-50',
@@ -346,7 +347,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             <div className="bg-white/5 backdrop-blur-xs rounded-xl p-3.5 border border-white/10">
               <span className="block text-2xl sm:text-3xl font-black text-emerald-400">
-                ১০০%
+                {language === 'bn' ? '১০০%' : '100%'}
               </span>
               <span className="text-xs text-emerald-200/80 font-medium">
                 {language === 'bn' ? 'অফলাইন ফিল্ড প্রস্তুতি (PWA)' : 'Offline Ready (PWA)'}
@@ -355,7 +356,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             <div className="bg-white/5 backdrop-blur-xs rounded-xl p-3.5 border border-white/10">
               <span className="block text-2xl sm:text-3xl font-black text-amber-400">
-                ৩টি
+                {language === 'bn' ? '৩টি' : '3'}
               </span>
               <span className="text-xs text-emerald-200/80 font-medium">
                 {language === 'bn' ? 'IRAC / FRAC / HRAC মানদণ্ড' : 'Scientific MoA Standards'}
@@ -643,6 +644,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </button>
           </div>
         </div>
+      </section>
+
+      {/* Source attribution banner — DAE registry citation */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SourceDisclaimer variant="full" />
       </section>
     </div>
   );
