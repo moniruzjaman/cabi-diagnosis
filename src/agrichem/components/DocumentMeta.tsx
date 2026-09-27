@@ -19,11 +19,11 @@ const TAB_META: Record<AppTab, {
   home: {
     en: {
       title: 'Pesticide Guide — Smart Crop Chemical & Pest Management Suite',
-      description: 'All-in-one agricultural platform: 70+ DAE pesticides, Knapsack sprayer tank calculator, MoA resistance rotation planner, WHO safety protocols, and offline pocket guidebook.'
+      description: 'All-in-one agricultural platform: 5,624 DAE-registered pesticides, Knapsack sprayer tank calculator, MoA resistance rotation planner, WHO safety protocols, and offline pocket guidebook.'
     },
     bn: {
       title: 'বালাইনাশক নির্দেশিকা — আধুনিক বালাই ব্যবস্থাপনা ও সঠিক রাসায়নিক মাত্রা সহায়িকা',
-      description: 'বাংলাদেশের মাঠ ফসলের জন্য ডিএই নিবন্ধিত ৭০+ বালাইনাশক ডাটাবেস, ন্যাপস্যাক স্প্রেয়ার ট্যাংক ক্যালকুলেটর, প্রতিরোধ রোধে MoA রোটেশন ও বিনামূল্যে পকেট বুক ম্যানুয়াল।'
+      description: 'বাংলাদেশের মাঠ ফসলের জন্য ডিএই নিবন্ধিত ৫,৬২৪+ বালাইনাশক ডাটাবেস, ন্যাপস্যাক স্প্রেয়ার ট্যাংক ক্যালকুলেটর, প্রতিরোধ রোধে MoA রোটেশন ও বিনামূল্যে পকেট বুক ম্যানুয়াল।'
     }
   },
   database: {

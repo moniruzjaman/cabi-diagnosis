@@ -152,11 +152,17 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {language === 'bn' ? 'অনুমোদিত ফসলের তালিকা' : 'Officially Recommended Crops'}
               </h4>
               <div className="flex flex-wrap gap-1.5">
-                {product.crops.map((crop, i) => (
-                  <span key={i} className="px-2.5 py-1 bg-white text-emerald-900 border border-emerald-200 rounded-lg text-xs font-medium shadow-2xs">
-                    {transCrop(crop)}
+                {product.crops.length === 0 ? (
+                  <span className="text-xs text-slate-500 italic">
+                    {language === 'bn' ? 'DAE রেজিস্ট্রিতে উল্লেখ নেই' : 'Not specified in DAE registry'}
                   </span>
-                ))}
+                ) : (
+                  product.crops.map((crop, i) => (
+                    <span key={i} className="px-2.5 py-1 bg-white text-emerald-900 border border-emerald-200 rounded-lg text-xs font-medium shadow-2xs">
+                      {transCrop(crop)}
+                    </span>
+                  ))
+                )}
               </div>
             </div>
 
@@ -166,11 +172,17 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {language === 'bn' ? 'লক্ষ্য বালাই, রোগ ও আগাছা' : 'Target Pests, Diseases & Weeds'}
               </h4>
               <div className="flex flex-wrap gap-1.5">
-                {product.pests.map((pest, i) => (
-                  <span key={i} className="px-2.5 py-1 bg-white text-amber-900 border border-amber-200 rounded-lg text-xs font-medium shadow-2xs">
-                    {pest}
+                {product.pests.length === 0 ? (
+                  <span className="text-xs text-slate-500 italic">
+                    {language === 'bn' ? 'DAE রেজিস্ট্রিতে উল্লেখ নেই' : 'Not specified in DAE registry'}
                   </span>
-                ))}
+                ) : (
+                  product.pests.map((pest, i) => (
+                    <span key={i} className="px-2.5 py-1 bg-white text-amber-900 border border-amber-200 rounded-lg text-xs font-medium shadow-2xs">
+                      {pest}
+                    </span>
+                  ))
+                )}
               </div>
             </div>
           </div>

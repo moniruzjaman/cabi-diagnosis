@@ -27,6 +27,11 @@ interface HomeViewProps {
   onSelectCropFilter: (crop: string) => void;
   onOpenShareModal: () => void;
   totalProductsCount: number;
+  /**
+   * True once the 5,624-record DAE database has finished loading.
+   * Until then, the hero stat shows a loading shimmer instead of "0+".
+   */
+  databaseLoaded?: boolean;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -34,7 +39,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onNavigateTab,
   onSelectCropFilter,
   onOpenShareModal,
-  totalProductsCount
+  totalProductsCount,
+  databaseLoaded = true,
 }) => {
   const { language, t, formatNum, transCrop } = useLanguage();
   const [activePreviewFeature, setActivePreviewFeature] = useState<number>(0);
@@ -63,13 +69,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
       id: 'database' as AppTab,
       titleEn: 'DAE Registered Chemical Database',
       titleBn: 'ডিএই নিবন্ধিত রাসায়নিক ডাটাবেস',
-      subtitleEn: '70+ Approved Formulations & Active Ingredients',
-      subtitleBn: '৭০+ অনুমোদিত সক্রিয় উপাদান ও বাণিজ্য নাম',
+      subtitleEn: '5,624 Approved Formulations & Active Ingredients',
+      subtitleBn: '৫,৬২৪+ অনুমোদিত সক্রিয় উপাদান ও বাণিজ্য নাম',
       descEn: 'Instant search across Bangladesh DAE-registered insecticides, fungicides, herbicides, and miticides. Includes verified trade names, target pests, label application rates, PHI (Pre-Harvest Interval) and REI safety windows.',
       descBn: 'কৃষি সম্প্রসারণ অধিদপ্তর (DAE) নিবন্ধিত কীটনাশক, ছত্রাকনাশক, আগাছানাশক ও মাকড়নাশকের পূর্ণাঙ্গ তালিকা। অনুমোদিত বাণিজ্য নাম, লক্ষ্য বালাই, প্রতি হেক্টরে সঠিক প্রয়োগ মাত্রা, ফসল তোলার নিরাপদ বিরতি (PHI) ও রি-এন্ট্রি সময়কাল দেখুন।',
       icon: Database,
-      badgeEn: '70+ Dossiers',
-      badgeBn: '৭০+ রাসায়নিক',
+      badgeEn: '5,624 Dossiers',
+      badgeBn: '৫,৬২৪ রাসায়নিক',
       themeColor: 'from-emerald-500 to-emerald-700',
       textColor: 'text-emerald-700',
       bgColor: 'bg-emerald-50',
@@ -77,7 +83,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       lightGlow: 'hover:shadow-emerald-500/10',
       statLabelEn: 'Active Ingredients',
       statLabelBn: 'সক্রিয় উপাদান',
-      statValue: `${totalProductsCount}+`,
+      statValue: databaseLoaded ? `${formatNum(totalProductsCount)}+` : '…',
       highlightsEn: ['Official DAE Registration', 'PHI & REI Safety Windows', 'Target Pest Index', 'Trade Names Dossier'],
       highlightsBn: ['ডিএই অফিসিয়াল নিবন্ধন', 'PHI ও REI নিরাপদ সময়', 'বালাই ও রোগের পূর্ণাঙ্গ তালিকা', 'ব্র্যান্ড ও বাণিজ্য নাম']
     },
@@ -322,7 +328,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           >
             <div className="bg-white/5 backdrop-blur-xs rounded-xl p-3.5 border border-white/10">
               <span className="block text-2xl sm:text-3xl font-black text-emerald-400">
-                {formatNum(totalProductsCount)}+
+                {databaseLoaded ? `${formatNum(totalProductsCount)}+` : '…'}
               </span>
               <span className="text-xs text-emerald-200/80 font-medium">
                 {language === 'bn' ? 'DAE নিবন্ধিত ফর্মুলেশন' : 'DAE Approved Chemicals'}

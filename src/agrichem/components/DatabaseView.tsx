@@ -1,18 +1,19 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ChemicalProduct } from '../types';
 import { ProductCard } from './ProductCard';
-import { 
-  Search, 
-  Filter, 
-  SlidersHorizontal, 
-  FileDown, 
-  RotateCcw, 
-  Sprout, 
-  Bug, 
-  Tag, 
+import {
+  Search,
+  Filter,
+  SlidersHorizontal,
+  FileDown,
+  RotateCcw,
+  Sprout,
+  Bug,
+  Tag,
   ShieldCheck,
   CheckCircle2,
-  X
+  X,
+  ChevronDown
 } from 'lucide-react';
 import { exportCropGuidePDF } from '../utils/pdfExport';
 import { useLanguage } from '../context/LanguageContext';
@@ -42,6 +43,18 @@ export const DatabaseView: React.FC<DatabaseViewProps> = ({
   const [selectedMoA, setSelectedMoA] = useState<string>('all');
   const [selectedRisk, setSelectedRisk] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'name' | 'type' | 'phi' | 'reg'>('name');
+
+  // Pagination state — with 5,624 products we MUST NOT render all cards
+  // at once (would crash mobile browsers). Show 24 initially and let the
+  // user load more on demand. Reset to first page whenever filters change.
+  const PAGE_SIZE = 24;
+  const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
+
+  // Reset pagination whenever any filter or the search query changes.
+  // useMemo-derived deps cover all filter inputs.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [searchQuery, selectedType, selectedCrop, selectedMoA, selectedRisk, sortBy, products]);
 
   // Dynamic lists from product catalog
   const categories = useMemo(() => {
@@ -124,6 +137,28 @@ export const DatabaseView: React.FC<DatabaseViewProps> = ({
   };
 
   const hasActiveFilters = searchQuery !== '' || selectedType !== 'all' || selectedCrop !== 'all' || selectedMoA !== 'all' || selectedRisk !== 'all';
+
+  // If the database is still loading (empty products array), show a
+  // friendly loading state instead of the "no results" empty state.
+  if (products.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center space-y-4">
+        <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto animate-pulse">
+          <Search className="w-6 h-6" />
+        </div>
+        <div>
+          <h3 className="font-bold text-base text-slate-900">
+            {language === 'bn' ? 'ডাটাবেস লোড হচ্ছে...' : 'Loading database...'}
+          </h3>
+          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+            {language === 'bn'
+              ? '৫,৬২৪ টি নিবন্ধিত বালাইনাশক ডাউনলোড হচ্ছে। কয়েক সেকেন্ড অপেক্ষা করুন।'
+              : 'Downloading 5,624 registered pesticides. This takes a few seconds.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -266,6 +301,10 @@ export const DatabaseView: React.FC<DatabaseViewProps> = ({
         <div className="flex items-center gap-2 font-medium">
           <span>
             {t('showing_results')}{' '}
+            <strong className="text-slate-900 font-bold">
+              {formatNum(Math.min(visibleCount, filteredProducts.length))}
+            </strong>{' '}
+            {language === 'bn' ? 'এর' : 'of'}{' '}
             <strong className="text-slate-900 font-bold">{formatNum(filteredProducts.length)}</strong> {t('of_total')}{' '}
             {formatNum(products.length)} {t('registered_chemicals')}
           </span>
@@ -289,19 +328,55 @@ export const DatabaseView: React.FC<DatabaseViewProps> = ({
         )}
       </div>
 
-      {/* Products Grid */}
+      {/* Products Grid — paginated to avoid rendering 5,624 cards at once */}
       {filteredProducts.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onSelectProduct={onSelectProduct}
-              onOpenCalculator={onOpenCalculator}
-              onOpenSafety={onOpenSafety}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProducts.slice(0, visibleCount).map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onSelectProduct={onSelectProduct}
+                onOpenCalculator={onOpenCalculator}
+                onOpenSafety={onOpenSafety}
+              />
+            ))}
+          </div>
+
+          {/* Load More pager */}
+          {visibleCount < filteredProducts.length && (
+            <div className="flex flex-col items-center gap-3 mt-8 pt-6 border-t border-slate-200">
+              <div className="text-xs text-slate-500 font-medium">
+                {language === 'bn'
+                  ? `${formatNum(Math.min(visibleCount, filteredProducts.length))} টি দেখানো হয়েছে — আরও ${formatNum(filteredProducts.length - visibleCount)} টি আছে`
+                  : `Showing ${formatNum(Math.min(visibleCount, filteredProducts.length))} of ${formatNum(filteredProducts.length)} — ${formatNum(filteredProducts.length - visibleCount)} more`}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer"
+                >
+                  <ChevronDown className="w-3.5 h-3.5" />
+                  <span>
+                    {language === 'bn' ? `আরও ${formatNum(PAGE_SIZE)} টি দেখুন` : `Load ${PAGE_SIZE} more`}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setVisibleCount((c) => c + 100)}
+                  className="px-4 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold shadow-2xs transition cursor-pointer"
+                >
+                  {language === 'bn' ? '১০০ টি আরও' : '+100'}
+                </button>
+                <button
+                  onClick={() => setVisibleCount(filteredProducts.length)}
+                  className="px-4 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold shadow-2xs transition cursor-pointer"
+                >
+                  {language === 'bn' ? 'সব দেখুন' : 'Show all'}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       ) : (
         <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-4 shadow-xs">
           <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">

@@ -23,8 +23,36 @@ import AgriChemApp from "./agrichem/AgriChemApp";
 import { computeEnsembleScore } from "./data/agronomicEngine";
 import { lookupMoA } from "./data/moaDatabase";
 import { getRegisteredProducts } from "./data/pesticideRegistry";
-import { PESTICIDES_DATABASE_OFFICIAL as AGRICHEM_DATABASE } from "./agrichem/data/pesticideMapper";
 import "./styles/accessibility.css";
+
+/**
+ * Module-level cache for the lazy-loaded DAE pesticide database.
+ *
+ * The mapper module embeds 5,453 records inline (~5 MB unminified,
+ * ~650 KB gzipped). By deferring its import until the MoA Registry
+ * search is first opened, we keep the host app's initial bundle small
+ * and let the database download in parallel with the rest of the page.
+ *
+ * Vite automatically code-splits this dynamic import into a separate
+ * chunk (assets/pesticideMapper-[hash].js).
+ */
+let _agrichemDatabasePromise = null;
+let _agrichemDatabaseCache = null;
+function loadAgrichemDatabase() {
+  if (_agrichemDatabaseCache) return Promise.resolve(_agrichemDatabaseCache);
+  if (!_agrichemDatabasePromise) {
+    _agrichemDatabasePromise = import("./agrichem/data/pesticideMapper")
+      .then((mod) => {
+        _agrichemDatabaseCache = mod.PESTICIDES_DATABASE_OFFICIAL;
+        return _agrichemDatabaseCache;
+      })
+      .catch((err) => {
+        _agrichemDatabasePromise = null; // allow retry on failure
+        throw err;
+      });
+  }
+  return _agrichemDatabasePromise;
+}
 
 const SymptomSpotter = React.lazy(() => import("./games/SymptomSpotter"));
 const CauseDetective = React.lazy(() => import("./games/CauseDetective"));
@@ -5539,6 +5567,32 @@ function MoAPesticideRegistryView({ C }) {
   const [query, setQuery] = useState("");
   const [selectedMoaFilter, setSelectedMoaFilter] = useState("ALL");
 
+  // Lazy-load the 5,624-record DAE database only when this component
+  // is first mounted. Until then, `agrichemResults` is empty and the
+  // "বালাইনাশক ডাটাবেস" section shows a small loading indicator.
+  const [agrichemDatabase, setAgrichemDatabase] = useState(null);
+  const [agrichemDbLoading, setAgrichemDbLoading] = useState(false);
+  const [agrichemDbError, setAgrichemDbError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setAgrichemDbLoading(true);
+    loadAgrichemDatabase()
+      .then((db) => {
+        if (!cancelled) {
+          setAgrichemDatabase(db);
+          setAgrichemDbLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setAgrichemDbError(err?.message || "Failed to load");
+          setAgrichemDbLoading(false);
+        }
+      });
+    return () => { cancelled = true; };
+  }, []);
+
   const results = getRegisteredProducts({
     crop: query,
     pest: query,
@@ -5551,8 +5605,8 @@ function MoAPesticideRegistryView({ C }) {
 
   // ── Pesticide guide database (DAE approved 5,624 products) integration ──
   const q = query.trim().toLowerCase();
-  const agrichemResults = q
-    ? AGRICHEM_DATABASE.filter((p) => {
+  const agrichemResults = q && agrichemDatabase
+    ? agrichemDatabase.filter((p) => {
         const haystack = [
           p.commonName,
           p.tradeName,
@@ -5718,9 +5772,22 @@ function MoAPesticideRegistryView({ C }) {
         {q && (
           <div style={{ marginTop: 14, borderTop: `1px dashed ${C.border}`, paddingTop: 12 }}>
             <div style={{ fontWeight: 800, fontSize: 13, color: "#047857", marginBottom: 2 }}>
-              🌿 বালাইনাশক ডাটাবেস — মিল পাওয়া ফলাফল ({agrichemResults.length})
+              🌿 বালাইনাশক ডাটাবেস — মিল পাওয়া ফলাফল{" "}
+              {agrichemDbLoading
+                ? "(লোড হচ্ছে...)"
+                : agrichemDbError
+                ? "(লোড ব্যর্থ)"
+                : `(${agrichemResults.length})`}
             </div>
-            {agrichemResults.length === 0 ? (
+            {agrichemDbLoading ? (
+              <div style={{ fontSize: 11, color: C.textMuted, padding: "8px 0" }}>
+                ⏳ ৫,৬২৪ টি নিবন্ধিত পণ্যের ডাটাবেস লোড হচ্ছে...
+              </div>
+            ) : agrichemDbError ? (
+              <div style={{ fontSize: 11, color: "#dc2626", padding: "8px 0" }}>
+                ❌ ডাটাবেস লোড করতে সমস্যা: {agrichemDbError}
+              </div>
+            ) : agrichemResults.length === 0 ? (
               <div style={{ fontSize: 11, color: C.textMuted, padding: "8px 0" }}>
                 বালাইনাশক ডাটাবেসে এই অনুসন্ধানের জন্য কিছু পাওয়া যায়নি।
               </div>

@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ChemicalProduct, RegulatoryAlert, AppTab } from './types';
-import { PESTICIDES_DATABASE_OFFICIAL } from './data/pesticideMapper';
 import { INITIAL_REGULATORY_ALERTS } from './data/regulatoryAlertsData';
 import { Navbar } from './components/Navbar';
 import { HomeView } from './components/HomeView';
@@ -15,23 +14,63 @@ import { Guidebook } from './components/Guidebook';
 import { NotificationCenter } from './components/NotificationCenter';
 import { DocumentMeta } from './components/DocumentMeta';
 import { useLanguage } from './context/LanguageContext';
-import { 
-  FlaskConical, 
-  ShieldCheck, 
-  BookOpen, 
-  RotateCw, 
-  Calculator, 
-  Bell, 
-  FileDown, 
+import { LoadingScreen } from './components/LoadingScreen';
+import {
+  FlaskConical,
+  ShieldCheck,
+  BookOpen,
+  RotateCw,
+  Calculator,
+  Bell,
+  FileDown,
   ExternalLink,
   CheckCircle2,
   Sparkles,
   Share2
 } from 'lucide-react';
 
+/**
+ * The 5,624-record DAE pesticide database is loaded via a dynamic
+ * `import('./data/pesticideMapper')` inside useEffect (see below).
+ *
+ * The mapper module is ~5 MB unminified (~650 KB gzipped) because it
+ * embeds all_pesticides.ts inline. By importing it dynamically we keep
+ * the host app's initial bundle small and let the database download in
+ * parallel with the rest of the page render. Vite automatically code-splits
+ * the dynamic import into a separate chunk (assets/pesticideMapper-[hash].js).
+ */
+
 export default function App() {
   const { language } = useLanguage();
-  const [products] = useState<ChemicalProduct[]>(PESTICIDES_DATABASE_OFFICIAL);
+
+  // The 5,624-record DAE database — loaded asynchronously so the host
+  // app's initial bundle stays small. `products` starts empty and gets
+  // populated when the dynamic import resolves.
+  const [products, setProducts] = useState<ChemicalProduct[]>([]);
+  const [databaseLoaded, setDatabaseLoaded] = useState(false);
+  const [databaseError, setDatabaseError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const mod = await import('./data/pesticideMapper');
+        if (!cancelled) {
+          setProducts(mod.PESTICIDES_DATABASE_OFFICIAL);
+          setDatabaseLoaded(true);
+        }
+      } catch (e: any) {
+        if (!cancelled) {
+          setDatabaseError(e?.message || 'Failed to load pesticide database');
+          setDatabaseLoaded(true); // stop loading state even on error
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [activeTab, setActiveTab] = useState<AppTab>('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -78,6 +117,17 @@ export default function App() {
     setAlerts((prev) => prev.filter((a) => a.id !== id));
   };
 
+  // ── Loading & error states ──────────────────────────────────────────────
+  //
+  // While the 5,624-record database downloads, the Database/Calculator/
+  // Rotation/Safety/Guidebook tabs would otherwise render empty. We show
+  // a branded loading screen instead. The Home, Alerts, and Share tabs
+  // don't need the database and render normally.
+  const tabsNeedingDatabase: AppTab[] = ['database', 'calculator', 'rotation', 'safety', 'guidebook'];
+  const currentTabNeedsDatabase = tabsNeedingDatabase.includes(activeTab);
+  const showLoadingScreen = currentTabNeedsDatabase && !databaseLoaded;
+  const showDatabaseError = currentTabNeedsDatabase && databaseError && products.length === 0;
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-emerald-100 selection:text-emerald-900">
       {/* Dynamic Tab & SEO Meta */}
@@ -107,66 +157,87 @@ export default function App() {
             }}
             onOpenShareModal={() => setIsShareModalOpen(true)}
             totalProductsCount={products.length}
+            databaseLoaded={databaseLoaded}
           />
         )}
 
         {activeTab === 'database' && (
-          <DatabaseView
-            products={products}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            onSelectProduct={(p) => setDetailProduct(p)}
-            onOpenCalculator={(p) => setCalcProduct(p)}
-            onOpenSafety={(p) => setSafetyProduct(p)}
-          />
+          showLoadingScreen ? <LoadingScreen /> :
+          showDatabaseError ? (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+              <p className="text-rose-700 font-semibold">
+                {language === 'bn' ? 'বালাইনাশক ডাটাবেস লোড করতে সমস্যা হয়েছে' : 'Failed to load pesticide database'}
+              </p>
+              <p className="text-xs text-slate-500 mt-2">{databaseError}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-semibold cursor-pointer"
+              >
+                {language === 'bn' ? 'পেইজ রিলোড করুন' : 'Reload page'}
+              </button>
+            </div>
+          ) : (
+            <DatabaseView
+              products={products}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              onSelectProduct={(p) => setDetailProduct(p)}
+              onOpenCalculator={(p) => setCalcProduct(p)}
+              onOpenSafety={(p) => setSafetyProduct(p)}
+            />
+          )
         )}
 
         {activeTab === 'calculator' && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <Calculator className="w-5 h-5 text-teal-600" />
-                  {language === 'bn' ? 'ইন্টারেক্টিভ মাঠপর্যায়ের মাত্রা ও ট্যাংক মিক্সিং স্টেশন' : 'Interactive Field Dosage & Tank Mix Station'}
-                </h2>
-                <p className="text-xs text-slate-500 mt-1">
-                  {language === 'bn' 
-                    ? 'ন্যাপস্যাক স্প্রেয়ার ট্যাংক, পানির পরিমাণ এবং জমির আয়তন অনুযায়ী নির্ভুল মাত্রা হিসাব করতে যেকোনো নিবন্ধিত বালাইনাশক নির্বাচন করুন।' 
-                    : 'Select any registered chemical to calculate precise knapsack tank mix rates, water volume, and area conversions.'}
-                </p>
+          showLoadingScreen ? <LoadingScreen /> : (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <Calculator className="w-5 h-5 text-teal-600" />
+                    {language === 'bn' ? 'ইন্টারেক্টিভ মাঠপর্যায়ের মাত্রা ও ট্যাংক মিক্সিং স্টেশন' : 'Interactive Field Dosage & Tank Mix Station'}
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {language === 'bn'
+                      ? 'ন্যাপস্যাক স্প্রেয়ার ট্যাংক, পানির পরিমাণ এবং জমির আয়তন অনুযায়ী নির্ভুল মাত্রা হিসাব করতে যেকোনো নিবন্ধিত বালাইনাশক নির্বাচন করুন।'
+                      : 'Select any registered chemical to calculate precise knapsack tank mix rates, water volume, and area conversions.'}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setCalcProduct(products[0])}
+                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer"
+                >
+                  {language === 'bn' ? 'ক্যালকুলেটর ডায়ালগ খুলুন' : 'Launch Knapsack Calculator Dialog'}
+                </button>
               </div>
 
-              <button
-                onClick={() => setCalcProduct(products[0])}
-                className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer"
-              >
-                {language === 'bn' ? 'ক্যালকুলেটর ডায়ালগ খুলুন' : 'Launch Knapsack Calculator Dialog'}
-              </button>
+              {/* Render calculator directly */}
+              <DosageCalculatorModal
+                products={products}
+                selectedProduct={calcProduct || products[0]}
+                onClose={() => setActiveTab('database')}
+                onSelectProduct={(p) => setCalcProduct(p)}
+              />
             </div>
-
-            {/* Render calculator directly */}
-            <DosageCalculatorModal
-              products={products}
-              selectedProduct={calcProduct || products[0]}
-              onClose={() => setActiveTab('database')}
-              onSelectProduct={(p) => setCalcProduct(p)}
-            />
-          </div>
+          )
         )}
 
         {activeTab === 'rotation' && (
-          <RotationPlanner products={products} />
+          showLoadingScreen ? <LoadingScreen /> : <RotationPlanner products={products} />
         )}
 
         {activeTab === 'safety' && (
-          <SafetyView
-            products={products}
-            onOpenSafetyModal={(p) => setSafetyProduct(p)}
-          />
+          showLoadingScreen ? <LoadingScreen /> : (
+            <SafetyView
+              products={products}
+              onOpenSafetyModal={(p) => setSafetyProduct(p)}
+            />
+          )
         )}
 
         {activeTab === 'guidebook' && (
-          <Guidebook products={products} />
+          showLoadingScreen ? <LoadingScreen /> : <Guidebook products={products} />
         )}
 
         {activeTab === 'alerts' && (
@@ -250,8 +321,8 @@ export default function App() {
             <button onClick={() => setActiveTab('alerts')} className="hover:text-emerald-700 cursor-pointer">
               {language === 'bn' ? 'নিয়ন্ত্রক নোটিফিকেশন' : 'Compliance Alerts'}
             </button>
-            <button 
-              onClick={() => setIsShareModalOpen(true)} 
+            <button
+              onClick={() => setIsShareModalOpen(true)}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold border border-emerald-200 cursor-pointer transition"
             >
               <Share2 className="w-3.5 h-3.5 text-emerald-600" />
