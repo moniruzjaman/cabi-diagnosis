@@ -186,6 +186,33 @@ export async function ensureSchema() {
       CREATE INDEX IF NOT EXISTS idx_outbreaks_crop ON outbreak_reports(crop)
     `);
 
+    // ─── Users table — Google Sign-In auto-fetched email + last login ───
+    // Stores user profile auto-fetched from Google's verified JWT.
+    // `google_sub` is the primary unique key (stable across email changes),
+    // `email` is indexed for lookup but may change if the user updates their
+    // Gmail address. `last_login_at` is updated on every sign-in via UPSERT;
+    // `created_at` is set once on first registration and never changed.
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        google_sub TEXT UNIQUE NOT NULL,
+        email TEXT NOT NULL,
+        email_verified INTEGER DEFAULT 0,
+        name TEXT,
+        picture_url TEXT,
+        locale TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        last_login_at TEXT DEFAULT (datetime('now')),
+        login_count INTEGER DEFAULT 1
+      )
+    `);
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)
+    `);
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_users_google_sub ON users(google_sub)
+    `);
+
     // Ensure analytics row exists
     await db.execute(`
       INSERT OR IGNORE INTO analytics_state (id) VALUES ('main')

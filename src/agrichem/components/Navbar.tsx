@@ -20,6 +20,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { AppTab } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
+import { UserMenu } from './UserMenu';
 
 interface NavbarProps {
   activeTab: AppTab;
@@ -158,6 +159,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : <Moon className="w-4 h-4 text-slate-600 transition-transform hover:scale-110" />
               }
             </button>
+
+            {/* User account menu (Google Sign-In + profile dropdown) */}
+            <UserMenu />
 
             {/* Push Notifications & Alerts Button */}
             <button

@@ -3,6 +3,7 @@ import { LanguageProvider } from "./context/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { ToastProvider } from "./components/Toast";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { AuthProvider } from "./hooks/useAuth";
 import AgriChemAppInner from "./App";
 
 /**
@@ -12,6 +13,7 @@ import AgriChemAppInner from "./App";
  * Wraps the standalone AgriChem app in:
  *   - LanguageProvider (bn/en bilingual support)
  *   - ThemeProvider (light/dark/system mode, persisted, OS-aware)
+ *   - AuthProvider (Google Sign-In + session via httpOnly cookie)
  *   - ToastProvider (global toast notification system)
  *   - ErrorBoundary (graceful recovery UI for render-time errors)
  */
@@ -19,13 +21,15 @@ export default function AgriChemApp() {
   return (
     <LanguageProvider>
       <ThemeProvider>
-        <ToastProvider>
-          <div className="agrichem-root">
-            <ErrorBoundary>
-              <AgriChemAppInner />
-            </ErrorBoundary>
-          </div>
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <div className="agrichem-root">
+              <ErrorBoundary>
+                <AgriChemAppInner />
+              </ErrorBoundary>
+            </div>
+          </ToastProvider>
+        </AuthProvider>
       </ThemeProvider>
     </LanguageProvider>
   );
