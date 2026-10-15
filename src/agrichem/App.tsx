@@ -17,6 +17,7 @@ import { DocumentMeta } from './components/DocumentMeta';
 import { useLanguage } from './context/LanguageContext';
 import { LoadingScreen } from './components/LoadingScreen';
 import { SourceDisclaimer } from './components/SourceDisclaimer';
+import { DataSyncBadge } from './components/DataSyncBadge';
 import {
   FlaskConical,
   ShieldCheck,
@@ -389,8 +390,11 @@ export default function App() {
                 ? '© কৃষি সম্প্রসারণ অধিদপ্তর (DAE) — অনুমোদিত তথ্য ভাণ্ডার'
                 : '© Department of Agricultural Extension (DAE) — Approved Reference'}
             </span>
-            <span className="font-mono">
-              {language === 'bn' ? 'সংস্করণ 4.0.0' : 'v4.0.0'}
+            <span className="flex items-center gap-2">
+              <DataSyncBadge />
+              <span className="font-mono">
+                {language === 'bn' ? 'সংস্করণ 4.0.0' : 'v4.0.0'}
+              </span>
             </span>
           </div>
         </div>
