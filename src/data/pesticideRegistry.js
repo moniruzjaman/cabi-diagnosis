@@ -1,4 +1,16 @@
-import { pesticides } from './all_pesticides.js';
+/**
+ * Bangladesh registered-pesticide registry used by the MoA search view.
+ *
+ * Single source of truth: the AgriChem Guide & Pest Control Database
+ * (https://github.com/moniruzjaman/AgriChem-Guide-Pest-Control-Database),
+ * synced into src/agrichem/data/all_pesticides.ts by:
+ *
+ *     node scripts/sync_agrichem.mjs
+ *
+ * Do NOT create JS copies of the database — they go stale. Edit upstream
+ * and re-run the sync script instead.
+ */
+import { pesticides } from '../agrichem/data/all_pesticides.ts';
 
 export const BANGLADESH_PESTICIDES_REGISTRY = pesticides.map(p => ({
   category: p.pesticideType,

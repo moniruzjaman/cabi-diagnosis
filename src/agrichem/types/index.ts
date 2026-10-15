@@ -5,6 +5,7 @@ export type ChemicalType =
   | 'Miticide'
   | 'Bio Pesticide'
   | 'Stored Grain'
+  | 'Store Grain Insecticide'
   | 'Rodenticide'
   | 'Public Health';
 
@@ -12,6 +13,18 @@ export interface ChemicalProduct {
   id: string;
   type: ChemicalType;
   commonName: string;
+  /**
+   * Parsed active ingredient(s) derived from the CSV ``Common Name`` field
+   * (e.g. ``"Ethion (5%) + Thiamethoxam (20%)"`` -> ``["Ethion", "Thiamethoxam"]``).
+   * Used as the primary scan/match target for active-ingredient lookups.
+   */
+  activeIngredients?: string[];
+  /**
+   * Alternate spellings / transliterations of the brand or active ingredient
+   * (e.g. Bengali-script variants) used to bridge scanned Bangla text onto the
+   * English catalogue. Populated where the source data provides them.
+   */
+  aiAliases?: string[];
   tradeName: string;
   registrationNo: string;
   registrationHolder: string;
@@ -33,6 +46,46 @@ export interface ChemicalProduct {
   safetyNotes?: string[];
   targetLifeCycle?: string;
   rotationNotes?: string;
+  /**
+   * Structured crop | pest | dosage recommendations sourced from the DAE
+   * registered pesticides CSV. Each entry corresponds to one row of the
+   * original multi-line ``Recommendations (Crop | Pest | Dosage)`` field.
+   * Populated for products imported via ``ALL_PESTICIDES_DATABASE``; legacy
+   * hand-curated entries may leave this undefined.
+   */
+  recommendations?: string[];
+  /** Source dataset tag — used for diagnostics and dedupe priority. */
+  source?: 'curated' | 'dae-register';
+
+  // ---------------------------------------------------------------------------
+  //  Policy / HHP / MoA enrichment (from policyEnrichmentData.ts sidecar)
+  //
+  //  These fields are populated from the AgriChem/MoA PTAC master database
+  //  (5,485 rows × 31 cols) keyed by Registration No. Products whose reg no
+  //  is not in the sidecar will have all of these as `undefined`.
+  // ---------------------------------------------------------------------------
+  /** IRAC / FRAC / HRAC scheme tag. */
+  scheme?: string;
+  /** MoA group number within the scheme (e.g. "1B", "11"). */
+  groupNo?: string;
+  /** Human-readable MoA description. */
+  moaDescription?: string;
+  /** WHO/FAO Highly Hazardous Pesticide status (e.g. "YES — HHP", "No"). */
+  hhpStatus?: string;
+  /** Active ingredient(s) that triggered HHP classification, if any. */
+  hazardousActivesMatched?: string;
+  /** EU / global regulatory status (banned, restricted, approved, etc.). */
+  euGlobalRegulatoryStatus?: string;
+  /** Bangladesh-specific policy action (phase-out, restrict, monitor, etc.). */
+  bangladeshPolicyAction?: string;
+  /** Policy risk tier: GREEN | AMBER | RED. */
+  policyRiskTier?: 'GREEN' | 'AMBER' | 'RED' | string;
+  /** Short formulation code from the enriched database (EC, WP, SC, etc.). */
+  formulationCode?: string;
+  /** Physicality of the formulation (liquid, solid, etc.). */
+  formulationTypePhysicality?: string;
+  /** Co-formulant / inert concern flags. */
+  coFormulantInertConcern?: string;
 }
 
 export interface MoAClassification {
@@ -95,4 +148,4 @@ export interface SprayRotationStep {
   conflictReason?: string;
 }
 
-export type AppTab = 'home' | 'database' | 'calculator' | 'rotation' | 'safety' | 'guidebook' | 'alerts';
+export type AppTab = 'home' | 'database' | 'calculator' | 'rotation' | 'safety' | 'guidebook' | 'alerts' | 'myfield' | 'intelligence' | 'specialist';

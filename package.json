@@ -38,7 +38,9 @@
     "format": "prettier --write \"src/**/*.{js,jsx,css}\" \"api/**/*.js\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx,css}\" \"api/**/*.js\"",
     "check": "npm run lint && npm run format:check",
-    "db:init": "node scripts/init-turso.mjs"
+    "db:init": "node scripts/init-turso.mjs",
+    "sync:agrichem": "node scripts/sync_agrichem.mjs",
+    "check:agrichem": "node scripts/sync_agrichem.mjs --check"
   },
   "dependencies": {
     "@libsql/client": "^0.17.3",

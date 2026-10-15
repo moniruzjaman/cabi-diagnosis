@@ -6690,6 +6690,131 @@ function GameHub() {
 }
 
 // ─── Market Price Ticker ───────────────────────────────────────────────────────
+/**
+ * SavedReportsView — the farmer's own diagnosis report history.
+ * Shown under the "ভান্ডার" (Library) tab; media resources live in Learn.
+ */
+function SavedReportsView({ history, setHistory, C }) {
+  return (
+              <div
+                className="ud-editorial-shadow"
+                style={{
+                  background: C.bgCard,
+                  borderRadius: 18,
+                  padding: 18,
+                  border: `1px solid ${C.border}`,
+                  boxShadow: C.shadowMd,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: C.primary,
+                    fontWeight: 700,
+                    letterSpacing: 0.5,
+                    textTransform: "uppercase",
+                    marginBottom: 6,
+                  }}
+                >
+                  History
+                </div>
+                <div style={{ fontWeight: 800, fontSize: 15, color: C.primaryDark, marginBottom: 14 }}>
+                  📋 নির্ণয়ের ইতিহাস
+                </div>
+                {history.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "40px 0", color: C.textMuted }}>
+                    <div style={{ fontSize: 48, marginBottom: 12, animation: "float 2s ease-in-out infinite" }}>
+                      🌾
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: 15 }}>এখনো কোনো নির্ণয় নেই</div>
+                    <div style={{ fontSize: 12, marginTop: 4 }}>প্রথম নির্ণয় করুন!</div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                    {[...history].reverse().map((h, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          padding: "16px",
+                          background: C.bgMuted,
+                          borderRadius: 20,
+                          border: `1px solid ${C.border}`,
+                          boxShadow: "0 6px 18px rgba(0,33,9,0.05)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: 5,
+                          }}
+                        >
+                          <div className="ud-headline" style={{ fontWeight: 800, fontSize: 17, color: C.text }}>
+                            {h.crop?.split("/")[0]?.trim()}
+                          </div>
+                          <span
+                            style={{
+                              background: C.badgeSuccess,
+                              color: C.textSuccess,
+                              borderRadius: 10,
+                              padding: "2px 9px",
+                              fontSize: 11,
+                              fontWeight: 700,
+                            }}
+                          >
+                            সম্পন্ন
+                          </span>
+                        </div>
+                        <div style={{ color: C.textMuted, fontSize: 11 }}>
+                          📍 {h.district?.split("/")[0]?.trim() || "—"} · 📅 {h.date}
+                        </div>
+                        {h.resultPreview && (
+                          <div
+                            style={{
+                              color: C.textLight,
+                              fontSize: 12,
+                              marginTop: 8,
+                              lineHeight: 1.6,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                            }}
+                          >
+                            {h.resultPreview}...
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => {
+                        setHistory([]);
+                        try {
+                          localStorage.removeItem("ud-history");
+                        } catch {}
+                      }}
+                      style={{
+                        padding: "9px",
+                        borderRadius: 10,
+                        border: "1px solid #fecaca",
+                        background: C.bgDanger,
+                        color: C.danger,
+                        cursor: "pointer",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        marginTop: 3,
+                      }}
+                    >
+                      🗑️ সব ইতিহাস মুছুন
+                    </button>
+                  </div>
+                )}
+              </div>
+  );
+}
+
 function MarketPriceTicker({ C }) {
   const [prices, setPrices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -7834,11 +7959,14 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
     flexShrink: 0,
   };
 
+  // ─── Simplified navigation: 5 clear destinations for farmers ──────────────
+  // (Formerly 10 tabs — home/today/guide/game/apps/history/library were
+  // overlapping or hidden pages. They are now merged into these five.)
   const navTabs = [
+    { id: "home", label: "হোম", icon: "🏠" },
     { id: "calendar", label: "ক্যালেন্ডার", icon: "📅" },
-    { id: "learn", label: "শিখুন", icon: "📖" },
     { id: "diagnose", label: "নির্ণয়", icon: "🔬" },
-    { id: "library", label: "ভান্ডার", icon: "📚" },
+    { id: "learn", label: "শিখুন", icon: "📖" },
     { id: "pesticide", label: "বালাইনাশক", icon: "🌿" },
   ];
   const feedbackContext =
@@ -7848,35 +7976,23 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
         : "Diagnosis Form"
       : activeTab === "calendar"
         ? "Crop Calendar"
-        : activeTab === "game"
-          ? "Game Hub"
-          : activeTab === "library" || activeTab === "apps" || activeTab === "history"
-            ? "Information Library"
-            : activeTab === "guide"
-              ? "CABI Guide"
-              : activeTab === "pesticide"
-                ? "Pesticide Guide"
-                : activeTab === "learn"
-                  ? "Learn"
-                  : "Home";
+        : activeTab === "library" || activeTab === "history"
+          ? "Information Library"
+          : activeTab === "pesticide"
+            ? "Pesticide Guide"
+            : activeTab === "learn"
+              ? "Learn"
+              : "Home";
   const feedbackSummary =
     activeTab === "diagnose" && result
       ? `${form.crop || "Unknown crop"} | ${form.district || locationName || "Unknown district"} | ${(result.bn || result.en || "").slice(0, 160)}`
       : activeTab === "calendar"
         ? "Crop Calendar with weather & price data"
-        : activeTab === "game"
-          ? "Game tab feedback"
-          : activeTab === "library"
-            ? "Drive-based slide, reading, and audio library"
-            : activeTab === "apps"
-              ? "External agriculture apps hub"
-              : activeTab === "guide"
-                ? "CABI training guide view"
-                : activeTab === "history"
-                  ? `Saved reports: ${history.length}`
-                  : activeTab === "learn"
-                    ? "Learn section: Guide + Games"
-                    : "General app feedback";
+        : activeTab === "library"
+          ? "Saved diagnosis reports"
+          : activeTab === "learn"
+            ? "Learn section: Protocol, games & resources"
+            : "General app feedback";
 
   return (
     <div style={{ minHeight: "100svh", background: C.bg, width: "100%", display: "flex", flexDirection: "column" }}>
@@ -8053,51 +8169,37 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
             }}
           >
             <div style={{ maxWidth: isDesktop ? 1280 : 1040, margin: "0 auto", width: "100%" }}>
-              {activeTab === "home" && (
-                <EnhancedHomeTab
-                  setActiveTab={setActiveTab}
-                  history={history}
-                  weather={weather}
-                  locationName={locationName}
-                  coords={coords}
-                />
-              )}
-              {activeTab === "home" && <MarketPriceTicker C={C} />}
-              {activeTab === "home" &&
-                (() => {
-                  const alerts = getCurrentRiskAlerts();
-                  if (alerts.length === 0) return null;
-                  return (
-                    <div
-                      style={{
-                        background: C.bgDanger,
-                        borderRadius: 12,
-                        padding: 12,
-                        marginBottom: 10,
-                        border: `1px solid ${C.borderDanger}`,
-                      }}
-                    >
-                      <div style={{ fontWeight: 700, fontSize: 13, color: C.danger, marginBottom: 6 }}>
-                        ⚠️ এই মৌসুমে ঝুঁকি
-                      </div>
-                      {alerts.map((a, i) => (
-                        <div key={i} style={{ fontSize: 12, color: C.text, marginBottom: 3 }}>
-                          {a.icon} {a.crop}: {a.keyDiseases.join(", ")}
+              {/* ── HOME tab — daily decisions, market prices & seasonal risk.
+                  (The old separate "today" tab was merged here so farmers
+                  see one clear home page instead of two similar ones.) ── */}
+              {(activeTab === "home" || activeTab === "today") && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <TodayDecisionView C={C} coords={coords} locationName={locationName} history={history} />
+                  <MarketPriceTicker C={C} />
+                  {(() => {
+                    const alerts = getCurrentRiskAlerts();
+                    if (alerts.length === 0) return null;
+                    return (
+                      <div
+                        style={{
+                          background: C.bgDanger,
+                          borderRadius: 12,
+                          padding: 12,
+                          border: `1px solid ${C.borderDanger}`,
+                        }}
+                      >
+                        <div style={{ fontWeight: 700, fontSize: 13, color: C.danger, marginBottom: 6 }}>
+                          ⚠️ এই মৌসুমে ঝুঁকি
                         </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-
-              {/* ── TODAY tab (dedicated weather-decision page) ─────────── */}
-              {activeTab === "today" && (
-                <TodayDecisionView
-                  C={C}
-                  coords={coords}
-                  locationName={locationName}
-                  history={history}
-                  onBack={() => setActiveTab("home")}
-                />
+                        {alerts.map((a, i) => (
+                          <div key={i} style={{ fontSize: 12, color: C.text, marginBottom: 3 }}>
+                            {a.icon} {a.crop}: {a.keyDiseases.join(", ")}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
               )}
 
               {/* ── CALENDAR tab (Crop Calendar + Weather + Price) ──────────── */}
@@ -8119,78 +8221,17 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                     </div>
                     <OutbreakList C={C} district={form.district || locationName} postJson={postJson} />
                   </div>
-                  {/* Quick links to apps & history */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 10 }}>
-                    <button
-                      onClick={() => setActiveTab("apps")}
-                      style={{
-                        background: C.bgCard,
-                        border: `1px solid ${C.border}`,
-                        borderRadius: 14,
-                        padding: "14px 12px",
-                        textAlign: "left",
-                        cursor: "pointer",
-                        boxShadow: C.shadow,
-                      }}
-                    >
-                      <div style={{ fontSize: 22, marginBottom: 4 }}>🌐</div>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: C.text }}>কৃষি অ্যাপস</div>
-                      <div style={{ fontSize: 11, color: C.textMuted }}>আরও সেবা দেখুন</div>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("history")}
-                      style={{
-                        background: C.bgCard,
-                        border: `1px solid ${C.border}`,
-                        borderRadius: 14,
-                        padding: "14px 12px",
-                        textAlign: "left",
-                        cursor: "pointer",
-                        boxShadow: C.shadow,
-                      }}
-                    >
-                      <div style={{ fontSize: 22, marginBottom: 4 }}>📋</div>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: C.text }}>নির্ণয় ইতিহাস</div>
-                      <div style={{ fontSize: 11, color: C.textMuted }}>আগের রিপোর্ট</div>
-                    </button>
-                  </div>
                 </div>
               )}
 
-              {/* ── LEARN hub: routes to GUIDE and GAME tabs ────────────── */}
-              {/* ── LEARN & RESOURCE HUB (Unified 4 Pillars) ────────────────── */}
-              {activeTab === "learn" && (
-                <UnifiedLearnResourceHub
-                  initialPillar="learning"
-                  setActiveTab={setActiveTab}
-                  C={C}
-                />
+              {/* ── LEARN hub — single page with 4 pillars (protocol, science,
+                  videos, games). Old separate "guide" and "game" tabs were
+                  merged here so learning lives in one place. ─────────────── */}
+              {(activeTab === "learn" || activeTab === "guide" || activeTab === "game") && (
+                <UnifiedLearnResourceHub initialPillar="learning" setActiveTab={setActiveTab} C={C} />
               )}
 
               {/* Copilot is now a floating FAB — see CopilotFAB component below */}
-
-              {activeTab === "apps" && (
-                <div>
-                  <AppsHub />
-                  <button
-                    onClick={() => setActiveTab("library")}
-                    style={{
-                      marginTop: 12,
-                      width: "100%",
-                      padding: "10px",
-                      borderRadius: 12,
-                      border: `1px solid ${C.border}`,
-                      background: C.bgMuted,
-                      color: C.textMuted,
-                      cursor: "pointer",
-                      fontSize: 12,
-                      fontWeight: 600,
-                    }}
-                  >
-                    ← তথ্যভান্ডারে ফিরুন
-                  </button>
-                </div>
-              )}
 
               {/* ── DIAGNOSE ─────────────────────────────────────────────── */}
               {activeTab === "diagnose" && (
@@ -10142,172 +10183,15 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                 </div>
               )}
 
-              {/* ── GUIDE ────────────────────────────────────────────────── */}
-              {activeTab === "guide" && (
-                <UnifiedLearnResourceHub
-                  initialPillar="learning"
-                  setActiveTab={setActiveTab}
-                  C={C}
-                />
-              )}
-
-              {/* ── LIBRARY (Media, Audio-Visuals & Reference) ────────────────────────────────────────────────── */}
-              {activeTab === "library" && (
-                <UnifiedLearnResourceHub
-                  initialPillar="audiovisuals"
-                  setActiveTab={setActiveTab}
-                  C={C}
-                />
-              )}
+              {/* ── LIBRARY — saved diagnosis reports.
+                  (The media/video library now lives inside the Learn hub,
+                  so this tab simply keeps the farmer's own report history.) */}
+              {activeTab === "library" && <SavedReportsView history={history} setHistory={setHistory} C={C} />}
 
               {/* ── PESTICIDE GUIDE (embedded, previously an external link) ── */}
               {activeTab === "pesticide" && <AgriChemApp />}
 
-              {/* ── GAME HUB (Playing to Practice) ────────────────────────────────────────────────── */}
-              {activeTab === "game" && (
-                <UnifiedLearnResourceHub
-                  initialPillar="practice"
-                  setActiveTab={setActiveTab}
-                  C={C}
-                />
-              )}
-
               {/* ── HISTORY ──────────────────────────────────────────────── */}
-              {activeTab === "history" && (
-                <div
-                  className="ud-editorial-shadow"
-                  style={{
-                    background: C.bgCard,
-                    borderRadius: 18,
-                    padding: 18,
-                    border: `1px solid ${C.border}`,
-                    boxShadow: C.shadowMd,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: C.primary,
-                      fontWeight: 700,
-                      letterSpacing: 0.5,
-                      textTransform: "uppercase",
-                      marginBottom: 6,
-                    }}
-                  >
-                    History
-                  </div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: C.primaryDark, marginBottom: 14 }}>
-                    📋 নির্ণয়ের ইতিহাস
-                  </div>
-                  {history.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: "40px 0", color: C.textMuted }}>
-                      <div style={{ fontSize: 48, marginBottom: 12, animation: "float 2s ease-in-out infinite" }}>
-                        🌾
-                      </div>
-                      <div style={{ fontWeight: 700, fontSize: 15 }}>এখনো কোনো নির্ণয় নেই</div>
-                      <div style={{ fontSize: 12, marginTop: 4 }}>প্রথম নির্ণয় করুন!</div>
-                    </div>
-                  ) : (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-                      {[...history].reverse().map((h, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            padding: "16px",
-                            background: C.bgMuted,
-                            borderRadius: 20,
-                            border: `1px solid ${C.border}`,
-                            boxShadow: "0 6px 18px rgba(0,33,9,0.05)",
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              marginBottom: 5,
-                            }}
-                          >
-                            <div className="ud-headline" style={{ fontWeight: 800, fontSize: 17, color: C.text }}>
-                              {h.crop?.split("/")[0]?.trim()}
-                            </div>
-                            <span
-                              style={{
-                                background: C.badgeSuccess,
-                                color: C.textSuccess,
-                                borderRadius: 10,
-                                padding: "2px 9px",
-                                fontSize: 11,
-                                fontWeight: 700,
-                              }}
-                            >
-                              সম্পন্ন
-                            </span>
-                          </div>
-                          <div style={{ color: C.textMuted, fontSize: 11 }}>
-                            📍 {h.district?.split("/")[0]?.trim() || "—"} · 📅 {h.date}
-                          </div>
-                          {h.resultPreview && (
-                            <div
-                              style={{
-                                color: C.textLight,
-                                fontSize: 12,
-                                marginTop: 8,
-                                lineHeight: 1.6,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                              }}
-                            >
-                              {h.resultPreview}...
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => {
-                          setHistory([]);
-                          try {
-                            localStorage.removeItem("ud-history");
-                          } catch {}
-                        }}
-                        style={{
-                          padding: "9px",
-                          borderRadius: 10,
-                          border: "1px solid #fecaca",
-                          background: C.bgDanger,
-                          color: C.danger,
-                          cursor: "pointer",
-                          fontSize: 12,
-                          fontWeight: 600,
-                          marginTop: 3,
-                        }}
-                      >
-                        🗑️ সব ইতিহাস মুছুন
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("library")}
-                        style={{
-                          marginTop: 8,
-                          width: "100%",
-                          padding: "10px",
-                          borderRadius: 10,
-                          border: `1px solid ${C.border}`,
-                          background: C.bgMuted,
-                          color: C.textMuted,
-                          cursor: "pointer",
-                          fontSize: 12,
-                          fontWeight: 600,
-                        }}
-                      >
-                        ← তথ্যভান্ডারে ফিরুন
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
 
             </div>
           </div>

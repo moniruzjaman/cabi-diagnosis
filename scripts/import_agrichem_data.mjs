@@ -1,8 +1,25 @@
 import fs from 'fs';
 import path from 'path';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// DEPRECATED — superseded by scripts/sync_agrichem.mjs (single command:
+// `node scripts/sync_agrichem.mjs`). Kept only for historical reference.
+//
+// This script used to transpile the AgriChem TypeScript data files into
+// plain-JS copies under src/data/. Those copies went stale and were removed;
+// the MoA registry search in App.jsx now consumes the synced TS sources via
+// src/data/pesticideRegistry.js → src/agrichem/data/all_pesticides.ts.
+// ─────────────────────────────────────────────────────────────────────────────
+
 const SRC_DIR = path.resolve('../AgriChem-Guide-Pest-Control-Database/src/data');
 const DEST_DIR = path.resolve('src/data');
+
+console.warn(
+  '⚠️  import_agrichem_data.mjs is DEPRECATED. Use: node scripts/sync_agrichem.mjs\n' +
+    '   (This legacy script would re-create stale JS duplicates of the database.\n' +
+    '    Aborting without writing anything.)'
+);
+process.exit(1);
 
 // 1. Process all_pesticides.ts -> all_pesticides.js
 console.log('Processing all_pesticides.ts...');

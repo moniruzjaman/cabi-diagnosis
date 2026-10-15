@@ -56,6 +56,14 @@ The app is production-hardened with zero-trust API security, HMAC request signin
 - **External Apps Hub** — Quick links to Krishi AI, GAP Brinjal, CIRDAP GreenLoop
 - **Diagnosis History** — Saved past reports with crop, district, and date tracking
 
+### Pesticide Database (বালাইনাশক tab)
+- **AgriChem Guide & Pest Control Database** embedded as its own tab: DAE/PTAC-registered products, MoA rotation planner, dosage calculator, PPE checklists and regulatory alerts.
+- **Always up to date with upstream** — the data is synced from the source of truth repo [`moniruzjaman/AgriChem-Guide-Pest-Control-Database`](https://github.com/moniruzjaman/AgriChem-Guide-Pest-Control-Database):
+  - `npm run sync:agrichem` clones/fetches upstream into `.agrichem-upstream/` (a plain clone, not a submodule), copies the datasets/types/utils into `src/agrichem/`, regenerates the curated enrichment file, and records the upstream commit SHA in `src/agrichem/data/upstreamMeta.js`.
+  - `npm run check:agrichem` exits non-zero if the embedded database is stale (used by CI).
+  - GitHub Action `.github/workflows/sync-agrichem.yml` runs weekly, verifies the build with the synced data, and opens a PR when upstream changes.
+  - The tab footer shows a "DB synced" badge with the sync date + upstream commit so provenance is always visible.
+
 ### Engagement Features
 - **Award Crests** — Achievement badges for completing each diagnostic game
 - **Social Sharing** — Share diagnoses via Facebook, LinkedIn, and more

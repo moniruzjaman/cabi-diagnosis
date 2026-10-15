@@ -1,0 +1,66 @@
+name: Sync AgriChem pesticide database
+
+# Keeps the embedded "বালাইনাশক" (Pesticide) tab in sync with its upstream
+# source of truth: https://github.com/moniruzjaman/AgriChem-Guide-Pest-Control-Database
+#
+# Runs weekly (and on demand). If upstream has new commits, it re-syncs
+# src/agrichem/ and opens a PR so the change is reviewed before release.
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' # Mondays 03:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies (for esbuild used by the sync script)
+        run: npm ci --no-audit --no-fund
+
+      - name: Check freshness against upstream
+        id: check
+        run: |
+          if node scripts/sync_agrichem.mjs --check; then
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync database from upstream
+        if: steps.check.outputs.stale == 'true'
+        run: node scripts/sync_agrichem.mjs
+
+      - name: Verify build with synced data
+        if: steps.check.outputs.stale == 'true'
+        run: npm run build
+
+      - name: Open PR with synced data
+        if: steps.check.outputs.stale == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/sync-agrichem-database
+          delete-branch: true
+          commit-message: "chore(pesticide): sync AgriChem database from upstream"
+          title: "chore(pesticide): sync AgriChem database from upstream"
+          body: >
+            Automated weekly sync of the embedded বালাইনাশক (Pesticide) tab
+            from https://github.com/moniruzjaman/AgriChem-Guide-Pest-Control-Database.
+
+            Regenerated files under `src/agrichem/` via
+            `node scripts/sync_agrichem.mjs`. Provenance metadata (upstream
+            commit SHA + sync date) is written to
+            `src/agrichem/data/upstreamMeta.js` and shown as a "DB synced"
+            badge in the tab footer.
