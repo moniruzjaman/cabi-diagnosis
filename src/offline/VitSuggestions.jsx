@@ -13,7 +13,7 @@
 //   - Theme-aware colors via the theme prop
 
 import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
-import { classifyLeaf, preloadModel, isModelReady } from "./vitClassifier";
+import { classifyLeafSmart, preloadLeafModels, isLeafModelReady } from "./leafEnsemble";
 import { buildVitAnnouncement, buildVitTopKSummary } from "./vitIntegration";
 import useTTS from "../games/useTTS";
 
@@ -24,6 +24,7 @@ const CAT_STYLES = {
   fungal: { bg: "#fef3c7", fg: "#92400e", bar: "#d97706", emoji: "🍄" },
   bacterial: { bg: "#fee2e2", fg: "#991b1b", bar: "#dc2626", emoji: "🦠" },
   viral: { bg: "#dbeafe", fg: "#1e40af", bar: "#2563eb", emoji: "🧬" },
+  insect: { bg: "#ffedd5", fg: "#9a3412", bar: "#ea580c", emoji: "🐛" },
   invalid: { bg: "#f1f5f9", fg: "#475569", bar: "#94a3b8", emoji: "⚠️" },
   unknown: { bg: "#f1f5f9", fg: "#475569", bar: "#94a3b8", emoji: "🔍" },
 };
@@ -130,7 +131,7 @@ function Chip({ entry, onApply, disabled }) {
  *   - theme (object): { primary, primaryDark, text, textMuted, ... }
  *   - autoRun (boolean, default true): start classification as soon as image arrives
  */
-export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun = true, onResult }) {
+export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun = true, onResult, cropHint }) {
   const [state, setState] = useState({ status: "idle" });
   const cancelledRef = useRef(false);
   const { speak, stop, speaking, isSupported } = useTTS();
@@ -197,11 +198,11 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
     try {
       // Warm up the model in parallel with image load. First call takes
       // ~5-15s on a mid-range Android (22 MB download + WASM init).
-      if (!isModelReady())
-        preloadModel().catch(() => {
+      if (!isLeafModelReady(cropHint))
+        preloadLeafModels(cropHint).catch(() => {
           /* surfaced below */
         });
-      const result = await classifyLeaf(src, { topK: 3, timeoutMs: 45000 });
+      const result = await classifyLeafSmart(src, { topK: 3, timeoutMs: 45000, cropHint });
       if (cancelledRef.current) return;
       if (!result.ok) {
         setState({ status: "error", error: result.error, code: result.code });
@@ -214,7 +215,7 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
         setState({ status: "error", error: err.message || String(err) });
       }
     }
-  }, []);
+  }, [cropHint]);
 
   useEffect(() => {
     cancelledRef.current = false;
@@ -243,7 +244,7 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
       <div style={cardStyle}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
           <span style={badgeStyle}>🛰️ Local AI Vision</span>
-          <span style={{ fontSize: 11, color: "#0f766e", fontWeight: 600 }}>Offline</span>
+          <span style={{ fontSize: 11, color: "#0f766e", fontWeight: 600 }}>Offline · MobileNet + ViT</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {!reducedMotion && (
@@ -259,7 +260,7 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
             />
           )}
           <span style={{ fontSize: 12, color: T.textMuted || "#5f6672" }}>
-            পাতার ছবি বিশ্লেষণ চলছে… (প্রথমবার মডেল লোড হতে ১০-১৫ সেকেন্ড লাগতে পারে)
+            পাতার ছবি বিশ্লেষণ চলছে… (মোবাইল মডেল ~৪ এমবি, প্রথমবার কয়েক সেকেন্ড লাগতে পারে)
           </span>
         </div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -325,7 +326,9 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={badgeStyle}>🛰️ Local AI Vision</span>
-          <span style={{ fontSize: 11, color: "#0f766e", fontWeight: 600 }}>Offline · {inferenceMs}ms</span>
+          <span style={{ fontSize: 11, color: "#0f766e", fontWeight: 600 }}>
+            Offline · {topK[0]?.engine === "plantvillage" ? "PlantVillage" : "ViT"} · {inferenceMs}ms
+          </span>
         </div>
         <div style={{ display: "flex", gap: 4 }}>
           {isSupported && topK.length > 1 && (

@@ -13,9 +13,9 @@
  * logged in 2 hours ago", compare this timestamp to the current time.
  */
 
-import { getTursoClient } from "../_lib/turso.js";
-import { verifyJWT, readCookie } from "../_lib/jwt.js";
+import { verifyJWT, readCookie, isPreviewDeploy } from "../_lib/jwt.js";
 import { handleCORSPreflight, setCORSHeaders } from "../_lib/cors.js";
+import { getUserById } from "../_lib/userStore.js";
 
 const SESSION_COOKIE_NAME = "agrichem_session";
 
@@ -28,9 +28,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const SESSION_SECRET = process.env.SESSION_SECRET;
+  const SESSION_SECRET = process.env.SESSION_SECRET || (isPreviewDeploy() ? "preview-session-secret" : "");
   if (!SESSION_SECRET) {
-    return res.status(500).json({ error: "Server auth not configured" });
+    return res.status(200).json({ user: null });
   }
 
   // ── 1. Read + verify the session cookie ──────────────────────────────
@@ -60,29 +60,18 @@ export default async function handler(req, res) {
   //   - last_login_at is always current (the JWT was issued at sign-in)
   //   - name/picture reflect any Google profile changes
   //   - we can detect deleted/disabled accounts
-  const db = getTursoClient();
-  if (!db) {
-    return res.status(503).json({ error: "Database unavailable" });
-  }
-
-  let result;
+  let user;
   try {
-    result = await db.execute({
-      sql: `SELECT id, email, name, picture_url, locale,
-                   created_at, last_login_at, login_count
-            FROM users WHERE id = ?`,
-      args: [payload.uid],
-    });
+    user = await getUserById(payload.uid);
   } catch (e) {
     console.error("[auth/me] DB query failed:", e.message);
-    return res.status(500).json({ error: "Database query failed" });
+    return res.status(200).json({ user: null });
   }
 
-  if (result.rows.length === 0) {
-    // User was deleted after the session was issued — clear cookie
+  if (!user) {
     res.setHeader("Set-Cookie", `${SESSION_COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`);
     return res.status(200).json({ user: null });
   }
 
-  return res.status(200).json({ user: result.rows[0] });
+  return res.status(200).json({ user });
 }

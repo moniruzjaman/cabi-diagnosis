@@ -347,7 +347,7 @@ export default function UnifiedLearnResourceHub({
     });
   };
 
-  const handleSelectPillar = (pillarId) => {
+  const _handleSelectPillar = (pillarId) => {
     setActivePillar(pillarId);
     trackPillar(pillarId);
   };

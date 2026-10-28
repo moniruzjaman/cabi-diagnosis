@@ -21,6 +21,18 @@ import {
   disposeModel as _disposeVitModel,
 } from "./vitClassifier.js";
 import {
+  classifyPlantVillage as _classifyPlantVillage,
+  preloadPlantVillageModel as _preloadPlantVillageModel,
+  isPlantVillageReady as _isPlantVillageReady,
+  getPlantVillageInfo as _getPlantVillageInfo,
+  PLANTVILLAGE_LABELS as _PLANTVILLAGE_LABELS,
+} from "./plantVillageClassifier.js";
+import {
+  classifyLeafSmart as _classifyLeafSmart,
+  preloadLeafModels as _preloadLeafModels,
+} from "./leafEnsemble.js";
+import { pickVisionEngine as _pickVisionEngine } from "./visionRouter.js";
+import {
   findCropDiseaseForVitPrediction as _findCropDiseaseForVitPrediction,
   computeVitBoost as _computeVitBoost,
   applyVitBoostToMatches as _applyVitBoostToMatches,
@@ -60,6 +72,14 @@ export const isVitModelReady = _isModelReady;
 export const getVitModelInfo = _getModelInfo;
 export const VIT_LABELS = _VIT_LABELS;
 export const disposeVitModel = _disposeVitModel;
+export const classifyPlantVillage = _classifyPlantVillage;
+export const preloadPlantVillageModel = _preloadPlantVillageModel;
+export const isPlantVillageReady = _isPlantVillageReady;
+export const getPlantVillageInfo = _getPlantVillageInfo;
+export const PLANTVILLAGE_LABELS = _PLANTVILLAGE_LABELS;
+export const classifyLeafSmart = _classifyLeafSmart;
+export const preloadLeafModels = _preloadLeafModels;
+export const pickVisionEngine = _pickVisionEngine;
 
 // On-device ViT integration (Phase 2)
 export const findCropDiseaseForVitPrediction = _findCropDiseaseForVitPrediction;
@@ -81,8 +101,11 @@ if (typeof window !== "undefined") {
     getFieldConfirmationMethods,
     generateIPMRecommendations,
     translateSymptoms,
-    classifyLeaf: _classifyLeaf,
+    classifyLeaf: _classifyLeafSmart,
+    classifyLeafSmart: _classifyLeafSmart,
+    classifyPlantVillage: _classifyPlantVillage,
     preloadVitModel: _preloadModel,
+    preloadLeafModels: _preloadLeafModels,
     isVitModelReady: _isModelReady,
     getVitModelInfo: _getModelInfo,
     findCropDiseaseForVitPrediction: _findCropDiseaseForVitPrediction,

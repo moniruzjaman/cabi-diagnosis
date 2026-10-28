@@ -40,7 +40,10 @@
     "check": "npm run lint && npm run format:check",
     "db:init": "node scripts/init-turso.mjs",
     "sync:agrichem": "node scripts/sync_agrichem.mjs",
-    "check:agrichem": "node scripts/sync_agrichem.mjs --check"
+    "check:agrichem": "node scripts/sync_agrichem.mjs --check",
+    "sync:models": "node scripts/sync_kaggle_models.mjs",
+    "check:models": "node scripts/sync_kaggle_models.mjs --check",
+    "test:offline": "node src/offline/test-ensemble.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.17.3",

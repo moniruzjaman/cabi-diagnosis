@@ -19,9 +19,9 @@
  *   TURSO_DATABASE_URL, TURSO_AUTH_TOKEN — for the users table
  */
 
-import { getTursoClient, ensureSchema } from "../_lib/turso.js";
-import { signJWT } from "../_lib/jwt.js";
+import { signJWT, isPreviewDeploy } from "../_lib/jwt.js";
 import { handleCORSPreflight, setCORSHeaders } from "../_lib/cors.js";
+import { upsertUserProfile } from "../_lib/userStore.js";
 
 const SESSION_COOKIE_NAME = "agrichem_session";
 const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
@@ -42,11 +42,11 @@ export default async function handler(req, res) {
   }
 
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-  const SESSION_SECRET = process.env.SESSION_SECRET;
+  const SESSION_SECRET = process.env.SESSION_SECRET || (isPreviewDeploy() ? "preview-session-secret" : "");
 
   if (!GOOGLE_CLIENT_ID || !SESSION_SECRET) {
     console.error("[auth/google] Missing GOOGLE_CLIENT_ID or SESSION_SECRET env var");
-    return res.status(500).json({ error: "Server auth not configured" });
+    return res.status(503).json({ error: "Server auth not configured", preview: isPreviewDeploy() });
   }
 
   // ── 1. Verify the Google ID token via Google's tokeninfo endpoint ────
@@ -83,51 +83,23 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: "Token missing required fields" });
   }
 
-  // ── 4. Upsert user in Turso + update last_login_at ───────────────────
-  await ensureSchema();
-  const db = getTursoClient();
-  if (!db) {
-    return res.status(503).json({ error: "Database unavailable" });
-  }
-
-  const nowIso = new Date().toISOString();
-
-  // INSERT ... ON CONFLICT(google_sub) DO UPDATE = SQLite UPSERT.
-  // - First registration: inserts row with created_at = last_login_at = now
-  // - Returning login: updates last_login_at = now, login_count += 1,
-  //   refreshes email/name/picture (in case Google profile changed),
-  //   and PRESERVES created_at (not in the UPDATE list).
+  // ── 4. Upsert user identity only (Turso → Supabase users table → preview) ──
   let user;
+  let backend = "unknown";
   try {
-    const result = await db.execute({
-      sql: `INSERT INTO users
-              (google_sub, email, email_verified, name, picture_url, locale,
-               created_at, last_login_at, login_count)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-            ON CONFLICT(google_sub) DO UPDATE SET
-              email = excluded.email,
-              email_verified = excluded.email_verified,
-              name = COALESCE(excluded.name, users.name),
-              picture_url = COALESCE(excluded.picture_url, users.picture_url),
-              locale = COALESCE(excluded.locale, users.locale),
-              last_login_at = excluded.last_login_at,
-              login_count = users.login_count + 1
-            RETURNING id, email, name, picture_url, locale,
-                      created_at, last_login_at, login_count`,
-      args: [
-        payload.sub,
-        payload.email,
-        payload.email_verified ? 1 : 0,
-        payload.name || null,
-        payload.picture || null,
-        payload.locale || null,
-        nowIso,
-        nowIso,
-      ],
+    const stored = await upsertUserProfile({
+      google_sub: payload.sub,
+      email: payload.email,
+      email_verified: !!payload.email_verified,
+      name: payload.name || null,
+      picture_url: payload.picture || null,
+      locale: payload.locale || null,
+      nowIso: new Date().toISOString(),
     });
-    user = result.rows[0];
+    user = stored.user;
+    backend = stored.backend;
   } catch (e) {
-    console.error("[auth/google] DB upsert failed:", e.message);
+    console.error("[auth/google] user upsert failed:", e.message);
     return res.status(500).json({ error: "Failed to create/update user" });
   }
 
@@ -170,5 +142,6 @@ export default async function handler(req, res) {
       last_login_at: user.last_login_at,
       login_count: user.login_count,
     },
+    backend,
   });
 }
