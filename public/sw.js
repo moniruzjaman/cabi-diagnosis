@@ -3,7 +3,7 @@
 // Cache is used as fallback when offline only
 // API responses are NEVER cached to prevent stale diagnostic results
 
-const CACHE_VERSION = 'cabi-v5-' + new Date().toISOString().slice(0, 10);
+const CACHE_VERSION = 'cabi-v6-' + new Date().toISOString().slice(0, 10);
 const PRECACHE_ASSETS = [
   "/",
   "/index.html",
@@ -11,10 +11,8 @@ const PRECACHE_ASSETS = [
   "/cabi-logo.png",
   "/favicon.svg",
   "/manifest.json",
-  // On-device ViT model for offline leaf-disease classification (Phase 1).
-  // 22 MB — precaching it here means the model works on the very first
-  // diagnosis attempt even if the user has never been online.
-  "/models/crop_leaf_diseases_vit.onnx",
+  "/models/plantvillage/mobilenetv3-light/model.onnx",
+  "/models/plantvillage/mobilenetv3-light/class_names.json",
 ];
 
 // Install — precache essential shell assets, then activate immediately
@@ -91,10 +89,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // For the ViT ONNX model (22 MB) — cache-first so the second diagnosis
-  // is instant. The model is versioned via the cache key, so a deploy with
-  // a new model file is picked up on the next SW activate cycle.
-  if (url.pathname === "/models/crop_leaf_diseases_vit.onnx") {
+  if (url.pathname.startsWith("/models/") && url.pathname.endsWith(".onnx")) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
         if (cached) return cached;

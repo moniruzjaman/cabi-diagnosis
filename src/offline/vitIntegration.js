@@ -30,19 +30,28 @@ function stripCropPrefix(diseaseEn, cropEn) {
 // for some classes than the Bangladesh disease database. This map captures
 // the known mismatches so the boost logic still works.
 const DISEASE_ALIASES = {
-  "Common Rust": "Brown Rust", // Corn common rust ≈ Brown rust family
-  "Brown Spot": "Brown Spot", // exact match
-  "Leaf Blast": "Rice Blast", // ViT says "Leaf Blast", DB says "Rice Blast"
+  "Common Rust": "Brown Rust",
+  "Brown Spot": "Brown Spot",
+  "Leaf Blast": "Rice Blast",
   "Gray Leaf Spot": "Gray Leaf Spot",
   "Yellow Rust": "Yellow Rust",
   "Early Blight": "Early Blight",
   "Late Blight": "Late Blight",
-  "Healthy": "Healthy",
+  Healthy: "Healthy",
+  "Bacterial Spot": "Bacterial Spot",
+  "Leaf Mold": "Leaf Mold",
+  "Septoria Leaf Spot": "Septoria Leaf Spot",
+  "Spider Mites": "Spider Mites",
+  "Target Spot": "Target Spot",
+  "Tomato Yellow Leaf Curl": "Tomato Leaf Curl",
+  "Yellow Leaf Curl": "Tomato Leaf Curl",
+  "Tomato Mosaic": "Tomato Mosaic",
+  Mosaic: "Tomato Mosaic",
 };
 
 function normalizeDiseaseName(diseaseEn) {
   if (!diseaseEn) return "";
-  return DISEASE_ALIASES[diseaseEn] || diseaseEn;
+  return DISEASE_ALIASES[diseaseEn] || DISEASE_ALIASES[diseaseEn.replace(/_/g, " ")] || diseaseEn;
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────────
@@ -68,11 +77,11 @@ export function findCropDiseaseForVitPrediction(vitEntry) {
   if (!cropKey || !CROP_DISEASES[cropKey]) return null;
   const diseases = CROP_DISEASES[cropKey].diseases;
   const stripped = stripCropPrefix(vitEntry.diseaseEn, vitEntry.cropEn);
-  const normalized = normalizeDiseaseName(stripped);
+  const normalized = normalizeDiseaseName(stripped) || normalizeDiseaseName(vitEntry.diseaseEn);
 
   // 1) exact or alias match
   const alias = diseases.find(
-    (d) => d.name === stripped || d.name === normalized,
+    (d) => d.name === stripped || d.name === normalized || d.name === vitEntry.diseaseEn,
   );
   if (alias) {
     return { cropKey, disease: alias, matchType: "exact", score: 1.0 };
@@ -169,7 +178,11 @@ export function applyVitBoostToMatches(matches, vitEntry, opts = {}) {
 export function buildVitPromptBlock(vitEntry, matchResult) {
   if (!vitEntry) return "";
   const lines = [];
-  lines.push("🛰️ LOCAL VISION MODEL (on-device ViT, 13-class):");
+  const engineLabel =
+    vitEntry.engine === "plantvillage"
+      ? "LOCAL VISION MODEL (on-device PlantVillage MobileNet, 15-class)"
+      : "LOCAL VISION MODEL (on-device ViT, 13-class)";
+  lines.push(`🛰️ ${engineLabel}:`);
   lines.push(
     `  Top-1: ${vitEntry.diseaseEn} (${vitEntry.cropEn}) — ${(vitEntry.confidence * 100).toFixed(0)}% confidence`,
   );

@@ -15,6 +15,7 @@ import { createRateLimiter } from "./_lib/rateLimit.js";
 import { requireSignedRequest, generateRequestToken } from "./_lib/requestSigning.js";
 import { getPolicyUsage } from "./_lib/freeTierPolicy.js";
 import { getTelemetrySnapshot } from "./_lib/observability.js";
+import { authStatus } from "./_lib/userStore.js";
 
 const startTime = Date.now();
 const metricsLimiter = createRateLimiter({ windowMs: 60_000, maxRequests: 5 });
@@ -76,6 +77,7 @@ export default async function handler(req, res) {
     env: {
       VERCEL: !!process.env.VERCEL,
       TURSO: !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN),
+      AUTH: authStatus(),
       // Only report whether keys exist, never their values or partial content
       AI_PROVIDERS_CONFIGURED: !!(
         process.env.GEMINI_API_KEY ||

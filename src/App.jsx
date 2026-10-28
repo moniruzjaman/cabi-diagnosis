@@ -16,7 +16,7 @@ import WeatherDecisionSummary from "./components/WeatherDecisionSummary";
 import TodayDecisionView from "./components/TodayDecisionView";
 import OnboardingFlow from "./components/OnboardingFlow";
 import OutbreakList from "./components/OutbreakList";
-import VisualDiagnosisLibrary from "./components/VisualDiagnosisLibrary";
+import VisualDiagnosisLibrary from "./components/VisualDiagnosisLibrary"; // used by diagnose library tab
 import { HeroStakeholderSection } from "./components/HeroStakeholderSection";
 import UnifiedLearnResourceHub from "./components/UnifiedLearnResourceHub";
 import AgriChemApp from "./agrichem/AgriChemApp";
@@ -5571,12 +5571,11 @@ function MoAPesticideRegistryView({ C }) {
   // is first mounted. Until then, `agrichemResults` is empty and the
   // "বালাইনাশক ডাটাবেস" section shows a small loading indicator.
   const [agrichemDatabase, setAgrichemDatabase] = useState(null);
-  const [agrichemDbLoading, setAgrichemDbLoading] = useState(false);
+  const [agrichemDbLoading, setAgrichemDbLoading] = useState(true);
   const [agrichemDbError, setAgrichemDbError] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
-    setAgrichemDbLoading(true);
     loadAgrichemDatabase()
       .then((db) => {
         if (!cancelled) {
@@ -6818,7 +6817,7 @@ function SavedReportsView({ history, setHistory, C }) {
 function MarketPriceTicker({ C }) {
   const [prices, setPrices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tickerOffset, setTickerOffset] = useState(0);
+  const [_tickerOffset, setTickerOffset] = useState(0);
 
   useEffect(() => {
     async function fetchPrices() {
@@ -7527,6 +7526,8 @@ export default function UdbhidGoenda() {
             diseaseEn: vitPrediction.diseaseEn || null,
             confidence: Number.isFinite(vitPrediction.confidence) ? vitPrediction.confidence : null,
             label: vitPrediction.label || null,
+            engine: vitPrediction.engine || null,
+            modelId: vitPrediction.modelId || null,
           }
         : null;
 
@@ -8632,6 +8633,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                         onApply={applyVitPrediction}
                         onResult={handleVitResult}
                         theme={C}
+                        cropHint={form.crop}
                       />
                       {/* crop */}
                       <div

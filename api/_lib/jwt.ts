@@ -104,3 +104,7 @@ export function readCookie(cookieHeader: string, name: string): string {
   const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
   return match ? match[1] : "";
 }
+
+export function isPreviewDeploy(): boolean {
+  return !!(process.env.VERCEL_ENV === "preview" || process.env.GITHUB_ACTIONS || process.env.CI);
+}
