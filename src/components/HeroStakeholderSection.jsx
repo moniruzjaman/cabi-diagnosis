@@ -254,11 +254,7 @@ const STAKEHOLDERS = [
   },
 ];
 
-export function HeroStakeholderSection({
-  setActiveTab,
-  C,
-  tts = {},
-}) {
+export function HeroStakeholderSection({ setActiveTab, C, tts = {} }) {
   const [activeRole, setActiveRole] = useState(() => {
     try {
       return localStorage.getItem("cabi_stakeholder_role") || "farmer";
@@ -269,8 +265,7 @@ export function HeroStakeholderSection({
 
   const [selectedProcessStep, setSelectedProcessStep] = useState(0);
 
-  const currentStakeholder =
-    STAKEHOLDERS.find((s) => s.id === activeRole) || STAKEHOLDERS[0];
+  const currentStakeholder = STAKEHOLDERS.find((s) => s.id === activeRole) || STAKEHOLDERS[0];
 
   const currentStepData = CABI_5_STEPS[selectedProcessStep] || CABI_5_STEPS[0];
 
@@ -422,20 +417,14 @@ export function HeroStakeholderSection({
                   gap: 8,
                   padding: "10px 14px",
                   borderRadius: 14,
-                  border: isSelected
-                    ? `1.5px solid ${C.primary}`
-                    : `1px solid transparent`,
-                  background: isSelected
-                    ? `linear-gradient(135deg, ${C.primaryDark}, ${C.primary})`
-                    : C.bgMuted,
+                  border: isSelected ? `1.5px solid ${C.primary}` : `1px solid transparent`,
+                  background: isSelected ? `linear-gradient(135deg, ${C.primaryDark}, ${C.primary})` : C.bgMuted,
                   color: isSelected ? "#ffffff" : C.text,
                   cursor: "pointer",
                   fontSize: 13,
                   fontWeight: isSelected ? 800 : 600,
                   transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                  boxShadow: isSelected
-                    ? "0 4px 14px rgba(0,106,78,0.22)"
-                    : "none",
+                  boxShadow: isSelected ? "0 4px 14px rgba(0,106,78,0.22)" : "none",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -477,10 +466,7 @@ export function HeroStakeholderSection({
         }}
       >
         {/* Subtle Decorative Leaves */}
-        <span
-          className="hero-leaf"
-          style={{ right: -12, top: -18, fontSize: 110, pointerEvents: "none" }}
-        >
+        <span className="hero-leaf" style={{ right: -12, top: -18, fontSize: 110, pointerEvents: "none" }}>
           🍃
         </span>
         <span
@@ -548,9 +534,7 @@ export function HeroStakeholderSection({
             {tts.isSupported && (
               <button
                 onClick={handlePlayTTS}
-                aria-label={
-                  tts.speaking ? "ভয়েস বন্ধ করুন" : "ভূমিকা শুনুন"
-                }
+                aria-label={tts.speaking ? "ভয়েস বন্ধ করুন" : "ভূমিকা শুনুন"}
                 title="ভয়েস বিবরণ শুনুন"
                 style={{
                   display: "inline-flex",
@@ -558,9 +542,7 @@ export function HeroStakeholderSection({
                   gap: 6,
                   padding: "6px 13px",
                   borderRadius: 999,
-                  background: tts.speaking
-                    ? C.danger
-                    : "rgba(255,255,255,0.16)",
+                  background: tts.speaking ? C.danger : "rgba(255,255,255,0.16)",
                   border: "1px solid rgba(255,255,255,0.35)",
                   color: "#ffffff",
                   fontSize: 12,
@@ -676,20 +658,14 @@ export function HeroStakeholderSection({
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow =
-                  "0 8px 26px rgba(0,0,0,0.28)";
+                e.currentTarget.style.boxShadow = "0 8px 26px rgba(0,0,0,0.28)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow =
-                  "0 6px 20px rgba(0,0,0,0.22)";
+                e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.22)";
               }}
             >
-              <currentStakeholder.primaryAction.icon
-                size={19}
-                color={C.primaryDark}
-                strokeWidth={2.4}
-              />
+              <currentStakeholder.primaryAction.icon size={19} color={C.primaryDark} strokeWidth={2.4} />
               <span>{currentStakeholder.primaryAction.label}</span>
               {currentStakeholder.primaryAction.highlight && (
                 <span
@@ -711,9 +687,7 @@ export function HeroStakeholderSection({
             {/* Secondary Action */}
             <button
               id={`hero-cta-secondary-${currentStakeholder.id}`}
-              onClick={() =>
-                setActiveTab(currentStakeholder.secondaryAction.tab)
-              }
+              onClick={() => setActiveTab(currentStakeholder.secondaryAction.tab)}
               className="ud-headline"
               style={{
                 display: "inline-flex",
@@ -737,10 +711,7 @@ export function HeroStakeholderSection({
                 e.currentTarget.style.background = "rgba(255,255,255,0.14)";
               }}
             >
-              <currentStakeholder.secondaryAction.icon
-                size={16}
-                color="#ffffff"
-              />
+              <currentStakeholder.secondaryAction.icon size={16} color="#ffffff" />
               <span>{currentStakeholder.secondaryAction.label}</span>
             </button>
 
@@ -870,9 +841,7 @@ export function HeroStakeholderSection({
                   justifyContent: "center",
                   padding: "10px 6px",
                   borderRadius: 14,
-                  border: isStepActive
-                    ? `2px solid ${s.color}`
-                    : `1px solid ${C.border}`,
+                  border: isStepActive ? `2px solid ${s.color}` : `1px solid ${C.border}`,
                   background: isStepActive ? s.bg : C.bgMuted,
                   cursor: "pointer",
                   transition: "all 0.18s ease",
@@ -987,9 +956,7 @@ export function HeroStakeholderSection({
                 >
                   ধাপ {currentStepData.num}: {currentStepData.titleBn}
                 </h3>
-                <div style={{ fontSize: 11, color: C.textMuted }}>
-                  {currentStepData.titleEn}
-                </div>
+                <div style={{ fontSize: 11, color: C.textMuted }}>{currentStepData.titleEn}</div>
               </div>
             </div>
 
@@ -1066,9 +1033,7 @@ export function HeroStakeholderSection({
                     lineHeight: 1.4,
                   }}
                 >
-                  <span style={{ color: currentStepData.color, fontWeight: 800 }}>
-                    •
-                  </span>
+                  <span style={{ color: currentStepData.color, fontWeight: 800 }}>•</span>
                   <span>{tip}</span>
                 </div>
               ))}
@@ -1131,9 +1096,7 @@ export function HeroStakeholderSection({
               id={`stakeholder-card-${st.id}`}
               style={{
                 background: C.bgCard,
-                border: isCurrent
-                  ? `2px solid ${C.primary}`
-                  : `1px solid ${C.border}`,
+                border: isCurrent ? `2px solid ${C.primary}` : `1px solid ${C.border}`,
                 borderRadius: 18,
                 padding: "16px 14px",
                 boxShadow: isCurrent ? C.shadowMd : C.shadow,
@@ -1167,10 +1130,7 @@ export function HeroStakeholderSection({
                       border: `1.5px solid ${isCurrent ? C.primary + "33" : C.border}`,
                     }}
                   >
-                    <IconComp
-                      size={22}
-                      color={isCurrent ? C.primary : C.textMuted}
-                    />
+                    <IconComp size={22} color={isCurrent ? C.primary : C.textMuted} />
                   </div>
 
                   {isCurrent ? (
