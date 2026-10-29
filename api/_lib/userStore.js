@@ -64,22 +64,19 @@ async function supabaseRequest(path, { method = "GET", body, prefer } = {}) {
 async function upsertSupabaseUser(profile) {
   const { table } = supabaseConfig();
   const nowIso = profile.nowIso;
-  const rows = await supabaseRequest(
-    `${table}?on_conflict=google_sub`,
-    {
-      method: "POST",
-      prefer: "resolution=merge-duplicates,return=representation",
-      body: {
-        google_sub: profile.google_sub,
-        email: profile.email,
-        email_verified: profile.email_verified ? true : false,
-        name: profile.name,
-        picture_url: profile.picture_url,
-        locale: profile.locale,
-        last_login_at: nowIso,
-      },
+  const rows = await supabaseRequest(`${table}?on_conflict=google_sub`, {
+    method: "POST",
+    prefer: "resolution=merge-duplicates,return=representation",
+    body: {
+      google_sub: profile.google_sub,
+      email: profile.email,
+      email_verified: profile.email_verified ? true : false,
+      name: profile.name,
+      picture_url: profile.picture_url,
+      locale: profile.locale,
+      last_login_at: nowIso,
     },
-  );
+  });
   const row = Array.isArray(rows) ? rows[0] : rows;
   if (!row) return null;
   return publicUser({
@@ -96,7 +93,9 @@ async function upsertSupabaseUser(profile) {
 
 async function getSupabaseUser(id) {
   const { table } = supabaseConfig();
-  const rows = await supabaseRequest(`${table}?id=eq.${encodeURIComponent(id)}&select=id,email,name,picture_url,locale,created_at,last_login_at,login_count`);
+  const rows = await supabaseRequest(
+    `${table}?id=eq.${encodeURIComponent(id)}&select=id,email,name,picture_url,locale,created_at,last_login_at,login_count`,
+  );
   const row = Array.isArray(rows) ? rows[0] : null;
   return publicUser(row);
 }

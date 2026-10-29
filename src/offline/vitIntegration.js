@@ -80,19 +80,14 @@ export function findCropDiseaseForVitPrediction(vitEntry) {
   const normalized = normalizeDiseaseName(stripped) || normalizeDiseaseName(vitEntry.diseaseEn);
 
   // 1) exact or alias match
-  const alias = diseases.find(
-    (d) => d.name === stripped || d.name === normalized || d.name === vitEntry.diseaseEn,
-  );
+  const alias = diseases.find((d) => d.name === stripped || d.name === normalized || d.name === vitEntry.diseaseEn);
   if (alias) {
     return { cropKey, disease: alias, matchType: "exact", score: 1.0 };
   }
   // 2) fuzzy: case-insensitive substring on either side
   const fuzzy = diseases.find((d) => {
     const dn = d.name.toLowerCase();
-    return (
-      dn.includes(stripped.toLowerCase()) ||
-      stripped.toLowerCase().includes(dn)
-    );
+    return dn.includes(stripped.toLowerCase()) || stripped.toLowerCase().includes(dn);
   });
   if (fuzzy) {
     return { cropKey, disease: fuzzy, matchType: "fuzzy", score: 0.85 };
@@ -115,14 +110,8 @@ export function findCropDiseaseForVitPrediction(vitEntry) {
  * @returns {number}  Boost amount in [0, ~0.5]. 0 = no boost.
  */
 export function computeVitBoost(vitEntry, matchResult) {
-  if (!vitEntry || !matchResult || matchResult.matchType === "healthy")
-    return 0;
-  const w =
-    matchResult.matchType === "exact"
-      ? 1.0
-      : matchResult.matchType === "fuzzy"
-        ? 0.7
-        : 0;
+  if (!vitEntry || !matchResult || matchResult.matchType === "healthy") return 0;
+  const w = matchResult.matchType === "exact" ? 1.0 : matchResult.matchType === "fuzzy" ? 0.7 : 0;
   if (w === 0) return 0;
   // Cap confidence contribution at 0.95 to avoid flooring the model at 1.0
   // for low-quality but high-confidence predictions.
@@ -195,13 +184,9 @@ export function buildVitPromptBlock(vitEntry, matchResult) {
   } else if (vitEntry.isHealthy) {
     lines.push(`  ↳ Plant appears healthy (no disease predicted)`);
   } else {
-    lines.push(
-      `  ↳ No exact match in Bangladesh disease database; use top-1 as a hint only.`,
-    );
+    lines.push(`  ↳ No exact match in Bangladesh disease database; use top-1 as a hint only.`);
   }
-  lines.push(
-    "  → Treat this as a visual baseline; corroborate with the symptoms the farmer described.",
-  );
+  lines.push("  → Treat this as a visual baseline; corroborate with the symptoms the farmer described.");
   return lines.join("\n");
 }
 
@@ -225,9 +210,7 @@ export function buildVitAnnouncement(vitEntry) {
   // Avoid "ধান পাতায় পাতার ব্লাস্ট" — if the disease name already starts
   // with "পাতা", the "পাতায়" prefix is redundant.
   const needsLeafPrefix = !/^পাতা/.test(diseaseBn);
-  const diseaseClause = needsLeafPrefix
-    ? `${cropBn} পাতায় ${diseaseBn}`
-    : `${cropBn} ${diseaseBn}`;
+  const diseaseClause = needsLeafPrefix ? `${cropBn} পাতায় ${diseaseBn}` : `${cropBn} ${diseaseBn}`;
   return `ছবি থেকে ধারণা করা হচ্ছে, ${diseaseClause} হতে পারে। আত্মবিশ্বাস ${pct} শতাংশ।`;
 }
 
@@ -241,10 +224,7 @@ export function buildVitTopKSummary(topK) {
     .filter((e) => e.category !== "invalid")
     .slice(0, 3)
     .map((e) => {
-      const label =
-        e.cropBn && e.diseaseBn
-          ? `${e.cropBn} — ${e.diseaseBn}`
-          : e.label;
+      const label = e.cropBn && e.diseaseBn ? `${e.cropBn} — ${e.diseaseBn}` : e.label;
       const pct = Math.round(e.confidence * 100);
       return `${label}, ${pct} শতাংশ`;
     });
