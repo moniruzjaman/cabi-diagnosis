@@ -3,7 +3,7 @@
 // used by the offline diagnostic engine's exclusion gates.
 
 export const BENGALI_KEYWORD_MAP = {
-  // ─── Leaf symptoms ─────────────────────────────────────────────────────
+  //  Leaf symptoms 
   "পাতা হলুদ হয়ে যাচ্ছে": "yellow leaves chlorosis yellowing",
   "পাতায় বাদামি গোলাকার দাগ": "brown spots lesions circular leaf spots",
   "পাতায় ধূসর মাকু আকৃতির দাগ (ব্লাস্ট)": "gray spindle diamond shaped lesions blast fungal",
@@ -19,7 +19,7 @@ export const BENGALI_KEYWORD_MAP = {
   "পাতায় তেলতেলে": "water soaked oily water-soaked margins",
   "পাতা পোড়া": "leaf scorch burn necrosis",
 
-  // ─── Stem symptoms ─────────────────────────────────────────────────────
+  //  Stem symptoms 
   "কান্ডের গোড়া পচে কালো বা বাদামি": "stem rot canker base rot dark discoloration",
   "কান্ড টানলে সহজে উঠে আসে, ভেতর ফাঁকা": "stem borer holes hollow stem insect borer",
   "শিকড় কালো ও পচা": "root rot black roots wilting",
@@ -27,7 +27,7 @@ export const BENGALI_KEYWORD_MAP = {
   "কাণ্ডে ছিদ্র": "stem borer holes insect",
   "কাণ্ড ভেঙে": "stem breaking lodging",
 
-  // ─── Fruit / grain symptoms ────────────────────────────────────────────
+  //  Fruit / grain symptoms 
   "ফুল অকালে ঝরে পড়ছে": "flower drop premature abortion",
   "ফল পচে যাচ্ছে, কালো বা বাদামি দাগ": "fruit rot black brown spots fruit",
   "ধানের শীষ চিটা, দানা পূর্ণ হচ্ছে না": "ear head drying chaffy grains white head stem borer",
@@ -36,14 +36,14 @@ export const BENGALI_KEYWORD_MAP = {
   "ফলে দাগ": "fruit spots",
   "শীষ শুকিয়ে": "ear head drying",
 
-  // ─── Whole plant symptoms ──────────────────────────────────────────────
+  //  Whole plant symptoms 
   "গাছ দিনে নেতিয়ে পড়ে, রাতে সতেজ হয়": "wilting bacterial wilt temporary recovery",
   "গাছ হঠাৎ শুকিয়ে মারা যাচ্ছে": "plant death dieback sudden wilt",
   "গাছ শুকিয়ে": "wilting drying",
   "গাছ মরে": "plant death dieback",
   "আগায় শুকিয়ে": "tip burn dieback",
 
-  // ─── Pest signs ────────────────────────────────────────────────────────
+  //  Pest signs 
   "গাছে পোকা দেখা যাচ্ছে": "insect visible pest insects",
   "পাতায় ছিদ্র বা চিবানোর দাগ": "chewing marks holes leaf damage insect",
   "গাছে পিঁপড়া বা আঠালো মধুরস": "sticky honeydew ants aphid whitefly",
@@ -53,12 +53,12 @@ export const BENGALI_KEYWORD_MAP = {
   "সাদা মাছি": "whitefly insect",
   "মাটির পোকা": "soil insect grub root feeding",
 
-  // ─── Environment / abiotic ─────────────────────────────────────────────
+  //  Environment / abiotic 
   "বন্যার ক্ষতি": "flood water damage waterlogging",
   খরা: "drought stress",
   ঠান্ডা: "cold injury frost",
 
-  // ─── Short labels from SYMPTOM_CHIPS (label field) ────────────────────
+  //  Short labels from SYMPTOM_CHIPS (label field) 
   "পাতা হলুদ": "yellow leaves chlorosis",
   "বাদামি দাগ": "brown spots lesions",
   "ধূসর দাগ (ব্লাস্ট)": "blast gray diamond lesions fungal",
@@ -78,7 +78,7 @@ export const BENGALI_KEYWORD_MAP = {
   "গাছ মরছে": "plant death dieback",
   "সাদা গুঁড়া": "white powder mildew powdery coating",
 
-  // ─── Additional common Bengali agricultural terms ──────────────────────
+  //  Additional common Bengali agricultural terms 
   "পাতায় হীরার মত দাগ": "diamond shaped lesions blast fungal",
   "আগায় শুকিয়ে যাওয়া": "tip burn dieback",
   "শীষ শুকিয়ে যাওয়া": "ear head drying",
@@ -98,83 +98,174 @@ export const BENGALI_KEYWORD_MAP = {
 /**
  * Canonical synonym dictionary (Crop-Doctor doctoral advice layer).
  * Maps English keyword variants and common farmer spellings to one canonical
- * token so that symptom texts written with different vocabulary still match.
- * Keys are matched as whole words on normalized (lowercase, punctuation-free)
- * text; longest keys are applied first so multi-word phrases win over singles.
+ * term so that symptom texts written with different vocabulary still match.
+ *
+ * Matching is strictly WORD-BOUNDARY based (see normalizeSymptomText): a key
+ * only fires when its tokens line up with whole tokens of the input. That is
+ * what prevents the substring bugs this layer replaced ("holes" inside
+ * "holostem", "powder" inside "powdery", "curl" inside "curly"). Each value is
+ * an equivalence class  never a superstring of another key  so no cascade or
+ * double-expansion can occur.
+ *
+ * Multi-word keys are applied before single-word keys, so the most specific
+ * phrase wins ("yellowing of leaves" beats bare "yellowing").
  */
 export const SYMPTOM_SYNONYMS = {
+  //  Chlorosis / yellowing 
   "yellowing of leaves": "yellow leaves",
   "leaves turning yellow": "yellow leaves",
+  "leaves are turning yellow": "yellow leaves",
   "leaf yellowing": "yellow leaves",
+  "yellowing leaves": "yellow leaves",
+  yellowing: "yellow leaves",
   chlorotic: "chlorosis",
   chlorosis: "chlorosis",
-  "yellow spots": "yellow spots",
-  lesion: "lesions",
-  spots: "spots",
+  "pale green": "chlorosis",
+
+  //  Spots / lesions 
+  lesions: "spots",
+  lesion: "spots",
   specks: "spots",
-  blight: "blight necrosis",
-  scorch: "burn necrosis",
-  burnt: "burn",
-  burned: "burn",
+  flecks: "spots",
+  "dead spots": "necrotic spots",
+
+  //  Necrosis / burning 
+  blight: "necrosis",
+  scorch: "necrosis",
+  scorched: "necrosis",
+  burnt: "necrosis",
+  burned: "necrosis",
+  necrotic: "necrosis",
+  "dried up": "necrosis",
+  drying: "necrosis",
+  dieback: "dieback",
+
+  //  Wilting 
   wilting: "wilt",
   drooping: "wilt",
   "droops down": "wilt",
+
+  //  Rot 
   rotting: "rot",
   rots: "rot",
+  decayed: "rot",
   decaying: "rot",
+  putrefaction: "rot",
+
+  //  Distortion 
   curling: "curl",
   curled: "curl",
-  crinkling: "crinkle distortion",
+  crinkling: "crinkle",
+  crinkled: "crinkle",
   distortion: "deformity",
   deformed: "deformity",
+
+  //  Growth 
   stunting: "stunted",
-  dwarf: "stunted",
   dwarfing: "stunted",
-  holes: "shot hole",
-  chewing: "chewed",
+  dwarf: "stunted",
+  "stunted growth": "stunted",
+
+  //  Insect damage / signs 
+  holes: "chewing marks",
+  perforations: "chewing marks",
+  chewed: "chewing marks",
+  chewing: "chewing marks",
+  skeletonized: "chewing marks",
+  mined: "mines",
+  mining: "mines",
   webbing: "web",
+  webs: "web",
   honeydew: "sticky",
-  mould: "mold fungus",
-  mildew: "fungus powdery",
-  powder: "powdery",
-  grubs: "grub insect",
-  caterpillars: "caterpillar insect",
-  borers: "borer insect",
-  aphids: "aphid insect",
+  frass: "excrement",
+  castskins: "cast skins",
+  stippling: "speckling",
+
+  //  Fungal signs 
+  mould: "mold",
+  mouldy: "mold",
+  mildew: "fungus",
+  powdery: "fungus",
+  powder: "fungus",
+  rust: "fungus",
+  smut: "fungus",
+  sclerotia: "sclerotia",
+
+  //  Pest names (plural  canonical singular) 
+  aphids: "aphid",
+  whiteflies: "whitefly",
+  mealybugs: "mealybug",
+  thrips: "thrips",
+  mites: "mite",
+  grubs: "grub",
+  beetles: "beetle",
+  caterpillars: "caterpillar",
+  borers: "borer",
+  hoppers: "hopper",
+  worms: "worm",
+  nematodes: "nematode",
 };
 
-const SORTED_SYNONYM_KEYS = Object.keys(SYMPTOM_SYNONYMS).sort((a, b) => b.length - a.length);
+// Pre-sorted key list: longest (most specific) phrase first.
+const SORTED_SYNONYM_KEYS = Object.keys(SYMPTOM_SYNONYMS).sort(
+  (a, b) => b.split(" ").length - a.split(" ").length || b.length - a.length,
+);
 
 /**
  * Normalizes free text for reliable, language-agnostic comparison:
- * lowercases, strips punctuation/digits, collapses whitespace, and applies
- * canonical synonym resolution. Bengali text passes through unchanged except
- * for whitespace/punctuation normalization (Bengali mapping happens in
- * translateBengaliToEnglish before normalization).
+ * lowercases, converts hyphens to spaces, strips punctuation/digits, collapses
+ * whitespace, then applies word-boundary-safe canonical synonym resolution.
+ *
+ * Bengali text passes through unchanged except for whitespace/punctuation
+ * normalization (BengaliEnglish mapping happens in translateBengaliToEnglish
+ * before normalization).
  * @param {string} text
  * @returns {string} normalized text
  */
 export function normalizeSymptomText(text) {
   if (!text) return "";
+
   let out = String(text)
     .toLowerCase()
+    .replace(/[-_/\\]/g, " ")
     .replace(/[.,;:!?"'()\[\]{}]/g, " ")
-    .replace(/[৳৲।–—]+/g, " ")
+    .replace(/[৳৲]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
-  // Apply synonym resolution (longest phrase first)
-  for (const key of SORTED_SYNONYMS_KEYS()) {
-    if (out.includes(key)) {
-      out = out.split(key).join(" " + SYMPTOM_SYNONYMS[key] + " ");
-      out = out.replace(/\s+/g, " ").trim();
+  // Word-boundary synonym resolution: tokenize once, expand each token group
+  // against the sorted phrase table, and emit canonical forms. Because every
+  // synonym value is a fixed equivalence class (never a key of another rule),
+  // a single left-to-right pass is sufficient and cannot cascade.
+  const tokens = out.split(" ");
+  const outTokens = [];
+  for (let i = 0; i < tokens.length; ) {
+    let matched = false;
+    for (const key of SORTED_SYNONYM_KEYS) {
+      const keyTokens = key.split(" ");
+      const len = keyTokens.length;
+      if (len > tokens.length - i) continue;
+      let hit = true;
+      for (let j = 0; j < len; j++) {
+        if (tokens[i + j] !== keyTokens[j]) {
+          hit = false;
+          break;
+        }
+      }
+      if (hit) {
+        outTokens.push(...SYMPTOM_SYNONYMS[key].split(" "));
+        i += len;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      outTokens.push(tokens[i]);
+      i += 1;
     }
   }
-  return out;
-}
 
-function SORTED_SYNONYMS_KEYS() {
-  return SORTED_SYNONYM_KEYS;
+  return outTokens.join(" ").replace(/\s+/g, " ").trim();
 }
 
 /**
@@ -186,6 +277,15 @@ export function tokenizeSymptomText(text) {
   return normalizeSymptomText(text)
     .split(" ")
     .filter((t) => t.length >= 2);
+}
+
+/**
+ * True if the text contains Bengali (Bangla) script characters.
+ * @param {string} text
+ * @returns {boolean}
+ */
+export function hasBengaliScript(text) {
+  return /[\u0980-\u09FF]/.test(String(text || ""));
 }
 
 /**
@@ -214,13 +314,10 @@ export function translateBengaliToEnglish(bengaliText) {
     let bestPos = -1;
     for (const key of sortedKeys) {
       const pos = remaining.indexOf(key);
-      if (pos !== -1 && (bestKey === null || pos < bestPos || (pos === bestPos && key.length > bestKey.length))) {
+      if (pos === -1) continue;
+      if (bestKey === null || pos < bestPos || (pos === bestPos && key.length > bestKey.length)) {
         bestKey = key;
         bestPos = pos;
-      }
-      if (bestPos === 0 && key.length >= bestKey.length) {
-        // earliest possible match; keep scanning only for longer key at same pos
-        if (key.length > bestKey.length) bestKey = key;
       }
     }
     if (!bestKey) break;
@@ -231,7 +328,11 @@ export function translateBengaliToEnglish(bengaliText) {
 
   if (found.length > 0) return found.join(" ");
 
-  // No match found — return original text (may already be English)
+  // No mapped phrase found. If the text still carries Bengali script it is an
+  // unmapped farmer phrase — return "" rather than leaking raw Bengali tokens
+  // into an English-keyword pipeline (which would silently produce zero
+  // matches downstream). Purely English input passes through untouched.
+  if (hasBengaliScript(bengaliText)) return "";
   return bengaliText;
 }
 

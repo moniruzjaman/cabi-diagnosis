@@ -2,7 +2,7 @@
 // Implements the CABI Plantwise methodology without requiring internet or external APIs
 // Supports Bengali symptom input via BENGALI_KEYWORD_MAP
 
-import { translateBengaliToEnglish, translateSymptomsToEnglish, normalizeSymptomText } from "../data/bengaliKeywords.js";
+import { translateBengaliToEnglish, normalizeSymptomText, tokenizeSymptomText } from "../data/bengaliKeywords.js";
 import {
   matchDiseasesBySymptoms,
   estimateInoculumPressure,
@@ -13,22 +13,52 @@ import {
 import { formatChemicalAdviceWithMoA } from "../data/moaDatabase.js";
 
 /**
+ * Splits a raw symptom field into individual symptom phrases.
+ * Handles comma/semicolon/newline separated strings and Bengali danda (।).
+ * @param {string} value
+ * @returns {string[]}
+ */
+function splitSymptomPhrases(value) {
+  return String(value || "")
+    .split(/[,;\n।]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
  * Translates all symptom text fields to English keywords.
  * Handles Bengali symptom values from the UI chips and free-text.
+ * Crop-Doctor doctoral-advice rule: never let one unmapped phrase veto the
+ * whole field. Each phrase is translated independently; mapped phrases
+ * contribute their English keywords, unmapped Bengali phrases are dropped,
+ * and Latin-script phrases pass through so mixed EN/BN input still yields
+ * usable evidence instead of an empty string.
  * @param {Object} symptoms - Observed symptoms from user (may contain Bengali)
- * @returns {Object} - Symptoms with an added _englishText field for keyword matching
+ * @returns {Object} - Symptoms with added _englishText / _phrases fields
  */
 function translateSymptoms(symptoms) {
   const allValues = Object.values(symptoms)
     .map((v) => String(v || ""))
     .filter((v) => v && v !== "N/A");
-  const englishText = translateSymptomsToEnglish(allValues);
+
+  // Phrase-level translation across every field, deduplicated.
+  const phraseSet = [];
+  for (const value of allValues) {
+    for (const phrase of splitSymptomPhrases(value)) {
+      if (!phraseSet.includes(phrase)) phraseSet.push(phrase);
+    }
+  }
+  const englishPhrases = phraseSet.map((p) => translateBengaliToEnglish(p)).filter(Boolean);
+  const englishText = englishPhrases.join(" ");
 
   // Also translate each individual field for fine-grained matching
   const translated = {};
   for (const [key, value] of Object.entries(symptoms)) {
     if (value && String(value) !== "N/A") {
-      translated[key] = translateBengaliToEnglish(String(value));
+      translated[key] = splitSymptomPhrases(String(value))
+        .map((p) => translateBengaliToEnglish(p))
+        .filter(Boolean)
+        .join(" ");
     } else {
       translated[key] = value;
     }
@@ -37,6 +67,7 @@ function translateSymptoms(symptoms) {
   return {
     ...symptoms,
     _englishText: englishText,
+    _phrases: englishPhrases,
     _translated: translated,
   };
 }
@@ -101,10 +132,13 @@ function assessAbioticBiotic(symptoms) {
   let abioticScore = 0;
   let bioticScore = 0;
 
-  // Build combined text from both original (Bengali) and translated (English)
+  // Build combined text from both original (Bengali) and translated (English).
+  // Hyphens are already spaces after normalization, so indicators must be too.
   const translated = translateSymptoms(symptoms);
   const allText =
     normalizeSymptomText(Object.values(symptoms).join(" ")) + " " + normalizeSymptomText(translated._englishText);
+
+  const mentions = (indicator) => allText.includes(normalizeSymptomText(indicator));
 
   // Biotic evidence is weighted more heavily: visible signs of organisms
   // (frass, webbing, insects, fruiting bodies) are definitive proof, whereas
@@ -112,11 +146,11 @@ function assessAbioticBiotic(symptoms) {
   const BIOTIC_WEIGHT = 1.5;
 
   abioticIndicators.forEach((indicator) => {
-    if (allText.includes(normalizeSymptomText(indicator))) abioticScore++;
+    if (mentions(indicator)) abioticScore++;
   });
 
   bioticIndicators.forEach((indicator) => {
-    if (allText.includes(normalizeSymptomText(indicator))) bioticScore += BIOTIC_WEIGHT;
+    if (mentions(indicator)) bioticScore += BIOTIC_WEIGHT;
   });
 
   if (abioticScore > bioticScore) return "abiotic";
@@ -173,10 +207,9 @@ function applyExclusionGates(abioticBiotic, symptoms) {
     "stem borer holes hollow stem insect borer",
   ];
 
-  let hasInsectSigns = false;
-  insectMiteSigns.forEach((sign) => {
-    if (allText.includes(sign.toLowerCase())) hasInsectSigns = true;
-  });
+  // Gate phrases are normalized too, so a hyphenated or punctuated sign in the
+  // database still matches the farmer's normalized text.
+  const hasInsectSigns = hasSign(insectMiteSigns);
 
   if (!hasInsectSigns) {
     excluded.push("insects/mites");
@@ -196,13 +229,10 @@ function applyExclusionGates(abioticBiotic, symptoms) {
     "mosaic virus chlorotic patterns",
   ];
 
-  let hasVirusSigns = false;
-  virusSigns.forEach((sign) => {
-    if (allText.includes(sign.toLowerCase())) hasVirusSigns = true;
-  });
+  const hasVirusSigns = hasSign(virusSigns);
 
   // Special case: interveinal patterns suggest NOT virus
-  if (allText.includes("interveinal") || allText.includes("confined between veins")) {
+  if (allText.includes("interveinal") || hasSign(["confined between veins"])) {
     excluded.push("virus");
   } else if (!hasVirusSigns) {
     excluded.push("virus");
@@ -220,10 +250,7 @@ function applyExclusionGates(abioticBiotic, symptoms) {
     "water soaked margins leaf edge yellow brown bacterial",
   ];
 
-  let hasBacteriaSigns = false;
-  bacteriaSigns.forEach((sign) => {
-    if (allText.includes(sign.toLowerCase())) hasBacteriaSigns = true;
-  });
+  const hasBacteriaSigns = hasSign(bacteriaSigns);
 
   if (!hasBacteriaSigns) {
     excluded.push("bacteria");
@@ -247,21 +274,9 @@ function applyExclusionGates(abioticBiotic, symptoms) {
 
   const trueFungusSigns = ["hard black sclerotia"];
 
-  let hasFungalSigns = false;
-  let hasOomyceteSigns = false;
-  let hasTrueFungusSigns = false;
-
-  fungalSigns.forEach((sign) => {
-    if (allText.includes(sign.toLowerCase())) hasFungalSigns = true;
-  });
-
-  oomyceteSigns.forEach((sign) => {
-    if (allText.includes(sign.toLowerCase())) hasOomyceteSigns = true;
-  });
-
-  trueFungusSigns.forEach((sign) => {
-    if (allText.includes(sign.toLowerCase())) hasTrueFungusSigns = true;
-  });
+  const hasFungalSigns = hasSign(fungalSigns);
+  const hasOomyceteSigns = hasSign(oomyceteSigns);
+  const hasTrueFungusSigns = hasSign(trueFungusSigns);
 
   if (hasTrueFungusSigns) {
     suspects.push("true fungi");
@@ -661,16 +676,8 @@ function diagnoseOffline(inputData) {
     if (cropKey && CROP_DISEASES[cropKey]) {
       // Collect all symptom text (both Bengali original and translated English)
       const allSymptomTexts = [];
-      for (const val of Object.values(symptoms)) {
-        if (val && String(val) !== "N/A") {
-          // Split comma-separated or multi-line symptom strings
-          String(val)
-            .split(/[,;\n]+/)
-            .forEach((s) => {
-              const trimmed = s.trim();
-              if (trimmed) allSymptomTexts.push(trimmed);
-            });
-        }
+      for (const val of splitSymptomPhrases(Object.values(symptoms).join(", "))) {
+        if (val !== "N/A" && !allSymptomTexts.includes(val)) allSymptomTexts.push(val);
       }
 
       // Match against disease database
@@ -709,31 +716,70 @@ function diagnoseOffline(inputData) {
   // If the local vision classifier returned a prediction for the same crop as
   // the form, give that disease a deterministic edge over symptom-only matching.
   // The vision signal enters via inputData.vision (or inputData.vitPrediction).
+  // Crop-Doctor fusion rules (ported):
+  //   • agreement only counts when BOTH sides normalize to canonical tokens —
+  //     substring tricks ("Blight" ⊂ "Late blight") are replaced by token-set
+  //     Jaccard so a generic label can't hijack a specific disease;
+  //   • the boost is applied to the single best-agreeing candidate (ties broken
+  //     by existing rank), never to the first list entry;
+  //   • an unmatched vision label is recorded as `visionCandidate` instead of
+  //     being silently dropped, so the UI can still surface it as a differential;
+  //   • vision alone can never exceed the "medium" evidence band — it must be
+  //     corroborated by symptoms to reach "high".
   const vision = inputData.vision || inputData.vitPrediction;
-  if (vision && vision.disease && cropDiseaseMatches.length > 0) {
+  let visionCandidate = null;
+  let visionAgreement = 0;
+  if (vision && (vision.disease || vision.diseaseBn)) {
     const visionCropKey = resolveCropKey(vision.crop) || cropKey;
-    if (cropKey && visionCropKey && visionCropKey === cropKey) {
-      const visionEn = String(vision.disease || "").toLowerCase();
-      const visionBn = String(vision.diseaseBn || "").toLowerCase();
-      // Confidence-boosted bump: higher model confidence → larger edge, but
-      // always leaves room for the CABI symptom gate to veto.
-      const boost = 0.15 + Math.min(Math.max(Number(vision.confidence) || 0, 0), 0.97) * 0.4;
-      let boosted = false;
-      cropDiseaseMatches = cropDiseaseMatches.map((m) => {
-        if (boosted) return m;
-        const dEn = String(m.disease.name || "").toLowerCase();
-        const dBn = String(m.disease.nameBn || "").toLowerCase();
-        const matches =
-          (visionEn && (dEn === visionEn || dEn.includes(visionEn) || visionEn.includes(dEn))) ||
-          (visionBn && (dBn === visionBn || dBn.includes(visionBn) || visionBn.includes(dBn)));
-        if (matches) {
-          boosted = true;
-          return { ...m, matchRatio: Math.min(1, m.matchRatio + boost) };
+    if (cropKey && visionCropKey === cropKey) {
+      const visionConf = Math.min(Math.max(Number(vision.confidence) || 0, 0), 0.97);
+      const visionTokensEn = new Set(tokenizeSymptomText(normalizeSymptomText(String(vision.disease || ""))));
+      const visionTokensBn = new Set(
+        tokenizeSymptomText(normalizeSymptomText(translateBengaliToEnglish(String(vision.diseaseBn || "")))),
+      );
+      const nameSimilarity = (m) => {
+        const en = new Set(tokenizeSymptomText(normalizeSymptomText(String(m.disease.name || ""))));
+        const bn = new Set(
+          tokenizeSymptomText(normalizeSymptomText(translateBengaliToEnglish(String(m.disease.nameBn || "")))),
+        );
+        return Math.max(jaccard(visionTokensEn, en), jaccard(visionTokensBn, bn));
+      };
+
+      // Find the best-agreeing candidate among symptom matches
+      let bestIdx = -1;
+      let bestSim = 0;
+      cropDiseaseMatches.forEach((m, i) => {
+        const sim = nameSimilarity(m);
+        if (sim > bestSim + 1e-9) {
+          bestSim = sim;
+          bestIdx = i;
         }
-        return m;
       });
-      if (boosted) {
+      visionAgreement = bestSim;
+
+      if (bestIdx >= 0 && bestSim >= 0.5) {
+        // Strong agreement → confidence-scaled boost on that one candidate
+        const boost = 0.15 + visionConf * 0.4;
+        cropDiseaseMatches = cropDiseaseMatches.map((m, i) =>
+          i === bestIdx ? { ...m, matchRatio: Math.min(1, m.matchRatio + boost), visionCorroborated: true } : m,
+        );
         cropDiseaseMatches.sort((a, b) => b.matchRatio - a.matchRatio || b.score - a.score);
+      } else if (bestIdx >= 0 && bestSim > 0) {
+        // Partial agreement → keep as a differential, no rank change
+        visionCandidate = {
+          name: String(vision.disease || ""),
+          nameBn: String(vision.diseaseBn || ""),
+          confidence: visionConf,
+          agreement: bestSim,
+        };
+      } else {
+        // Vision names a disease this crop's database doesn't contain
+        visionCandidate = {
+          name: String(vision.disease || ""),
+          nameBn: String(vision.diseaseBn || ""),
+          confidence: visionConf,
+          agreement: 0,
+        };
       }
     }
   }
@@ -744,10 +790,42 @@ function diagnoseOffline(inputData) {
   // Step 5: Field confirmation methods
   const fieldMethods = getFieldConfirmationMethods(suspects);
 
+  // ── Evidence-based confidence (Crop-Doctor doctoral scoring) ─────────────
+  // Replaces the old suspect-count heuristic, which was inverted: many
+  // suspects meant WEAKER discrimination, not stronger. Confidence now derives
+  // from (a) how well the top disease explains the farmer's evidence and
+  // (b) how decisively it beats the runner-up.
+  const topMatch = cropDiseaseMatches.length > 0 ? cropDiseaseMatches[0] : null;
+  const runnerUp = cropDiseaseMatches.length > 1 ? cropDiseaseMatches[1] : null;
+  const lead = topMatch ? topMatch.matchRatio - (runnerUp ? runnerUp.matchRatio : 0) : 0;
+
+  let evidenceScore = 0;
+  if (topMatch) {
+    evidenceScore += Math.min(topMatch.matchRatio, 1) * 55; // quality of symptom fit
+    evidenceScore += Math.min(lead, 0.4) / 0.4 * 20; // discriminative margin
+  }
+  if (abioticBiotic !== "uncertain") evidenceScore += 8; // abiotic/biotic call resolved
+  evidenceScore += Math.min(excluded.length, 4) * 4; // gates actually eliminated causes
+  if (envInfo && (envInfo.temp != null || envInfo.humidity != null)) evidenceScore += 5;
+  if (Object.keys(symptoms || {}).length >= 3) evidenceScore += 6;
+  if (topMatch && topMatch.visionCorroborated) evidenceScore += 6; // image + symptoms agree
+  // Uncorroborated vision can nudge the score but is capped below the "high" band.
+  if (!topMatch?.visionCorroborated && visionCandidate && visionCandidate.confidence >= 0.6) {
+    evidenceScore += 4;
+  }
+  evidenceScore = Math.min(100, Math.round(evidenceScore));
+
+  const confidenceLabel =
+    evidenceScore >= 62 && (!topMatch || topMatch.matchRatio >= 0.4)
+      ? "high"
+      : evidenceScore >= 38 || (topMatch && topMatch.matchRatio >= 0.3)
+        ? "medium"
+        : "low";
+
   // Step 6: Generate IPM recommendations (now crop/disease-specific)
   const ipmRecommendations = generateIPMRecommendations({
     suspects: suspects,
-    confidence: suspects.length > 0 && excluded.length > 0 ? "medium" : "low",
+    confidence: confidenceLabel,
     cropDiseaseMatches: cropDiseaseMatches,
   });
 
@@ -756,18 +834,19 @@ function diagnoseOffline(inputData) {
   let specificDisease = null;
 
   if (cropDiseaseMatches.length > 0 && cropDiseaseMatches[0].matchRatio >= 0.2) {
-    const topMatch = cropDiseaseMatches[0];
+    const t = cropDiseaseMatches[0];
     specificDisease = {
-      name: topMatch.disease.name,
-      nameBn: topMatch.disease.nameBn,
-      cause: topMatch.disease.cause,
-      pathogen: topMatch.disease.pathogen,
-      severity: topMatch.disease.severity,
-      confidence: topMatch.matchRatio >= 0.5 ? "high" : topMatch.matchRatio >= 0.3 ? "medium" : "low",
-      matchRatio: topMatch.matchRatio,
-      matchedSymptoms: topMatch.matchedSymptoms,
+      name: t.disease.name,
+      nameBn: t.disease.nameBn,
+      cause: t.disease.cause,
+      pathogen: t.disease.pathogen,
+      severity: t.disease.severity,
+      confidence: confidenceLabel,
+      matchRatio: t.matchRatio,
+      matchedSymptoms: t.matchedSymptoms,
+      visionCorroborated: !!t.visionCorroborated,
     };
-    primarySuspect = `${topMatch.disease.nameBn} (${topMatch.disease.name})`;
+    primarySuspect = `${t.disease.nameBn} (${t.disease.name})`;
   } else {
     primarySuspect = suspects.length > 0 ? suspects[0] : "No clear suspect - requires field observation";
   }
@@ -790,17 +869,13 @@ function diagnoseOffline(inputData) {
       maxScore: m.maxScore,
       matchRatio: m.matchRatio,
       matchedSymptoms: m.matchedSymptoms,
+      visionCorroborated: !!m.visionCorroborated,
       recommendations: m.disease.recommendations,
     })),
-    confidence: specificDisease
-      ? specificDisease.confidence
-      : suspects.length > 0
-        ? suspects.length === 1 && excluded.length >= 3
-          ? "high"
-          : suspects.length <= 2
-            ? "medium"
-            : "low"
-        : "low",
+    confidence: confidenceLabel,
+    confidenceScore: evidenceScore,
+    visionCandidate,
+    visionAgreement,
     diseaseTriangle: triangle,
     fieldConfirmation: fieldMethods,
     ipmRecommendations: ipmRecommendations,
@@ -813,6 +888,21 @@ function diagnoseOffline(inputData) {
   };
 
   return diagnosis;
+}
+
+/**
+ * Jaccard similarity between two token sets (0..1). Used by the vision fusion
+ * layer so disease-name agreement is measured on canonical tokens rather than
+ * raw substrings.
+ * @param {Set<string>} a
+ * @param {Set<string>} b
+ * @returns {number}
+ */
+function jaccard(a, b) {
+  if (!a.size || !b.size) return 0;
+  let inter = 0;
+  for (const t of a) if (b.has(t)) inter++;
+  return inter / (a.size + b.size - inter);
 }
 
 // Export functions for use in other modules
