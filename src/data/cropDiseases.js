@@ -2,6 +2,8 @@
 // Covers the top 10 Bangladesh crops with at least 5 diseases each.
 // Symptom arrays are in Bengali for matching against user symptom chips.
 
+import { translateBengaliToEnglish, normalizeSymptomText, tokenizeSymptomText } from "./bengaliKeywords.js";
+
 export const CROP_DISEASES = {
   ধান: {
     // Rice
@@ -1311,51 +1313,148 @@ export function getDiseasesForCrop(cropInput) {
 }
 
 /**
- * Match user symptoms against disease symptom arrays and return ranked results
+ * Normalizes a symptom string for cross-language comparison.
+ * Bengali text is first mapped to English keywords via the translation layer,
+ * then normalized (case/punctuation/synonyms). English text skips straight to
+ * normalization. This gives EN↔BN symmetry so a farmer's chip selection and a
+ * free-text description converge on the same canonical tokens.
+ * @param {string} text
+ * @returns {string} normalized English-token string
+ */
+function normalizeSymptomForMatching(text) {
+  if (!text) return "";
+  const raw = String(text);
+  const hasBengali = /[\u0980-\u09FF]/.test(raw);
+  const english = hasBengali ? translateBengaliToEnglish(raw) : raw;
+  return normalizeSymptomText(english);
+}
+
+/**
+ * Weighted keyword-overlap scorer (Crop-Doctor doctoral matching logic).
+ * Returns a value in [0,1] measuring how strongly two normalized symptom
+ * strings share distinctive content words. Rare terms (appearing in few
+ * disease entries) weigh more than generic ones like "leaf"/"plant".
+ * @param {string} a - Normalized string A
+ * @param {string} b - Normalized string B
+ * @param {Map<string,number>} idf - Inverse-document-frequency table
+ * @returns {number} - weighted overlap ratio relative to the shorter side
+ */
+function weightedOverlap(a, b, idf) {
+  const tokensA = [...new Set(tokenizeSymptomText(a))];
+  const tokensB = new Set(tokenizeSymptomText(b));
+  if (!tokensA.length || !tokensB.size) return 0;
+
+  let sharedWeight = 0;
+  let totalWeight = 0;
+  for (const t of tokensA) {
+    const w = idf.get(t) || 1;
+    totalWeight += w;
+    if (tokensB.has(t)) sharedWeight += w;
+  }
+  if (totalWeight === 0) return 0;
+  return sharedWeight / totalWeight;
+}
+
+/**
+ * Match user symptoms against disease symptom arrays and return ranked results.
+ *
+ * Crop-Doctor improvements ported here:
+ *  1. All texts are normalized + synonym-resolved before comparison, and
+ *     Bengali input is translated to English keywords first (EN/BN symmetry).
+ *  2. Scoring is weighted by IDF so that distinctive symptoms (e.g. "blast",
+ *     "honeydew") discriminate far better than generic ones ("leaf", "spots").
+ *  3. Coverage-aware ranking: results expose both precision (how much of the
+ *     user's evidence the disease explains) and recall (how many of the
+ *     disease's signature symptoms were observed), combined into a single
+ *     `matchRatio` used for ranking — fixing the old tie where every disease
+ *     sharing one generic symptom scored identically.
  * @param {string} cropInput - Crop name in any format
- * @param {string[]} userSymptoms - Array of symptom strings (Bengali)
- * @returns {Array} - Ranked array of {disease, score, maxScore, matchRatio}
+ * @param {string[]} userSymptoms - Array of symptom strings (Bengali or English)
+ * @returns {Array} - Ranked array of {disease, score, maxScore, matchRatio, matchedSymptoms}
  */
 export function matchDiseasesBySymptoms(cropInput, userSymptoms) {
   const diseases = getDiseasesForCrop(cropInput);
   if (!diseases.length || !userSymptoms || !userSymptoms.length) return [];
 
-  const results = diseases.map((disease) => {
-    let matchCount = 0;
-    const matchedSymptoms = [];
+  const normUser = userSymptoms.map(normalizeSymptomForMatching).filter(Boolean);
+  const normDiseaseSymptoms = diseases.map((d) => d.symptoms.map(normalizeSymptomForMatching));
 
-    for (const userSym of userSymptoms) {
-      const userSymLower = (userSym || "").toLowerCase();
-      for (const diseaseSym of disease.symptoms) {
-        const diseaseSymLower = (diseaseSym || "").toLowerCase();
-        // Check bidirectional substring match or keyword overlap
-        if (
-          userSymLower.includes(diseaseSymLower) ||
-          diseaseSymLower.includes(userSymLower) ||
-          hasKeywordOverlap(userSymLower, diseaseSymLower)
-        ) {
-          matchCount++;
-          matchedSymptoms.push(diseaseSym);
-          break; // Each user symptom matches at most one disease symptom
+  // Build IDF table over the corpus of this crop's disease symptom tokens
+  const docFreq = new Map();
+  for (const symList of normDiseaseSymptoms) {
+    const seen = new Set();
+    for (const s of symList) {
+      for (const t of tokenizeSymptomText(s)) seen.add(t);
+    }
+    for (const t of seen) docFreq.set(t, (docFreq.get(t) || 0) + 1);
+  }
+  const N = Math.max(diseases.length, 1);
+  const idf = new Map();
+  for (const [t, df] of docFreq) idf.set(t, Math.log((N + 1) / (df + 0.5)));
+
+  const results = diseases.map((disease, di) => {
+    const symNorms = normDiseaseSymptoms[di];
+    const matchedSymptoms = [];
+    const coveredSymFlags = new Array(symNorms.length).fill(false);
+    let userEvidenceWeight = 0;
+    let matchedUserWeight = 0;
+
+    for (let ui = 0; ui < userSymptoms.length; ui++) {
+      const u = normUser[ui];
+      if (!u) continue;
+      const uTokens = new Set(tokenizeSymptomText(u));
+      const uWeight = [...uTokens].reduce((acc, t) => acc + (idf.get(t) || 1), 0);
+      userEvidenceWeight += uWeight;
+
+      // Best-matching disease symptom for this user symptom
+      let bestIdx = -1;
+      let bestScore = 0;
+      for (let si = 0; si < symNorms.length; si++) {
+        const s = symNorms[si];
+        const direct = u.includes(s) || s.includes(u);
+        const overlap = weightedOverlap(u, s, idf);
+        const score = direct ? Math.max(1, overlap) : overlap;
+        if (score > bestScore) {
+          bestScore = score;
+          bestIdx = si;
+        }
+      }
+
+      // Accept match at a discriminating threshold (was: any substring hit)
+      if (bestIdx >= 0 && bestScore >= 0.34) {
+        matchedUserWeight += uWeight;
+        if (!coveredSymFlags[bestIdx]) {
+          coveredSymFlags[bestIdx] = true;
+          matchedSymptoms.push(disease.symptoms[bestIdx]);
         }
       }
     }
 
-    const maxScore = disease.symptoms.length;
-    const matchRatio = maxScore > 0 ? matchCount / maxScore : 0;
+    const coverageOfDisease =
+      symNorms.length > 0 ? coveredSymFlags.filter(Boolean).length / symNorms.length : 0;
+    const coverageOfUser = userEvidenceWeight > 0 ? matchedUserWeight / userEvidenceWeight : 0;
+
+    // F1-style blend: rewards explaining the farmer's evidence AND hitting a
+    // meaningful share of the disease's signature symptoms.
+    const matchRatio =
+      coverageOfDisease + coverageOfUser > 0
+        ? (2 * coverageOfDisease * coverageOfUser) / (coverageOfDisease + coverageOfUser)
+        : 0;
 
     return {
       disease,
-      score: matchCount,
-      maxScore,
+      score: coveredSymFlags.filter(Boolean).length,
+      maxScore: disease.symptoms.length,
       matchRatio,
+      coverageOfUser,
+      coverageOfDisease,
       matchedSymptoms,
     };
   });
 
-  // Sort by match ratio descending, then by score descending
+  // Rank: blended ratio first, then absolute match count as tie-breaker
   results.sort((a, b) => {
-    if (b.matchRatio !== a.matchRatio) return b.matchRatio - a.matchRatio;
+    if (Math.abs(b.matchRatio - a.matchRatio) > 1e-9) return b.matchRatio - a.matchRatio;
     return b.score - a.score;
   });
 
@@ -1364,6 +1463,7 @@ export function matchDiseasesBySymptoms(cropInput, userSymptoms) {
 
 /**
  * Check if two symptom strings share enough keyword overlap to be considered a match
+ * Kept for backward compatibility; now normalization-aware.
  * @param {string} a - First symptom string (lowercased)
  * @param {string} b - Second symptom string (lowercased)
  * @returns {boolean} - True if significant overlap
