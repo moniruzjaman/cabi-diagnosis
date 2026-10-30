@@ -1,6 +1,9 @@
 /**
  * Shared input validation utilities for API routes.
+ * Enhanced with security sanitization and prompt injection detection.
  */
+
+import { sanitizeInput, detectPromptInjection, validateSymptoms } from '../../src/utils/security.js';
 
 /**
  * Safely parses a request body (handles string or object).
@@ -21,6 +24,7 @@ export function parseBody(req) {
  * - Truncates individual messages to prevent oversized payloads
  * - Rejects client-injected system messages
  * - Sanitizes text content
+ * - Detects prompt injection attempts
  */
 export function validateDiagnoseMessages(messages, opts = {}) {
   const { maxMessages = 20, maxTextLength = 5000, maxImageCount = 5 } = opts;
@@ -44,15 +48,34 @@ export function validateDiagnoseMessages(messages, opts = {}) {
     if (msg.role !== "user" && msg.role !== "assistant") continue;
 
     if (typeof msg.content === "string") {
+      // Check for prompt injection
+      if (detectPromptInjection(msg.content)) {
+        return { 
+          valid: false, 
+          error: "Invalid input detected. Please describe your crop symptoms clearly." 
+        };
+      }
+      
       sanitized.push({
         role: msg.role,
-        content: msg.content.slice(0, maxTextLength),
+        content: sanitizeInput(msg.content).slice(0, maxTextLength),
       });
     } else if (Array.isArray(msg.content)) {
       const blocks = [];
       for (const block of msg.content) {
         if (block.type === "text" && block.text) {
-          blocks.push({ type: "text", text: block.text.slice(0, maxTextLength) });
+          // Check for prompt injection in text blocks
+          if (detectPromptInjection(block.text)) {
+            return { 
+              valid: false, 
+              error: "Invalid input detected. Please describe your crop symptoms clearly." 
+            };
+          }
+          
+          blocks.push({ 
+            type: "text", 
+            text: sanitizeInput(block.text).slice(0, maxTextLength) 
+          });
         } else if (block.type === "image" && block.source?.type === "base64") {
           imageCount++;
           if (imageCount <= maxImageCount) {

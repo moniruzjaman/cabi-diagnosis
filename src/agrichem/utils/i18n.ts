@@ -1,3 +1,5 @@
+import { translatePest, translateCrop as translateCropBn, translateToxicity, translateDosage, translateNote, lookupNoteBn } from './bnAgri';
+
 export type Language = 'en' | 'bn';
 
 export const toBnNumber = (input: number | string): string => {
@@ -57,7 +59,9 @@ export const CATEGORY_TRANSLATIONS: Record<string, string> = {
   'Miticide': 'মাকড়নাশক',
   'Bio Pesticide': 'জৈব বালাইনাশক',
   'Stored Grain': 'গুদামজাত শস্য সংরক্ষণ',
-  'Rodenticide': 'ইঁদুরনাশক'
+  'Store Grain Insecticide': 'গুদামজাত শস্য কীটনাশক',
+  'Rodenticide': 'ইঁদুরনাশক',
+  'Public Health': 'জনস্বাস্থ্য বালাইনাশক'
 };
 
 export const RISK_TRANSLATIONS: Record<string, string> = {
@@ -73,10 +77,10 @@ export const RISK_TRANSLATIONS: Record<string, string> = {
 export const UI_TRANSLATIONS: Record<Language, Record<string, string>> = {
   en: {
     // Header & Brand
-    app_title: 'AgriChem Pro',
+    app_title: 'PesticideNext',
     app_subtitle: 'Pest & Disease Controls Guide',
     app_banner: 'Knowledge Sharing Field Guide — Not an official DAE directive',
-    app_tagline: 'IRAC • FRAC • HRAC Resistance Rotation Protocols',
+    app_tagline: 'পরের স্প্রে, আর ভুল হবে না।',
     registered_count_suffix: 'Registered Products',
     offline_ready: 'Offline-Ready Manual',
     search_placeholder: 'Search chemical, trade name, crop, pest or MoA code...',
@@ -136,6 +140,13 @@ export const UI_TRANSLATIONS: Record<Language, Record<string, string>> = {
     spray_water_volume: 'Recommended Water Volume',
     resistance_guideline: 'Resistance Management Guideline',
     safety_cautions: 'Safety Precautions',
+    dae_recommendations_title: 'DAE-Registered Use Recommendations',
+    dae_recommendations_desc: 'Crop | Pest | Dosage prescriptions from the DAE registration record for this product.',
+    dae_recommendations_empty: 'No structured recommendations on file. Refer to the product label or contact your nearest DAE office.',
+    dae_crop_col: 'Crop',
+    dae_pest_col: 'Target Pest / Disease',
+    dae_dosage_col: 'Authorised Dosage',
+    dae_rec_count_suffix: 'approved recommendations on file',
 
     // Dosage Calculator
     calc_header_title: 'Interactive Field Dosage & Tank Mix Station',
@@ -194,10 +205,10 @@ export const UI_TRANSLATIONS: Record<Language, Record<string, string>> = {
   },
   bn: {
     // Header & Brand
-    app_title: 'এগ্রিকেম প্রো',
+    app_title: 'পেস্টিসাইডনেক্সট',
     app_subtitle: 'বালাই ও রোগ নিয়ন্ত্রণ নির্দেশিকা',
     app_banner: 'জ্ঞান ভাগাভাগির ফিল্ড গাইড — DAE-এর অফিসিয়াল আদেশ নয়',
-    app_tagline: 'আইআরএসি (IRAC) • এফআরএসি (FRAC) • এইচআরএসি (HRAC) প্রতিরোধ ব্যবস্থাপনা',
+    app_tagline: 'পরের স্প্রে, আর ভুল হবে না।',
     registered_count_suffix: 'নিবন্ধিত বালাইনাশক',
     offline_ready: 'অফলাইন ফিল্ড নির্দেশিকা',
     search_placeholder: 'কীটনাশক, ট্রেড নাম, ফসল, বালাই বা MoA কোড খুঁজুন...',
@@ -257,9 +268,16 @@ export const UI_TRANSLATIONS: Record<Language, Record<string, string>> = {
     spray_water_volume: 'প্রস্তাবিত পানির পরিমাণ',
     resistance_guideline: 'প্রতিরোধ ক্ষমতা রোধের নির্দেশিকা',
     safety_cautions: 'ব্যবহারিক সতর্কতা',
+    dae_recommendations_title: 'DAE নিবন্ধিত প্রয়োগ নির্দেশিকা',
+    dae_recommendations_desc: 'এই পণ্যের নিবন্ধন তালিকা থেকে নেওয়া ফসল | বালাই | মাত্রা তালিকা।',
+    dae_recommendations_empty: 'কোনো কাঠামোগত সুপারিশ নেই। পণ্যের লেবেল দেখুন বা নিকটস্থ DAE অফিসে যোগাযোগ করুন।',
+    dae_crop_col: 'ফসল',
+    dae_pest_col: 'লক্ষ্য বালাই / রোগ',
+    dae_dosage_col: 'অনুমোদিত মাত্রা',
+    dae_rec_count_suffix: 'টি অনুমোদিত সুপারিশ রেকর্ডে আছে',
 
     // Dosage Calculator
-    calc_header_title: 'ন্যাSplit-Knapsack স্প্রেয়ার মাত্রা ও ট্যাংক মিশ্রণ স্টেশন',
+    calc_header_title: 'ন্যাপস্যাক স্প্রেয়ার মাত্রা ও ট্যাংক মিশ্রণ স্টেশন',
     calc_header_desc: 'যেকোনো নিবন্ধিত রাসায়নিক নির্বাচন করে আপনার জমির পরিমাণ অনুযায়ী পানির পরিমাণ, ট্যাংকের সংখ্যা ও প্রয়োজনীয় ওষুধের সঠিক হিসাব জানুন।',
     calc_field_area: 'জমির পরিমাণ',
     calc_area_unit: 'জমির একক',
@@ -301,7 +319,7 @@ export const UI_TRANSLATIONS: Record<Language, Record<string, string>> = {
 
     // Guidebook
     guide_title: 'মাঠ পর্যায়ের কৃষি নির্দেশিকা ও স্প্রেয়ার ক্যালিব্রেশন',
-    guide_desc: 'ন্যাSplit স্প্রেয়ার সঠিক ক্যালিব্রেশন পদ্ধতি, বিশ্বজনীন ট্যাংক মিক্সিং নিয়ম (W.A.L.E.S.), প্রতিরোধ বায়োলজি এবং প্রধান ফসলের স্প্রে ক্যালেন্ডার।',
+    guide_desc: 'ন্যাপস্যাক স্প্রেয়ার সঠিক ক্যালিব্রেশন পদ্ধতি, বিশ্বজনীন ট্যাংক মিক্সিং নিয়ম (W.A.L.E.S.), প্রতিরোধ বায়োলজি এবং প্রধান ফসলের স্প্রে ক্যালেন্ডার।',
     guide_step1: 'ধাপ ১: ১০০ বর্গমিটার টেস্ট এরিয়া চিহ্নিত করুন',
     guide_step2: 'ধাপ ২: স্বাভাবিক গতিতে বিশুদ্ধ পানি স্প্রে করুন',
     guide_step3: 'ধাপ ৩: প্রতি হেক্টরে পানির প্রয়োজনীয়তা বের করুন',
@@ -321,10 +339,16 @@ export const getTranslation = (key: string, lang: Language): string => {
 
 export const translateCrop = (crop: string, lang: Language): string => {
   if (lang === 'bn') {
-    return CROP_TRANSLATIONS[crop] || crop;
+    return CROP_TRANSLATIONS[crop] || translateCropBn(crop, lang);
   }
   return crop;
 };
+
+export const transPest = (pest: string, lang: Language): string => translatePest(pest, lang);
+export const transToxicity = (t: string, lang: Language): string => translateToxicity(t, lang);
+export const transDosage = (d: string, lang: Language): string => translateDosage(d, lang);
+export const transNote = (n: string, lang: Language): string => translateNote(n, lang);
+export { lookupNoteBn };
 
 export const translateCategory = (cat: string, lang: Language): string => {
   if (lang === 'bn') {

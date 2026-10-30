@@ -1,8 +1,10 @@
 import React from 'react';
-import { 
+import {
   Home,
-  Leaf, 
-  Database, 
+  FlaskConical,
+  Database,
+  Sun,
+  Moon,
   Calculator, 
   RotateCw, 
   ShieldCheck, 
@@ -15,8 +17,10 @@ import {
   Share2
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { AppTab } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
+import { UserMenu } from './UserMenu';
 
 interface NavbarProps {
   activeTab: AppTab;
@@ -40,9 +44,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   totalProductsCount
 }) => {
   const { language, toggleLanguage, t, formatNum } = useLanguage();
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-xs">
+    <header className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-xs transition-colors duration-200">
       {/* Top Banner */}
       <div className="bg-emerald-900 text-emerald-100 text-xs px-4 py-1.5 flex flex-wrap justify-between items-center gap-2">
         <div className="flex items-center gap-2">
@@ -69,13 +74,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setActiveTab('home')}
           >
             <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
-              <Leaf className="w-5 h-5" />
+              <FlaskConical className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-bold text-base sm:text-lg text-slate-900 tracking-tight leading-none">{t('app_title')}</span>
                 <span className="hidden sm:inline-block text-xs font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                  {language === 'bn' ? 'প্রো' : 'Pro'}
+                  {language === 'bn' ? 'গাইড' : 'Guide'}
                 </span>
               </div>
               <p className="hidden sm:block text-[11px] text-slate-500 font-medium">{t('app_subtitle')}</p>
@@ -95,9 +100,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition"
               />
               {searchQuery && (
-                <button 
+                <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 bg-slate-200 hover:bg-slate-300 rounded-full w-4 h-4 flex items-center justify-center"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-rose-700 bg-slate-200 hover:bg-rose-100 rounded-full w-6 h-6 flex items-center justify-center transition-colors"
+                  aria-label={language === 'bn' ? '�ন্ধান মুছুন' : 'Clear search'}
                 >
                   ✕
                 </button>
@@ -112,7 +118,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="header-share-btn"
               onClick={onOpenShare}
               className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-emerald-800 font-semibold text-xs transition shadow-2xs cursor-pointer select-none"
-              title={language === 'bn' ? 'সোশ্যাল মিডিয়ায় বা সহকর্মীদের সাথে শেয়ার করুন' : 'Share AgriChem Pro'}
+              title={language === 'bn' ? 'সোশ্যাল মিডিয়ায় বা সহকর্মীদের সাথে শেয়ার করুন' : 'Share Pesticide Guide'}
             >
               <Share2 className="w-3.5 h-3.5 text-emerald-600" />
               <span className="hidden sm:inline">{t('btn_share')}</span>
@@ -136,6 +142,27 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             </button>
 
+            {/* Dark / Light Theme Toggle Button */}
+            <button
+              id="theme-toggle-btn"
+              onClick={toggleTheme}
+              className="flex items-center justify-center p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-emerald-800 transition shadow-2xs cursor-pointer select-none"
+              title={language === 'bn'
+                ? (resolvedTheme === 'dark' ? 'লাইট মোডে যান' : 'ডার্ক মোডে যান')
+                : (resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode')}
+              aria-label={language === 'bn'
+                ? (resolvedTheme === 'dark' ? 'লাইট মোডে যান' : 'ডার্ক মোডে যান')
+                : (resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode')}
+            >
+              {resolvedTheme === 'dark'
+                ? <Sun className="w-4 h-4 text-amber-500 transition-transform hover:scale-110" />
+                : <Moon className="w-4 h-4 text-slate-600 transition-transform hover:scale-110" />
+              }
+            </button>
+
+            {/* User account menu (Google Sign-In + profile dropdown) */}
+            <UserMenu />
+
             {/* Push Notifications & Alerts Button */}
             <button
               id="header-alerts-btn"
@@ -144,9 +171,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="Regulatory compliance updates & seasonal alerts"
             >
               {unreadAlertCount > 0 ? (
-                <BellRing className="w-5 h-5 text-amber-600 animate-bounce" />
+                <BellRing className="w-5 h-5 text-amber-600 transition-transform hover:scale-110" />
               ) : (
-                <Bell className="w-5 h-5" />
+                <Bell className="w-5 h-5 transition-transform hover:scale-110" />
               )}
               {unreadAlertCount > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 bg-amber-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center">
@@ -189,9 +216,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="tab-btn-calculator"
             onClick={() => setActiveTab('calculator')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'calculator'
-                ? 'bg-emerald-600 text-white shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -202,9 +229,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="tab-btn-rotation"
             onClick={() => setActiveTab('rotation')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'rotation'
-                ? 'bg-emerald-600 text-white shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -215,9 +242,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="tab-btn-safety"
             onClick={() => setActiveTab('safety')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'safety'
-                ? 'bg-emerald-600 text-white shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -228,9 +255,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="tab-btn-guidebook"
             onClick={() => setActiveTab('guidebook')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'guidebook'
-                ? 'bg-emerald-600 text-white shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -241,9 +268,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="tab-btn-alerts"
             onClick={() => setActiveTab('alerts')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'alerts'
-                ? 'bg-emerald-600 text-white shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs font-bold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >

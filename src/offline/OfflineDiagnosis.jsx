@@ -22,7 +22,7 @@ const styles = {
   title: {
     fontSize: "18px",
     fontWeight: 700,
-    color: "#006028",
+    color: "#006A4E",
   },
   badge: {
     background: "#dcfce7",
@@ -34,7 +34,7 @@ const styles = {
   },
   button: {
     padding: "10px 20px",
-    background: "#006028",
+    background: "#006A4E",
     color: "#fff",
     border: "none",
     borderRadius: "10px",
@@ -53,7 +53,7 @@ const styles = {
   sectionTitle: {
     fontSize: "13px",
     fontWeight: 700,
-    color: "#006028",
+    color: "#006A4E",
     marginBottom: "6px",
     textTransform: "uppercase",
     letterSpacing: "0.04em",

@@ -111,9 +111,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {language === 'bn' ? 'প্রবেশের ব্যবধান (REI)' : 'Re-Entry (REI)'}
               </span>
               <span className="font-bold text-slate-900 text-sm mt-0.5 block">
-                {product.reiHours 
+                {product.reiHours
                   ? (language === 'bn' ? `${formatNum(product.reiHours)} ঘণ্টা` : `${product.reiHours} Hours`)
-                  : (language === 'bn' ? '২৪ ঘণ্টা' : '24 Hours')}
+                  : (language === 'bn' ? 'লেবেল দেখুন' : 'See label')}
               </span>
             </div>
           </div>
@@ -139,7 +139,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
               <div>
                 <span className="text-slate-400">{language === 'bn' ? 'বিষাক্ততার শ্রেণী: ' : 'Toxicity Classification: '}</span>
-                <span className="font-medium text-slate-800">{product.toxicityClass || 'WHO Class II / III'}</span>
+                <span className="font-medium text-slate-800">{product.toxicityClass || (language === 'bn' ? 'লেবেল দেখুন' : 'See label')}</span>
               </div>
             </div>
           </div>
@@ -152,11 +152,17 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {language === 'bn' ? 'অনুমোদিত ফসলের তালিকা' : 'Officially Recommended Crops'}
               </h4>
               <div className="flex flex-wrap gap-1.5">
-                {product.crops.map((crop, i) => (
-                  <span key={i} className="px-2.5 py-1 bg-white text-emerald-900 border border-emerald-200 rounded-lg text-xs font-medium shadow-2xs">
-                    {transCrop(crop)}
+                {product.crops.length === 0 ? (
+                  <span className="text-xs text-slate-500 italic">
+                    {language === 'bn' ? 'DAE রেজিস্ট্রিতে উল্লেখ নেই' : 'Not specified in DAE registry'}
                   </span>
-                ))}
+                ) : (
+                  product.crops.map((crop, i) => (
+                    <span key={i} className="px-2.5 py-1 bg-white text-emerald-900 border border-emerald-200 rounded-lg text-xs font-medium shadow-2xs">
+                      {transCrop(crop)}
+                    </span>
+                  ))
+                )}
               </div>
             </div>
 
@@ -166,11 +172,17 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {language === 'bn' ? 'লক্ষ্য বালাই, রোগ ও আগাছা' : 'Target Pests, Diseases & Weeds'}
               </h4>
               <div className="flex flex-wrap gap-1.5">
-                {product.pests.map((pest, i) => (
-                  <span key={i} className="px-2.5 py-1 bg-white text-amber-900 border border-amber-200 rounded-lg text-xs font-medium shadow-2xs">
-                    {pest}
+                {product.pests.length === 0 ? (
+                  <span className="text-xs text-slate-500 italic">
+                    {language === 'bn' ? 'DAE রেজিস্ট্রিতে উল্লেখ নেই' : 'Not specified in DAE registry'}
                   </span>
-                ))}
+                ) : (
+                  product.pests.map((pest, i) => (
+                    <span key={i} className="px-2.5 py-1 bg-white text-amber-900 border border-amber-200 rounded-lg text-xs font-medium shadow-2xs">
+                      {pest}
+                    </span>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -195,7 +207,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </p>
             <p className="text-xs text-slate-600 bg-white p-3 rounded-lg border border-blue-100 leading-relaxed">
               <strong className="text-blue-900">{language === 'bn' ? 'আবর্তন নির্দেশিকা: ' : 'Rotation Directive: '}</strong>
-              {product.rotationNotes || 'Do not make more than 2 consecutive applications. Rotate with a chemical from an alternate MoA family to prevent target-site resistance.'}
+              {product.rotationNotes || (language === 'bn'
+                ? 'পণ্যের লেবেল এবং স্থানীয় কৃষি কর্মকর্তার পরামর্শ অনুসরণ করুন। সাধারণত একই MoA গ্রুপের পরপর দুইবার ব্যবহার এড়িয়ে চলুন।'
+                : 'Follow the product label and local agricultural officer guidance. As a general rule, avoid two consecutive applications of the same MoA group.')}
             </p>
           </div>
 
