@@ -2,7 +2,7 @@
 
 ## Runtime flow
 
-1. The browser runs the local ONNX ViT companion and the deterministic CABI rules where possible.
+1. The browser runs the local ONNX model ensemble (MobileNetV3 PlantVillage routers + crop-leaf ViT, per `public/models/manifest.json` v2.0.0, sourced from [`moniruzjaman/kaggle-dataset`](https://github.com/moniruzjaman/kaggle-dataset)) and the deterministic CABI rules — including token-set Jaccard vision fusion and evidence-based confidence scoring (v4.1) — where possible.
 2. If cloud confirmation is needed, the browser sends a signed request to `/api/diagnose`.
 3. The server validates and limits the request, then runs providers sequentially under one deadline.
 4. The default order is Gemini, OpenRouter free routing, Groq text, text fallbacks, and the emergency CABI response.
