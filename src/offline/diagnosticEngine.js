@@ -2,7 +2,7 @@
 // Implements the CABI Plantwise methodology without requiring internet or external APIs
 // Supports Bengali symptom input via BENGALI_KEYWORD_MAP
 
-import { translateBengaliToEnglish, translateSymptomsToEnglish } from "../data/bengaliKeywords.js";
+import { translateBengaliToEnglish, translateSymptomsToEnglish, normalizeSymptomText } from "../data/bengaliKeywords.js";
 import {
   matchDiseasesBySymptoms,
   estimateInoculumPressure,
@@ -103,14 +103,20 @@ function assessAbioticBiotic(symptoms) {
 
   // Build combined text from both original (Bengali) and translated (English)
   const translated = translateSymptoms(symptoms);
-  const allText = Object.values(symptoms).join(" ").toLowerCase() + " " + translated._englishText.toLowerCase();
+  const allText =
+    normalizeSymptomText(Object.values(symptoms).join(" ")) + " " + normalizeSymptomText(translated._englishText);
+
+  // Biotic evidence is weighted more heavily: visible signs of organisms
+  // (frass, webbing, insects, fruiting bodies) are definitive proof, whereas
+  // abiotic indicators like "flooding" can accompany secondary infections.
+  const BIOTIC_WEIGHT = 1.5;
 
   abioticIndicators.forEach((indicator) => {
-    if (allText.includes(indicator.toLowerCase())) abioticScore++;
+    if (allText.includes(normalizeSymptomText(indicator))) abioticScore++;
   });
 
   bioticIndicators.forEach((indicator) => {
-    if (allText.includes(indicator.toLowerCase())) bioticScore++;
+    if (allText.includes(normalizeSymptomText(indicator))) bioticScore += BIOTIC_WEIGHT;
   });
 
   if (abioticScore > bioticScore) return "abiotic";
@@ -130,10 +136,13 @@ function applyExclusionGates(abioticBiotic, symptoms) {
   const suspects = [];
   const translated = translateSymptoms(symptoms);
 
-  // Build combined text from original + translated English keywords
-  const originalText = Object.values(symptoms).join(" ").toLowerCase();
-  const englishText = translated._englishText.toLowerCase();
+  // Build combined text from original + translated English keywords, fully
+  // normalized (case/punctuation/synonyms) so gate phrases match reliably.
+  const originalText = normalizeSymptomText(Object.values(symptoms).join(" "));
+  const englishText = normalizeSymptomText(translated._englishText);
   const allText = originalText + " " + englishText;
+
+  const hasSign = (signs) => signs.some((sign) => allText.includes(normalizeSymptomText(sign)));
 
   // If abiotic, we don't apply biotic gates
   if (abioticBiotic === "abiotic") {

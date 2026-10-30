@@ -96,23 +96,140 @@ export const BENGALI_KEYWORD_MAP = {
 };
 
 /**
+ * Canonical synonym dictionary (Crop-Doctor doctoral advice layer).
+ * Maps English keyword variants and common farmer spellings to one canonical
+ * token so that symptom texts written with different vocabulary still match.
+ * Keys are matched as whole words on normalized (lowercase, punctuation-free)
+ * text; longest keys are applied first so multi-word phrases win over singles.
+ */
+export const SYMPTOM_SYNONYMS = {
+  "yellowing of leaves": "yellow leaves",
+  "leaves turning yellow": "yellow leaves",
+  "leaf yellowing": "yellow leaves",
+  chlorotic: "chlorosis",
+  chlorosis: "chlorosis",
+  "yellow spots": "yellow spots",
+  lesion: "lesions",
+  spots: "spots",
+  specks: "spots",
+  blight: "blight necrosis",
+  scorch: "burn necrosis",
+  burnt: "burn",
+  burned: "burn",
+  wilting: "wilt",
+  drooping: "wilt",
+  "droops down": "wilt",
+  rotting: "rot",
+  rots: "rot",
+  decaying: "rot",
+  curling: "curl",
+  curled: "curl",
+  crinkling: "crinkle distortion",
+  distortion: "deformity",
+  deformed: "deformity",
+  stunting: "stunted",
+  dwarf: "stunted",
+  dwarfing: "stunted",
+  holes: "shot hole",
+  chewing: "chewed",
+  webbing: "web",
+  honeydew: "sticky",
+  mould: "mold fungus",
+  mildew: "fungus powdery",
+  powder: "powdery",
+  grubs: "grub insect",
+  caterpillars: "caterpillar insect",
+  borers: "borer insect",
+  aphids: "aphid insect",
+};
+
+const SORTED_SYNONYM_KEYS = Object.keys(SYMPTOM_SYNONYMS).sort((a, b) => b.length - a.length);
+
+/**
+ * Normalizes free text for reliable, language-agnostic comparison:
+ * lowercases, strips punctuation/digits, collapses whitespace, and applies
+ * canonical synonym resolution. Bengali text passes through unchanged except
+ * for whitespace/punctuation normalization (Bengali mapping happens in
+ * translateBengaliToEnglish before normalization).
+ * @param {string} text
+ * @returns {string} normalized text
+ */
+export function normalizeSymptomText(text) {
+  if (!text) return "";
+  let out = String(text)
+    .toLowerCase()
+    .replace(/[.,;:!?"'()\[\]{}]/g, " ")
+    .replace(/[৳৲।–—]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Apply synonym resolution (longest phrase first)
+  for (const key of SORTED_SYNONYMS_KEYS()) {
+    if (out.includes(key)) {
+      out = out.split(key).join(" " + SYMPTOM_SYNONYMS[key] + " ");
+      out = out.replace(/\s+/g, " ").trim();
+    }
+  }
+  return out;
+}
+
+function SORTED_SYNONYMS_KEYS() {
+  return SORTED_SYNONYM_KEYS;
+}
+
+/**
+ * Tokenizes normalized text into significant tokens (2+ chars).
+ * @param {string} text
+ * @returns {string[]}
+ */
+export function tokenizeSymptomText(text) {
+  return normalizeSymptomText(text)
+    .split(" ")
+    .filter((t) => t.length >= 2);
+}
+
+/**
  * Translate Bengali symptom text to English keywords.
- * First tries exact match in BENGALI_KEYWORD_MAP, then falls back to
- * partial matching (checking if any key is a substring of the input).
- * @param {string} bengaliText - Symptom text in Bengali
+ * Crop-Doctor improvement: instead of returning only the FIRST matching key
+ * (which discarded all other symptoms present in the same string), this now
+ * collects ALL non-overlapping matches (longest key wins at each position)
+ * and joins them into a combined English keyword string. Text already in
+ * English passes through untouched.
+ * @param {string} bengaliText - Symptom text in Bengali (or English)
  * @returns {string} - English keywords or the original text if no match
  */
 export function translateBengaliToEnglish(bengaliText) {
   if (!bengaliText) return "";
 
-  // Try exact match first (prioritize longer keys)
   const sortedKeys = Object.keys(BENGALI_KEYWORD_MAP).sort((a, b) => b.length - a.length);
 
-  for (const key of sortedKeys) {
-    if (bengaliText.includes(key)) {
-      return BENGALI_KEYWORD_MAP[key];
+  // Collect every distinct mapped phrase found in the input, consuming
+  // matched spans left-to-right so overlapping keys don't double-count.
+  const found = [];
+  let remaining = String(bengaliText);
+  let guard = 0;
+  while (remaining && guard < 32) {
+    guard++;
+    let bestKey = null;
+    let bestPos = -1;
+    for (const key of sortedKeys) {
+      const pos = remaining.indexOf(key);
+      if (pos !== -1 && (bestKey === null || pos < bestPos || (pos === bestPos && key.length > bestKey.length))) {
+        bestKey = key;
+        bestPos = pos;
+      }
+      if (bestPos === 0 && key.length >= bestKey.length) {
+        // earliest possible match; keep scanning only for longer key at same pos
+        if (key.length > bestKey.length) bestKey = key;
+      }
     }
+    if (!bestKey) break;
+    const value = BENGALI_KEYWORD_MAP[bestKey];
+    if (!found.includes(value)) found.push(value);
+    remaining = remaining.slice(bestPos + bestKey.length);
   }
+
+  if (found.length > 0) return found.join(" ");
 
   // No match found — return original text (may already be English)
   return bengaliText;
