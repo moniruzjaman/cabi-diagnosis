@@ -1,7 +1,7 @@
 # Full-Stack Mobile-First Auth and Data Split
 
 Date: 2026-10-31
-Status: Draft pending user review
+Status: Approved for implementation planning
 App: উদ্ভিদ গোয়েন্দা (Plant Detective)
 
 ## Goal
@@ -67,7 +67,7 @@ Phone format: Bangladesh national `01XXXXXXXXX`, stored as E.164 `+8801XXXXXXXXX
 
 - `guest` — no Supabase user. Diagnoses in IndexedDB with `user_id = null`.
 - `pending_phone` — phone saved locally, OTP not verified. Same data rules as guest, plus a thin online banner.
-- `enrolled` — Supabase `user.id` is canonical. IndexedDB `auth_device` plus an httpOnly refresh cookie. This device never shows login again.
+- `enrolled` — Supabase `user.id` is canonical. IndexedDB `auth_device` holds `userId` plus a one-time `deviceSecret`. Turso stores only the hash of that secret in `device_enrollments`. An httpOnly cookie (`cabi_session`, 1 year) is the online session. This device never shows login again.
 
 ### One-time login
 
@@ -75,7 +75,7 @@ After Google success or OTP verify:
 
 1. Upsert `app_users` in Supabase.
 2. Set a long-lived httpOnly refresh cookie (~1 year) from `/api/auth/*`.
-3. Write IndexedDB `auth_device = { userId, phone?, enrolledAt }`.
+3. Issue a `deviceSecret` (returned once). Client writes IndexedDB `auth_device = { userId, phone?, enrolledAt, deviceSecret }`. Server stores only `SHA-256(deviceSecret)` in Turso `device_enrollments`.
 4. Attach every local diagnosis/outbox row to `userId`.
 5. Sync outbox to Turso.
 6. Dismiss all login UI on this device forever.
@@ -136,6 +136,7 @@ Keep existing tables. Changes:
 - `feedback_entries.user_id` text nullable
 - `outbreak_reports.user_id` text nullable
 - Indexes on `user_id`
+- `device_enrollments(user_id TEXT, device_hash TEXT PRIMARY KEY, created_at TEXT)` — hash of the device secret only
 - Stop using Turso `users` as the identity source. Leave the table in place during rollout; new code must not read/write it. Drop in a later cleanup.
 
 Analytics and presence stay anonymous visitor hashes. Do not put Supabase uids into `presence_log`.
@@ -144,7 +145,7 @@ Analytics and presence stay anonymous visitor hashes. Do not put Supabase uids i
 
 - `offline_image_bundles_v1` — unchanged
 - `diagnoses_outbox` — local reports with `{ localId, payload, user_id, syncState: pending|synced|error, created_at, updated_at }`
-- `auth_device` — `{ userId, phone, pendingOtp, enrolledAt }`
+- `auth_device` — `{ userId, phone, pendingOtp, enrolledAt, deviceSecret }`
 
 Crop images are transient AI input only. They are not stored in Supabase, Turso, or the outbox payload.
 
@@ -201,7 +202,7 @@ Server derives `user_id` from the cookie/Supabase session. Clients must not send
 | Supabase Auth down | Skip login. Do not create a fake user. |
 | Sync conflict | Newest `created_at` wins. Log skipped row. Never delete local. |
 | Invalid BD phone | Inline Bangla hint. Do not submit. |
-| Enrolled device missing cookie | Silent refresh. If that fails, restore from `auth_device` and re-issue cookie when online. Do not show login. |
+| Enrolled device missing cookie | `POST /api/auth/refresh` with `{ userId, deviceSecret }` from IndexedDB. Server checks the Turso hash, then re-issues the cookie. Naked `userId` is rejected. Do not show login. |
 
 Fail closed for identity. Fail open for farming.
 
@@ -210,7 +211,8 @@ Fail closed for identity. Fail open for farming.
 - No secrets in `VITE_` except the public Google client id (`VITE_GOOGLE_CLIENT_ID`).
 - Supabase URL and service role key only on Vercel. No anon key in the frontend.
 - HMAC signing remains on existing APIs.
-- Session cookie: httpOnly, Secure, SameSite=Lax, long max-age.
+- Session cookie: httpOnly, Secure, SameSite=Lax, long max-age (`cabi_session`, 1 year).
+- Device restore uses `deviceSecret` in IndexedDB; Turso stores only its SHA-256 hash. Naked `userId` cannot mint a cookie.
 - Crop images are never persisted in either cloud database.
 - RLS on `app_users` so a farmer cannot read another profile even if the anon key is in the client.
 
