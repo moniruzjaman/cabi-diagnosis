@@ -20,6 +20,18 @@ import VisualDiagnosisLibrary from "./components/VisualDiagnosisLibrary"; // use
 import { HeroStakeholderSection } from "./components/HeroStakeholderSection";
 import UnifiedLearnResourceHub from "./components/UnifiedLearnResourceHub";
 import AgriChemApp from "./agrichem/AgriChemApp";
+import { useAuth } from "./auth/AuthProvider.jsx";
+import AuthSheet from "./auth/AuthSheet.jsx";
+import OtpBanner from "./auth/OtpBanner.jsx";
+import SyncChip from "./components/SyncChip.jsx";
+import {
+  attachLocalToUser,
+  flushOutbox,
+  getLocalHistory,
+  hasCompletedDiagnosis,
+  pullRemoteHistory,
+  queueDiagnosis,
+} from "./offline/sync.js";
 import { computeEnsembleScore } from "./data/agronomicEngine";
 import { lookupMoA } from "./data/moaDatabase";
 import { getRegisteredProducts } from "./data/pesticideRegistry";
@@ -5958,7 +5970,7 @@ function ShareAndInstallBar() {
     const handler = (e) => {
       e.preventDefault();
       setInstallPrompt(e);
-      setCanInstall(true);
+      if (hasCompletedDiagnosis()) setCanInstall(true);
     };
     window.addEventListener("beforeinstallprompt", handler);
     // If app is already installed, never show install button
@@ -5972,10 +5984,12 @@ function ShareAndInstallBar() {
       setCanInstall(false);
       setDismissed(true);
     }
-    // Check localStorage for dismissed
     try {
       if (localStorage.getItem("ud-install-dismissed")) setDismissed(true);
     } catch {}
+    if (!hasCompletedDiagnosis()) {
+      setCanInstall(false);
+    }
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
@@ -6891,6 +6905,7 @@ function MarketPriceTicker({ C }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function UdbhidGoenda() {
+  const { status, user, refreshPending } = useAuth();
   const [activeTab, setActiveTab] = useState("home");
   const [copilotOpen, setCopilotOpen] = useState(false);
   const [step, setStep] = useState(1);
@@ -7102,28 +7117,23 @@ export default function UdbhidGoenda() {
     } catch {}
   }, [form.crop, form.district, form.season, form.growthStage, form.duration, form.affectedArea]);
 
-  // Load history from server on mount
   useEffect(() => {
-    fetch("/api/diagnoses?limit=50")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.diagnoses && data.diagnoses.length > 0) {
-          setHistory((prev) => {
-            const serverHistory = data.diagnoses.map((d) => ({
-              crop: d.crop || "",
-              district: d.district || "",
-              date: d.createdAt ? new Date(d.createdAt).toLocaleDateString("bn-BD") : "",
-              resultPreview: d.diseaseName || d.diseaseNameBn || "",
-              fromServer: true,
-            }));
-            // Merge with localStorage history, deduplicating
-            const all = [...serverHistory, ...prev.filter((h) => !h.fromServer)];
-            return all.slice(0, 20);
-          });
-        }
-      })
-      .catch(() => {});
-  }, []);
+    let cancelled = false;
+    (async () => {
+      const local = await getLocalHistory();
+      if (!cancelled && local.length > 0) setHistory(local.slice(0, 20));
+      await flushOutbox();
+      if (status === "enrolled") {
+        const merged = await pullRemoteHistory();
+        if (!cancelled && merged.length > 0) setHistory(merged.slice(0, 20));
+        if (user?.id) await attachLocalToUser(user.id);
+      }
+      if (refreshPending) await refreshPending();
+    })().catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [status, user?.id, refreshPending]);
 
   useEffect(() => {
     fetch("/pesticides.json")
@@ -7720,6 +7730,18 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
         try {
           localStorage.setItem("ud-history", JSON.stringify(nh));
         } catch {}
+        queueDiagnosis({
+          session_id: sessionId,
+          crop: form.crop,
+          district: form.district,
+          symptoms: form.symptoms,
+          provider: "offline",
+          image_count: images.length,
+          vitPrediction: vitSnapshot,
+        })
+          .then(() => flushOutbox())
+          .then(() => refreshPending?.())
+          .catch(() => {});
         setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
       } catch (err) {
         setError(`অফলাইন নিদানে সমস্যা: ${err.message}`);
@@ -7778,29 +7800,25 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
       try {
         localStorage.setItem("ud-history", JSON.stringify(nh));
       } catch {}
-      // Save to server
       try {
-        const sig = await getSigningToken();
-        await fetch("/api/diagnoses", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...(sig ? { "X-Request-Signature": sig } : {}) },
-          body: JSON.stringify({
-            session_id: sessionId,
-            crop: form.crop,
-            disease_name: data.structured?.disease_name,
-            disease_name_bn: data.structured?.disease_name_bn,
-            confidence: data.structured?.confidence,
-            severity: data.structured?.severity,
-            biotic_abiotic: data.structured?.biotic_abiotic,
-            provider: data.provider || null,
-            symptoms: form.symptoms,
-            recommendations: data.structured?.key_recommendations?.join("; "),
-            weather_snapshot: weather ? JSON.stringify(weather) : null,
-            district: form.district || locationName,
-            image_count: images.length,
-            vit_prediction: vitSnapshot ? JSON.stringify(vitSnapshot) : null,
-          }),
+        await queueDiagnosis({
+          session_id: sessionId,
+          crop: form.crop,
+          disease_name: data.structured?.disease_name,
+          disease_name_bn: data.structured?.disease_name_bn,
+          confidence: data.structured?.confidence,
+          severity: data.structured?.severity,
+          biotic_abiotic: data.structured?.biotic_abiotic,
+          provider: data.provider || null,
+          symptoms: form.symptoms,
+          recommendations: data.structured?.key_recommendations?.join("; "),
+          weather_snapshot: weather ? JSON.stringify(weather) : null,
+          district: form.district || locationName,
+          image_count: images.length,
+          vit_prediction: vitSnapshot ? JSON.stringify(vitSnapshot) : null,
         });
+        await flushOutbox();
+        if (refreshPending) await refreshPending();
       } catch (e) {
         /* non-critical, don't block */ void e;
       }
@@ -8005,6 +8023,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
           <a href="#main-content" className="skip-to-content">
             মূল বিষয়বস্তুতে যান
           </a>
+          <OtpBanner />
           <div
             style={{
               background: C.bgHeader,
@@ -8154,6 +8173,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   🔁 নতুন
                 </button>
               )}
+              <AuthSheet />
+              <SyncChip />
               {!isGameTab && <ShareAndInstallBar />}
             </div>
           </div>

@@ -1,33 +1,16 @@
 /**
  * POST /api/auth/google
  *
- * Verifies a Google ID token (JWT) issued by Google Identity Services,
- * upserts the user in the `users` table (auto-fetching email, name,
- * picture, locale from the verified Google profile), and issues a
- * session JWT stored in an httpOnly cookie.
- *
- * Request body:  { "credential": "<google-id-token-jwt>" }
- * Response 200:  { "user": { id, email, name, picture_url, locale,
- *                             created_at, last_login_at, login_count } }
- * Response 400:  { "error": "Missing Google credential" }
- * Response 401:  { "error": "Invalid/expired token" }
- * Response 503:  { "error": "Database unavailable" }
- *
- * Required env vars:
- *   GOOGLE_CLIENT_ID  — OAuth client ID (must match `aud` in the JWT)
- *   SESSION_SECRET    — 32+ random hex chars for signing session JWTs
- *   TURSO_DATABASE_URL, TURSO_AUTH_TOKEN — for the users table
+ * Verifies a Google ID token, upserts identity in Supabase app_users,
+ * issues a 1-year httpOnly cookie, and returns a one-time deviceSecret.
  */
 
-import { signJWT, isPreviewDeploy } from "../_lib/jwt.js";
 import { handleCORSPreflight, setCORSHeaders } from "../_lib/cors.js";
 import { upsertUserProfile } from "../_lib/userStore.js";
-
-const SESSION_COOKIE_NAME = "agrichem_session";
-const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
+import { setSessionCookie, signSessionToken, getSessionSecret } from "../_lib/session.js";
+import { createDeviceEnrollment } from "../_lib/turso.js";
 
 export default async function handler(req, res) {
-  // CORS — credentials: true so the cookie is sent cross-origin
   if (handleCORSPreflight(req, res, "POST, OPTIONS")) return;
   setCORSHeaders(req, res, "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Credentials", "true");
@@ -42,21 +25,14 @@ export default async function handler(req, res) {
   }
 
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-  const SESSION_SECRET = process.env.SESSION_SECRET || (isPreviewDeploy() ? "preview-session-secret" : "");
-
-  if (!GOOGLE_CLIENT_ID || !SESSION_SECRET) {
+  if (!GOOGLE_CLIENT_ID || !getSessionSecret()) {
     console.error("[auth/google] Missing GOOGLE_CLIENT_ID or SESSION_SECRET env var");
-    return res.status(503).json({ error: "Server auth not configured", preview: isPreviewDeploy() });
+    return res.status(503).json({ error: "Server auth not configured" });
   }
 
-  // ── 1. Verify the Google ID token via Google's tokeninfo endpoint ────
-  // For high-volume production, swap to google-auth-library for local
-  // verification (caches Google's public keys, avoids network round-trip).
   let payload;
   try {
-    const resp = await fetch(
-      `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`,
-    );
+    const resp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
     if (!resp.ok) {
       return res.status(401).json({ error: "Invalid Google token" });
     }
@@ -66,24 +42,19 @@ export default async function handler(req, res) {
     return res.status(502).json({ error: "Google verification failed" });
   }
 
-  // ── 2. Audience check — token must be for OUR OAuth client ───────────
   if (payload.aud !== GOOGLE_CLIENT_ID) {
     return res.status(401).json({ error: "Token not issued for this app" });
   }
 
-  // ── 3. Expiry check (Google sends `exp` in seconds) ──────────────────
   const expiresAtMs = (payload.exp || 0) * 1000;
   if (expiresAtMs < Date.now()) {
     return res.status(401).json({ error: "Token expired" });
   }
 
-  // `sub` is Google's stable user ID — never changes for a given user,
-  // even if they change their email. Required field.
   if (!payload.sub || !payload.email) {
     return res.status(401).json({ error: "Token missing required fields" });
   }
 
-  // ── 4. Upsert user identity only (Turso → Supabase users table → preview) ──
   let user;
   let backend = "unknown";
   try {
@@ -107,34 +78,19 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "User upsert returned no rows" });
   }
 
-  // ── 5. Issue a session JWT (HMAC-SHA256 signed with SESSION_SECRET) ──
-  const sessionPayload = {
-    uid: user.id,
-    email: user.email,
-    exp: Date.now() + SESSION_MAX_AGE_SECONDS * 1000,
-  };
-  const sessionToken = await signJWT(sessionPayload, SESSION_SECRET);
+  const sessionToken = await signSessionToken(user.id);
+  if (!sessionToken) {
+    return res.status(503).json({ error: "Server auth not configured" });
+  }
+  setSessionCookie(res, sessionToken);
 
-  // ── 6. Set httpOnly + Secure + SameSite=Lax cookie ───────────────────
-  // HttpOnly: JS can't read it → XSS can't steal the session
-  // Secure:   only sent over HTTPS
-  // SameSite=Lax: protects against CSRF while allowing top-level navigation
-  // Path=/:   available on all routes
-  const cookieFlags = [
-    `${SESSION_COOKIE_NAME}=${sessionToken}`,
-    "HttpOnly",
-    "Secure",
-    "SameSite=Lax",
-    "Path=/",
-    `Max-Age=${SESSION_MAX_AGE_SECONDS}`,
-  ];
-  res.setHeader("Set-Cookie", cookieFlags.join("; "));
+  const deviceSecret = await createDeviceEnrollment(user.id);
 
-  // ── 7. Return user profile to the frontend ───────────────────────────
   return res.status(200).json({
     user: {
       id: user.id,
       email: user.email,
+      phone: user.phone,
       name: user.name,
       picture_url: user.picture_url,
       locale: user.locale,
@@ -142,6 +98,7 @@ export default async function handler(req, res) {
       last_login_at: user.last_login_at,
       login_count: user.login_count,
     },
+    deviceSecret,
     backend,
   });
 }

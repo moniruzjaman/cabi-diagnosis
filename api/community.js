@@ -27,6 +27,8 @@ import { createRateLimiter, feedbackLimiter, analyticsLimiter, presenceLimiter }
 import { parseBody, validateVisitorId, validateSection, validateFeedback } from "./_lib/validation.js";
 import { escapeHtml, escapeHtmlWithBr, sanitizeEmail } from "./_lib/htmlEscape.js";
 import { requireSignedRequest, verifyRequestToken } from "./_lib/requestSigning.js";
+import { getSessionUserId } from "./_lib/session.js";
+import { sanitizeDiagnosisEntry } from "./_lib/diagnosisSanitize.js";
 import {
   readStore,
   writeStore,
@@ -91,6 +93,7 @@ async function feedbackResource(req, res) {
     email: safeEmail,
     summary: item.summary,
     visitorId: item.visitorId,
+    user_id: (await getSessionUserId(req)) || null,
     createdAt: new Date().toISOString(),
   };
 
@@ -244,6 +247,7 @@ async function handleOutbreaksPost(req, res) {
     disease_name: String(body.disease_name).slice(0, 300),
     reporter_hash,
     confirmed: body.confirmed === true,
+    user_id: (await getSessionUserId(req)) || null,
   };
 
   try {
@@ -374,47 +378,12 @@ const diagnosesLimiter = createRateLimiter({ windowMs: 60_000, maxRequests: 30 }
 const DIAGNOSES_MAX_LIMIT = 500;
 const DIAGNOSES_DEFAULT_LIMIT = 50;
 
-const DIAGNOSES_TEXT_FIELDS = {
-  session_id: 200,
-  crop: 100,
-  disease_name: 300,
-  disease_name_bn: 300,
-  confidence: 20,
-  severity: 20,
-  biotic_abiotic: 20,
-  provider: 100,
-  symptoms: 2000,
-  recommendations: 4000,
-  weather_snapshot: 2000,
-  district: 100,
-  vit_prediction: 4000,
-};
-
-const DIAGNOSES_REQUIRED_FIELDS = ["session_id", "crop"];
+export { sanitizeDiagnosisEntry };
 
 function sanitizeDiagnosisString(value, maxLength) {
   if (value === null || value === undefined) return null;
   const str = String(value).trim();
   return str.length === 0 ? null : str.slice(0, maxLength);
-}
-
-/**
- * Builds a sanitized diagnosis entry from a request body.
- * Returns { entry } on success or { error } when required fields are missing.
- */
-export function sanitizeDiagnosisEntry(body = {}) {
-  const missing = DIAGNOSES_REQUIRED_FIELDS.find(
-    (field) => typeof body[field] !== "string" || body[field].trim() === "",
-  );
-  if (missing) return { error: `${missing} is required` };
-
-  const entry = {};
-  for (const [field, maxLength] of Object.entries(DIAGNOSES_TEXT_FIELDS)) {
-    entry[field] = sanitizeDiagnosisString(body[field], maxLength);
-  }
-  entry.image_count = Math.min(Math.max(Number(body.image_count) || 0, 0), 10);
-
-  return { entry };
 }
 
 function parseDiagnosesFilters(query = {}) {
@@ -464,7 +433,11 @@ async function diagnosesResource(req, res) {
 
 async function handleDiagnosesGet(req, res) {
   try {
-    const diagnoses = await getDiagnoses(parseDiagnosesFilters(req.query));
+    const uid = await getSessionUserId(req);
+    if (!uid) {
+      return res.status(200).json({ diagnoses: [], count: 0, persistence: "local" });
+    }
+    const diagnoses = await getDiagnoses({ ...parseDiagnosesFilters(req.query), userId: uid });
     return res.status(200).json({
       diagnoses,
       count: diagnoses.length,
@@ -487,6 +460,7 @@ async function handleDiagnosesPost(req, res) {
 
   const { entry, error } = sanitizeDiagnosisEntry(body);
   if (error) return res.status(400).json({ error });
+  entry.user_id = (await getSessionUserId(req)) || null;
 
   try {
     const id = await saveDiagnosis(entry);

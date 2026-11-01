@@ -36,6 +36,10 @@
       "destination": "/api/community?resource=analytics"
     },
     {
+      "source": "/api/auth/refresh",
+      "destination": "/api/auth/phone?action=refresh"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

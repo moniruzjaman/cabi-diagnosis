@@ -43,7 +43,8 @@
     "check:agrichem": "node scripts/sync_agrichem.mjs --check",
     "sync:models": "node scripts/sync_kaggle_models.mjs",
     "check:models": "node scripts/sync_kaggle_models.mjs --check",
-    "test:offline": "node src/offline/test-ensemble.mjs"
+    "test:offline": "node src/offline/test-ensemble.mjs",
+    "test:auth": "node scripts/test-auth-store.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.17.3",

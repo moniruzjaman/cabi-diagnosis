@@ -17,6 +17,7 @@
 import { createClient } from "@libsql/client";
 import { promises as fs } from "fs";
 import path from "path";
+import crypto from "crypto";
 
 // ─── Singleton Turso client ────────────────────────────────────
 let _tursoClient = null;
@@ -166,6 +167,14 @@ export async function ensureSchema() {
     await db.execute(`
       CREATE INDEX IF NOT EXISTS idx_diagnoses_created ON diagnoses(created_at)
     `);
+    try {
+      await db.execute(`ALTER TABLE diagnoses ADD COLUMN user_id TEXT`);
+    } catch {
+      /* column already exists */
+    }
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_diagnoses_user ON diagnoses(user_id)
+    `);
 
     // Outbreak reports — crowd-sourced disease outbreak tracking
     await db.execute(`
@@ -184,6 +193,27 @@ export async function ensureSchema() {
     `);
     await db.execute(`
       CREATE INDEX IF NOT EXISTS idx_outbreaks_crop ON outbreak_reports(crop)
+    `);
+    try {
+      await db.execute(`ALTER TABLE outbreak_reports ADD COLUMN user_id TEXT`);
+    } catch {
+      /* column already exists */
+    }
+    try {
+      await db.execute(`ALTER TABLE feedback_entries ADD COLUMN user_id TEXT`);
+    } catch {
+      /* column already exists */
+    }
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS device_enrollments (
+        device_hash TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+      )
+    `);
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_device_enrollments_user ON device_enrollments(user_id)
     `);
 
     // ─── Users table — Google Sign-In auto-fetched email + last login ───
@@ -317,8 +347,8 @@ export async function appendFeedback(item) {
     try {
       await ensureSchema();
       await db.execute({
-        sql: `INSERT INTO feedback_entries (context, rating, feedback, email, summary, visitor_id, created_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        sql: `INSERT INTO feedback_entries (context, rating, feedback, email, summary, visitor_id, user_id, created_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           item.context || "Unknown",
           item.rating || 0,
@@ -326,6 +356,7 @@ export async function appendFeedback(item) {
           item.email || "",
           item.summary || "",
           item.visitorId || "",
+          item.user_id || null,
           item.createdAt || new Date().toISOString(),
         ],
       });
@@ -520,8 +551,8 @@ export async function saveDiagnosis(entry) {
   try {
     await ensureSchema();
     const result = await db.execute({
-      sql: `INSERT INTO diagnoses (session_id, crop, disease_name, disease_name_bn, confidence, severity, biotic_abiotic, provider, symptoms, recommendations, weather_snapshot, district, image_count, vit_prediction)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO diagnoses (session_id, crop, disease_name, disease_name_bn, confidence, severity, biotic_abiotic, provider, symptoms, recommendations, weather_snapshot, district, image_count, vit_prediction, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         entry.session_id || "",
         entry.crop || "unknown",
@@ -537,6 +568,7 @@ export async function saveDiagnosis(entry) {
         entry.district || null,
         entry.image_count || 0,
         entry.vit_prediction || null,
+        entry.user_id || null,
       ],
     });
     return result.lastInsertRowid;
@@ -552,10 +584,14 @@ export async function getDiagnoses(filters = {}) {
 
   try {
     await ensureSchema();
-    const { crop, district, dateFrom, dateTo, limit = 50 } = filters;
+    const { crop, district, dateFrom, dateTo, userId, limit = 50 } = filters;
     const conditions = [];
     const args = [];
 
+    if (userId) {
+      conditions.push("user_id = ?");
+      args.push(userId);
+    }
     if (crop) {
       conditions.push("crop = ?");
       args.push(crop);
@@ -597,6 +633,7 @@ export async function getDiagnoses(filters = {}) {
       district: row.district,
       imageCount: row.image_count,
       vitPrediction: row.vit_prediction || null,
+      userId: row.user_id || null,
       createdAt: row.created_at,
     }));
   } catch (err) {
@@ -614,14 +651,15 @@ export async function reportOutbreak(entry) {
   try {
     await ensureSchema();
     const result = await db.execute({
-      sql: `INSERT INTO outbreak_reports (district, crop, disease_name, reporter_hash, confirmed)
-            VALUES (?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO outbreak_reports (district, crop, disease_name, reporter_hash, confirmed, user_id)
+            VALUES (?, ?, ?, ?, ?, ?)`,
       args: [
         entry.district || "unknown",
         entry.crop || "unknown",
         entry.disease_name || "unknown",
         entry.reporter_hash || null,
         entry.confirmed ? 1 : 0,
+        entry.user_id || null,
       ],
     });
     return result.lastInsertRowid;
@@ -738,5 +776,45 @@ export async function getDiseaseStats(days = 30) {
   } catch (err) {
     console.error("Turso getDiseaseStats error:", err.message);
     return { topCrops: [], topDiseases: [], byDistrict: [], byBioticAbiotic: {}, trend: [], days };
+  }
+}
+
+function hashDeviceSecret(secret) {
+  return crypto.createHash("sha256").update(String(secret)).digest("hex");
+}
+
+export async function createDeviceEnrollment(userId) {
+  if (!userId) return null;
+  const deviceSecret = crypto.randomBytes(32).toString("hex");
+  const deviceHash = hashDeviceSecret(deviceSecret);
+  const db = getTursoClient();
+  if (db) {
+    try {
+      await ensureSchema();
+      await db.execute({
+        sql: `INSERT INTO device_enrollments (device_hash, user_id, created_at) VALUES (?, ?, ?)`,
+        args: [deviceHash, String(userId), new Date().toISOString()],
+      });
+    } catch (err) {
+      console.error("Turso createDeviceEnrollment error:", err.message);
+    }
+  }
+  return deviceSecret;
+}
+
+export async function verifyDeviceEnrollment(userId, deviceSecret) {
+  if (!userId || !deviceSecret) return false;
+  const db = getTursoClient();
+  if (!db) return false;
+  try {
+    await ensureSchema();
+    const result = await db.execute({
+      sql: `SELECT user_id FROM device_enrollments WHERE device_hash = ? AND user_id = ? LIMIT 1`,
+      args: [hashDeviceSecret(deviceSecret), String(userId)],
+    });
+    return result.rows.length > 0;
+  } catch (err) {
+    console.error("Turso verifyDeviceEnrollment error:", err.message);
+    return false;
   }
 }
