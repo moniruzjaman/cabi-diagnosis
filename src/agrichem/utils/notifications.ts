@@ -25,8 +25,8 @@ export function sendPushNotification(title: string, options?: NotificationOption
   if (Notification.permission === 'granted') {
     try {
       new Notification(title, {
-        icon: '/favicon.ico',
-        badge: '/favicon.ico',
+        icon: '/icons/icon-192.png',
+        badge: '/favicon-32.png',
         ...options
       });
       return true;
@@ -42,7 +42,7 @@ export function triggerAlertNotification(alert: RegulatoryAlert): boolean {
   const icon = alert.category === 'regulatory' ? '⚠️' : '🌾';
   const title = `${icon} ${alert.title}`;
   return sendPushNotification(title, {
-    body: `${alert.summary}\nAction: ${alert.actionRequired || 'Check AgriChem Field Guide.'}`,
+    body: `${alert.summary}\nAction: ${alert.actionRequired || 'Check PesticideNext Field Guide.'}`,
     tag: alert.id
   });
 }

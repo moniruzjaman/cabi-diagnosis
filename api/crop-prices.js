@@ -18,6 +18,7 @@
  */
 
 import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
+import { getTursoClient, hasTurso, ensureSchema } from "./_lib/turso.js";
 
 // ─── Inline price engine (server-side, same logic as client) ──────────────────
 
@@ -216,11 +217,48 @@ function simulatePrice(crop, month, districtId) {
   };
 }
 
+async function handleMarketPrices(req, res) {
+  if (!hasTurso()) {
+    return res.status(200).json({ prices: [], source: "unavailable" });
+  }
+
+  try {
+    await ensureSchema();
+    const db = getTursoClient();
+    const result = await db.execute(
+      `SELECT commodity, market, retail_price_min, retail_price_max, wholesale_price_min, wholesale_price_max, date, updated_at
+       FROM market_prices
+       ORDER BY updated_at DESC
+       LIMIT 50`,
+    );
+    const prices = result.rows.map((row) => ({
+      commodity: row.commodity,
+      market: row.market,
+      retail_price_min: row.retail_price_min,
+      retail_price_max: row.retail_price_max,
+      wholesale_price_min: row.wholesale_price_min,
+      wholesale_price_max: row.wholesale_price_max,
+      date: row.date,
+      updated_at: row.updated_at,
+    }));
+
+    return res.status(200).json({ prices, source: "turso", count: prices.length });
+  } catch (err) {
+    console.error("[market-prices] Error:", err.message);
+    return res.status(500).json({ error: "Failed to fetch market prices", prices: [] });
+  }
+}
+
 export default async function handler(req, res) {
   if (handleCORSPreflight(req, res, "GET, OPTIONS")) return;
   setCORSHeaders(req, res, "GET, OPTIONS");
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  if (req.query.mode === "market") {
+    res.setHeader("Cache-Control", "public, max-age=1800");
+    return handleMarketPrices(req, res);
   }
 
   const month = new Date().getMonth() + 1;

@@ -58,6 +58,38 @@ export async function ensureSchema() {
       )
     `);
 
+    // Defensive migration: older deployments may have created analytics_state
+    // before visitors/sections existed in the CREATE TABLE above. No-op on any
+    // database that already has them (checked via PRAGMA, not just try/catch,
+    // so this never spams "duplicate column" warnings on every cold start).
+    try {
+      const colInfo = await db.execute("PRAGMA table_info(analytics_state)");
+      const existingCols = new Set(colInfo.rows.map((r) => r.name));
+      if (!existingCols.has("visitors")) {
+        await db.execute("ALTER TABLE analytics_state ADD COLUMN visitors TEXT DEFAULT '{}'");
+      }
+      if (!existingCols.has("sections")) {
+        await db.execute("ALTER TABLE analytics_state ADD COLUMN sections TEXT DEFAULT '{}'");
+      }
+    } catch (migErr) {
+      console.warn("Turso analytics_state migration warning:", migErr.message);
+    }
+
+    // Market Prices (dam.gov.bd)
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS market_prices (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        commodity TEXT,
+        market TEXT,
+        retail_price_min REAL,
+        retail_price_max REAL,
+        wholesale_price_min REAL,
+        wholesale_price_max REAL,
+        date TEXT,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Feedback entries
     await db.execute(`
       CREATE TABLE IF NOT EXISTS feedback_entries (
@@ -152,6 +184,33 @@ export async function ensureSchema() {
     `);
     await db.execute(`
       CREATE INDEX IF NOT EXISTS idx_outbreaks_crop ON outbreak_reports(crop)
+    `);
+
+    // ─── Users table — Google Sign-In auto-fetched email + last login ───
+    // Stores user profile auto-fetched from Google's verified JWT.
+    // `google_sub` is the primary unique key (stable across email changes),
+    // `email` is indexed for lookup but may change if the user updates their
+    // Gmail address. `last_login_at` is updated on every sign-in via UPSERT;
+    // `created_at` is set once on first registration and never changed.
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        google_sub TEXT UNIQUE NOT NULL,
+        email TEXT NOT NULL,
+        email_verified INTEGER DEFAULT 0,
+        name TEXT,
+        picture_url TEXT,
+        locale TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        last_login_at TEXT DEFAULT (datetime('now')),
+        login_count INTEGER DEFAULT 1
+      )
+    `);
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)
+    `);
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_users_google_sub ON users(google_sub)
     `);
 
     // Ensure analytics row exists

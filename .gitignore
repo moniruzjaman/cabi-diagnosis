@@ -1,62 +1,8 @@
-# Dependencies
 node_modules/
-
-# Build output
 dist/
-.vercel/
-
-# Environment variables — NEVER commit these
+build/
 .env
 .env.local
-.env.production
-.env.*.local
-
-# Local data storage (analytics JSON)
-.data/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-npm-debug.log*
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Backup files
-*.backup
-src/App.jsx.backup
-
-# AI agent directories (not part of the app, bloats repo)
-.serena/
-.agents/
-.claude/
-.continue/
-.qwen/
-.mcp.json
-skills/
-skills-lock.json
-
-# Supabase CLI temp files
-supabase/.temp/
-
-# Worklog (local dev artifact)
-worklog.md
-
-# Download directory (generated)
-download/
-
-# Expo mobile (work-in-progress)
-expo-mobile/
-.vercel
-
-# On-device ViT model (Phase 1) — 22 MB ONNX file
-# Tracked directly in git (no LFS needed for a single 22 MB asset).
-# To regenerate: see docs/phase1-vit.md (or the attached notebook).
-# public/models/*.onnx
-
+*.env.*
+.kaggle-upstream/
+.agrichem-upstream/

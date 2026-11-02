@@ -4,8 +4,36 @@
   "installCommand": "npm install",
   "rewrites": [
     {
+      "source": "/api/market-prices",
+      "destination": "/api/crop-prices?mode=market"
+    },
+    {
       "source": "/api/metrics",
       "destination": "/api/health?endpoint=metrics"
+    },
+    {
+      "source": "/api/signing-token",
+      "destination": "/api/health?endpoint=signing-token"
+    },
+    {
+      "source": "/api/feedback",
+      "destination": "/api/community?resource=feedback"
+    },
+    {
+      "source": "/api/outbreaks",
+      "destination": "/api/community?resource=outbreaks"
+    },
+    {
+      "source": "/api/presence",
+      "destination": "/api/community?resource=presence"
+    },
+    {
+      "source": "/api/diagnoses",
+      "destination": "/api/community?resource=diagnoses"
+    },
+    {
+      "source": "/api/analytics",
+      "destination": "/api/community?resource=analytics"
     },
     {
       "source": "/(.*)",

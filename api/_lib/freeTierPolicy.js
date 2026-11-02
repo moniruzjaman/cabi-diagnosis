@@ -8,7 +8,10 @@ const DEFAULTS = Object.freeze({
   maxAttempts: 5,
   maxRequestsPerDay: 250,
   maxVisionRequestsPerDay: 100,
-  maxOutputTokens: 2200,
+  // 4,000 lets models finish the mandated Bangla + English + JSON_SUMMARY
+  // format without truncation before the ---JSON_SUMMARY--- block (at 2,200
+  // the structured result card arrived null in production).
+  maxOutputTokens: 4_000,
   maxImageBytes: 6_000_000,
   requestTimeoutMs: 25_000,
 });

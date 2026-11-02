@@ -46,6 +46,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         return 'bg-indigo-100 text-indigo-800 border-indigo-200';
       case 'Rodenticide':
         return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'Public Health':
+        return 'bg-cyan-100 text-cyan-800 border-cyan-200';
       default:
         return 'bg-slate-100 text-slate-800 border-slate-200';
     }
@@ -67,7 +69,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div 
       id={`product-card-${product.id}`}
-      className="bg-white border border-slate-200 rounded-xl p-5 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between group"
+      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-md dark:hover:shadow-emerald-900/20 transition-all flex flex-col justify-between group dark:text-slate-100"
     >
       <div>
         {/* Top Badges */}
@@ -99,14 +101,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </p>
 
         {/* Reg & Manufacturer */}
-        <div className="mt-2.5 pt-2.5 border-t border-slate-100 text-xs text-slate-500 space-y-1">
+        <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-slate-400">{language === 'bn' ? 'নিবন্ধন নং:' : 'Reg No:'}</span>
-            <span className="font-mono font-medium text-slate-700">{product.registrationNo}</span>
+            <span className="text-slate-400 dark:text-slate-500">{language === 'bn' ? 'নিবন্ধন নং:' : 'Reg No:'}</span>
+            <span className="font-mono font-medium text-slate-700 dark:text-slate-300">{product.registrationNo}</span>
           </div>
           <div className="flex items-start justify-between gap-2">
-            <span className="text-slate-400 shrink-0">{language === 'bn' ? 'কোম্পানি:' : 'Holder:'}</span>
-            <span className="font-medium text-slate-700 text-right truncate" title={product.registrationHolder}>
+            <span className="text-slate-400 dark:text-slate-500 shrink-0">{language === 'bn' ? 'কোম্পানি:' : 'Holder:'}</span>
+            <span className="font-medium text-slate-700 dark:text-slate-300 text-right truncate" title={product.registrationHolder}>
               {product.registrationHolder}
             </span>
           </div>
@@ -172,40 +174,40 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <button
           id={`btn-calc-${product.id}`}
           onClick={() => onOpenCalculator(product)}
-          className="flex flex-col items-center justify-center p-1.5 text-xs text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg border border-slate-200 transition cursor-pointer"
-          title="Calculate field dosage and tank mix"
+          className="group/btn flex flex-col items-center justify-center p-1.5 text-xs text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg border border-slate-200 hover:border-emerald-200 transition cursor-pointer"
+          title={language === 'bn' ? 'মাঠ পর্যায়ের মাত্রা ও ট্যাংক মিশ্রণ ক্যালকুলেটর' : 'Calculate field dosage and tank mix'}
         >
-          <Calculator className="w-4 h-4 text-emerald-600 mb-0.5" />
+          <Calculator className="w-4 h-4 text-emerald-600 mb-0.5 transition-transform group-hover/btn:scale-110" />
           <span className="text-[10px] font-medium">{language === 'bn' ? 'মাত্রা হিসাব' : 'Dosage'}</span>
         </button>
 
         <button
           id={`btn-safety-${product.id}`}
           onClick={() => onOpenSafety(product)}
-          className="flex flex-col items-center justify-center p-1.5 text-xs text-slate-700 hover:text-amber-700 hover:bg-amber-50 rounded-lg border border-slate-200 transition cursor-pointer"
-          title="Safety precautions and PPE checklist"
+          className="group/btn flex flex-col items-center justify-center p-1.5 text-xs text-slate-700 hover:text-amber-700 hover:bg-amber-50 rounded-lg border border-slate-200 hover:border-amber-200 transition cursor-pointer"
+          title={language === 'bn' ? 'সুরক্ষা সতর্কতা ও পিপিই চেকলিস্ট' : 'Safety precautions and PPE checklist'}
         >
-          <ShieldCheck className="w-4 h-4 text-amber-600 mb-0.5" />
+          <ShieldCheck className="w-4 h-4 text-amber-600 mb-0.5 transition-transform group-hover/btn:scale-110" />
           <span className="text-[10px] font-medium">{language === 'bn' ? 'সুরক্ষা' : 'Safety'}</span>
         </button>
 
         <button
           id={`btn-pdf-${product.id}`}
           onClick={() => exportSingleProductPDF(product)}
-          className="flex flex-col items-center justify-center p-1.5 text-xs text-slate-700 hover:text-blue-700 hover:bg-blue-50 rounded-lg border border-slate-200 transition cursor-pointer"
-          title="Export offline field card PDF"
+          className="group/btn flex flex-col items-center justify-center p-1.5 text-xs text-slate-700 hover:text-blue-700 hover:bg-blue-50 rounded-lg border border-slate-200 hover:border-blue-200 transition cursor-pointer"
+          title={language === 'bn' ? 'অফলাইন ফিল্ড কার্ড PDF ডাউনলোড' : 'Export offline field card PDF'}
         >
-          <FileDown className="w-4 h-4 text-blue-600 mb-0.5" />
+          <FileDown className="w-4 h-4 text-blue-600 mb-0.5 transition-transform group-hover/btn:scale-110" />
           <span className="text-[10px] font-medium">{language === 'bn' ? 'কার্ড PDF' : 'PDF Card'}</span>
         </button>
 
         <button
           id={`btn-details-${product.id}`}
           onClick={() => onSelectProduct(product)}
-          className="flex flex-col items-center justify-center p-1.5 text-xs bg-slate-900 text-white hover:bg-emerald-700 rounded-lg transition cursor-pointer"
-          title="View full chemical dossier"
+          className="group/btn flex flex-col items-center justify-center p-1.5 text-xs bg-slate-900 text-white hover:bg-emerald-700 rounded-lg transition cursor-pointer"
+          title={language === 'bn' ? 'সম্পূর্ণ রাসায়নিক ডসিয়ার দেখুন' : 'View full chemical dossier'}
         >
-          <Info className="w-4 h-4 mb-0.5" />
+          <Info className="w-4 h-4 mb-0.5 transition-transform group-hover/btn:scale-110" />
           <span className="text-[10px] font-medium">{language === 'bn' ? 'বিস্তারিত' : 'Details'}</span>
         </button>
       </div>

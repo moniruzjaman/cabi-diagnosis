@@ -2,6 +2,8 @@
 // Covers the top 10 Bangladesh crops with at least 5 diseases each.
 // Symptom arrays are in Bengali for matching against user symptom chips.
 
+import { translateBengaliToEnglish, normalizeSymptomText, tokenizeSymptomText } from "./bengaliKeywords.js";
+
 export const CROP_DISEASES = {
   ধান: {
     // Rice
@@ -421,6 +423,166 @@ export const CROP_DISEASES = {
         ],
         severity: "moderate",
         season: ["Rabi", "Kharif"],
+      },
+      {
+        name: "Bacterial Spot",
+        nameBn: "টমেটোর ব্যাকটেরিয়াল স্পট",
+        cause: "bacterial",
+        pathogen: "Xanthomonas campestris pv. vesicatoria",
+        symptoms: [
+          "পাতায় বাদামি গোলাকার দাগ",
+          "পাতায় কালো দাগ",
+          "ফলে দাগ",
+          "পাতা হলুদ হয়ে যাচ্ছে",
+          "পাতা ঝরে",
+        ],
+        conditions: "Warm wet, 24-30°C, splash rain, infected seed",
+        recommendations: [
+          "কপার অক্সিক্লোরাইড স্প্রে করুন",
+          "সুস্থ বীজ ব্যবহার করুন",
+          "পাতায় পানি না লাগান",
+          "ফসল আবর্তন করুন",
+          "আক্রান্ত পাতা সরিয়ে ফেলুন",
+        ],
+        severity: "moderate",
+        season: ["Kharif", "Rabi"],
+      },
+      {
+        name: "Leaf Mold",
+        nameBn: "টমেটোর পাতার ছাঁচ",
+        cause: "fungal",
+        pathogen: "Passalora fulva",
+        symptoms: [
+          "পাতার নিচে জলপাই রঙের ছাঁচ",
+          "পাতায় হলুদ দাগ",
+          "পাতা হলুদ হয়ে যাচ্ছে",
+          "পাতা ঝরে",
+        ],
+        conditions: "High humidity (>85%), 20-25°C, poor airflow, greenhouse",
+        recommendations: [
+          "বায়ু চলাচল বাড়ান",
+          "ম্যানকোজেব বা ক্লোরোথ্যালোনিল স্প্রে",
+          "নিচের পাতা ছেঁটে ফেলুন",
+          "ঘন লাগানো এড়িয়ে চলুন",
+        ],
+        severity: "moderate",
+        season: ["Rabi", "Kharif"],
+      },
+      {
+        name: "Septoria Leaf Spot",
+        nameBn: "টমেটোর সেপ্টোরিয়া পাতার দাগ",
+        cause: "fungal",
+        pathogen: "Septoria lycopersici",
+        symptoms: [
+          "পাতায় ছোট গোলাকার ধূসর দাগ",
+          "দাগের মাঝে কালো বিন্দু",
+          "নিচের পাতা আগে আক্রান্ত",
+          "পাতা হলুদ হয়ে যাচ্ছে",
+          "পাতা ঝরে",
+        ],
+        conditions: "Warm wet, 20-25°C, splash rain, crop residue",
+        recommendations: [
+          "ক্লোরোথ্যালোনিল বা ম্যানকোজেব স্প্রে",
+          "নিচের পাতা ছেঁটে ফেলুন",
+          "মালচ ব্যবহার করুন",
+          "ফসল আবর্তন করুন",
+        ],
+        severity: "moderate",
+        season: ["Kharif", "Rabi"],
+      },
+      {
+        name: "Spider Mites",
+        nameBn: "টমেটোর মাকড়সা মাইট",
+        cause: "insect",
+        pathogen: "Tetranychus urticae",
+        symptoms: [
+          "পাতায় সাদা ছোট ছোট দাগ",
+          "পাতায় জাল",
+          "পাতা হলুদ হয়ে যাচ্ছে",
+          "পাতা শুকিয়ে",
+          "পাতার নিচে ছোট পোকা",
+        ],
+        conditions: "Hot dry, 28-35°C, dusty fields, water stress",
+        recommendations: [
+          "পাতার নিচে পানি স্প্রে করুন",
+          "অ্যাবামেকটিন বা স্পাইরোমেসিফেন স্প্রে",
+          "শিকারি মাইট সংরক্ষণ করুন",
+          "ধুলো কমান, সেচ নিয়মিত দিন",
+        ],
+        severity: "moderate",
+        season: ["Kharif", "Rabi"],
+      },
+      {
+        name: "Target Spot",
+        nameBn: "টমেটোর টার্গেট স্পট",
+        cause: "fungal",
+        pathogen: "Corynespora cassiicola",
+        symptoms: [
+          "পাতায় গোলাকার বাদামি দাগ",
+          "দাগে চাকচিক্য বলয়",
+          "পাতা হলুদ হয়ে যাচ্ছে",
+          "ফল পচে যাচ্ছে, কালো বা বাদামি দাগ",
+        ],
+        conditions: "Warm humid, 20-28°C, long leaf wetness",
+        recommendations: [
+          "ক্লোরোথ্যালোনিল স্প্রে করুন",
+          "নিচের পাতা ছেঁটে ফেলুন",
+          "ফসল আবর্তন করুন",
+          "ঘন লাগানো এড়িয়ে চলুন",
+        ],
+        severity: "moderate",
+        season: ["Kharif", "Rabi"],
+      },
+      {
+        name: "Tomato Mosaic",
+        nameBn: "টমেটোর মোজাইক রোগ",
+        cause: "viral",
+        pathogen: "Tomato mosaic virus (ToMV)",
+        symptoms: [
+          "পাতায় মোজাইক",
+          "পাতা কুঁকড়িয়ে ও বাঁকিয়ে যাচ্ছে",
+          "পাতা হলুদ হয়ে যাচ্ছে",
+          "গাছ বামন",
+          "ফল বিকৃত",
+        ],
+        conditions: "Seed-borne, mechanical transmission, 20-30°C",
+        recommendations: [
+          "ভাইরাসমুক্ত বীজ ব্যবহার করুন",
+          "হাত ও যন্ত্র জীবাণুমুক্ত করুন",
+          "আক্রান্ত গাছ সরিয়ে ফেলুন",
+          "প্রতিরোধী জাত লাগান",
+        ],
+        severity: "moderate",
+        season: ["Kharif", "Rabi"],
+      },
+    ],
+  },
+
+  মরিচ: {
+    en: "Pepper",
+    diseases: [
+      {
+        name: "Bacterial Spot",
+        nameBn: "মরিচের ব্যাকটেরিয়াল স্পট",
+        cause: "bacterial",
+        pathogen: "Xanthomonas campestris pv. vesicatoria",
+        symptoms: [
+          "পাতায় বাদামি গোলাকার দাগ",
+          "পাতায় কালো দাগ",
+          "ফলে দাগ",
+          "পাতা হলুদ হয়ে যাচ্ছে",
+          "পাতা ঝরে",
+        ],
+        conditions: "Warm wet, 24-30°C, splash rain, infected seed",
+        recommendations: [
+          "কপার অক্সিক্লোরাইড স্প্রে করুন",
+          "সুস্থ বীজ ব্যবহার করুন",
+          "পাতায় পানি না লাগান",
+          "ফসল আবর্তন করুন",
+          "আক্রান্ত পাতা সরিয়ে ফেলুন",
+        ],
+        severity: "moderate",
+        season: ["Kharif", "Rabi"],
       },
     ],
   },
@@ -1069,6 +1231,7 @@ export const CROP_NAME_MAP = {
   আম: "আম",
   গম: "গম",
   ভুট্টা: "ভুট্টা",
+  মরিচ: "মরিচ",
   // English name mappings
   Rice: "ধান",
   Jute: "পাট",
@@ -1082,6 +1245,10 @@ export const CROP_NAME_MAP = {
   Maize: "ভুট্টা",
   // ViT (on-device classifier) crop label aliases
   Corn: "ভুট্টা",
+  Pepper: "মরিচ",
+  chilli: "মরিচ",
+  chili: "মরিচ",
+  Capsicum: "মরিচ",
   // Mixed name formats from the CROPS object
   "ধান / Rice": "ধান",
   "পাট / Jute": "পাট",
@@ -1093,6 +1260,7 @@ export const CROP_NAME_MAP = {
   "আম / Mango": "আম",
   "গম / Wheat": "গম",
   "ভুট্টা / Maize": "ভুট্টা",
+  "মরিচ / Pepper": "মরিচ",
   // Quick crop IDs
   rice: "ধান",
   jute: "পাট",
@@ -1104,6 +1272,7 @@ export const CROP_NAME_MAP = {
   mango: "আম",
   wheat: "গম",
   maize: "ভুট্টা",
+  pepper: "মরিচ",
   // Season-specific
   "ধান (বোরো) / Rice - Boro": "ধান",
   "ধান (আমন) / Rice - Aman": "ধান",
@@ -1144,51 +1313,148 @@ export function getDiseasesForCrop(cropInput) {
 }
 
 /**
- * Match user symptoms against disease symptom arrays and return ranked results
+ * Normalizes a symptom string for cross-language comparison.
+ * Bengali text is first mapped to English keywords via the translation layer,
+ * then normalized (case/punctuation/synonyms). English text skips straight to
+ * normalization. This gives EN↔BN symmetry so a farmer's chip selection and a
+ * free-text description converge on the same canonical tokens.
+ * @param {string} text
+ * @returns {string} normalized English-token string
+ */
+function normalizeSymptomForMatching(text) {
+  if (!text) return "";
+  const raw = String(text);
+  const hasBengali = /[\u0980-\u09FF]/.test(raw);
+  const english = hasBengali ? translateBengaliToEnglish(raw) : raw;
+  return normalizeSymptomText(english);
+}
+
+/**
+ * Weighted keyword-overlap scorer (Crop-Doctor doctoral matching logic).
+ * Returns a value in [0,1] measuring how strongly two normalized symptom
+ * strings share distinctive content words. Rare terms (appearing in few
+ * disease entries) weigh more than generic ones like "leaf"/"plant".
+ * @param {string} a - Normalized string A
+ * @param {string} b - Normalized string B
+ * @param {Map<string,number>} idf - Inverse-document-frequency table
+ * @returns {number} - weighted overlap ratio relative to the shorter side
+ */
+function weightedOverlap(a, b, idf) {
+  const tokensA = [...new Set(tokenizeSymptomText(a))];
+  const tokensB = new Set(tokenizeSymptomText(b));
+  if (!tokensA.length || !tokensB.size) return 0;
+
+  let sharedWeight = 0;
+  let totalWeight = 0;
+  for (const t of tokensA) {
+    const w = idf.get(t) || 1;
+    totalWeight += w;
+    if (tokensB.has(t)) sharedWeight += w;
+  }
+  if (totalWeight === 0) return 0;
+  return sharedWeight / totalWeight;
+}
+
+/**
+ * Match user symptoms against disease symptom arrays and return ranked results.
+ *
+ * Crop-Doctor improvements ported here:
+ *  1. All texts are normalized + synonym-resolved before comparison, and
+ *     Bengali input is translated to English keywords first (EN/BN symmetry).
+ *  2. Scoring is weighted by IDF so that distinctive symptoms (e.g. "blast",
+ *     "honeydew") discriminate far better than generic ones ("leaf", "spots").
+ *  3. Coverage-aware ranking: results expose both precision (how much of the
+ *     user's evidence the disease explains) and recall (how many of the
+ *     disease's signature symptoms were observed), combined into a single
+ *     `matchRatio` used for ranking — fixing the old tie where every disease
+ *     sharing one generic symptom scored identically.
  * @param {string} cropInput - Crop name in any format
- * @param {string[]} userSymptoms - Array of symptom strings (Bengali)
- * @returns {Array} - Ranked array of {disease, score, maxScore, matchRatio}
+ * @param {string[]} userSymptoms - Array of symptom strings (Bengali or English)
+ * @returns {Array} - Ranked array of {disease, score, maxScore, matchRatio, matchedSymptoms}
  */
 export function matchDiseasesBySymptoms(cropInput, userSymptoms) {
   const diseases = getDiseasesForCrop(cropInput);
   if (!diseases.length || !userSymptoms || !userSymptoms.length) return [];
 
-  const results = diseases.map((disease) => {
-    let matchCount = 0;
-    const matchedSymptoms = [];
+  const normUser = userSymptoms.map(normalizeSymptomForMatching).filter(Boolean);
+  const normDiseaseSymptoms = diseases.map((d) => d.symptoms.map(normalizeSymptomForMatching));
 
-    for (const userSym of userSymptoms) {
-      const userSymLower = (userSym || "").toLowerCase();
-      for (const diseaseSym of disease.symptoms) {
-        const diseaseSymLower = (diseaseSym || "").toLowerCase();
-        // Check bidirectional substring match or keyword overlap
-        if (
-          userSymLower.includes(diseaseSymLower) ||
-          diseaseSymLower.includes(userSymLower) ||
-          hasKeywordOverlap(userSymLower, diseaseSymLower)
-        ) {
-          matchCount++;
-          matchedSymptoms.push(diseaseSym);
-          break; // Each user symptom matches at most one disease symptom
+  // Build IDF table over the corpus of this crop's disease symptom tokens
+  const docFreq = new Map();
+  for (const symList of normDiseaseSymptoms) {
+    const seen = new Set();
+    for (const s of symList) {
+      for (const t of tokenizeSymptomText(s)) seen.add(t);
+    }
+    for (const t of seen) docFreq.set(t, (docFreq.get(t) || 0) + 1);
+  }
+  const N = Math.max(diseases.length, 1);
+  const idf = new Map();
+  for (const [t, df] of docFreq) idf.set(t, Math.log((N + 1) / (df + 0.5)));
+
+  const results = diseases.map((disease, di) => {
+    const symNorms = normDiseaseSymptoms[di];
+    const matchedSymptoms = [];
+    const coveredSymFlags = new Array(symNorms.length).fill(false);
+    let userEvidenceWeight = 0;
+    let matchedUserWeight = 0;
+
+    for (let ui = 0; ui < userSymptoms.length; ui++) {
+      const u = normUser[ui];
+      if (!u) continue;
+      const uTokens = new Set(tokenizeSymptomText(u));
+      const uWeight = [...uTokens].reduce((acc, t) => acc + (idf.get(t) || 1), 0);
+      userEvidenceWeight += uWeight;
+
+      // Best-matching disease symptom for this user symptom
+      let bestIdx = -1;
+      let bestScore = 0;
+      for (let si = 0; si < symNorms.length; si++) {
+        const s = symNorms[si];
+        const direct = u.includes(s) || s.includes(u);
+        const overlap = weightedOverlap(u, s, idf);
+        const score = direct ? Math.max(1, overlap) : overlap;
+        if (score > bestScore) {
+          bestScore = score;
+          bestIdx = si;
+        }
+      }
+
+      // Accept match at a discriminating threshold (was: any substring hit)
+      if (bestIdx >= 0 && bestScore >= 0.34) {
+        matchedUserWeight += uWeight;
+        if (!coveredSymFlags[bestIdx]) {
+          coveredSymFlags[bestIdx] = true;
+          matchedSymptoms.push(disease.symptoms[bestIdx]);
         }
       }
     }
 
-    const maxScore = disease.symptoms.length;
-    const matchRatio = maxScore > 0 ? matchCount / maxScore : 0;
+    const coverageOfDisease =
+      symNorms.length > 0 ? coveredSymFlags.filter(Boolean).length / symNorms.length : 0;
+    const coverageOfUser = userEvidenceWeight > 0 ? matchedUserWeight / userEvidenceWeight : 0;
+
+    // F1-style blend: rewards explaining the farmer's evidence AND hitting a
+    // meaningful share of the disease's signature symptoms.
+    const matchRatio =
+      coverageOfDisease + coverageOfUser > 0
+        ? (2 * coverageOfDisease * coverageOfUser) / (coverageOfDisease + coverageOfUser)
+        : 0;
 
     return {
       disease,
-      score: matchCount,
-      maxScore,
+      score: coveredSymFlags.filter(Boolean).length,
+      maxScore: disease.symptoms.length,
       matchRatio,
+      coverageOfUser,
+      coverageOfDisease,
       matchedSymptoms,
     };
   });
 
-  // Sort by match ratio descending, then by score descending
+  // Rank: blended ratio first, then absolute match count as tie-breaker
   results.sort((a, b) => {
-    if (b.matchRatio !== a.matchRatio) return b.matchRatio - a.matchRatio;
+    if (Math.abs(b.matchRatio - a.matchRatio) > 1e-9) return b.matchRatio - a.matchRatio;
     return b.score - a.score;
   });
 
@@ -1197,6 +1463,7 @@ export function matchDiseasesBySymptoms(cropInput, userSymptoms) {
 
 /**
  * Check if two symptom strings share enough keyword overlap to be considered a match
+ * Kept for backward compatibility; now normalization-aware.
  * @param {string} a - First symptom string (lowercased)
  * @param {string} b - Second symptom string (lowercased)
  * @returns {boolean} - True if significant overlap

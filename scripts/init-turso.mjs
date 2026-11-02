@@ -86,6 +86,7 @@ async function main() {
     "presence_log",
     "diagnoses",
     "outbreak_reports",
+    "market_prices"
   ];
 
   const tablesResult = await db.execute(

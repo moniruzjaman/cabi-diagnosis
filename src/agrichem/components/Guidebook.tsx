@@ -17,6 +17,7 @@ import {
 import { exportCropGuidePDF } from '../utils/pdfExport';
 import { MOA_DATABASE } from '../data/moaData';
 import { useLanguage } from '../context/LanguageContext';
+import { SourceDisclaimer } from './SourceDisclaimer';
 
 interface GuidebookProps {
   products: ChemicalProduct[];
@@ -507,6 +508,9 @@ export const Guidebook: React.FC<GuidebookProps> = ({ products }) => {
           </div>
         </div>
       )}
+
+      {/* Source attribution — DAE registry citation */}
+      <SourceDisclaimer variant="compact" />
     </div>
   );
 };
