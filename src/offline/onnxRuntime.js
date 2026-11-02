@@ -2,14 +2,13 @@ import ort from "onnxruntime-web";
 
 export const ortNs = ort && ort.InferenceSession ? ort : ort && ort.default ? ort.default : ort;
 
-export const ORT_WASM_PATHS = "/assets/";
 export const IMAGENET_MEAN = [0.485, 0.456, 0.406];
 export const IMAGENET_STD = [0.229, 0.224, 0.225];
 
 export function configureOrt() {
-  if (ortNs?.env?.wasm) {
-    ortNs.env.wasm.wasmPaths = ORT_WASM_PATHS;
-  }
+  if (!ortNs?.env?.wasm) return;
+  ortNs.env.wasm.numThreads = 1;
+  ortNs.env.wasm.proxy = false;
 }
 
 export function softmax(logits) {

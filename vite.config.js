@@ -21,15 +21,12 @@ import { resolve } from "path";
 function stripCrossoriginFromScriptsAndStyles(html) {
   // Remove crossorigin from <script type="module"> tags
   // e.g. <script type="module" crossorigin src="..."> → <script type="module" src="...">
-  html = html.replace(
-    /(<script\b[^>]*?)\s+crossorigin(?:\s*=\s*(?:"[^"]*"|'[^']*'))?([^>]*?>)/gi,
-    "$1$2"
-  );
+  html = html.replace(/(<script\b[^>]*?)\s+crossorigin(?:\s*=\s*(?:"[^"]*"|'[^']*'))?([^>]*?>)/gi, "$1$2");
   // Remove crossorigin from <link rel="stylesheet"> tags ONLY
   // (keep crossorigin on <link rel="preconnect"> for Google Fonts — it's required)
   html = html.replace(
     /(<link\b[^>]*?rel\s*=\s*(?:"stylesheet"|'stylesheet')[^>]*?)\s+crossorigin(?:\s*=\s*(?:"[^"]*"|'[^']*'))?([^>]*?(?:\/>|>))/gi,
-    "$1$2"
+    "$1$2",
   );
   return html;
 }
@@ -83,7 +80,12 @@ export default defineConfig({
       output: {
         entryFileNames: "assets/[name]-[hash].js",
         chunkFileNames: "assets/[name]-[hash].js",
-        assetFileNames: "assets/[name]-[hash].[ext]",
+        assetFileNames(assetInfo) {
+          if (assetInfo.name && assetInfo.name.endsWith(".wasm")) {
+            return "assets/[name][extname]";
+          }
+          return "assets/[name]-[hash].[ext]";
+        },
         // Split large vendor deps into their own cached chunks
         manualChunks(id) {
           if (id.includes("node_modules")) {

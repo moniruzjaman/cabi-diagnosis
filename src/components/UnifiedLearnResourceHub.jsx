@@ -139,7 +139,11 @@ function AudioPodcastPlayer({ title, id, desc, C }) {
         gap: 12,
       }}
     >
-      <audio ref={audioRef} src={`https://docs.google.com/uc?export=download&id=${extractDriveId(id)}`} preload="metadata" />
+      <audio
+        ref={audioRef}
+        src={`https://docs.google.com/uc?export=download&id=${extractDriveId(id)}`}
+        preload="metadata"
+      />
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div
@@ -417,7 +421,8 @@ export default function UnifiedLearnResourceHub({
         probableCause: "ব্যাকটেরিয়াজনিত পচন বা ব্লাইট (Bacterial Soft Rot / Blight)",
         badge: "ব্যাকটেরিয়া",
         color: "#ea580c",
-        exclusionNote: "কাঁচের মতো পানিভেজা কিনারা ও দুর্গন্ধযুক্ত পচন ব্যাকটেরিয়ার প্রধান লক্ষণ। এটি সাধারণ শুষ্ক ছত্রাক দাগ নয়।",
+        exclusionNote:
+          "কাঁচের মতো পানিভেজা কিনারা ও দুর্গন্ধযুক্ত পচন ব্যাকটেরিয়ার প্রধান লক্ষণ। এটি সাধারণ শুষ্ক ছত্রাক দাগ নয়।",
         actionSteps: [
           "আক্রান্ত গাছের অংশ সাবধানে কেটে ফেলে বিনষ্ট করুন",
           "ইউরিয়া সারের মাত্রা কমিয়ে পটাশিয়াম ও জিপসাম প্রয়োগ করুন",
@@ -425,7 +430,8 @@ export default function UnifiedLearnResourceHub({
           "প্রয়োজনে কপার অক্সিক্লোরাইড (যেমন: কুপ্রোফিক্স বা চ্যাম্পিয়ন) ২ গ্রাম/লিটার হারে স্প্রে করুন",
         ],
         triangleLink: "আর্দ্রতা নিয়ন্ত্রণ ও রোগ প্রতিরোধী জাত নির্বাচন করে অনুকূল পরিবেশ ভাঙুন",
-        ttsText: "সম্ভাব্য কারণ ব্যাকটেরিয়াজনিত রোগ। পানিভেজা লক্ষণ ও দুর্গন্ধ ব্যাকটেরিয়ার বৈশিষ্ট্য। অতিরিক্ত নাইট্রোজেন পরিহার করে পানি নিষ্কাশন করুন এবং কপারযুক্ত ছত্রাকনাশক ব্যবহার করুন।",
+        ttsText:
+          "সম্ভাব্য কারণ ব্যাকটেরিয়াজনিত রোগ। পানিভেজা লক্ষণ ও দুর্গন্ধ ব্যাকটেরিয়ার বৈশিষ্ট্য। অতিরিক্ত নাইট্রোজেন পরিহার করে পানি নিষ্কাশন করুন এবং কপারযুক্ত ছত্রাকনাশক ব্যবহার করুন।",
       };
     }
     if (flowchartSymptom === "curling_yellow") {
@@ -434,7 +440,8 @@ export default function UnifiedLearnResourceHub({
           probableCause: "ভাইরাসজনিত পাতা কুঁকড়ানো বা মোজাইক (Viral Mosaic via Whitefly / Vector)",
           badge: "ভাইরাস ও ভেক্টর",
           color: "#7c3aed",
-          exclusionNote: "কচি পাতায় শিরা হলুদ, মোজাইক বা কুঁচকানো ভাইরাসের বৈশিষ্ট্য। ছত্রাকনাশক দিলে কোনো কাজ হবে না, বাহক পোকা দমন জরুরি।",
+          exclusionNote:
+            "কচি পাতায় শিরা হলুদ, মোজাইক বা কুঁচকানো ভাইরাসের বৈশিষ্ট্য। ছত্রাকনাশক দিলে কোনো কাজ হবে না, বাহক পোকা দমন জরুরি।",
           actionSteps: [
             "আক্রান্ত চারা বা গাছ সাথে সাথে উপড়ে মাটিচাপা দিন",
             "হলুদ আঠালো ফাঁদ (Yellow Sticky Trap) প্রতি শতকে ২টি করে টানান",
@@ -442,7 +449,8 @@ export default function UnifiedLearnResourceHub({
             "ভাইরাসমুক্ত সুস্থ বীজ ও রোগ প্রতিরোধী জাত ব্যবহার করুন",
           ],
           triangleLink: "বাহক পোকা দমন করে সংক্রমণের চক্র ছিন্ন করুন",
-          ttsText: "সম্ভাব্য কারণ ভাইরাসজনিত রোগ। কচি পাতার মোজাইক বা কুঁকড়ানো সাদা মাছি বা জাবপোকা ছড়ায়। আক্রান্ত গাছ ধ্বংস করুন এবং হলুদ আঠালো ফাঁদ ব্যবহার করুন।",
+          ttsText:
+            "সম্ভাব্য কারণ ভাইরাসজনিত রোগ। কচি পাতার মোজাইক বা কুঁকড়ানো সাদা মাছি বা জাবপোকা ছড়ায়। আক্রান্ত গাছ ধ্বংস করুন এবং হলুদ আঠালো ফাঁদ ব্যবহার করুন।",
         };
       } else {
         return {
@@ -457,7 +465,8 @@ export default function UnifiedLearnResourceHub({
             "মাটির পিএইচ (pH) ও আর্দ্রতা সুষম রাখুন",
           ],
           triangleLink: "গাছকে পুষ্টিকর ও রোগ প্রতিরোধক্ষম রাখতে সুষম সার দিন",
-          ttsText: "সম্ভাব্য কারণ পুষ্টি ঘাটতি। এটি কোনো রোগজীবাণু নয়। পুরনো পাতা হলুদ হলে নাইট্রোজেন বা পটাশের অভাব। সুষম সার প্রয়োগ করুন।",
+          ttsText:
+            "সম্ভাব্য কারণ পুষ্টি ঘাটতি। এটি কোনো রোগজীবাণু নয়। পুরনো পাতা হলুদ হলে নাইট্রোজেন বা পটাশের অভাব। সুষম সার প্রয়োগ করুন।",
         };
       }
     }
@@ -466,7 +475,8 @@ export default function UnifiedLearnResourceHub({
         probableCause: "চর্বণকারী বা ছিদ্রকারী ক্ষতিকারক পোকা (Chewing Insect / Borer / Caterpillar)",
         badge: "পোকার আক্রমণ",
         color: "#dc2626",
-        exclusionNote: "পাতায় অনিয়মিত কাটা অংশ, কাণ্ডে ছিদ্র ও কাঠের মতো মল পোকার সুস্পষ্ট চিহ্ন। কোনো স্প্রে করার আগে ETL ক্ষয়ক্ষতির মাত্রা গুনুন।",
+        exclusionNote:
+          "পাতায় অনিয়মিত কাটা অংশ, কাণ্ডে ছিদ্র ও কাঠের মতো মল পোকার সুস্পষ্ট চিহ্ন। কোনো স্প্রে করার আগে ETL ক্ষয়ক্ষতির মাত্রা গুনুন।",
         actionSteps: [
           "হাত দিয়ে ডিমের গাদা ও পোকার কীড়া সংগ্রহ করে ধ্বংস করুন",
           "মাঠে আলোক ফাঁদ ও ফেরোমোন ফাঁদ স্থাপন করুন",
@@ -474,7 +484,8 @@ export default function UnifiedLearnResourceHub({
           "ETL অতিক্রম করলে অনুমোদিত বালাইনাশক নির্দেশিকা মেনে স্প্রে করুন",
         ],
         triangleLink: "আলোক ফাঁদ ও বন্ধু পোকা বাড়িয়ে পোকার বংশবৃদ্ধি থামান",
-        ttsText: "সম্ভাব্য কারণ ছিদ্রকারী বা চর্বণকারী পোকা। কাণ্ড বা পাতার ছিদ্রে মল দেখলে মাজরা বা লেদা পোকা নিশ্চিত। আলোক ফাঁদ ব্যবহার করুন।",
+        ttsText:
+          "সম্ভাব্য কারণ ছিদ্রকারী বা চর্বণকারী পোকা। কাণ্ড বা পাতার ছিদ্রে মল দেখলে মাজরা বা লেদা পোকা নিশ্চিত। আলোক ফাঁদ ব্যবহার করুন।",
       };
     }
     // Default: Spots (Fungal)
@@ -482,7 +493,8 @@ export default function UnifiedLearnResourceHub({
       probableCause: "ছত্রাকজনিত পাতা বা কাণ্ডের দাগ/ঝলসা (Fungal Leaf Blight / Blast / Spot)",
       badge: "ছত্রাকজনিত",
       color: "#2563eb",
-      exclusionNote: "গোলাকার বা চোখের মতো স্পষ্ট সীমানাযুক্ত দাগ এবং কুয়াশাচ্ছন্ন আবহাওয়ায় বিস্তার ছত্রাকের নিশ্চিত লক্ষণ।",
+      exclusionNote:
+        "গোলাকার বা চোখের মতো স্পষ্ট সীমানাযুক্ত দাগ এবং কুয়াশাচ্ছন্ন আবহাওয়ায় বিস্তার ছত্রাকের নিশ্চিত লক্ষণ।",
       actionSteps: [
         "গাছের নিচের শুকনো ও দাগযুক্ত পাতা ছেঁটে দিন যাতে বাতাস চলাচল বাড়ে",
         "ভোরে বা স্যাঁতসেঁতে অবস্থায় জমিতে কাজ করা পরিহার করুন",
@@ -490,7 +502,8 @@ export default function UnifiedLearnResourceHub({
         "তীব্র হলে ট্রাইসাইক্লাজোল বা ডাইফেনোকোনাজল নির্দেশিত মাত্রায় স্প্রে করুন",
       ],
       triangleLink: "বাতাস চলাচল বাড়িয়ে আর্দ্রতা কমিয়ে ছত্রাকের অনুকূল পরিবেশ নষ্ট করুন",
-      ttsText: "সম্ভাব্য কারণ ছত্রাকজনিত দাগ বা ব্লাইট। কুয়াশা ও স্যাঁতসেঁতে আবহাওয়া ছত্রাকের জন্য অনুকূল। গাছের নিচ পরিষ্কার রাখুন এবং অনুমোদিত ছত্রাকনাশক ব্যবহার করুন।",
+      ttsText:
+        "সম্ভাব্য কারণ ছত্রাকজনিত দাগ বা ব্লাইট। কুয়াশা ও স্যাঁতসেঁতে আবহাওয়া ছত্রাকের জন্য অনুকূল। গাছের নিচ পরিষ্কার রাখুন এবং অনুমোদিত ছত্রাকনাশক ব্যবহার করুন।",
     };
   };
 
@@ -538,7 +551,13 @@ export default function UnifiedLearnResourceHub({
           subOption: "triangle",
         });
       }
-      if ("etl".includes(q) || "ক্ষতি".includes(q) || "পোকা".includes(q) || "মাত্রা".includes(q) || "মাজরা".includes(q)) {
+      if (
+        "etl".includes(q) ||
+        "ক্ষতি".includes(q) ||
+        "পোকা".includes(q) ||
+        "মাত্রা".includes(q) ||
+        "মাজরা".includes(q)
+      ) {
         results.push({
           type: "science",
           title: "অর্থনৈতিক ক্ষতির মাত্রা (ETL Database)",
@@ -550,7 +569,13 @@ export default function UnifiedLearnResourceHub({
           subOption: "etl",
         });
       }
-      if ("পুষ্টি".includes(q) || "নাইট্রোজেন".includes(q) || "পটাশিয়াম".includes(q) || "ঘাটতি".includes(q) || "সার".includes(q)) {
+      if (
+        "পুষ্টি".includes(q) ||
+        "নাইট্রোজেন".includes(q) ||
+        "পটাশিয়াম".includes(q) ||
+        "ঘাটতি".includes(q) ||
+        "সার".includes(q)
+      ) {
         results.push({
           type: "science",
           title: "পুষ্টি অভাব বনাম রোগ (Nutrient vs Disease)",
@@ -574,7 +599,13 @@ export default function UnifiedLearnResourceHub({
           subOption: "ipm",
         });
       }
-      if ("বালাইনাশক".includes(q) || "moa".includes(q) || "frac".includes(q) || "irac".includes(q) || "ঘূর্ণন".includes(q)) {
+      if (
+        "বালাইনাশক".includes(q) ||
+        "moa".includes(q) ||
+        "frac".includes(q) ||
+        "irac".includes(q) ||
+        "ঘূর্ণন".includes(q)
+      ) {
         results.push({
           type: "science",
           title: "বালাইনাশক প্রতিরোধ ব্যবস্থাপনা (MoA & Rotation)",
@@ -586,7 +617,13 @@ export default function UnifiedLearnResourceHub({
           subOption: "resistance",
         });
       }
-      if ("এটলাস".includes(q) || "ছবি".includes(q) || "গ্যালারি".includes(q) || "atlas".includes(q) || "চিত্র".includes(q)) {
+      if (
+        "এটলাস".includes(q) ||
+        "ছবি".includes(q) ||
+        "গ্যালারি".includes(q) ||
+        "atlas".includes(q) ||
+        "চিত্র".includes(q)
+      ) {
         results.push({
           type: "science",
           title: "ভিজ্যুয়াল রোগ এটলাস (Visual Reference Atlas)",
@@ -726,7 +763,9 @@ export default function UnifiedLearnResourceHub({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingBottom: 24, animation: "fadeIn 0.3s ease" }}>
+    <div
+      style={{ display: "flex", flexDirection: "column", gap: 16, paddingBottom: 24, animation: "fadeIn 0.3s ease" }}
+    >
       {/* ── UNIFIED HUB BANNER ── */}
       <div
         className="ud-editorial-shadow"
@@ -741,14 +780,28 @@ export default function UnifiedLearnResourceHub({
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14 }}>
           <div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.15)", padding: "4px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, marginBottom: 8, letterSpacing: 0.5 }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                background: "rgba(255,255,255,0.15)",
+                padding: "4px 10px",
+                borderRadius: 999,
+                fontSize: 11,
+                fontWeight: 700,
+                marginBottom: 8,
+                letterSpacing: 0.5,
+              }}
+            >
               <span>🌱</span> CABI PLANTWISE সমন্বিত শিক্ষা ও রিসোর্স
             </div>
             <h1 className="ud-headline" style={{ fontWeight: 900, fontSize: 22, margin: "0 0 6px 0", color: "#fff" }}>
               জ্ঞান, উপলব্ধি ও অনুশীলনের পূর্ণাঙ্গ ভান্ডার
             </h1>
             <p style={{ margin: 0, fontSize: 12.5, opacity: 0.9, lineHeight: 1.6, maxWidth: 640 }}>
-              ধাপে ধাপে পদ্ধতি শিখুন, বৈজ্ঞানিক ধারণার গভীরে যান, ভিডিও ও অডিওর মাধ্যমে স্পষ্ট ধারণা নিন এবং ৫টি ইন্টারেক্টিভ গেম খেলে নিজের সিদ্ধান্ত গ্রহণের দক্ষতা বাড়ান।
+              ধাপে ধাপে পদ্ধতি শিখুন, বৈজ্ঞানিক ধারণার গভীরে যান, ভিডিও ও অডিওর মাধ্যমে স্পষ্ট ধারণা নিন এবং ৫টি
+              ইন্টারেক্টিভ গেম খেলে নিজের সিদ্ধান্ত গ্রহণের দক্ষতা বাড়ান।
             </p>
           </div>
 
@@ -760,7 +813,7 @@ export default function UnifiedLearnResourceHub({
                 } else {
                   speak(
                     "সমন্বিত শিক্ষা ও রিসোর্স ভান্ডারে স্বাগতম। এখানে চারটি মূল স্তম্ভ রয়েছে। প্রথমত ৫-ধাপ প্রোটোকল শিখুন। দ্বিতীয়ত রোগতত্ত্ব ও বিজ্ঞান উপলব্ধি করুন। তৃতীয়ত অডিও-ভিজুয়াল ভিডিও দেখুন। এবং চতুর্থত ৫টি ইন্টারঅ্যাক্টিভ গেম খেলে নিজেকে দক্ষ করে তুলুন।",
-                    { prependFriendly: true }
+                    { prependFriendly: true },
                   );
                 }
               }}
@@ -860,9 +913,7 @@ export default function UnifiedLearnResourceHub({
       >
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 700, color: C.text }}>
           <span>🌟 আপনার শিক্ষা অগ্রগতি:</span>
-          <span style={{ color: C.primary, fontWeight: 800 }}>
-            {visitedPillars.length} / ৪ স্তম্ভ অন্বেষণ
-          </span>
+          <span style={{ color: C.primary, fontWeight: 800 }}>{visitedPillars.length} / ৪ স্তম্ভ অন্বেষণ</span>
         </div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {[
@@ -882,7 +933,7 @@ export default function UnifiedLearnResourceHub({
                   padding: "3px 8px",
                   borderRadius: 999,
                   background: isUnlocked ? C.bgSuccess || "rgba(22,163,74,0.12)" : C.bgMuted,
-                  color: isUnlocked ? (C.success || "#15803d") : C.textMuted,
+                  color: isUnlocked ? C.success || "#15803d" : C.textMuted,
                   fontWeight: 700,
                   fontSize: 10.5,
                   border: `1px solid ${isUnlocked ? "rgba(22,163,74,0.3)" : C.border}`,
@@ -1035,12 +1086,8 @@ export default function UnifiedLearnResourceHub({
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <span style={{ fontSize: 20 }}>{res.icon}</span>
                         <div>
-                          <div style={{ fontWeight: 800, fontSize: 12.5, color: C.text }}>
-                            {res.title}
-                          </div>
-                          <div style={{ fontSize: 11, color: C.textMuted }}>
-                            {res.subtitle}
-                          </div>
+                          <div style={{ fontWeight: 800, fontSize: 12.5, color: C.text }}>{res.title}</div>
+                          <div style={{ fontSize: 11, color: C.textMuted }}>{res.subtitle}</div>
                         </div>
                       </div>
                       <span
@@ -1083,7 +1130,15 @@ export default function UnifiedLearnResourceHub({
               gap: 12,
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                flexWrap: "wrap",
+                gap: 10,
+              }}
+            >
               <div>
                 <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark }}>
                   CABI ৫-ধাপ রোগ নির্ণয় প্রোটোকল ও সিদ্ধান্ত ইঞ্জিন
@@ -1172,195 +1227,210 @@ export default function UnifiedLearnResourceHub({
           {/* SUB-VIEW 1: 5-STEP PROTOCOL ACCORDION */}
           {learningSubView === "protocol" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {CABI_PROTOCOL_STEPS.map((s) => {
-              const isExpanded = expandedStep === s.stepNumber;
-              return (
-                <div
-                  key={s.id}
-                  style={{
-                    background: C.bgCard,
-                    borderRadius: 18,
-                    border: `1.5px solid ${isExpanded ? s.color : C.border}`,
-                    boxShadow: isExpanded ? `0 6px 20px ${s.color}25` : C.shadow,
-                    overflow: "hidden",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  {/* Step Card Header */}
+              {CABI_PROTOCOL_STEPS.map((s) => {
+                const isExpanded = expandedStep === s.stepNumber;
+                return (
                   <div
-                    onClick={() => setExpandedStep(isExpanded ? null : s.stepNumber)}
+                    key={s.id}
                     style={{
-                      padding: "16px 18px",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 12,
-                      background: isExpanded ? `${s.color}0c` : "transparent",
+                      background: C.bgCard,
+                      borderRadius: 18,
+                      border: `1.5px solid ${isExpanded ? s.color : C.border}`,
+                      boxShadow: isExpanded ? `0 6px 20px ${s.color}25` : C.shadow,
+                      overflow: "hidden",
+                      transition: "all 0.2s ease",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div
-                        style={{
-                          width: 42,
-                          height: 42,
-                          borderRadius: 12,
-                          background: s.color,
-                          color: "#fff",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 20,
-                          fontWeight: 800,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {s.icon}
-                      </div>
-                      <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                          <span style={{ fontSize: 11, fontWeight: 800, color: s.color, textTransform: "uppercase" }}>
-                            ধাপ {s.num} • {s.en}
-                          </span>
-                        </div>
-                        <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.text }}>
-                          {s.title}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      {ttsSupported && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            speak(`ধাপ ${s.num}: ${s.title}। ${s.desc} অনুসন্ধানের মূল কথা: ${s.inquiry}`, {
-                              prependFriendly: true,
-                            });
-                          }}
+                    {/* Step Card Header */}
+                    <div
+                      onClick={() => setExpandedStep(isExpanded ? null : s.stepNumber)}
+                      style={{
+                        padding: "16px 18px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 12,
+                        background: isExpanded ? `${s.color}0c` : "transparent",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div
                           style={{
-                            background: "transparent",
-                            border: "none",
-                            fontSize: 18,
-                            cursor: "pointer",
-                            padding: 4,
+                            width: 42,
+                            height: 42,
+                            borderRadius: 12,
+                            background: s.color,
+                            color: "#fff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 20,
+                            fontWeight: 800,
+                            flexShrink: 0,
                           }}
-                          title="এই ধাপের বিবরণ শুনুন"
                         >
-                          🔊
-                        </button>
-                      )}
-                      <span style={{ fontSize: 14, color: C.textMuted, transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
-                        ▼
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Step Card Body */}
-                  {isExpanded && (
-                    <div style={{ padding: "0 18px 18px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
-                      <p style={{ margin: 0, fontSize: 13, color: C.textMuted, lineHeight: 1.65 }}>
-                        {s.desc}
-                      </p>
-
-                      {/* Inquiry prompt */}
-                      <div
-                        style={{
-                          background: `${s.color}10`,
-                          borderLeft: `3px solid ${s.color}`,
-                          padding: "10px 14px",
-                          borderRadius: "0 12px 12px 0",
-                          fontSize: 12.5,
-                          color: C.text,
-                        }}
-                      >
-                        <span style={{ fontWeight: 800, color: s.color }}>অনুসন্ধানী প্রশ্ন: </span>
-                        {s.inquiry}
-                      </div>
-
-                      {/* Step Key Points */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        <div style={{ fontSize: 12, fontWeight: 800, color: C.text }}>মাঠে করণীয় পরীক্ষাসমূহ:</div>
-                        {s.points.map((pt, pidx) => (
-                          <div key={pidx} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: C.textMuted, lineHeight: 1.5 }}>
-                            <span style={{ color: s.color, fontWeight: 900 }}>•</span>
-                            <span>{pt}</span>
+                          {s.icon}
+                        </div>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                            <span style={{ fontSize: 11, fontWeight: 800, color: s.color, textTransform: "uppercase" }}>
+                              ধাপ {s.num} • {s.en}
+                            </span>
                           </div>
-                        ))}
+                          <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.text }}>
+                            {s.title}
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Cross-Pillar Bridges */}
-                      <div
-                        style={{
-                          background: C.bgMuted,
-                          borderRadius: 14,
-                          padding: 12,
-                          display: "flex",
-                          flexWrap: "wrap",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 10,
-                          border: `1px solid ${C.border}`,
-                        }}
-                      >
-                        <div style={{ fontSize: 11.5, fontWeight: 700, color: C.textMuted }}>
-                          এই ধাপের সহায়ক টুলস:
-                        </div>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        {ttsSupported && (
                           <button
-                            onClick={() => jumpToPillar("audiovisuals", s.videoCategoryId)}
-                            style={{
-                              padding: "6px 11px",
-                              borderRadius: 8,
-                              background: C.bgCard,
-                              border: `1px solid ${C.border}`,
-                              fontSize: 11.5,
-                              fontWeight: 700,
-                              color: "#2563eb",
-                              cursor: "pointer",
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              speak(`ধাপ ${s.num}: ${s.title}। ${s.desc} অনুসন্ধানের মূল কথা: ${s.inquiry}`, {
+                                prependFriendly: true,
+                              });
                             }}
-                          >
-                            🎬 ভিডিও টিউটোরিয়াল
-                          </button>
-                          <button
-                            onClick={() => jumpToPillar("understanding", "atlas")}
                             style={{
-                              padding: "6px 11px",
-                              borderRadius: 8,
-                              background: C.bgCard,
-                              border: `1px solid ${C.border}`,
-                              fontSize: 11.5,
-                              fontWeight: 700,
-                              color: "#7c3aed",
-                              cursor: "pointer",
-                            }}
-                          >
-                            🖼️ ভিজ্যুয়াল লক্ষণ গ্যালারি
-                          </button>
-                          <button
-                            onClick={() => jumpToPillar("practice", s.gameId)}
-                            style={{
-                              padding: "6px 11px",
-                              borderRadius: 8,
-                              background: "linear-gradient(135deg,#16a34a,#15803d)",
+                              background: "transparent",
                               border: "none",
-                              color: "#fff",
-                              fontSize: 11.5,
-                              fontWeight: 700,
+                              fontSize: 18,
                               cursor: "pointer",
-                              boxShadow: "0 2px 6px rgba(22,163,74,0.3)",
+                              padding: 4,
                             }}
+                            title="এই ধাপের বিবরণ শুনুন"
                           >
-                            🎮 {s.gameTitle} খেলুন
+                            🔊
                           </button>
-                        </div>
+                        )}
+                        <span
+                          style={{
+                            fontSize: 14,
+                            color: C.textMuted,
+                            transform: isExpanded ? "rotate(180deg)" : "none",
+                            transition: "transform 0.2s",
+                          }}
+                        >
+                          ▼
+                        </span>
                       </div>
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+
+                    {/* Step Card Body */}
+                    {isExpanded && (
+                      <div style={{ padding: "0 18px 18px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
+                        <p style={{ margin: 0, fontSize: 13, color: C.textMuted, lineHeight: 1.65 }}>{s.desc}</p>
+
+                        {/* Inquiry prompt */}
+                        <div
+                          style={{
+                            background: `${s.color}10`,
+                            borderLeft: `3px solid ${s.color}`,
+                            padding: "10px 14px",
+                            borderRadius: "0 12px 12px 0",
+                            fontSize: 12.5,
+                            color: C.text,
+                          }}
+                        >
+                          <span style={{ fontWeight: 800, color: s.color }}>অনুসন্ধানী প্রশ্ন: </span>
+                          {s.inquiry}
+                        </div>
+
+                        {/* Step Key Points */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          <div style={{ fontSize: 12, fontWeight: 800, color: C.text }}>মাঠে করণীয় পরীক্ষাসমূহ:</div>
+                          {s.points.map((pt, pidx) => (
+                            <div
+                              key={pidx}
+                              style={{
+                                display: "flex",
+                                alignItems: "flex-start",
+                                gap: 8,
+                                fontSize: 12,
+                                color: C.textMuted,
+                                lineHeight: 1.5,
+                              }}
+                            >
+                              <span style={{ color: s.color, fontWeight: 900 }}>•</span>
+                              <span>{pt}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Cross-Pillar Bridges */}
+                        <div
+                          style={{
+                            background: C.bgMuted,
+                            borderRadius: 14,
+                            padding: 12,
+                            display: "flex",
+                            flexWrap: "wrap",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 10,
+                            border: `1px solid ${C.border}`,
+                          }}
+                        >
+                          <div style={{ fontSize: 11.5, fontWeight: 700, color: C.textMuted }}>
+                            এই ধাপের সহায়ক টুলস:
+                          </div>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                            <button
+                              onClick={() => jumpToPillar("audiovisuals", s.videoCategoryId)}
+                              style={{
+                                padding: "6px 11px",
+                                borderRadius: 8,
+                                background: C.bgCard,
+                                border: `1px solid ${C.border}`,
+                                fontSize: 11.5,
+                                fontWeight: 700,
+                                color: "#2563eb",
+                                cursor: "pointer",
+                              }}
+                            >
+                              🎬 ভিডিও টিউটোরিয়াল
+                            </button>
+                            <button
+                              onClick={() => jumpToPillar("understanding", "atlas")}
+                              style={{
+                                padding: "6px 11px",
+                                borderRadius: 8,
+                                background: C.bgCard,
+                                border: `1px solid ${C.border}`,
+                                fontSize: 11.5,
+                                fontWeight: 700,
+                                color: "#7c3aed",
+                                cursor: "pointer",
+                              }}
+                            >
+                              🖼️ ভিজ্যুয়াল লক্ষণ গ্যালারি
+                            </button>
+                            <button
+                              onClick={() => jumpToPillar("practice", s.gameId)}
+                              style={{
+                                padding: "6px 11px",
+                                borderRadius: 8,
+                                background: "linear-gradient(135deg,#16a34a,#15803d)",
+                                border: "none",
+                                color: "#fff",
+                                fontSize: 11.5,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                boxShadow: "0 2px 6px rgba(22,163,74,0.3)",
+                              }}
+                            >
+                              🎮 {s.gameTitle} খেলুন
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
 
           {/* SUB-VIEW 2: INTERACTIVE DECISION FLOWCHART WIZARD */}
@@ -1384,7 +1454,8 @@ export default function UnifiedLearnResourceHub({
                     🎯 মাঠ লক্ষণ নির্বাচন করুন (৪-ধাপ সিদ্ধান্ত প্রবাহচিত্র)
                   </div>
                   <div style={{ fontSize: 12, color: C.textMuted }}>
-                    গাছের আক্রান্ত অংশ, দৃশ্যমান লক্ষণ, বিস্তৃতির প্যাটার্ন ও আবহাওয়া নির্বাচন করে সঠিক কারণ ও প্রেসক্রিপশন পান
+                    গাছের আক্রান্ত অংশ, দৃশ্যমান লক্ষণ, বিস্তৃতির প্যাটার্ন ও আবহাওয়া নির্বাচন করে সঠিক কারণ ও
+                    প্রেসক্রিপশন পান
                   </div>
                 </div>
 
@@ -1551,7 +1622,15 @@ export default function UnifiedLearnResourceHub({
                       gap: 12,
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, flexWrap: "wrap" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
                       <div>
                         <span
                           style={{
@@ -1565,7 +1644,10 @@ export default function UnifiedLearnResourceHub({
                         >
                           {diag.badge}
                         </span>
-                        <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.text, marginTop: 4 }}>
+                        <div
+                          className="ud-headline"
+                          style={{ fontWeight: 800, fontSize: 16, color: C.text, marginTop: 4 }}
+                        >
                           {diag.probableCause}
                         </div>
                       </div>
@@ -1714,7 +1796,15 @@ export default function UnifiedLearnResourceHub({
                   gap: 12,
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    flexWrap: "wrap",
+                    gap: 10,
+                  }}
+                >
                   <div>
                     <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.text }}>
                       📝 মাঠ পরীক্ষার ৮-দফা চেকলিস্ট (Field Inspection Checklist)
@@ -1780,13 +1870,29 @@ export default function UnifiedLearnResourceHub({
                   const pct = Math.round((done / 8) * 100);
                   return (
                     <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, fontWeight: 700, marginBottom: 4 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          fontSize: 11.5,
+                          fontWeight: 700,
+                          marginBottom: 4,
+                        }}
+                      >
                         <span style={{ color: C.text }}>মাঠ প্রস্তুতি ও পরীক্ষা সম্পন্ন:</span>
                         <span style={{ color: done === 8 ? C.success : C.primary }}>
                           {done}/৮ টি সম্পন্ন ({pct}%)
                         </span>
                       </div>
-                      <div style={{ width: "100%", height: 8, background: C.bgMuted, borderRadius: 999, overflow: "hidden" }}>
+                      <div
+                        style={{
+                          width: "100%",
+                          height: 8,
+                          background: C.bgMuted,
+                          borderRadius: 999,
+                          overflow: "hidden",
+                        }}
+                      >
                         <div
                           style={{
                             width: `${pct}%`,
@@ -1937,13 +2043,16 @@ export default function UnifiedLearnResourceHub({
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 8 }}>
                   <div style={{ background: C.bgMuted, padding: "8px 10px", borderRadius: 8 }}>
-                    <strong>১. ভুল ডায়াগনসিস পরিহার:</strong> কখনো ১টি লক্ষণ দেখেই বালাইনাশক সুপারিশ করবেন না। পাতা, কাণ্ড ও গোড়া তিনটাই দেখুন।
+                    <strong>১. ভুল ডায়াগনসিস পরিহার:</strong> কখনো ১টি লক্ষণ দেখেই বালাইনাশক সুপারিশ করবেন না। পাতা,
+                    কাণ্ড ও গোড়া তিনটাই দেখুন।
                   </div>
                   <div style={{ background: C.bgMuted, padding: "8px 10px", borderRadius: 8 }}>
-                    <strong>২. বন্ধু পোকা রক্ষা:</strong> মাকড়সা, লেডিবার্ড বিটল ও ড্রাগনফ্লাই মাঠে থাকলে কীটনাশক স্প্রে করা থেকে বিরত থাকুন।
+                    <strong>২. বন্ধু পোকা রক্ষা:</strong> মাকড়সা, লেডিবার্ড বিটল ও ড্রাগনফ্লাই মাঠে থাকলে কীটনাশক
+                    স্প্রে করা থেকে বিরত থাকুন।
                   </div>
                   <div style={{ background: C.bgMuted, padding: "8px 10px", borderRadius: 8 }}>
-                    <strong>৩. মোড অব অ্যাকশন ঘূর্ণন:</strong> একই গ্রুপের কীটনাশক বা ছত্রাকনাশক পরপর দুইবার স্প্রে করবেন না; FRAC/IRAC কোড বদলান।
+                    <strong>৩. মোড অব অ্যাকশন ঘূর্ণন:</strong> একই গ্রুপের কীটনাশক বা ছত্রাকনাশক পরপর দুইবার স্প্রে
+                    করবেন না; FRAC/IRAC কোড বদলান।
                   </div>
                 </div>
               </div>
@@ -2010,35 +2119,82 @@ export default function UnifiedLearnResourceHub({
                   border: `1px solid ${C.border}`,
                 }}
               >
-                <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 4 }}>
+                <div
+                  className="ud-headline"
+                  style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 4 }}
+                >
                   🔺 রোগ ত্রিভুজ তত্ত্ব (Disease Triangle Concept)
                 </div>
                 <p style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.6, margin: "0 0 14px 0" }}>
-                  উদ্ভিদে কোনো সংক্রামক রোগ হওয়ার জন্য তিনটি শর্তের যুগপৎ উপস্থিতি আবশ্যক: <strong>সংবেদনশীল পোষক</strong> (Susceptible Host), <strong>উগ্র জীবাণু</strong> (Virulent Pathogen), এবং <strong>অনুকূল পরিবেশ</strong> (Favourable Environment)।
+                  উদ্ভিদে কোনো সংক্রামক রোগ হওয়ার জন্য তিনটি শর্তের যুগপৎ উপস্থিতি আবশ্যক:{" "}
+                  <strong>সংবেদনশীল পোষক</strong> (Susceptible Host), <strong>উগ্র জীবাণু</strong> (Virulent Pathogen),
+                  এবং <strong>অনুকূল পরিবেশ</strong> (Favourable Environment)।
                 </p>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-                  <div style={{ background: C.bgInfo, border: `1px solid ${C.borderInfo || C.border}`, padding: 14, borderRadius: 14 }}>
-                    <div style={{ fontWeight: 800, fontSize: 13, color: "#2563eb", marginBottom: 4 }}>🌱 সংবেদনশীল পোষক</div>
+                  <div
+                    style={{
+                      background: C.bgInfo,
+                      border: `1px solid ${C.borderInfo || C.border}`,
+                      padding: 14,
+                      borderRadius: 14,
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, fontSize: 13, color: "#2563eb", marginBottom: 4 }}>
+                      🌱 সংবেদনশীল পোষক
+                    </div>
                     <div style={{ fontSize: 11.5, color: C.textMuted, lineHeight: 1.5 }}>
-                      ফসলের জাতের রোগ প্রতিরোধ ক্ষমতা কম থাকলে অথবা অতিরিক্ত ইউরিয়া প্রয়োগের ফলে কচি নরম টিস্যু তৈরি হলে আক্রমণ বাড়ে।
+                      ফসলের জাতের রোগ প্রতিরোধ ক্ষমতা কম থাকলে অথবা অতিরিক্ত ইউরিয়া প্রয়োগের ফলে কচি নরম টিস্যু তৈরি
+                      হলে আক্রমণ বাড়ে।
                     </div>
                   </div>
-                  <div style={{ background: C.bgWarning, border: `1px solid ${C.borderWarning || C.border}`, padding: 14, borderRadius: 14 }}>
-                    <div style={{ fontWeight: 800, fontSize: 13, color: "#d97706", marginBottom: 4 }}>🦠 উগ্র রোগজীবাণু</div>
+                  <div
+                    style={{
+                      background: C.bgWarning,
+                      border: `1px solid ${C.borderWarning || C.border}`,
+                      padding: 14,
+                      borderRadius: 14,
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, fontSize: 13, color: "#d97706", marginBottom: 4 }}>
+                      🦠 উগ্র রোগজীবাণু
+                    </div>
                     <div style={{ fontSize: 11.5, color: C.textMuted, lineHeight: 1.5 }}>
-                      ছত্রাক, ব্যাকটেরিয়া বা ভাইরাসের উপস্থিতি ও বাতাসে স্পোরের ঘনত্ব। প্রাথমিক আক্রমণ প্রতিরোধে বীজ শোধন জরুরি।
+                      ছত্রাক, ব্যাকটেরিয়া বা ভাইরাসের উপস্থিতি ও বাতাসে স্পোরের ঘনত্ব। প্রাথমিক আক্রমণ প্রতিরোধে বীজ
+                      শোধন জরুরি।
                     </div>
                   </div>
-                  <div style={{ background: C.bgSuccess, border: `1px solid ${C.borderSuccess || C.border}`, padding: 14, borderRadius: 14 }}>
-                    <div style={{ fontWeight: 800, fontSize: 13, color: "#16a34a", marginBottom: 4 }}>🌦️ অনুকূল পরিবেশ</div>
+                  <div
+                    style={{
+                      background: C.bgSuccess,
+                      border: `1px solid ${C.borderSuccess || C.border}`,
+                      padding: 14,
+                      borderRadius: 14,
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, fontSize: 13, color: "#16a34a", marginBottom: 4 }}>
+                      🌦️ অনুকূল পরিবেশ
+                    </div>
                     <div style={{ fontSize: 11.5, color: C.textMuted, lineHeight: 1.5 }}>
-                      উচ্চ আর্দ্রতা (৮৫%+), একটানা কুয়াশা, স্যাঁতসেঁতে মেঘলা দিন বা গুঁড়ি গুঁড়ি বৃষ্টি স্পোর অঙ্কুরোদগমে সহায়তা করে।
+                      উচ্চ আর্দ্রতা (৮৫%+), একটানা কুয়াশা, স্যাঁতসেঁতে মেঘলা দিন বা গুঁড়ি গুঁড়ি বৃষ্টি স্পোর
+                      অঙ্কুরোদগমে সহায়তা করে।
                     </div>
                   </div>
                 </div>
 
-                <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, background: C.bgMuted, padding: "10px 14px", borderRadius: 12 }}>
+                <div
+                  style={{
+                    marginTop: 14,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 10,
+                    background: C.bgMuted,
+                    padding: "10px 14px",
+                    borderRadius: 12,
+                  }}
+                >
                   <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>
                     🎯 ত্রিভুজের যেকোনো একটি উপাদান রুখে দিন — রোগ ছড়াবে না!
                   </span>
@@ -2074,11 +2230,15 @@ export default function UnifiedLearnResourceHub({
                   border: `1px solid ${C.border}`,
                 }}
               >
-                <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 4 }}>
+                <div
+                  className="ud-headline"
+                  style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 4 }}
+                >
                   📊 অর্থনৈতিক ক্ষতির মাত্রা (Economic Threshold Level - ETL)
                 </div>
                 <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 14 }}>
-                  পোকা বা রোগের উপস্থিতি মাত্রেই বিষ নয়! যখন ক্ষতির সম্ভাব্য খরচ বালাইনাশক ব্যয়ের চেয়ে বেশি হয়, তখনই ব্যবস্থা নিন।
+                  পোকা বা রোগের উপস্থিতি মাত্রেই বিষ নয়! যখন ক্ষতির সম্ভাব্য খরচ বালাইনাশক ব্যয়ের চেয়ে বেশি হয়, তখনই
+                  ব্যবস্থা নিন।
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -2095,12 +2255,29 @@ export default function UnifiedLearnResourceHub({
                         gap: 6,
                       }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                          gap: 6,
+                        }}
+                      >
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ fontWeight: 800, fontSize: 14, color: C.text }}>{item.pest}</span>
                           <span style={{ fontSize: 11, color: C.textMuted }}>({item.crop})</span>
                         </div>
-                        <span style={{ fontSize: 11, fontWeight: 800, padding: "2px 8px", borderRadius: 999, background: "#dc262615", color: "#dc2626" }}>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 800,
+                            padding: "2px 8px",
+                            borderRadius: 999,
+                            background: "#dc262615",
+                            color: "#dc2626",
+                          }}
+                        >
                           ETL: {item.etl}
                         </span>
                       </div>
@@ -2147,7 +2324,10 @@ export default function UnifiedLearnResourceHub({
                   border: `1px solid ${C.border}`,
                 }}
               >
-                <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 4 }}>
+                <div
+                  className="ud-headline"
+                  style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 4 }}
+                >
                   🧪 পুষ্টি উপাদানের অভাব বনাম রোগ নির্ণয় গাইড
                 </div>
                 <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 14 }}>
@@ -2170,14 +2350,32 @@ export default function UnifiedLearnResourceHub({
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <span style={{ fontWeight: 800, fontSize: 14, color: C.primaryDark }}>{nut.name}</span>
-                        <span style={{ fontSize: 10.5, fontWeight: 700, background: C.bgInfo, color: "#2563eb", padding: "2px 6px", borderRadius: 6 }}>
+                        <span
+                          style={{
+                            fontSize: 10.5,
+                            fontWeight: 700,
+                            background: C.bgInfo,
+                            color: "#2563eb",
+                            padding: "2px 6px",
+                            borderRadius: 6,
+                          }}
+                        >
                           {nut.position}
                         </span>
                       </div>
                       <div style={{ fontSize: 12, color: C.text, lineHeight: 1.5 }}>
                         <strong>লক্ষণ:</strong> {nut.symptoms}
                       </div>
-                      <div style={{ fontSize: 11.5, color: "#b45309", background: "#fffbeb", padding: "6px 8px", borderRadius: 8, border: "1px solid #fde68a" }}>
+                      <div
+                        style={{
+                          fontSize: 11.5,
+                          color: "#b45309",
+                          background: "#fffbeb",
+                          padding: "6px 8px",
+                          borderRadius: 8,
+                          border: "1px solid #fde68a",
+                        }}
+                      >
                         <strong>রোগের সাথে পার্থক্য:</strong> {nut.vsDisease}
                       </div>
                       <div style={{ fontSize: 11.5, color: C.textMuted }}>
@@ -2202,7 +2400,10 @@ export default function UnifiedLearnResourceHub({
                   border: `1px solid ${C.border}`,
                 }}
               >
-                <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 4 }}>
+                <div
+                  className="ud-headline"
+                  style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 4 }}
+                >
                   🌿 সমন্বিত বালাই ব্যবস্থাপনা (IPM) পিরামিড
                 </div>
                 <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 14 }}>
@@ -2252,7 +2453,16 @@ export default function UnifiedLearnResourceHub({
                   ))}
                 </div>
 
-                <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                <div
+                  style={{
+                    marginTop: 14,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 8,
+                  }}
+                >
                   <button
                     onClick={() => jumpToPillar("audiovisuals", "management")}
                     style={{
@@ -2300,11 +2510,15 @@ export default function UnifiedLearnResourceHub({
                   border: `1px solid ${C.border}`,
                 }}
               >
-                <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 4 }}>
+                <div
+                  className="ud-headline"
+                  style={{ fontWeight: 800, fontSize: 16, color: C.primaryDark, marginBottom: 4 }}
+                >
                   🔄 বালাইনাশক প্রতিরোধ ব্যবস্থাপনা (MoA & Rotation)
                 </div>
                 <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 14 }}>
-                  একই বিষ বারবার দিলে পোকা ও ছত্রাক প্রতিরোধী হয়ে ওঠে। FRAC (ছত্রাকনাশক) ও IRAC (কীটনাশক) কোড পরিবর্তন করে স্প্রে করুন।
+                  একই বিষ বারবার দিলে পোকা ও ছত্রাক প্রতিরোধী হয়ে ওঠে। FRAC (ছত্রাকনাশক) ও IRAC (কীটনাশক) কোড পরিবর্তন
+                  করে স্প্রে করুন।
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -2315,7 +2529,16 @@ export default function UnifiedLearnResourceHub({
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {RESISTANCE_ROTATION_DATA.frac.map((f, fidx) => (
-                        <div key={fidx} style={{ background: C.bgMuted, padding: 10, borderRadius: 10, border: `1px solid ${C.border}`, fontSize: 12 }}>
+                        <div
+                          key={fidx}
+                          style={{
+                            background: C.bgMuted,
+                            padding: 10,
+                            borderRadius: 10,
+                            border: `1px solid ${C.border}`,
+                            fontSize: 12,
+                          }}
+                        >
                           <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}>
                             <span>{f.group}</span>
                             <span style={{ color: f.risk.includes("উচ্চ") ? "#dc2626" : "#16a34a" }}>{f.risk}</span>
@@ -2334,7 +2557,16 @@ export default function UnifiedLearnResourceHub({
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {RESISTANCE_ROTATION_DATA.irac.map((ir, iridx) => (
-                        <div key={iridx} style={{ background: C.bgMuted, padding: 10, borderRadius: 10, border: `1px solid ${C.border}`, fontSize: 12 }}>
+                        <div
+                          key={iridx}
+                          style={{
+                            background: C.bgMuted,
+                            padding: 10,
+                            borderRadius: 10,
+                            border: `1px solid ${C.border}`,
+                            fontSize: 12,
+                          }}
+                        >
                           <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}>
                             <span>{ir.group}</span>
                             <span style={{ color: ir.risk.includes("উচ্চ") ? "#dc2626" : "#16a34a" }}>{ir.risk}</span>
@@ -2518,9 +2750,13 @@ export default function UnifiedLearnResourceHub({
 
               {/* Video List within selected category */}
               {(() => {
-                const currentCat = LIBRARY_MEDIA_DATA.videoCategories.find((c) => c.id === activeVideoCategory) || LIBRARY_MEDIA_DATA.videoCategories[0];
+                const currentCat =
+                  LIBRARY_MEDIA_DATA.videoCategories.find((c) => c.id === activeVideoCategory) ||
+                  LIBRARY_MEDIA_DATA.videoCategories[0];
                 return (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
+                  <div
+                    style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}
+                  >
                     {currentCat.videos.map((vid) => (
                       <div
                         key={vid.id}
@@ -2546,7 +2782,15 @@ export default function UnifiedLearnResourceHub({
                           <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.5 }}>{vid.desc}</div>
                         </div>
 
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            paddingTop: 8,
+                            borderTop: `1px solid ${C.border}`,
+                          }}
+                        >
                           <span style={{ fontSize: 11, color: C.textMuted, fontWeight: 600 }}>{vid.size}</span>
                           <button
                             onClick={() => {
@@ -2799,7 +3043,7 @@ export default function UnifiedLearnResourceHub({
                     onClick={() =>
                       speak(
                         "খেলে অনুশীলন হাবে স্বাগতম। এখানে লক্ষণ লক্ষ্য, কারণ খুঁজো, রোগ ত্রিভুজ, মাঠ পরীক্ষক এবং আইপিএম কমান্ডার নামের পাঁচটি গেম রয়েছে। যেকোনো একটি খেলায় ক্লিক করুন।",
-                        { prependFriendly: true }
+                        { prependFriendly: true },
                       )
                     }
                     style={{
@@ -2837,7 +3081,14 @@ export default function UnifiedLearnResourceHub({
                     }}
                   >
                     <div>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          marginBottom: 8,
+                        }}
+                      >
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                           <div
                             style={{
@@ -2856,7 +3107,9 @@ export default function UnifiedLearnResourceHub({
                             {gm.icon}
                           </div>
                           <div>
-                            <div style={{ fontSize: 10.5, fontWeight: 800, color: gm.color, textTransform: "uppercase" }}>
+                            <div
+                              style={{ fontSize: 10.5, fontWeight: 800, color: gm.color, textTransform: "uppercase" }}
+                            >
                               {gm.focus}
                             </div>
                             <div className="ud-headline" style={{ fontWeight: 800, fontSize: 16, color: C.text }}>
@@ -2864,14 +3117,31 @@ export default function UnifiedLearnResourceHub({
                             </div>
                           </div>
                         </div>
-                        <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: C.bgMuted, color: C.textMuted }}>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            padding: "2px 8px",
+                            borderRadius: 999,
+                            background: C.bgMuted,
+                            color: C.textMuted,
+                          }}
+                        >
                           {gm.difficulty}
                         </span>
                       </div>
                       <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55 }}>{gm.desc}</div>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 10, borderTop: `1px solid ${C.border}` }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        paddingTop: 10,
+                        borderTop: `1px solid ${C.border}`,
+                      }}
+                    >
                       <span style={{ fontSize: 11, color: C.textMuted }}>⏱️ {gm.duration}</span>
                       <button
                         onClick={() => {
@@ -2899,7 +3169,16 @@ export default function UnifiedLearnResourceHub({
 
               {/* External Simulation Scenarios */}
               <div style={{ marginTop: 8 }}>
-                <div style={{ fontSize: 12, fontWeight: 800, color: C.textMuted, textTransform: "uppercase", marginBottom: 8, letterSpacing: 0.5 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color: C.textMuted,
+                    textTransform: "uppercase",
+                    marginBottom: 8,
+                    letterSpacing: 0.5,
+                  }}
+                >
                   🌐 বাহ্যিক প্ল্যান্ট সিমুলেশন মিশন
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
@@ -2952,7 +3231,9 @@ export default function UnifiedLearnResourceHub({
       )}
 
       {/* Quick links to Apps and History */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginTop: 4 }}>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginTop: 4 }}
+      >
         <button
           onClick={() => setActiveTab("apps")}
           style={{

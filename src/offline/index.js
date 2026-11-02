@@ -27,10 +27,7 @@ import {
   getPlantVillageInfo as _getPlantVillageInfo,
   PLANTVILLAGE_LABELS as _PLANTVILLAGE_LABELS,
 } from "./plantVillageClassifier.js";
-import {
-  classifyLeafSmart as _classifyLeafSmart,
-  preloadLeafModels as _preloadLeafModels,
-} from "./leafEnsemble.js";
+import { classifyLeafSmart as _classifyLeafSmart, preloadLeafModels as _preloadLeafModels } from "./leafEnsemble.js";
 import { pickVisionEngine as _pickVisionEngine } from "./visionRouter.js";
 import {
   findCropDiseaseForVitPrediction as _findCropDiseaseForVitPrediction,

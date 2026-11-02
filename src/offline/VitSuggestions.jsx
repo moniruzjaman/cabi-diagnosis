@@ -153,9 +153,12 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
         setSpeakingKey(null);
         return;
       }
-      const text = buildVitAnnouncement(entry) ||
+      const text =
+        buildVitAnnouncement(entry) ||
         [entry.cropBn, entry.diseaseBn].filter(Boolean).join(" ") ||
-        entry.diseaseEn || entry.label || "";
+        entry.diseaseEn ||
+        entry.label ||
+        "";
       if (!text) return;
       speak(text);
       setSpeakingKey(key);
@@ -186,36 +189,40 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
       mq.addEventListener?.("change", cb);
       return () => mq.removeEventListener?.("change", cb);
     },
-    () => (typeof window !== "undefined" && window.matchMedia
-      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      : false),
+    () =>
+      typeof window !== "undefined" && window.matchMedia
+        ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        : false,
     () => false, // SSR fallback
   );
 
-  const run = useCallback(async (src) => {
-    if (!src) return;
-    setState({ status: "loading" });
-    try {
-      // Warm up the model in parallel with image load. First call takes
-      // ~5-15s on a mid-range Android (22 MB download + WASM init).
-      if (!isLeafModelReady(cropHint))
-        preloadLeafModels(cropHint).catch(() => {
-          /* surfaced below */
-        });
-      const result = await classifyLeafSmart(src, { topK: 3, timeoutMs: 45000, cropHint });
-      if (cancelledRef.current) return;
-      if (!result.ok) {
-        setState({ status: "error", error: result.error, code: result.code });
-        return;
+  const run = useCallback(
+    async (src) => {
+      if (!src) return;
+      setState({ status: "loading" });
+      try {
+        // Warm up the model in parallel with image load. First call takes
+        // ~5-15s on a mid-range Android (22 MB download + WASM init).
+        if (!isLeafModelReady(cropHint))
+          preloadLeafModels(cropHint).catch(() => {
+            /* surfaced below */
+          });
+        const result = await classifyLeafSmart(src, { topK: 3, timeoutMs: 45000, cropHint });
+        if (cancelledRef.current) return;
+        if (!result.ok) {
+          setState({ status: "error", error: result.error, code: result.code });
+          return;
+        }
+        setState({ status: "ready", topK: result.topK, inferenceMs: result.inferenceMs });
+        if (typeof onResultRef.current === "function") onResultRef.current(result.topK);
+      } catch (err) {
+        if (!cancelledRef.current) {
+          setState({ status: "error", error: err.message || String(err) });
+        }
       }
-      setState({ status: "ready", topK: result.topK, inferenceMs: result.inferenceMs });
-      if (typeof onResultRef.current === "function") onResultRef.current(result.topK);
-    } catch (err) {
-      if (!cancelledRef.current) {
-        setState({ status: "error", error: err.message || String(err) });
-      }
-    }
-  }, [cropHint]);
+    },
+    [cropHint],
+  );
 
   useEffect(() => {
     cancelledRef.current = false;

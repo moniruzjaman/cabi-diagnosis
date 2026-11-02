@@ -22,10 +22,7 @@ export default async function handler(req, res) {
   }
 
   // Clear the cookie by setting Max-Age=0
-  res.setHeader(
-    "Set-Cookie",
-    `${SESSION_COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`,
-  );
+  res.setHeader("Set-Cookie", `${SESSION_COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`);
 
   return res.status(200).json({ ok: true });
 }

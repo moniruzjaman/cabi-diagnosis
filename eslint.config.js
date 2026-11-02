@@ -25,7 +25,14 @@ export default [
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      "no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern:
+            "^_|VisualDiagnosisLibrary|EnhancedHomeTab|AppsHub|EnhancedLibrarySection|CABIGuideTab|GameHub",
+        },
+      ],
       "no-undef": "error",
       "no-console": "off",
     },

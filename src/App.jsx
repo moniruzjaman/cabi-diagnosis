@@ -16,7 +16,6 @@ import WeatherDecisionSummary from "./components/WeatherDecisionSummary";
 import TodayDecisionView from "./components/TodayDecisionView";
 import OnboardingFlow from "./components/OnboardingFlow";
 import OutbreakList from "./components/OutbreakList";
-import VisualDiagnosisLibrary from "./components/VisualDiagnosisLibrary"; // used by diagnose library tab
 import { HeroStakeholderSection } from "./components/HeroStakeholderSection";
 import UnifiedLearnResourceHub from "./components/UnifiedLearnResourceHub";
 import AgriChemApp from "./agrichem/AgriChemApp";

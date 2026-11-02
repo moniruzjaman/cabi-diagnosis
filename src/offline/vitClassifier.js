@@ -36,12 +36,6 @@ const ortNs = ort && ort.InferenceSession ? ort : ort && ort.default ? ort.defau
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const MODEL_URL = "/models/crop_leaf_diseases_vit.onnx";
-// onnxruntime-web needs to fetch a companion .wasm file at runtime. We point
-// it to the same `/assets/` folder Vite copies the bundled .wasm into. The
-// package's default resolver already looks next to the .mjs bundle, so this
-// is mostly a defensive override for production builds where the resolution
-// rules can differ between Vite versions.
-const ORT_WASM_PATHS = "/assets/";
 const IMAGE_SIZE = 224; // ViT input
 const TOP_K_DEFAULT = 3;
 
@@ -206,11 +200,10 @@ export function preloadModel() {
   if (!_sessionPromise) {
     _sessionPromise = (async () => {
       try {
-        // Hint ORT where to find its WASM files. The default path resolver
-        // (next to the .mjs bundle) usually works out of the box; we set
-        // this explicitly to insulate against Vite bundle-path differences
-        // between dev and production.
-        ortNs.env.wasm.wasmPaths = ORT_WASM_PATHS;
+        if (ortNs.env?.wasm) {
+          ortNs.env.wasm.numThreads = 1;
+          ortNs.env.wasm.proxy = false;
+        }
         const session = await ortNs.InferenceSession.create(MODEL_URL, {
           executionProviders: ["wasm"],
           graphOptimizationLevel: "all",

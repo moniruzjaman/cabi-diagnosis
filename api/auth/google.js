@@ -54,9 +54,7 @@ export default async function handler(req, res) {
   // verification (caches Google's public keys, avoids network round-trip).
   let payload;
   try {
-    const resp = await fetch(
-      `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`,
-    );
+    const resp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
     if (!resp.ok) {
       return res.status(401).json({ error: "Invalid Google token" });
     }

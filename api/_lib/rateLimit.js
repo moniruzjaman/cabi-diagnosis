@@ -29,12 +29,12 @@ function getStore(key) {
 function getUserIdentifier(req) {
   // Try JWT token first
   const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  if (authHeader && authHeader.startsWith("Bearer ")) {
     try {
       const token = authHeader.substring(7);
-      const base64Url = token.split('.')[1];
+      const base64Url = token.split(".")[1];
       if (base64Url) {
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
         const payload = JSON.parse(atob(base64));
         if (payload.sub) {
           return `user:${payload.sub}`;
@@ -44,7 +44,7 @@ function getUserIdentifier(req) {
       // Invalid token, fall back to IP
     }
   }
-  
+
   // Fall back to IP address
   return `ip:${req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.headers["x-real-ip"] || "unknown"}`;
 }
@@ -56,11 +56,11 @@ function getUserIdentifier(req) {
  */
 function getRateLimitTier(req) {
   const authHeader = req.headers.authorization;
-  
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+
+  if (authHeader && authHeader.startsWith("Bearer ")) {
     return { windowMs: 60_000, maxRequests: 30 }; // Authenticated: 30 req/min
   }
-  
+
   return { windowMs: 60_000, maxRequests: 10 }; // Anonymous: 10 req/min
 }
 
@@ -75,7 +75,7 @@ export function createRateLimiter({ windowMs = 60_000, maxRequests = 10 } = {}) 
   return function checkRateLimit(req, res) {
     const userId = getUserIdentifier(req);
     const tier = getRateLimitTier(req);
-    
+
     const now = Date.now();
     const store = getStore(userId);
 
@@ -98,8 +98,8 @@ export function createRateLimiter({ windowMs = 60_000, maxRequests = 10 } = {}) 
         error: "খুব বেশি অনুরোধ হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
         errorEn: "Too many requests. Please try again shortly.",
         retryAfter: Math.ceil((store.resetAt - now) / 1000),
-        authenticated: !!req.headers.authorization?.startsWith('Bearer '),
-        limit: tier.maxRequests
+        authenticated: !!req.headers.authorization?.startsWith("Bearer "),
+        limit: tier.maxRequests,
       });
       return true;
     }
