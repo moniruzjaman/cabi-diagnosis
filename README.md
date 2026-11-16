@@ -3,7 +3,7 @@
 > AI-powered CABI diagnostic process trainer for Bangladesh farmers — learn crop problem identification through guided steps, interactive games, and hands-on diagnosis.
 
 ![Smart Agri EcoSystem](https://img.shields.io/badge/Bangladesh-Extension%20Tool-green)
-![Version](https://img.shields.io/badge/version-4.0.0-brightgreen)
+![Version](https://img.shields.io/badge/version-4.1.0-brightgreen)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![Vite](https://img.shields.io/badge/Vite-5-purple)
 ![PWA](https://img.shields.io/badge/PWA-Installable-9cf)
@@ -32,6 +32,8 @@ The app is production-hardened with zero-trust API security, HMAC request signin
 
 ### Smart Diagnosis
 - **AI-Powered Identification** — Multi-provider AI waterfall (Gemini 2.5 Flash → OpenRouter Qwen-VL → Groq Llama4 Scout → Gemini text → Emergency fallback) for crop problem diagnosis
+- **Crop-Doctor Diagnostic Engine (v4.1)** — Offline rule-based engine upgraded with doctoral advice ported from `crop-doctor`: language normalization + canonical synonym resolution, IDF-weighted cross-language symptom matching (EN/BN parity), normalized abiotic/biotic exclusion gates, token-set Jaccard vision fusion, and additive evidence-based confidence scoring
+- **On-Device Vision Models** — MobileNetV3 (PlantVillage) + ViT ensemble running fully in-browser via ONNX Runtime Web; models sourced from [`moniruzjaman/kaggle-dataset`](https://github.com/moniruzjaman/kaggle-dataset) with provenance recorded in `public/models/manifest.json`
 - **Image Analysis** — Upload up to 3 photos for AI visual diagnosis with proper preview rendering
 - **278 Symptom Images** — Visual reference gallery for pest, disease, and deficiency identification (all stored locally, no external storage dependency)
 - **Bangladesh Context** — DAE, BRRI, BARI recommendations; local pesticide brands and dosage
@@ -308,6 +310,15 @@ bash setup-vercel-env.sh
 ---
 
 ## Changelog
+
+### v4.1.0 — Doctoral-Advice Diagnosis Upgrade (crop-doctor port) & On-Device Model Verification
+- **Language normalization layer** (`src/data/bengaliKeywords.js`) — `normalizeSymptomText()` / `tokenizeSymptomText()` lowercase, strip punctuation, and apply word-boundary-safe canonical synonym resolution via the `SYMPTOM_SYNONYMS` doctoral-advice dictionary ported from `crop-doctor`; Bengali input now translates with multi-match symmetry so EN and BN queries produce identical rankings
+- **IDF-weighted cross-language matcher** (`src/data/cropDiseases.js`) — symptom matching is now coverage-aware (precision/recall → F1 style `matchRatio`) with inverse-document-frequency weighting so generic terms can't dominate; deterministic tie-breaking replaces first-wins ambiguity
+- **Normalized exclusion gates** (`src/offline/diagnosticEngine.js`) — biotic-weighted abiotic/biotic assessment; all four exclusion gates (insect/virus/bacterial/fungal signs) use the shared `hasSign()` normalized helper instead of raw substring checks
+- **Evidence-based confidence** — replaced the suspect-count heuristic with an additive `evidenceScore` (0–100): top-match quality (×55), discriminative margin (×20), resolved abiotic/biotic call (+8), gates eliminated (+4 each), environmental data (+5), ≥3 symptoms (+6), vision corroboration (+6); bands: high ≥62 with matchRatio ≥0.4, medium ≥38, else low
+- **Hardened vision fusion** — model labels are matched to diseases via token-set Jaccard similarity (max over EN/BN token sets) so a generic label can't hijack a specific disease; vision-only evidence is capped at the "medium" band and fusion is deterministic
+- **MobileNet / PlantVillage / Kaggle models verified functional** — all ONNX assets present under `public/models/` (`plantvillage/mobilenetv3-light`, `plantvillage/trained-128`, `crop_leaf_diseases_vit.onnx`), manifest v2.0.0 points to the source-of-truth repo [`moniruzjaman/kaggle-dataset`](https://github.com/moniruzjaman/kaggle-dataset); inference, routing (`visionRouter.js`), and ensemble (`leafEnsemble.js`) paths tested — no rollback needed
+- **Regression suite green** — `node src/offline/test.js` passes (exit 0), including EN/BN parity and tie-break assertions
 
 ### v4.0.0 — Production Hardening & Turso Migration
 - Replaced Supabase with Turso SQLite — no more quota limits, no more project pausing, generous free tier (9GB storage, 1B reads/month)
