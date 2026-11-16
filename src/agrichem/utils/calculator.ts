@@ -1,5 +1,9 @@
 import { ChemicalProduct, DosageInput, DosageResult } from '../types';
 
+const BN_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+const fmtNum = (v: number | string, lang: 'en' | 'bn'): string =>
+  lang === 'bn' ? String(v).replace(/[0-9]/g, (w) => BN_DIGITS[+w]) : String(v);
+
 export function convertAreaToHectares(value: number, unit: DosageInput['areaUnit']): number {
   switch (unit) {
     case 'hectare':
@@ -108,7 +112,8 @@ export function parseDosageString(dosageStr: string): ParsedDosage {
   };
 }
 
-export function calculateDosage(product: ChemicalProduct, input: DosageInput): DosageResult {
+export function calculateDosage(product: ChemicalProduct, input: DosageInput, lang: 'en' | 'bn' = 'en'): DosageResult {
+  const bn = lang === 'bn';
   const ha = convertAreaToHectares(input.areaValue, input.areaUnit);
   const acres = convertHectaresToAcres(ha);
   const sprayVolPerHa = input.sprayVolumePerHaL || product.waterVolumeLPerHa || 500;
@@ -128,20 +133,30 @@ export function calculateDosage(product: ChemicalProduct, input: DosageInput): D
 
     if (parsed.unit === 'ml') {
       if (totalAmount >= 1000) {
-        totalChemicalNeeded = `${(totalAmount / 1000).toFixed(2)} Litres (${Math.round(totalAmount)} ml)`;
+        totalChemicalNeeded = bn
+          ? `${fmtNum((totalAmount / 1000).toFixed(2), lang)} লিটার (${fmtNum(Math.round(totalAmount), lang)} মিলি)`
+          : `${(totalAmount / 1000).toFixed(2)} Litres (${Math.round(totalAmount)} ml)`;
       } else {
-        totalChemicalNeeded = `${Math.round(totalAmount)} ml`;
+        totalChemicalNeeded = `${fmtNum(Math.round(totalAmount), lang)} মিলি`;
       }
-      chemicalPerTank = `${perTankAmount.toFixed(1)} ml per ${tankVol}L tank`;
+      chemicalPerTank = bn
+        ? `${fmtNum(perTankAmount.toFixed(1), lang)} মিলি প্রতি ${fmtNum(tankVol, lang)} লিটার ট্যাংকে`
+        : `${perTankAmount.toFixed(1)} ml per ${tankVol}L tank`;
     } else {
       if (totalAmount >= 1000) {
-        totalChemicalNeeded = `${(totalAmount / 1000).toFixed(2)} Kg (${Math.round(totalAmount)} gm)`;
+        totalChemicalNeeded = bn
+          ? `${fmtNum((totalAmount / 1000).toFixed(2), lang)} কেজি (${fmtNum(Math.round(totalAmount), lang)} গ্রাম)`
+          : `${(totalAmount / 1000).toFixed(2)} Kg (${Math.round(totalAmount)} gm)`;
       } else {
-        totalChemicalNeeded = `${Math.round(totalAmount)} grams`;
+        totalChemicalNeeded = `${fmtNum(Math.round(totalAmount), lang)} গ্রাম`;
       }
-      chemicalPerTank = `${perTankAmount.toFixed(1)} grams per ${tankVol}L tank`;
+      chemicalPerTank = bn
+        ? `${fmtNum(perTankAmount.toFixed(1), lang)} গ্রাম প্রতি ${fmtNum(tankVol, lang)} লিটার ট্যাংকে`
+        : `${perTankAmount.toFixed(1)} grams per ${tankVol}L tank`;
     }
-    notes = `Calculated at label concentration of ${parsed.value} ${parsed.unit}/L of water across ${totalWater} Litres total spray volume.`;
+    notes = bn
+      ? `লেবেল অনুযায়ী ঘনত্ব ${fmtNum(parsed.value, lang)} ${parsed.unit === 'ml' ? 'মিলি' : 'গ্রাম'}/লিটার পানি হিসাব করে মোট ${fmtNum(totalWater, lang)} লিটার স্প্রে ভলিউমের জন্য নির্ধারিত।`
+      : `Calculated at label concentration of ${parsed.value} ${parsed.unit}/L of water across ${totalWater} Litres total spray volume.`;
   } else if (parsed.type === 'ratePerHa') {
     const totalAmt = parsed.value * ha;
     const perTankAmt = totalAmt / (totalWater / tankVol);
@@ -151,38 +166,64 @@ export function calculateDosage(product: ChemicalProduct, input: DosageInput): D
       const tankMl = parsed.unit === 'L' ? perTankAmt * 1000 : perTankAmt;
 
       if (inMl >= 1000) {
-        totalChemicalNeeded = `${(inMl / 1000).toFixed(2)} Litres (${Math.round(inMl)} ml)`;
+        totalChemicalNeeded = bn
+          ? `${fmtNum((inMl / 1000).toFixed(2), lang)} লিটার (${fmtNum(Math.round(inMl), lang)} মিলি)`
+          : `${(inMl / 1000).toFixed(2)} Litres (${Math.round(inMl)} ml)`;
       } else {
-        totalChemicalNeeded = `${Math.round(inMl)} ml`;
+        totalChemicalNeeded = `${fmtNum(Math.round(inMl), lang)} মিলি`;
       }
-      chemicalPerTank = `${tankMl.toFixed(1)} ml per ${tankVol}L tank`;
+      chemicalPerTank = bn
+        ? `${fmtNum(tankMl.toFixed(1), lang)} মিলি প্রতি ${fmtNum(tankVol, lang)} লিটার ট্যাংকে`
+        : `${tankMl.toFixed(1)} ml per ${tankVol}L tank`;
     } else {
       const inGm = parsed.unit === 'Kg' ? totalAmt * 1000 : totalAmt;
       const tankGm = parsed.unit === 'Kg' ? perTankAmt * 1000 : perTankAmt;
 
       if (inGm >= 1000) {
-        totalChemicalNeeded = `${(inGm / 1000).toFixed(2)} Kg (${Math.round(inGm)} gm)`;
+        totalChemicalNeeded = bn
+          ? `${fmtNum((inGm / 1000).toFixed(2), lang)} কেজি (${fmtNum(Math.round(inGm), lang)} গ্রাম)`
+          : `${(inGm / 1000).toFixed(2)} Kg (${Math.round(inGm)} gm)`;
       } else {
-        totalChemicalNeeded = `${Math.round(inGm)} grams`;
+        totalChemicalNeeded = `${fmtNum(Math.round(inGm), lang)} গ্রাম`;
       }
-      chemicalPerTank = `${tankGm.toFixed(1)} grams per ${tankVol}L tank`;
+      chemicalPerTank = bn
+        ? `${fmtNum(tankGm.toFixed(1), lang)} গ্রাম প্রতি ${fmtNum(tankVol, lang)} লিটার ট্যাংকে`
+        : `${tankGm.toFixed(1)} grams per ${tankVol}L tank`;
     }
-    notes = `Based on registered rate of ${parsed.value} ${parsed.unit}/ha calibrated for ${input.sprayVolumePerHaL || 500} L/ha water coverage.`;
+    notes = bn
+      ? `নিবন্ধিত মাত্রা ${fmtNum(parsed.value, lang)} ${parsed.unit}/হেক্টর এবং প্রতি হেক্টরে ${fmtNum(input.sprayVolumePerHaL || 500, lang)} লিটার পানি কভারেজ ধরে হিসাব করা হয়েছে।`
+      : `Based on registered rate of ${parsed.value} ${parsed.unit}/ha calibrated for ${input.sprayVolumePerHaL || 500} L/ha water coverage.`;
   } else if (parsed.type === 'tablets') {
     const estimatedKgGrain = ha * 4000; // estimated 4 tons/ha
     const totalTabs = Math.round((estimatedKgGrain / 1000) * parsed.value);
-    totalChemicalNeeded = `${totalTabs} tablets (for approx ${(estimatedKgGrain / 1000).toFixed(1)} tons harvest)`;
-    chemicalPerTank = 'N/A (Fumigation tablet in airtight enclosure)';
-    notes = 'Enclose grain under airtight 0.25mm gas tarpaulin. Place tablets in paper trays across grain mass. Maintain 5-7 days fumigation.';
+    totalChemicalNeeded = bn
+      ? `${fmtNum(totalTabs, lang)} ট্যাবলেট (প্রায় ${fmtNum((estimatedKgGrain / 1000).toFixed(1), lang)} টন ফসলের জন্য)`
+      : `${totalTabs} tablets (for approx ${(estimatedKgGrain / 1000).toFixed(1)} tons harvest)`;
+    chemicalPerTank = bn
+      ? 'প্রযোজ্য নয় (বায়ুরোধী আবরণে ধূমীকরণ ট্যাবলেট)'
+      : 'N/A (Fumigation tablet in airtight enclosure)';
+    notes = bn
+      ? 'শস্য বায়ুরোধী ০.২৫ মিমি গ্যাস-প্রুফ ত্রিপলে ঘেরা রাখুন। কাগজের ট্রেতে ট্যাবলেট সাজিয়ে শস্যের মাঝে রাখুন। ৫-৭ দিন ধূমীকরণ বজায় রাখুন।'
+      : 'Enclose grain under airtight 0.25mm gas tarpaulin. Place tablets in paper trays across grain mass. Maintain 5-7 days fumigation.';
   } else if (parsed.type === 'lures') {
     const totalLures = Math.round(parsed.value * ha);
-    totalChemicalNeeded = `${totalLures} pheromone lure traps`;
-    chemicalPerTank = 'N/A (Field pheromone trap installation)';
-    notes = `Space traps evenly at ${Math.round(10000 / (parsed.value || 70))} m² intervals across field borders and canopy.`;
+    totalChemicalNeeded = bn
+      ? `${fmtNum(totalLures, lang)} ফেরোমন লিউর ফাঁদ`
+      : `${totalLures} pheromone lure traps`;
+    chemicalPerTank = bn
+      ? 'প্রযোজ্য নয় (মাঠে ফেরোমন ফাঁদ স্থাপন)'
+      : 'N/A (Field pheromone trap installation)';
+    notes = bn
+      ? `জমির সীমানা ও গাছের আচ্ছাদনে ${fmtNum(Math.round(10000 / (parsed.value || 70)), lang)} বর্গমিটার ব্যবধানে ফাঁদ সমানভাবে স্থাপন করুন।`
+      : `Space traps evenly at ${Math.round(10000 / (parsed.value || 70))} m² intervals across field borders and canopy.`;
   } else {
     totalChemicalNeeded = product.dosageRate;
-    chemicalPerTank = 'Follow specific label guidance';
-    notes = 'Review specific package directions for seed treatment or specialized application.';
+    chemicalPerTank = bn
+      ? 'পণ্যের লেবেলের নির্দেশনা অনুসরণ করুন'
+      : 'Follow specific label guidance';
+    notes = bn
+      ? 'বীজ শোধন বা বিশেষ প্রয়োগের জন্য প্যাকেটের নির্দিষ্ট নির্দেশনা দেখুন।'
+      : 'Review specific package directions for seed treatment or specialized application.';
   }
 
   return {

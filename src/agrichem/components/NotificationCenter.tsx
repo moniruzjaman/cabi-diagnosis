@@ -69,7 +69,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       );
       sendPushNotification(
         language === 'bn' 
-          ? 'এগ্রিকেম প্রো: সরকারি নির্দেশিকা ও মৌসুমী সতর্কতা সক্রিয়' 
+          ? 'বালাইনাশক নির্দেশিকা: সরকারি নির্দেশিকা ও মৌসুমী সতর্কতা সক্রিয়' 
           : 'AgriChem Compliance & Seasonal Alerts Activated', 
         {
           body: language === 'bn'

@@ -5,3 +5,9 @@ skills/
 download/
 *.min.js
 package-lock.json
+src/agrichem/
+src/App.jsx
+src/data/cropDiseases.js
+src/data/learnResourceData.js
+src/data/moaDatabase.js
+src/data/pesticideRegistry.js

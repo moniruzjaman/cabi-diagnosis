@@ -35,7 +35,7 @@ const styles = {
   title: {
     fontSize: "20px",
     fontWeight: 700,
-    color: "#006028",
+    color: "#006A4E",
     marginBottom: "4px",
   },
   subtitle: {
@@ -61,7 +61,7 @@ const styles = {
   statValue: {
     fontSize: "20px",
     fontWeight: 700,
-    color: "#006028",
+    color: "#006A4E",
     lineHeight: 1.1,
   },
   statLabel: {
@@ -206,7 +206,7 @@ const styles = {
   modalTitle: {
     fontSize: "16px",
     fontWeight: 700,
-    color: "#006028",
+    color: "#006A4E",
     marginBottom: "8px",
   },
   modalText: {
@@ -348,7 +348,7 @@ const VisualDiagnosisLibrary = () => {
         <button
           style={{
             ...styles.chip,
-            background: selectedCategory === "All" ? "#006028" : "#f0f2f5",
+            background: selectedCategory === "All" ? "#006A4E" : "#f0f2f5",
             color: selectedCategory === "All" ? "#fff" : "#5f6672",
           }}
           onClick={() => setSelectedCategory("All")}

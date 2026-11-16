@@ -12,7 +12,6 @@ import { getFreeTierPolicy, reserveRequest } from "./_lib/freeTierPolicy.js";
 import { runOrchestration } from "./_lib/orchestrator.js";
 import { recordDiagnosisEvent, summarizeMessages } from "./_lib/observability.js";
 
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // SYSTEM PROMPT — CABI READY RECKONER + EXCLUSION LOGIC (FULL)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -554,9 +553,7 @@ CRITICAL JSON RULES:
 function stripImages(messages) {
   return messages.map((m) => ({
     ...m,
-    content: Array.isArray(m.content)
-      ? m.content.filter((b) => b.type !== "image")
-      : m.content,
+    content: Array.isArray(m.content) ? m.content.filter((b) => b.type !== "image") : m.content,
   }));
 }
 
@@ -566,16 +563,18 @@ function toOpenAIMessages(messages) {
     if (Array.isArray(m.content)) {
       return {
         role: m.role,
-        content: m.content.map((b) => {
-          if (b.type === "text") return { type: "text", text: b.text };
-          if (b.type === "image" && b.source?.type === "base64") {
-            return {
-              type: "image_url",
-              image_url: { url: `data:${b.source.media_type || "image/jpeg"};base64,${b.source.data}` },
-            };
-          }
-          return null;
-        }).filter(Boolean),
+        content: m.content
+          .map((b) => {
+            if (b.type === "text") return { type: "text", text: b.text };
+            if (b.type === "image" && b.source?.type === "base64") {
+              return {
+                type: "image_url",
+                image_url: { url: `data:${b.source.media_type || "image/jpeg"};base64,${b.source.data}` },
+              };
+            }
+            return null;
+          })
+          .filter(Boolean),
       };
     }
     return m;
@@ -597,15 +596,9 @@ function compressMessages(messages, maxBase64Chars = 1_000_000) {
   });
 }
 
-const OPENROUTER_VISION_MODELS = [
-  "qwen/qwen2.5-vl-72b-instruct:free",
-  "meta-llama/llama-3.2-11b-vision-instruct:free",
-];
+const OPENROUTER_VISION_MODELS = ["qwen/qwen2.5-vl-72b-instruct:free", "meta-llama/llama-3.2-11b-vision-instruct:free"];
 
-const OPENROUTER_TEXT_MODELS = [
-  "qwen/qwen2.5-72b-instruct:free",
-  "meta-llama/llama-3.2-11b-vision-instruct:free",
-];
+const OPENROUTER_TEXT_MODELS = ["qwen/qwen2.5-72b-instruct:free", "meta-llama/llama-3.2-11b-vision-instruct:free"];
 
 function extractPlainUserText(messages) {
   return messages
@@ -648,7 +641,8 @@ function buildEmergencyDiagnosis(messages, imageAttached) {
   if (/yellow|হলুদ|chlorosis/.test(lower)) suspects.push("পুষ্টি ঘাটতি / nutrient deficiency");
   if (/spot|দাগ|blast|blight|lesion/.test(lower)) suspects.push("ছত্রাক বা ব্যাকটেরিয়া / fungal or bacterial disease");
   if (/curl|কুঁক|মোড়া|mosaic|virus/.test(lower)) suspects.push("ভাইরাস বা থ্রিপস-এফিড / virus or sucking pest damage");
-  if (/hole|ছিদ্র|chew|roll|frass|web|mite|aphid|thrips|insect|পোকা/.test(lower)) suspects.push("পোকার আক্রমণ / insect or mite attack");
+  if (/hole|ছিদ্র|chew|roll|frass|web|mite|aphid|thrips|insect|পোকা/.test(lower))
+    suspects.push("পোকার আক্রমণ / insect or mite attack");
   if (/wilt|মরে|শুক|rot|পচা/.test(lower)) suspects.push("উইল্ট বা রুট/স্টেম রট / wilt or root-stem rot");
 
   const primary = suspects[0] || "ছবি ও বর্ণনার ভিত্তিতে রোগ/পোকার একটি প্রাথমিক সন্দেহ";
@@ -710,9 +704,7 @@ async function tryGemini(messages, withVision = true, systemPrompt = SYSTEM_PROM
 
   const src = withVision ? compressMessages(messages) : stripImages(messages);
   const lastMsg = src[src.length - 1];
-  const content = Array.isArray(lastMsg.content)
-    ? lastMsg.content
-    : [{ type: "text", text: lastMsg.content }];
+  const content = Array.isArray(lastMsg.content) ? lastMsg.content : [{ type: "text", text: lastMsg.content }];
 
   const parts = [];
   for (const block of content) {
@@ -794,7 +786,51 @@ async function tryOpenRouter(messages, modelId, systemPrompt = SYSTEM_PROMPT, ex
 
   const resolvedModel = (data?.model || modelId).split("/").pop().replace(":free", "");
   const providerName = data?.provider ? ` via ${data.provider}` : "";
-  return { text: data?.choices?.[0]?.message?.content || "No response.", provider: `OpenRouter / ${resolvedModel}${providerName}` };
+  return {
+    text: data?.choices?.[0]?.message?.content || "No response.",
+    provider: `OpenRouter / ${resolvedModel}${providerName}`,
+  };
+}
+
+// ─── Provider: KrishiAI Gateway (shared free-tier text fallback, unstructured) ──
+// This is a bonus last-resort tier, tried only after all four of this app's own
+// paid-tier providers (Gemini x2, OpenRouter x2, Groq) have already failed. The
+// gateway (api.krishiai.live) always uses its own fixed bilingual system prompt —
+// it has no way to follow this app's CABI 14/30-field structured diagnosis schema,
+// and it has no vision support at all. So this route is deliberately textOnly,
+// always marked degraded, and its output is expected to have structured: null
+// (same shape the emergency fallback already produces). The point isn't schema
+// fidelity — it's giving one more real, free AI-generated answer instead of
+// dropping straight to the 100% static emergency text.
+async function tryKrishiGateway(messages) {
+  const token = process.env.KRISHI_GATEWAY_TOKEN;
+  if (!token) throw new Error("KRISHI_GATEWAY_TOKEN not set");
+
+  const message = extractPlainUserText(messages).trim();
+  if (!message) throw new Error("No text content available for gateway fallback");
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  let res;
+  try {
+    res = await fetch("https://api.krishiai.live/v1/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Krishi-Token": token },
+      body: JSON.stringify({ message, language: "bn" }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || `KrishiGateway HTTP ${res.status}`);
+  if (!data?.reply) throw new Error("KrishiGateway returned an empty reply");
+
+  return {
+    text: `${data.reply}\n\n---\n⚠️ এটি একটি সাধারণ পরামর্শ, CABI কাঠামোবদ্ধ নির্ণয় নয়। নিশ্চিত রোগ নির্ণয়ের জন্য স্থানীয় DAE কর্মকর্তার সাথে যোগাযোগ করুন।`,
+    provider: `KrishiAI Gateway (${data.model || "free"}) — unstructured`,
+  };
 }
 
 // ─── Main Handler ─────────────────────────────────────────────────────────────
@@ -810,19 +846,22 @@ function createProviderRoutes({ messages, imageAttached, systemPrompt, policy })
       id: imageAttached ? "gemini-vision" : "gemini-text",
       requiresVision: imageAttached,
       enabled: Boolean(process.env.GEMINI_API_KEY),
-      run: async () => normalizeProviderResult(await tryGemini(messages, imageAttached, systemPrompt, policy.maxOutputTokens)),
+      run: async () =>
+        normalizeProviderResult(await tryGemini(messages, imageAttached, systemPrompt, policy.maxOutputTokens)),
     },
     {
       id: imageAttached ? "openrouter-vision" : "openrouter-text",
       enabled: Boolean(process.env.OPENROUTER_API_KEY),
       run: async () => {
         const models = imageAttached ? OPENROUTER_VISION_MODELS : OPENROUTER_TEXT_MODELS;
-        return normalizeProviderResult(await tryOpenRouter(messages, models[0], systemPrompt, {
-          models: models.slice(1),
-          route: "fallback",
-          max_tokens: policy.maxOutputTokens,
-          provider: { allow_fallbacks: true, sort: "throughput" },
-        }));
+        return normalizeProviderResult(
+          await tryOpenRouter(messages, models[0], systemPrompt, {
+            models: models.slice(1),
+            route: "fallback",
+            max_tokens: policy.maxOutputTokens,
+            provider: { allow_fallbacks: true, sort: "throughput" },
+          }),
+        );
       },
     },
     {
@@ -833,7 +872,9 @@ function createProviderRoutes({ messages, imageAttached, systemPrompt, policy })
       degraded: imageAttached,
       run: async () => {
         const result = normalizeProviderResult(await tryGroq(messages, systemPrompt, policy.maxOutputTokens));
-        if (imageAttached) result.content[0].text += "\\n\\n---\\nProvisional response: generated from the text description after vision fallback.";
+        if (imageAttached)
+          result.content[0].text +=
+            "\n\n---\nProvisional response: generated from the text description after vision fallback.";
         return result;
       },
     },
@@ -844,13 +885,17 @@ function createProviderRoutes({ messages, imageAttached, systemPrompt, policy })
       enabled: Boolean(process.env.OPENROUTER_API_KEY),
       degraded: imageAttached,
       run: async () => {
-        const result = normalizeProviderResult(await tryOpenRouter(messages, OPENROUTER_TEXT_MODELS[0], systemPrompt, {
-          models: OPENROUTER_TEXT_MODELS.slice(1),
-          route: "fallback",
-          max_tokens: policy.maxOutputTokens,
-          provider: { allow_fallbacks: true, sort: "throughput" },
-        }));
-        if (imageAttached) result.content[0].text += "\\n\\n---\\nProvisional response: generated from the text description after vision fallback.";
+        const result = normalizeProviderResult(
+          await tryOpenRouter(messages, OPENROUTER_TEXT_MODELS[0], systemPrompt, {
+            models: OPENROUTER_TEXT_MODELS.slice(1),
+            route: "fallback",
+            max_tokens: policy.maxOutputTokens,
+            provider: { allow_fallbacks: true, sort: "throughput" },
+          }),
+        );
+        if (imageAttached)
+          result.content[0].text +=
+            "\n\n---\nProvisional response: generated from the text description after vision fallback.";
         return result;
       },
     },
@@ -862,9 +907,18 @@ function createProviderRoutes({ messages, imageAttached, systemPrompt, policy })
       degraded: imageAttached,
       run: async () => {
         const result = normalizeProviderResult(await tryGemini(messages, false, systemPrompt, policy.maxOutputTokens));
-        if (imageAttached) result.content[0].text += "\\n\\n---\\n⚠️ Image analysis unavailable. Diagnosis based on description only.";
+        if (imageAttached)
+          result.content[0].text += "\n\n---\n⚠️ Image analysis unavailable. Diagnosis based on description only.";
         return result;
       },
+    },
+    {
+      id: "krishi-gateway-text",
+      textOnly: true,
+      allowWithImage: true,
+      enabled: Boolean(process.env.KRISHI_GATEWAY_TOKEN),
+      degraded: true,
+      run: async () => normalizeProviderResult(await tryKrishiGateway(messages)),
     },
   ];
 
@@ -890,9 +944,8 @@ export default async function handler(req, res) {
 
   // Validate and sanitize messages
   const { messages: rawMessages, systemPrompt: customPrompt } = body || {};
-  const systemPrompt = customPrompt && typeof customPrompt === "string" && customPrompt.length <= 5000
-    ? customPrompt
-    : SYSTEM_PROMPT;
+  const systemPrompt =
+    customPrompt && typeof customPrompt === "string" && customPrompt.length <= 5000 ? customPrompt : SYSTEM_PROMPT;
 
   const validation = validateDiagnoseMessages(rawMessages || []);
   if (!validation.valid) {
@@ -929,14 +982,15 @@ export default async function handler(req, res) {
     hasImage: imageAttached,
     policy,
     timeoutMs: policy.requestTimeoutMs,
-    onAttempt: async (event) => recordDiagnosisEvent({
-      route: event.route.id,
-      provider: event.route.id.split("-")[0],
-      success: event.ok,
-      latencyMs: event.latencyMs,
-      hasImage: event.hasImage,
-      error: event.error,
-    }),
+    onAttempt: async (event) =>
+      recordDiagnosisEvent({
+        route: event.route.id,
+        provider: event.route.id.split("-")[0],
+        success: event.ok,
+        latencyMs: event.latencyMs,
+        hasImage: event.hasImage,
+        error: event.error,
+      }),
     emergency: async () => ({
       content: [{ type: "text", text: buildEmergencyDiagnosis(messages, imageAttached) }],
       structured: null,

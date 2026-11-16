@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Database, 
   Calculator, 
@@ -20,6 +20,7 @@ import {
 import { motion } from 'motion/react';
 import { useLanguage } from '../context/LanguageContext';
 import { ChemicalProduct, AppTab } from '../types';
+import { SourceDisclaimer } from './SourceDisclaimer';
 
 interface HomeViewProps {
   products: ChemicalProduct[];
@@ -27,6 +28,11 @@ interface HomeViewProps {
   onSelectCropFilter: (crop: string) => void;
   onOpenShareModal: () => void;
   totalProductsCount: number;
+  /**
+   * True once the 5,624-record DAE database has finished loading.
+   * Until then, the hero stat shows a loading shimmer instead of "0+".
+   */
+  databaseLoaded?: boolean;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -34,20 +40,29 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onNavigateTab,
   onSelectCropFilter,
   onOpenShareModal,
-  totalProductsCount
+  totalProductsCount,
+  databaseLoaded = true,
 }) => {
   const { language, t, formatNum, transCrop } = useLanguage();
   const [activePreviewFeature, setActivePreviewFeature] = useState<number>(0);
 
-  // Popular crops for quick navigation
-  const popularCrops = [
-    { en: 'Rice', bn: 'ধান', count: 28 },
-    { en: 'Potato', bn: 'আলু', count: 18 },
-    { en: 'Tomato', bn: 'টমেটো', count: 16 },
-    { en: 'Brinjal', bn: 'বেগুন', count: 15 },
-    { en: 'Mango', bn: 'আম', count: 12 },
-    { en: 'Chilli', bn: 'মরিচ', count: 11 }
-  ];
+  // Popular crops for quick navigation — counts are derived live from the
+  // mounted products database so they always reflect the official DAE
+  // registry, regardless of which dataset is currently wired up in App.tsx.
+  const popularCrops = useMemo(() => {
+    const targets: Array<{ en: string; bn: string }> = [
+      { en: 'Rice', bn: 'ধান' },
+      { en: 'Potato', bn: 'আলু' },
+      { en: 'Tomato', bn: 'টমেটো' },
+      { en: 'Brinjal', bn: 'বেগুন' },
+      { en: 'Mango', bn: 'আম' },
+      { en: 'Chilli', bn: 'মরিচ' },
+    ];
+    return targets.map((c) => ({
+      ...c,
+      count: products.filter((p) => p.crops.includes(c.en)).length,
+    }));
+  }, [products]);
 
   // Feature definitions with detailed summaries for the Hero Section
   const features = [
@@ -55,13 +70,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
       id: 'database' as AppTab,
       titleEn: 'DAE Registered Chemical Database',
       titleBn: 'ডিএই নিবন্ধিত রাসায়নিক ডাটাবেস',
-      subtitleEn: '70+ Approved Formulations & Active Ingredients',
-      subtitleBn: '৭০+ অনুমোদিত সক্রিয় উপাদান ও বাণিজ্য নাম',
+      subtitleEn: `${formatNum(totalProductsCount)} Approved Formulations & Active Ingredients`,
+      subtitleBn: `${formatNum(totalProductsCount)}+ অনুমোদিত সক্রিয় উপাদান ও বাণিজ্য নাম`,
       descEn: 'Instant search across Bangladesh DAE-registered insecticides, fungicides, herbicides, and miticides. Includes verified trade names, target pests, label application rates, PHI (Pre-Harvest Interval) and REI safety windows.',
       descBn: 'কৃষি সম্প্রসারণ অধিদপ্তর (DAE) নিবন্ধিত কীটনাশক, ছত্রাকনাশক, আগাছানাশক ও মাকড়নাশকের পূর্ণাঙ্গ তালিকা। অনুমোদিত বাণিজ্য নাম, লক্ষ্য বালাই, প্রতি হেক্টরে সঠিক প্রয়োগ মাত্রা, ফসল তোলার নিরাপদ বিরতি (PHI) ও রি-এন্ট্রি সময়কাল দেখুন।',
       icon: Database,
-      badgeEn: '70+ Dossiers',
-      badgeBn: '৭০+ রাসায়নিক',
+      badgeEn: `${formatNum(totalProductsCount)} Dossiers`,
+      badgeBn: `${formatNum(totalProductsCount)} রাসায়নিক`,
       themeColor: 'from-emerald-500 to-emerald-700',
       textColor: 'text-emerald-700',
       bgColor: 'bg-emerald-50',
@@ -69,7 +84,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       lightGlow: 'hover:shadow-emerald-500/10',
       statLabelEn: 'Active Ingredients',
       statLabelBn: 'সক্রিয় উপাদান',
-      statValue: `${totalProductsCount}+`,
+      statValue: databaseLoaded ? `${formatNum(totalProductsCount)}+` : '…',
       highlightsEn: ['Official DAE Registration', 'PHI & REI Safety Windows', 'Target Pest Index', 'Trade Names Dossier'],
       highlightsBn: ['ডিএই অফিসিয়াল নিবন্ধন', 'PHI ও REI নিরাপদ সময়', 'বালাই ও রোগের পূর্ণাঙ্গ তালিকা', 'ব্র্যান্ড ও বাণিজ্য নাম']
     },
@@ -314,7 +329,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           >
             <div className="bg-white/5 backdrop-blur-xs rounded-xl p-3.5 border border-white/10">
               <span className="block text-2xl sm:text-3xl font-black text-emerald-400">
-                {formatNum(totalProductsCount)}+
+                {databaseLoaded ? `${formatNum(totalProductsCount)}+` : '…'}
               </span>
               <span className="text-xs text-emerald-200/80 font-medium">
                 {language === 'bn' ? 'DAE নিবন্ধিত ফর্মুলেশন' : 'DAE Approved Chemicals'}
@@ -332,7 +347,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             <div className="bg-white/5 backdrop-blur-xs rounded-xl p-3.5 border border-white/10">
               <span className="block text-2xl sm:text-3xl font-black text-emerald-400">
-                ১০০%
+                {language === 'bn' ? '১০০%' : '100%'}
               </span>
               <span className="text-xs text-emerald-200/80 font-medium">
                 {language === 'bn' ? 'অফলাইন ফিল্ড প্রস্তুতি (PWA)' : 'Offline Ready (PWA)'}
@@ -341,7 +356,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             <div className="bg-white/5 backdrop-blur-xs rounded-xl p-3.5 border border-white/10">
               <span className="block text-2xl sm:text-3xl font-black text-amber-400">
-                ৩টি
+                {language === 'bn' ? '৩টি' : '3'}
               </span>
               <span className="text-xs text-emerald-200/80 font-medium">
                 {language === 'bn' ? 'IRAC / FRAC / HRAC মানদণ্ড' : 'Scientific MoA Standards'}
@@ -601,8 +616,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </span>
             <h3 className="text-xl sm:text-2xl font-black text-white">
               {language === 'bn' 
-                ? 'এগ্রিকেম প্রো শেয়ার করে নিরাপদ ও বিষমুক্ত কৃষিতে অবদান রাখুন' 
-                : 'Share AgriChem Pro & Promote Safe Chemical Stewardship'}
+                ? 'বালাইনাশক নির্দেশিকা শেয়ার করে নিরাপদ ও বিষমুক্ত কৃষিতে অবদান রাখুন' 
+                : 'Share Pesticide Guide & Promote Safe Chemical Stewardship'}
             </h3>
             <p className="text-xs text-emerald-100 max-w-xl">
               {language === 'bn'
@@ -629,6 +644,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </button>
           </div>
         </div>
+      </section>
+
+      {/* Source attribution banner — DAE registry citation */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SourceDisclaimer variant="full" />
       </section>
     </div>
   );

@@ -3,7 +3,7 @@
 // Cache is used as fallback when offline only
 // API responses are NEVER cached to prevent stale diagnostic results
 
-const CACHE_VERSION = 'cabi-v5-' + new Date().toISOString().slice(0, 10);
+const CACHE_VERSION = "cabi-v6-" + new Date().toISOString().slice(0, 10);
 const PRECACHE_ASSETS = [
   "/",
   "/index.html",
@@ -11,26 +11,30 @@ const PRECACHE_ASSETS = [
   "/cabi-logo.png",
   "/favicon.svg",
   "/manifest.json",
-  // On-device ViT model for offline leaf-disease classification (Phase 1).
-  // 22 MB — precaching it here means the model works on the very first
-  // diagnosis attempt even if the user has never been online.
-  "/models/crop_leaf_diseases_vit.onnx",
+  "/models/plantvillage/mobilenetv3-light/model.onnx",
+  "/models/plantvillage/mobilenetv3-light/class_names.json",
 ];
+
+async function precacheBestEffort(cache, urls) {
+  await Promise.all(
+    urls.map((url) =>
+      cache.add(url).catch(() => {
+        /* keep SW install alive if one asset 404s */
+      }),
+    ),
+  );
+}
 
 // Install — precache essential shell assets, then activate immediately
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => cache.addAll(PRECACHE_ASSETS))
-  );
-  self.skipWaiting(); // Activate new SW immediately without waiting
+  event.waitUntil(caches.open(CACHE_VERSION).then((cache) => precacheBestEffort(cache, PRECACHE_ASSETS)));
+  self.skipWaiting();
 });
 
 // Activate — delete ALL old caches (forces full cache refresh on every deploy)
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)))
-    )
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)))),
   );
   self.clients.claim(); // Take control of all open pages immediately
 });
@@ -49,10 +53,13 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(event.request)
         .then((response) => response)
-        .catch(() => new Response(JSON.stringify({ error: "Offline" }), {
-          status: 503,
-          headers: { "Content-Type": "application/json" },
-        }))
+        .catch(
+          () =>
+            new Response(JSON.stringify({ error: "Offline" }), {
+              status: 503,
+              headers: { "Content-Type": "application/json" },
+            }),
+        ),
     );
     return;
   }
@@ -67,7 +74,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, clone));
           return response;
         })
-        .catch(() => caches.match(event.request).then((cached) => cached || caches.match("/index.html")))
+        .catch(() => caches.match(event.request).then((cached) => cached || caches.match("/index.html"))),
     );
     return;
   }
@@ -75,7 +82,10 @@ self.addEventListener("fetch", (event) => {
   // For hashed Vite assets (e.g., /assets/index-abc12345.js) — cache-first with network fallback
   // These have content hashes, so cached version is always correct.
   // Regex matches both hex (8+ chars) and base64url hashes that Vite may generate.
-  if (url.pathname.match(/\/assets\/[^/]+-[a-zA-Z0-9_-]{4,}\.(js|css|woff2?|png|jpg|jpeg|svg|webp|ico)$/)) {
+  if (
+    url.pathname.endsWith(".wasm") ||
+    url.pathname.match(/\/assets\/[^/]+-[a-zA-Z0-9_-]{4,}\.(js|css|woff2?|png|jpg|jpeg|svg|webp|ico)$/)
+  ) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
         if (cached) return cached;
@@ -86,15 +96,12 @@ self.addEventListener("fetch", (event) => {
           }
           return response;
         });
-      })
+      }),
     );
     return;
   }
 
-  // For the ViT ONNX model (22 MB) — cache-first so the second diagnosis
-  // is instant. The model is versioned via the cache key, so a deploy with
-  // a new model file is picked up on the next SW activate cycle.
-  if (url.pathname === "/models/crop_leaf_diseases_vit.onnx") {
+  if (url.pathname.startsWith("/models/") && url.pathname.endsWith(".onnx")) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
         if (cached) return cached;
@@ -105,7 +112,7 @@ self.addEventListener("fetch", (event) => {
           }
           return response;
         });
-      })
+      }),
     );
     return;
   }
@@ -120,6 +127,6 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(event.request)),
   );
 });

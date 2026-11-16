@@ -5,9 +5,9 @@ import SymptomImageGallery from "./SymptomImageGallery";
 
 /* ── Design Tokens ── */
 const C = {
-  primary: "#006028",
-  primaryLight: "#1a7a3a",
-  primaryDark: "#005322",
+  primary: "#006A4E",
+  primaryLight: "#1a8a5e",
+  primaryDark: "#00553d",
   accent: "#f59e0b",
   bg: "#f5fbf6",
   bgCard: "#ffffff",
@@ -18,7 +18,7 @@ const C = {
   border: "#becabc",
   success: "#16a34a",
   warning: "#d97706",
-  danger: "#dc2626",
+  danger: "#F42A41",
   blue: "#2563eb",
   shadow: "0 8px 24px rgba(0,33,9,0.08)",
   shadowMd: "0 16px 40px rgba(0,33,9,0.10)",

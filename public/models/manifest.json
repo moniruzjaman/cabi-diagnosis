@@ -1,0 +1,40 @@
+{
+  "version": "2.0.0",
+  "source": "https://github.com/moniruzjaman/kaggle-dataset",
+  "updated": "2026-10-28",
+  "engines": [
+    {
+      "id": "plantvillage-mobilenetv3-light",
+      "kind": "mobilenetv3",
+      "path": "/models/plantvillage/mobilenetv3-light/model.onnx",
+      "labels": "/models/plantvillage/mobilenetv3-light/class_names.json",
+      "input": 224,
+      "classes": 15,
+      "sizeMb": 4.4,
+      "crops": ["tomato", "potato", "pepper"],
+      "default": true,
+      "mobile": true
+    },
+    {
+      "id": "plantvillage-trained-128",
+      "kind": "mobilenetv3-tiny",
+      "path": "/models/plantvillage/trained-128/model.onnx",
+      "labels": "/models/plantvillage/trained-128/class_names.json",
+      "input": 128,
+      "classes": 15,
+      "sizeMb": 2.3,
+      "crops": ["tomato", "potato", "pepper"],
+      "mobile": true
+    },
+    {
+      "id": "crop-leaf-diseases-vit",
+      "kind": "vit",
+      "path": "/models/crop_leaf_diseases_vit.onnx",
+      "input": 224,
+      "classes": 13,
+      "sizeMb": 22.3,
+      "crops": ["rice", "wheat", "corn", "potato"],
+      "precache": false
+    }
+  ]
+}

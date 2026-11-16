@@ -3,14 +3,7 @@
  * routing policy is independent from vendor-specific request formatting.
  */
 
-export async function runOrchestration({
-  routes,
-  hasImage,
-  policy,
-  timeoutMs,
-  onAttempt,
-  emergency,
-}) {
+export async function runOrchestration({ routes, hasImage, policy, timeoutMs, onAttempt, emergency }) {
   const attempts = [];
   const startedAt = Date.now();
   const deadline = startedAt + timeoutMs;
