@@ -8,7 +8,7 @@
 //
 // Model: wambugu71/crop_leaf_diseases_vit (ViT-base, 13 classes, 224×224)
 // Converted to ONNX in the attached notebook and shipped as a static
-// asset at /models/crop_leaf_diseases_vit.onnx (≈22 MB, fp32).
+// asset at /models/plantvillage_mobilenetv3_light/model.onnx (≈22 MB, fp32).
 //
 // We use the fp32 model — the notebook's own experiment showed int8
 // quantization crashed accuracy for this 13-class task. The 22 MB asset
@@ -35,7 +35,7 @@ const ortNs = ort && ort.InferenceSession ? ort : ort && ort.default ? ort.defau
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const MODEL_URL = "/models/crop_leaf_diseases_vit.onnx";
+const MODEL_URL = "/models/plantvillage_mobilenetv3_light/model.onnx";
 // onnxruntime-web needs to fetch a companion .wasm file at runtime. We point
 // it to the same `/assets/` folder Vite copies the bundled .wasm into. The
 // package's default resolver already looks next to the .mjs bundle, so this
@@ -50,141 +50,26 @@ const TOP_K_DEFAULT = 3;
 const IMAGENET_MEAN = [0.485, 0.456, 0.406];
 const IMAGENET_STD = [0.229, 0.224, 0.225];
 
-// 13 classes from wambugu71/crop_leaf_diseases_vit config.json.
-// Each row: [cropEn, cropBn, diseaseEn, diseaseBn, isHealthy, category]
-//   category ∈ {healthy, fungal, bacterial, viral, invalid}
+// 15 classes from PlantVillage (imaflower/plantvillage-mobilenetv3).
+// Each row: { idx, raw, cropEn, cropBn, diseaseEn, diseaseBn, isHealthy, category }
+//   category ∈ {healthy, fungal, bacterial, viral}
 // Bangla names follow the project glossary in src/data/cropDiseases.js.
 const LABEL_TABLE = [
-  {
-    idx: 0,
-    raw: "Corn___Common_Rust",
-    cropEn: "Corn",
-    cropBn: "ভুট্টা",
-    diseaseEn: "Common Rust",
-    diseaseBn: "সাধারণ মরিচা",
-    isHealthy: false,
-    category: "fungal",
-  },
-  {
-    idx: 1,
-    raw: "Corn___Gray_Leaf_Spot",
-    cropEn: "Corn",
-    cropBn: "ভুট্টা",
-    diseaseEn: "Gray Leaf Spot",
-    diseaseBn: "ধূসর পাতার দাগ",
-    isHealthy: false,
-    category: "fungal",
-  },
-  {
-    idx: 2,
-    raw: "Corn___Healthy",
-    cropEn: "Corn",
-    cropBn: "ভুট্টা",
-    diseaseEn: "Healthy",
-    diseaseBn: "সুস্থ",
-    isHealthy: true,
-    category: "healthy",
-  },
-  {
-    idx: 3,
-    raw: "Invalid",
-    cropEn: null,
-    cropBn: null,
-    diseaseEn: "Invalid",
-    diseaseBn: "অবৈধ ছবি",
-    isHealthy: false,
-    category: "invalid",
-  },
-  {
-    idx: 4,
-    raw: "Potato___Early_Blight",
-    cropEn: "Potato",
-    cropBn: "আলু",
-    diseaseEn: "Early Blight",
-    diseaseBn: "আগাম ঝলসা",
-    isHealthy: false,
-    category: "fungal",
-  },
-  {
-    idx: 5,
-    raw: "Potato___Healthy",
-    cropEn: "Potato",
-    cropBn: "আলু",
-    diseaseEn: "Healthy",
-    diseaseBn: "সুস্থ",
-    isHealthy: true,
-    category: "healthy",
-  },
-  {
-    idx: 6,
-    raw: "Potato___Late_Blight",
-    cropEn: "Potato",
-    cropBn: "আলু",
-    diseaseEn: "Late Blight",
-    diseaseBn: "বিলম্বিত ঝলসা",
-    isHealthy: false,
-    category: "fungal",
-  },
-  {
-    idx: 7,
-    raw: "Rice___Brown_Spot",
-    cropEn: "Rice",
-    cropBn: "ধান",
-    diseaseEn: "Brown Spot",
-    diseaseBn: "বাদামি দাগ",
-    isHealthy: false,
-    category: "fungal",
-  },
-  {
-    idx: 8,
-    raw: "Rice___Healthy",
-    cropEn: "Rice",
-    cropBn: "ধান",
-    diseaseEn: "Healthy",
-    diseaseBn: "সুস্থ",
-    isHealthy: true,
-    category: "healthy",
-  },
-  {
-    idx: 9,
-    raw: "Rice___Leaf_Blast",
-    cropEn: "Rice",
-    cropBn: "ধান",
-    diseaseEn: "Leaf Blast",
-    diseaseBn: "পাতার ব্লাস্ট",
-    isHealthy: false,
-    category: "fungal",
-  },
-  {
-    idx: 10,
-    raw: "Wheat___Brown_Rust",
-    cropEn: "Wheat",
-    cropBn: "গম",
-    diseaseEn: "Brown Rust",
-    diseaseBn: "বাদামি মরিচা",
-    isHealthy: false,
-    category: "fungal",
-  },
-  {
-    idx: 11,
-    raw: "Wheat___Healthy",
-    cropEn: "Wheat",
-    cropBn: "গম",
-    diseaseEn: "Healthy",
-    diseaseBn: "সুস্থ",
-    isHealthy: true,
-    category: "healthy",
-  },
-  {
-    idx: 12,
-    raw: "Wheat___Yellow_Rust",
-    cropEn: "Wheat",
-    cropBn: "গম",
-    diseaseEn: "Yellow Rust",
-    diseaseBn: "হলুদ মরিচা",
-    isHealthy: false,
-    category: "fungal",
-  },
+  { idx: 0, raw: "Pepper__bell___Bacterial_spot", cropEn: "Pepper (Bell)", cropBn: "শ মরিচ", diseaseEn: "Bacterial Spot", diseaseBn: "ব্যাকটেরিয়া দাগ", isHealthy: false, category: "bacterial" },
+  { idx: 1, raw: "Pepper__bell___healthy", cropEn: "Pepper (Bell)", cropBn: "শ মরিচ", diseaseEn: "Healthy", diseaseBn: "সুস্থ", isHealthy: true, category: "healthy" },
+  { idx: 2, raw: "Potato___Early_blight", cropEn: "Potato", cropBn: "আলু", diseaseEn: "Early Blight", diseaseBn: "প্রারंभিক পুঁজ", isHealthy: false, category: "fungal" },
+  { idx: 3, raw: "Potato___Late_blight", cropEn: "Potato", cropBn: "আলু", diseaseEn: "Late Blight", diseaseBn: "বিলম্বিত পুঁজ", isHealthy: false, category: "fungal" },
+  { idx: 4, raw: "Potato___healthy", cropEn: "Potato", cropBn: "আলু", diseaseEn: "Healthy", diseaseBn: "সুস্থ", isHealthy: true, category: "healthy" },
+  { idx: 5, raw: "Tomato_Bacterial_spot", cropEn: "Tomato", cropBn: "টম্যাটো", diseaseEn: "Bacterial Spot", diseaseBn: "ব্যাকটেরিয়া দাগ", isHealthy: false, category: "bacterial" },
+  { idx: 6, raw: "Tomato_Early_blight", cropEn: "Tomato", cropBn: "টম্যাটো", diseaseEn: "Early Blight", diseaseBn: "প্রারंभিক পুঁজ", isHealthy: false, category: "fungal" },
+  { idx: 7, raw: "Tomato_Late_blight", cropEn: "Tomato", cropBn: "টম্যাটো", diseaseEn: "Late Blight", diseaseBn: "বিলম্বিত পুঁজ", isHealthy: false, category: "fungal" },
+  { idx: 8, raw: "Tomato_Leaf_Mold", cropEn: "Tomato", cropBn: "টম্যাটো", diseaseEn: "Leaf Mold", diseaseBn: "পাতার ফালি", isHealthy: false, category: "fungal" },
+  { idx: 9, raw: "Tomato_Septoria_leaf_spot", cropEn: "Tomato", cropBn: "টম্যাটো", diseaseEn: "Septoria Leaf Spot", diseaseBn: "সেপ্টোরিয়া পাতার দাগ", isHealthy: false, category: "fungal" },
+  { idx: 10, raw: "Tomato_Spider_mites_Two_spotted_spider_mite", cropEn: "Tomato", cropBn: "টম্যাটো", diseaseEn: "Spider Mites", diseaseBn: "স্পাইডার মাইট", isHealthy: false, category: "invalid" },
+  { idx: 11, raw: "Tomato__Target_Spot", cropEn: "Tomato", cropBn: "টম্যাটো", diseaseEn: "Target Spot", diseaseBn: "টার্গেট স্পট", isHealthy: false, category: "fungal" },
+  { idx: 12, raw: "Tomato__Tomato_YellowLeaf__Curl_Virus", cropEn: "Tomato", cropBn: "টম্যাটো", diseaseEn: "Yellow Leaf Curl Virus", diseaseBn: "হলদে পাতা মড়ন ভাইরাস", isHealthy: false, category: "viral" },
+  { idx: 13, raw: "Tomato__Tomato_mosaic_virus", cropEn: "Tomato", cropBn: "টম্যাটো", diseaseEn: "Mosaic Virus", diseaseBn: "মোজাইক ভাইরাস", isHealthy: false, category: "viral" },
+  { idx: 14, raw: "Tomato_healthy", cropEn: "Tomato", cropBn: "টম্যাটো", diseaseEn: "Healthy", diseaseBn: "সুস্থ", isHealthy: true, category: "healthy" },
 ];
 
 // ─── Session lifecycle (singleton) ────────────────────────────────────────────
@@ -426,3 +311,4 @@ export async function disposeModel() {
 }
 
 export const VIT_LABELS = LABEL_TABLE;
+
