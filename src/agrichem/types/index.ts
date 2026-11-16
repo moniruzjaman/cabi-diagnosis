@@ -60,9 +60,9 @@ export interface ChemicalProduct {
   // ---------------------------------------------------------------------------
   //  Policy / HHP / MoA enrichment (from policyEnrichmentData.ts sidecar)
   //
-  //  These fields are populated from the AgriChem/MoA PTAC master database
-  //  (5,485 rows × 31 cols) keyed by Registration No. Products whose reg no
-  //  is not in the sidecar will have all of these as `undefined`.
+  //  These fields are populated from the live 9,000+ DAE/PTAC catalogue
+  //  (with AgriChem/MoA master overlay) keyed by Registration No. Products
+  //  whose reg no is not in the sidecar will have all of these as `undefined`.
   // ---------------------------------------------------------------------------
   /** IRAC / FRAC / HRAC scheme tag. */
   scheme?: string;
@@ -101,6 +101,16 @@ export interface MoAClassification {
   rotationStrategyBn?: string;
   type: 'IRAC' | 'FRAC' | 'HRAC';
   committee?: 'IRAC' | 'FRAC' | 'HRAC';
+  /** Speed of action for crop-phase targeting (from IRAC MoA Rotation Guide). */
+  speedOfAction?: 'Fast' | 'Moderately Fast' | 'Moderate' | 'Slow to Moderately Slow' | 'Variable';
+  /** Recommended crop phase for deployment (from the MoA Rotation Guide). */
+  recommendedCropPhase?: 'Nursery' | 'Vegetative' | 'Reproductive' | 'Heading' | 'All';
+  /** Maximum applications per treatment window (from IRAC: generally 1-2, max <3). */
+  maxAppsPerWindow?: number;
+  /** Seasonal exposure cap: max % of crop cycle this MoA can be used (IRAC: 50%). */
+  seasonalExposureCapPct?: number;
+  /** Whether sub-group rotation (e.g. 4A→4C) is permitted as standard practice. */
+  subGroupRotationPermitted?: boolean;
 }
 
 export interface DosageInput {
