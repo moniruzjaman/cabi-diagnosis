@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { CROP_DISEASES } from "../../data/cropDiseases";
+import { CROP_DISEASES, resolveCropKey } from "../../data/cropDiseases";
 import { CROP_CALENDAR, getCurrentRiskAlerts } from "../../data/cropCalendar";
 
 /**
@@ -50,8 +50,10 @@ function isVarietyLine(rec) {
 
 export default function PreventionPlan({ C, crop, district, weatherRisk }) {
   const data = useMemo(() => {
-    const cropKey = crop && CROP_DISEASES[crop] ? crop : null;
-    if (!cropKey) return null;
+    // form.crop may be bilingual ("Rice / ধান") — resolveCropKey maps any
+    // format to the CROP_DISEASES key, exactly like the diagnose flow does.
+    const cropKey = crop ? (CROP_DISEASES[crop] ? crop : resolveCropKey(crop)) : null;
+    if (!cropKey || !CROP_DISEASES[cropKey]) return null;
 
     const varieties = new Set();
     const hygiene = new Set();
@@ -91,7 +93,7 @@ export default function PreventionPlan({ C, crop, district, weatherRisk }) {
     }
   }, []);
 
-  const cropAlert = alerts.find((a) => a.crop === crop);
+  const cropAlert = alerts.find((a) => a.crop === (data?.cropKey || crop));
 
   if (!crop) {
     return (
