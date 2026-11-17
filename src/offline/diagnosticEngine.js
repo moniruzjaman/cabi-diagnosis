@@ -802,7 +802,7 @@ function diagnoseOffline(inputData) {
   let evidenceScore = 0;
   if (topMatch) {
     evidenceScore += Math.min(topMatch.matchRatio, 1) * 55; // quality of symptom fit
-    evidenceScore += Math.min(lead, 0.4) / 0.4 * 20; // discriminative margin
+    evidenceScore += (Math.min(lead, 0.4) / 0.4) * 20; // discriminative margin
   }
   if (abioticBiotic !== "uncertain") evidenceScore += 8; // abiotic/biotic call resolved
   evidenceScore += Math.min(excluded.length, 4) * 4; // gates actually eliminated causes
