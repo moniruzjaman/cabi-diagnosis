@@ -22,6 +22,15 @@ import AgriChemApp from "./agrichem/AgriChemApp";
 import { computeEnsembleScore } from "./data/agronomicEngine";
 import { lookupMoA } from "./data/moaDatabase";
 import { getRegisteredProducts } from "./data/pesticideRegistry";
+import SixPillarGrid from "./components/dashboard/SixPillarGrid.jsx";
+import CaseManager from "./components/cases/CaseManager.jsx";
+import PreventionPlan from "./components/cases/PreventionPlan.jsx";
+import {
+  getCaseStats,
+  getActiveCases,
+  getDueReminders,
+  getLearningInsights,
+} from "./data/cropHealthCases.js";
 import "./styles/accessibility.css";
 
 /**
@@ -6888,11 +6897,318 @@ function MarketPriceTicker({ C }) {
   );
 }
 
+// ─── Six-Pillar Home Dashboard ────────────────────────────────────────────────
+// The redesigned Home tab: branded welcome context, the six-pillar workflow
+// grid, a prominent Scan & Diagnose action, active crop-health cases,
+// follow-up reminders, recent diagnoses, seasonal risk and learning picks.
+// Composes existing widgets (TodayDecisionView, MarketPriceTicker) instead
+// of duplicating them.
+function SixPillarHomeDashboard({
+  C,
+  coords,
+  locationName,
+  form,
+  history,
+  caseTick,
+  onPillar,
+  onDiagnose,
+  onOpenCase,
+  onOpenLearn,
+}) {
+  void caseTick; // re-render signal when local case data changes
+  const caseStats = getCaseStats();
+  const activeCases = getActiveCases().slice(0, 3);
+  const dueReminders = getDueReminders().slice(0, 3);
+  const insights = getLearningInsights().slice(0, 2);
+  const alerts = getCurrentRiskAlerts().slice(0, 3);
+  const recentHistory = [...(history || [])].slice(-3).reverse();
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "শুভ সকাল" : hour < 17 ? "শুভ অপরাহ্ন" : "শুভ সন্ধ্যা";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* A/B — branded welcome header with crop & location context */}
+      <div
+        className="ud-editorial-shadow"
+        style={{
+          borderRadius: 18,
+          padding: "16px 18px",
+          background: `linear-gradient(135deg, ${C.primaryXDark || "#023E11"} 0%, ${C.primaryDark} 55%, ${C.primary} 100%)`,
+          color: "#fff",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <img
+            src="/cabi-logo.png"
+            alt="উদ্ভিদ গোয়েন্দা"
+            style={{ width: 46, height: 46, borderRadius: 12, objectFit: "cover", border: "2px solid rgba(255,255,255,0.35)" }}
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3 }}>{greeting} 👋</div>
+            <div style={{ fontSize: 11, opacity: 0.9, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              উদ্ভিদ গোয়েন্দা · Crop Health Intelligence
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+          {(form.crop || locationName || form.season) && (
+            <span style={{ fontSize: 10.5, background: "rgba(255,255,255,0.16)", borderRadius: 999, padding: "3px 10px", fontWeight: 600 }}>
+              🌾 {form.crop || "ফসল নির্বাচন করুন"}
+            </span>
+          )}
+          <span style={{ fontSize: 10.5, background: "rgba(255,255,255,0.16)", borderRadius: 999, padding: "3px 10px", fontWeight: 600 }}>
+            📍 {locationName || form.district || "অবস্থান অজানা"}
+          </span>
+          <span style={{ fontSize: 10.5, background: "rgba(255,255,255,0.16)", borderRadius: 999, padding: "3px 10px", fontWeight: 600 }}>
+            🗓️ {form.season || "মৌসুম"}
+          </span>
+        </div>
+        {/* D — prominent Scan & Diagnose action */}
+        <button
+          onClick={onDiagnose}
+          style={{
+            marginTop: 12,
+            width: "100%",
+            padding: "13px 16px",
+            borderRadius: 14,
+            border: "none",
+            background: C.accent || "#F0B90B",
+            color: "#231a00",
+            fontSize: 15,
+            fontWeight: 800,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+          }}
+        >
+          <span aria-hidden="true" style={{ fontSize: 18 }}>
+            📷
+          </span>
+          স্ক্যান ও নির্ণয় করুন — Scan &amp; Diagnose
+        </button>
+      </div>
+
+      {/* C — six-pillar navigation grid */}
+      <SixPillarGrid C={C} onPillar={onPillar} caseStats={caseStats} />
+
+      {/* F — follow-up reminders */}
+      {dueReminders.length > 0 && (
+        <div
+          style={{
+            background: C.bgWarning,
+            border: `1px solid ${C.borderWarning}`,
+            borderRadius: 14,
+            padding: 14,
+          }}
+        >
+          <div style={{ fontWeight: 800, fontSize: 13, color: C.textWarning, marginBottom: 8 }}>
+            ⏰ ফলো-আপ রিমাইন্ডার ({dueReminders.length})
+          </div>
+          {dueReminders.map(({ case: c, reminder }) => (
+            <button
+              key={reminder.id}
+              onClick={() => onOpenCase(c.id)}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 8,
+                width: "100%",
+                textAlign: "left",
+                background: C.bgCard,
+                border: `1px solid ${C.borderWarning}`,
+                borderRadius: 10,
+                padding: "8px 10px",
+                marginBottom: 6,
+                cursor: "pointer",
+                color: C.text,
+              }}
+            >
+              <span style={{ fontSize: 12, fontWeight: 700 }}>
+                {c.crop} — {c.diagnosisEvidence?.diseaseNameBn || "কেস"}
+              </span>
+              <span style={{ fontSize: 10, color: C.textMuted, whiteSpace: "nowrap" }}>
+                {new Date(reminder.dueAt).toLocaleDateString("bn-BD", { day: "numeric", month: "short" })}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* E — active crop health cases */}
+      <div
+        style={{
+          background: C.bgCard,
+          border: `1px solid ${C.border}`,
+          borderRadius: 16,
+          padding: 14,
+          boxShadow: C.shadow,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <div style={{ fontWeight: 800, fontSize: 13.5, color: C.primaryDark }}>
+            📋 চলমান ক্ষেতের কেস (MONITOR)
+          </div>
+          {activeCases.length > 0 && (
+            <button onClick={() => onPillar({ id: "monitor" })} style={{ fontSize: 11, fontWeight: 700, color: C.primary, background: "none", border: "none", cursor: "pointer" }}>
+              সব দেখুন →
+            </button>
+          )}
+        </div>
+        {activeCases.length === 0 ? (
+          <div style={{ fontSize: 11.5, color: C.textMuted, lineHeight: 1.6 }}>
+            কোনো চলমান কেস নেই। রোগ নির্ণয়ের পর রিপোর্ট থেকে <b>“কেসে সংরক্ষণ”</b> করলে এখানে ফলো-আপ দেখা যাবে।
+          </div>
+        ) : (
+          activeCases.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => onOpenCase(c.id)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                width: "100%",
+                textAlign: "left",
+                background: C.bgMuted,
+                border: `1px solid ${C.border}`,
+                borderRadius: 10,
+                padding: "9px 12px",
+                marginBottom: 6,
+                cursor: "pointer",
+                color: C.text,
+              }}
+            >
+              <span aria-hidden="true" style={{ fontSize: 18 }}>
+                🌾
+              </span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 12.5, fontWeight: 700 }}>
+                  {c.crop} {c.diagnosisEvidence?.diseaseNameBn ? `— ${c.diagnosisEvidence.diseaseNameBn}` : ""}
+                </span>
+                <span style={{ display: "block", fontSize: 10, color: C.textMuted }}>
+                  {c.status === "monitoring" ? "পর্যবেক্ষণে" : "চলমান"} ·{" "}
+                  {new Date(c.updatedAt).toLocaleDateString("bn-BD", { day: "numeric", month: "short" })} ·{" "}
+                  {c.observations?.length || 0} পর্যবেক্ষণ
+                </span>
+              </span>
+              <span aria-hidden="true" style={{ color: C.textLight }}>
+                →
+              </span>
+            </button>
+          ))
+        )}
+      </div>
+
+      {/* H — seasonal disease risk & outbreak alerts */}
+      {alerts.length > 0 && (
+        <div
+          style={{
+            background: C.bgDanger,
+            borderRadius: 14,
+            padding: 14,
+            border: `1px solid ${C.borderDanger}`,
+          }}
+        >
+          <div style={{ fontWeight: 700, fontSize: 13, color: C.danger, marginBottom: 6 }}>
+            ⚠️ এই মৌসুমে ঝুঁকি (PREVENT)
+          </div>
+          {alerts.map((a, i) => (
+            <button
+              key={i}
+              onClick={() => onPillar({ id: "prevent" })}
+              style={{ display: "block", width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", padding: 0, marginBottom: 3 }}
+            >
+              <span style={{ fontSize: 12, color: C.text }}>
+                {a.icon} {a.crop}: {a.keyDiseases.join(", ")}
+              </span>
+            </button>
+          ))}
+          <div style={{ fontSize: 10, color: C.textDanger, marginTop: 4 }}>প্রতিরোধ পরিকল্পনা দেখতে ট্যাপ করুন →</div>
+        </div>
+      )}
+
+      {/* G — recent diagnosis history */}
+      {recentHistory.length > 0 && (
+        <div
+          style={{
+            background: C.bgCard,
+            border: `1px solid ${C.border}`,
+            borderRadius: 16,
+            padding: 14,
+            boxShadow: C.shadow,
+          }}
+        >
+          <div style={{ fontWeight: 800, fontSize: 13.5, color: C.primaryDark, marginBottom: 8 }}>
+            🕘 সাম্প্রতিক নির্ণয় (DETECT)
+          </div>
+          {recentHistory.map((h, i) => (
+            <div key={i} style={{ fontSize: 11.5, color: C.text, padding: "6px 0", borderBottom: i < recentHistory.length - 1 ? `1px dashed ${C.border}` : "none" }}>
+              <span style={{ fontWeight: 700 }}>{h.crop || "ফসল"}</span>{" "}
+              <span style={{ color: C.textMuted }}>
+                · {h.date} · {(h.resultPreview || "").slice(0, 46)}
+                {(h.resultPreview || "").length > 46 ? "…" : ""}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* I — recommended learning resources */}
+      <div
+        style={{
+          background: C.bgCard,
+          border: `1px solid ${C.border}`,
+          borderRadius: 16,
+          padding: 14,
+          boxShadow: C.shadow,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <div style={{ fontWeight: 800, fontSize: 13.5, color: C.primaryDark }}>🎓 আপনার জন্য শেখা (LEARN)</div>
+          <button onClick={onOpenLearn} style={{ fontSize: 11, fontWeight: 700, color: C.primary, background: "none", border: "none", cursor: "pointer" }}>
+            সব দেখুন →
+          </button>
+        </div>
+        {insights.length > 0 ? (
+          insights.map((ins) => (
+            <div key={ins.id} style={{ background: C.bgPurple, border: `1px solid ${C.borderPurple}`, borderRadius: 10, padding: "8px 10px", marginBottom: 6 }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, color: C.textPurple, lineHeight: 1.5 }}>
+                🧑‍🌾 আপনার মাঠ-শিক্ষা: {ins.crop} — {ins.diseaseNameBn || ins.diseaseName}
+              </div>
+              {ins.lesson && <div style={{ fontSize: 10.5, color: C.textMuted, marginTop: 2, lineHeight: 1.5 }}>{ins.lesson}</div>}
+            </div>
+          ))
+        ) : (
+          <div style={{ fontSize: 11.5, color: C.textMuted, lineHeight: 1.6 }}>
+            CABI ৫-ধাপ নির্ণয় প্রোটোকল, ভিজ্যুয়াল রোগ লাইব্রেরি ও ৫টি গেম — “শিখুন” স্তম্ভে। কেস সম্পন্ন হলে
+            আপনার নিজের মাঠ-শিক্ষাও এখানে যুক্ত হবে।
+          </div>
+        )}
+      </div>
+
+      {/* existing daily-decision + market widgets remain part of the dashboard */}
+      <TodayDecisionView C={C} coords={coords} locationName={locationName} history={history} />
+      <MarketPriceTicker C={C} />
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function UdbhidGoenda() {
   const [activeTab, setActiveTab] = useState("home");
   const [copilotOpen, setCopilotOpen] = useState(false);
   const [step, setStep] = useState(1);
+  // Six-pillar workflow state: pending case seed from a diagnosis result
+  // ("Save to Case") and a refresh tick for local-first case data.
+  const [caseSeed, setCaseSeed] = useState(null);
+  const [caseViewId, setCaseViewId] = useState(null);
+  const [caseTick, setCaseTick] = useState(0);
+  const refreshCaseData = useCallback(() => setCaseTick((t) => t + 1), []);
   const [form, setForm] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("ud-form") || "{}");
@@ -7959,6 +8275,93 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
     flexShrink: 0,
   };
 
+  // ─── Six-pillar navigation ─────────────────────────────────────────────────
+  // Routes a pillar card to the right surface without adding bottom-nav tabs:
+  //   DETECT  → diagnose flow (step 1, or the live report when one exists)
+  //   TREAT   → live report's IPM/chemical panels, else the diagnose flow
+  //   PREVENT → prevention plan for the selected crop
+  //   MONITOR → case list
+  //   EVALUATE→ case list (evaluation lives inside each case)
+  //   LEARN   → learning hub
+  const handlePillarNavigation = (pillar) => {
+    if (!pillar) return;
+    postJson("/api/analytics", { visitorId, section: `pillar_${pillar.id}` }).catch(() => {});
+    switch (pillar.id) {
+      case "detect":
+        setActiveTab("diagnose");
+        break;
+      case "treat":
+        setActiveTab("diagnose");
+        if (!(step === 2 && result)) {
+          // No live report — start a diagnosis so treatment advice exists.
+          setStep(1);
+        }
+        break;
+      case "prevent":
+        setActiveTab("prevent");
+        break;
+      case "monitor":
+      case "evaluate":
+        setCaseSeed(null);
+        setActiveTab("cases");
+        break;
+      case "learn":
+        setActiveTab("learn");
+        break;
+      default:
+        setActiveTab("home");
+    }
+  };
+
+  // "Save to Case" from a diagnosis report — builds the case seed that
+  // CaseManager turns into a full crop-health case (DETECT evidence included).
+  const saveResultToCase = async () => {
+    const evidence = structuredResult
+      ? {
+          diseaseName: structuredResult.disease_name || structuredResult.disease || "",
+          diseaseNameBn: structuredResult.disease_name_bn || "",
+          cause: structuredResult.biotic_abiotic || structuredResult.cause || "",
+          confidence: structuredResult.confidence || "",
+          confidencePct: structuredResult.confidence_pct ?? null,
+          provider: provider || "offline-engine",
+          source: diagnosisMode === "offline" ? "offline" : "ai",
+          alternatives: (structuredResult.top_candidates || [])
+            .slice(1, 4)
+            .map((t) => t.name_bn || t.name_en || "")
+            .filter(Boolean),
+          keySymptoms: form.symptoms ? form.symptoms.split(/[,\n、]/).map((s) => s.trim()).filter(Boolean).slice(0, 6) : [],
+        }
+      : null;
+    let thumb = null;
+    // Only attach a thumbnail when the user already consented for cases;
+    // makeThumbnail keeps it tiny, and no photo ever leaves the device.
+    if (images[0]?.url) {
+      const { makeThumbnail } = await import("./data/cropHealthCases.js");
+      thumb = await makeThumbnail(images[0].url);
+    }
+    setCaseSeed({
+      crop: form.crop,
+      district: form.district || locationName || "",
+      season: form.season,
+      growthStage: form.growthStage,
+      lat: coords?.lat,
+      lon: coords?.lon,
+      diagnosisEvidence: evidence,
+      initialNotes: form.symptoms ? `লক্ষণ: ${form.symptoms}` : "",
+      initialSymptoms: form.symptoms || "",
+      initialSeverity:
+        structuredResult?.severity === "severe" || structuredResult?.severity === "high"
+          ? "high"
+          : structuredResult?.severity === "moderate"
+            ? "moderate"
+            : "low",
+      initialSeverityPct: structuredResult?.confidence_pct ?? null,
+      thumbnail: thumb,
+      photoConsent: false, // explicit per-case consent is collected in CaseManager
+    });
+    setActiveTab("cases");
+  };
+
   // ─── Simplified navigation: 5 clear destinations for farmers ──────────────
   // (Formerly 10 tabs — home/today/guide/game/apps/history/library were
   // overlapping or hidden pages. They are now merged into these five.)
@@ -8173,32 +8576,53 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   (The old separate "today" tab was merged here so farmers
                   see one clear home page instead of two similar ones.) ── */}
               {(activeTab === "home" || activeTab === "today") && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <TodayDecisionView C={C} coords={coords} locationName={locationName} history={history} />
-                  <MarketPriceTicker C={C} />
-                  {(() => {
-                    const alerts = getCurrentRiskAlerts();
-                    if (alerts.length === 0) return null;
-                    return (
-                      <div
-                        style={{
-                          background: C.bgDanger,
-                          borderRadius: 12,
-                          padding: 12,
-                          border: `1px solid ${C.borderDanger}`,
-                        }}
-                      >
-                        <div style={{ fontWeight: 700, fontSize: 13, color: C.danger, marginBottom: 6 }}>
-                          ⚠️ এই মৌসুমে ঝুঁকি
-                        </div>
-                        {alerts.map((a, i) => (
-                          <div key={i} style={{ fontSize: 12, color: C.text, marginBottom: 3 }}>
-                            {a.icon} {a.crop}: {a.keyDiseases.join(", ")}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
+                <SixPillarHomeDashboard
+                  C={C}
+                  coords={coords}
+                  locationName={locationName}
+                  form={form}
+                  history={history}
+                  caseTick={caseTick}
+                  onPillar={(p) => handlePillarNavigation(p)}
+                  onDiagnose={() => setActiveTab("diagnose")}
+                  onOpenCase={(id) => {
+                    setCaseSeed(null);
+                    setCaseViewId(id);
+                    setActiveTab("cases");
+                  }}
+                  onOpenLearn={() => setActiveTab("learn")}
+                />
+              )}
+
+              {/* ── CASES tab — Crop Health Case Management (MONITOR + EVALUATE) ── */}
+              {activeTab === "cases" && (
+                <div style={{ animation: "fadeIn .3s ease" }}>
+                  <CaseManager
+                    C={C}
+                    seedCase={caseSeed}
+                    openCaseId={caseViewId}
+                    onCaseCreated={() => {
+                      setCaseSeed(null);
+                      refreshCaseData();
+                    }}
+                    onInsightAdded={() => refreshCaseData()}
+                  />
+                </div>
+              )}
+
+              {/* ── PREVENT tab — preventive crop-health management (Pillar 3) ── */}
+              {activeTab === "prevent" && (
+                <div style={{ animation: "fadeIn .3s ease" }}>
+                  <PreventionPlan
+                    C={C}
+                    crop={form.crop}
+                    district={form.district || locationName}
+                    weatherRisk={
+                      weather && weather.main
+                        ? `বর্তমান আবহাওয়া: ${Math.round(weather.main.temp)}°C, আর্দ্রতা ${weather.main.humidity}% — ছত্রাক রোগের ঝুঁকি বাড়ে যদি আর্দ্রতা ৮০%+ ও তাপমাত্রা ২০-৩০°C হয়।`
+                        : null
+                    }
+                  />
                 </div>
               )}
 
@@ -9914,6 +10338,49 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                       >
                         ⚠️ এই রিপোর্ট প্রাথমিক গাইডেন্সের জন্য। চূড়ান্ত সিদ্ধান্তে DAE কর্মকর্তার পরামর্শ নিন।
                       </div>
+
+                      {/* Six-pillar workflow: send this diagnosis into a
+                          crop-health case (TREAT → MONITOR → EVALUATE) and
+                          jump straight to its prevention plan. */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
+                        <button
+                          onClick={saveResultToCase}
+                          style={{
+                            padding: "12px 10px",
+                            borderRadius: 12,
+                            border: "none",
+                            background: `linear-gradient(135deg, ${C.primaryDark}, ${C.primary})`,
+                            color: "#fff",
+                            fontWeight: 800,
+                            fontSize: 12.5,
+                            cursor: "pointer",
+                          }}
+                        >
+                          📋 কেসে সংরক্ষণ করুন
+                          <span style={{ display: "block", fontSize: 9, fontWeight: 600, opacity: 0.85, marginTop: 1 }}>
+                            MONITOR · ফলো-আপ রাখুন
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => setActiveTab("prevent")}
+                          style={{
+                            padding: "12px 10px",
+                            borderRadius: 12,
+                            border: `1px solid ${C.border}`,
+                            background: C.bgCard,
+                            color: C.primary,
+                            fontWeight: 800,
+                            fontSize: 12.5,
+                            cursor: "pointer",
+                          }}
+                        >
+                          🛡️ প্রতিরোধ দেখুন
+                          <span style={{ display: "block", fontSize: 9, fontWeight: 600, color: C.textMuted, marginTop: 1 }}>
+                            PREVENT · মৌসুমের ঝুঁকি
+                          </span>
+                        </button>
+                      </div>
+
                       <button
                         onClick={reset}
                         aria-label="Reset form"

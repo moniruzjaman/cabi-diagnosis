@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import useTTS from "../games/useTTS";
 import VisualDiagnosisLibrary from "./VisualDiagnosisLibrary";
+import { getLearningInsights } from "../data/cropHealthCases.js";
 import {
   CABI_PROTOCOL_STEPS,
   ETL_DATABASE,
@@ -268,6 +269,140 @@ function AudioPodcastPlayer({ title, id, desc, C }) {
           ⏩ +১০ সে
         </button>
       </div>
+    </div>
+  );
+}
+
+// ─── Field-Case Learning Insights (six-pillar LEARN connection) ──────────────
+// Renders the farmer's OWN promoted case lessons (from Pillar 5 EVALUATE).
+// Every entry is clearly labelled as a personal field observation —
+// unverified user feedback is never presented as CABI guidance.
+function FieldCaseInsights({ C }) {
+  const [insights] = useState(() => {
+    try {
+      return getLearningInsights();
+    } catch {
+      return [];
+    }
+  });
+
+  const OUTCOME_STYLE = {
+    recovered: { label: "সেরে উঠেছে", bg: "#f0fdf4", fg: "#14532d", icon: "✅" },
+    improved: { label: "উন্নতি", bg: "#f0fdf4", fg: "#14532d", icon: "📈" },
+    unchanged: { label: "অপরিবর্তিত", bg: "#f1f5f9", fg: "#475569", icon: "≈" },
+    worsened: { label: "খারাপ হয়েছে", bg: "#fef2f2", fg: "#991b1b", icon: "📉" },
+    failed: { label: "ব্যর্থ", bg: "#fef2f2", fg: "#991b1b", icon: "❌" },
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div
+        style={{
+          background: C.bgCard,
+          borderRadius: 16,
+          padding: 16,
+          border: `1px solid ${C.border}`,
+          boxShadow: C.shadow,
+        }}
+      >
+        <div style={{ fontWeight: 800, fontSize: 15, color: C.primaryDark, marginBottom: 4 }}>
+          🧑‍🌾 আপনার মাঠ-কেস শিক্ষা
+        </div>
+        <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.7 }}>
+          ক্ষেতের কেস মূল্যায়ন (EVALUATE) সম্পন্ন করে &ldquo;শিক্ষা সংরক্ষণ&rdquo; চাপলে সেই অভিজ্ঞতা এখানে জমা হয়।
+          এগুলো <b>আপনার নিজের পর্যবেক্ষণ</b> — CABI বা DAE-এর সুপারিশ নয়। ব্যর্থ চিকিৎসাও লিখে রাখুন — কী কাজ করেনি
+          সেটাও মূল্যবান শিক্ষা।
+        </div>
+      </div>
+
+      {insights.length === 0 && (
+        <div
+          style={{
+            background: C.bgMuted,
+            borderRadius: 16,
+            padding: 20,
+            border: `1px dashed ${C.border}`,
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: 30, marginBottom: 6 }} aria-hidden="true">
+            🌱
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 4 }}>এখনো কোনো কেস-শিক্ষা নেই</div>
+          <div style={{ fontSize: 11.5, color: C.textMuted, lineHeight: 1.7 }}>
+            ১. <b>নির্ণয়</b> করুন → ২. রিপোর্ট থেকে <b>কেসে সংরক্ষণ</b> → ৩. চিকিৎসা ও ফলো-আপ রেকর্ড করুন → ৪.{" "}
+            <b>মূল্যায়ন</b> সম্পন্ন করুন → ৫. শিক্ষা সংরক্ষণ করুন। তখন সেই শিক্ষা এখানে দেখা যাবে।
+          </div>
+        </div>
+      )}
+
+      {insights.map((ins) => {
+        const st = OUTCOME_STYLE[ins.outcome] || OUTCOME_STYLE.unchanged;
+        return (
+          <div
+            key={ins.id}
+            style={{
+              background: C.bgCard,
+              borderRadius: 16,
+              padding: 14,
+              border: `1px solid ${C.border}`,
+              boxShadow: C.shadow,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
+              <span style={{ fontWeight: 800, fontSize: 13.5, color: C.text }}>
+                {ins.crop} — {ins.diseaseNameBn || ins.diseaseName || "অজানা সমস্যা"}
+              </span>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  padding: "2px 9px",
+                  borderRadius: 999,
+                  background: st.bg,
+                  color: st.fg,
+                }}
+              >
+                {st.icon} {st.label}
+              </span>
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  background: ins.verified ? "#f0fdf4" : C.bgMuted,
+                  color: ins.verified ? "#14532d" : C.textMuted,
+                  border: `1px solid ${ins.verified ? "#bbf7d0" : C.border}`,
+                }}
+              >
+                {ins.verified ? "✓ মাঠে যাচাইকৃত" : "অ-যাচাইকৃত"}
+              </span>
+            </div>
+            {ins.lesson && (
+              <div style={{ fontSize: 12.5, color: C.text, lineHeight: 1.7, marginBottom: 6 }}>{ins.lesson}</div>
+            )}
+            {ins.treatmentsTried?.length > 0 && (
+              <div
+                style={{
+                  fontSize: 11,
+                  color: C.textMuted,
+                  background: C.bgMuted,
+                  borderRadius: 10,
+                  padding: "7px 10px",
+                  lineHeight: 1.6,
+                }}
+              >
+                <b>যা করেছিলেন:</b> {ins.treatmentsTried.join(" · ")}
+              </div>
+            )}
+            <div style={{ fontSize: 9.5, color: C.textLight, marginTop: 6 }}>
+              {new Date(ins.createdAt).toLocaleDateString("bn-BD", { day: "numeric", month: "long", year: "numeric" })}{" "}
+              · ব্যক্তিগত মাঠ-অভিজ্ঞতা
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -1196,6 +1331,7 @@ export default function UnifiedLearnResourceHub({
                 { id: "protocol", label: "📋 ৫-ধাপ প্রোটোকল", desc: "পূর্ণ নির্দেশিকা" },
                 { id: "flowchart", label: "🎯 সিদ্ধান্ত প্রবাহচিত্র", desc: "ইন্টারেক্টিভ গাইড" },
                 { id: "checklist", label: "📝 মাঠ চেকলিস্ট", desc: "৮-দফা পরিদর্শন" },
+                { id: "fieldcases", label: "🧑‍🌾 মাঠ-কেস শিক্ষা", desc: "আপনার অভিজ্ঞতা" },
               ].map((tab) => {
                 const isSelected = learningSubView === tab.id;
                 return (
@@ -2058,6 +2194,11 @@ export default function UnifiedLearnResourceHub({
               </div>
             </div>
           )}
+
+          {/* SUB-VIEW 4: FIELD-CASE LEARNING (six-pillar LEARN connection).
+              Shows the farmer's OWN verified case outcomes — explicitly
+              labelled as personal field lessons, never as CABI guidance. */}
+          {learningSubView === "fieldcases" && <FieldCaseInsights C={C} />}
         </div>
       )}
 
