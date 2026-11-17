@@ -3,7 +3,7 @@
 // used by the offline diagnostic engine's exclusion gates.
 
 export const BENGALI_KEYWORD_MAP = {
-  //  Leaf symptoms 
+  // Leaf symptoms
   "পাতা হলুদ হয়ে যাচ্ছে": "yellow leaves chlorosis yellowing",
   "পাতায় বাদামি গোলাকার দাগ": "brown spots lesions circular leaf spots",
   "পাতায় ধূসর মাকু আকৃতির দাগ (ব্লাস্ট)": "gray spindle diamond shaped lesions blast fungal",
@@ -19,7 +19,7 @@ export const BENGALI_KEYWORD_MAP = {
   "পাতায় তেলতেলে": "water soaked oily water-soaked margins",
   "পাতা পোড়া": "leaf scorch burn necrosis",
 
-  //  Stem symptoms 
+  // Stem symptoms
   "কান্ডের গোড়া পচে কালো বা বাদামি": "stem rot canker base rot dark discoloration",
   "কান্ড টানলে সহজে উঠে আসে, ভেতর ফাঁকা": "stem borer holes hollow stem insect borer",
   "শিকড় কালো ও পচা": "root rot black roots wilting",
@@ -27,7 +27,7 @@ export const BENGALI_KEYWORD_MAP = {
   "কাণ্ডে ছিদ্র": "stem borer holes insect",
   "কাণ্ড ভেঙে": "stem breaking lodging",
 
-  //  Fruit / grain symptoms 
+  // Fruit / grain symptoms
   "ফুল অকালে ঝরে পড়ছে": "flower drop premature abortion",
   "ফল পচে যাচ্ছে, কালো বা বাদামি দাগ": "fruit rot black brown spots fruit",
   "ধানের শীষ চিটা, দানা পূর্ণ হচ্ছে না": "ear head drying chaffy grains white head stem borer",
@@ -36,14 +36,14 @@ export const BENGALI_KEYWORD_MAP = {
   "ফলে দাগ": "fruit spots",
   "শীষ শুকিয়ে": "ear head drying",
 
-  //  Whole plant symptoms 
+  // Whole plant symptoms
   "গাছ দিনে নেতিয়ে পড়ে, রাতে সতেজ হয়": "wilting bacterial wilt temporary recovery",
   "গাছ হঠাৎ শুকিয়ে মারা যাচ্ছে": "plant death dieback sudden wilt",
   "গাছ শুকিয়ে": "wilting drying",
   "গাছ মরে": "plant death dieback",
   "আগায় শুকিয়ে": "tip burn dieback",
 
-  //  Pest signs 
+  // Pest signs
   "গাছে পোকা দেখা যাচ্ছে": "insect visible pest insects",
   "পাতায় ছিদ্র বা চিবানোর দাগ": "chewing marks holes leaf damage insect",
   "গাছে পিঁপড়া বা আঠালো মধুরস": "sticky honeydew ants aphid whitefly",
@@ -53,12 +53,12 @@ export const BENGALI_KEYWORD_MAP = {
   "সাদা মাছি": "whitefly insect",
   "মাটির পোকা": "soil insect grub root feeding",
 
-  //  Environment / abiotic 
+  // Environment / abiotic
   "বন্যার ক্ষতি": "flood water damage waterlogging",
   খরা: "drought stress",
   ঠান্ডা: "cold injury frost",
 
-  //  Short labels from SYMPTOM_CHIPS (label field) 
+  // Short labels from SYMPTOM_CHIPS (label field)
   "পাতা হলুদ": "yellow leaves chlorosis",
   "বাদামি দাগ": "brown spots lesions",
   "ধূসর দাগ (ব্লাস্ট)": "blast gray diamond lesions fungal",
@@ -78,7 +78,7 @@ export const BENGALI_KEYWORD_MAP = {
   "গাছ মরছে": "plant death dieback",
   "সাদা গুঁড়া": "white powder mildew powdery coating",
 
-  //  Additional common Bengali agricultural terms 
+  // Additional common Bengali agricultural terms
   "পাতায় হীরার মত দাগ": "diamond shaped lesions blast fungal",
   "আগায় শুকিয়ে যাওয়া": "tip burn dieback",
   "শীষ শুকিয়ে যাওয়া": "ear head drying",
@@ -104,14 +104,14 @@ export const BENGALI_KEYWORD_MAP = {
  * only fires when its tokens line up with whole tokens of the input. That is
  * what prevents the substring bugs this layer replaced ("holes" inside
  * "holostem", "powder" inside "powdery", "curl" inside "curly"). Each value is
- * an equivalence class  never a superstring of another key  so no cascade or
+ * an equivalence class never a superstring of another key so no cascade or
  * double-expansion can occur.
  *
  * Multi-word keys are applied before single-word keys, so the most specific
  * phrase wins ("yellowing of leaves" beats bare "yellowing").
  */
 export const SYMPTOM_SYNONYMS = {
-  //  Chlorosis / yellowing 
+  // Chlorosis / yellowing
   "yellowing of leaves": "yellow leaves",
   "leaves turning yellow": "yellow leaves",
   "leaves are turning yellow": "yellow leaves",
@@ -122,14 +122,14 @@ export const SYMPTOM_SYNONYMS = {
   chlorosis: "chlorosis",
   "pale green": "chlorosis",
 
-  //  Spots / lesions 
+  // Spots / lesions
   lesions: "spots",
   lesion: "spots",
   specks: "spots",
   flecks: "spots",
   "dead spots": "necrotic spots",
 
-  //  Necrosis / burning 
+  // Necrosis / burning
   blight: "necrosis",
   scorch: "necrosis",
   scorched: "necrosis",
@@ -140,19 +140,19 @@ export const SYMPTOM_SYNONYMS = {
   drying: "necrosis",
   dieback: "dieback",
 
-  //  Wilting 
+  // Wilting
   wilting: "wilt",
   drooping: "wilt",
   "droops down": "wilt",
 
-  //  Rot 
+  // Rot
   rotting: "rot",
   rots: "rot",
   decayed: "rot",
   decaying: "rot",
   putrefaction: "rot",
 
-  //  Distortion 
+  // Distortion
   curling: "curl",
   curled: "curl",
   crinkling: "crinkle",
@@ -160,13 +160,13 @@ export const SYMPTOM_SYNONYMS = {
   distortion: "deformity",
   deformed: "deformity",
 
-  //  Growth 
+  // Growth
   stunting: "stunted",
   dwarfing: "stunted",
   dwarf: "stunted",
   "stunted growth": "stunted",
 
-  //  Insect damage / signs 
+  // Insect damage / signs
   holes: "chewing marks",
   perforations: "chewing marks",
   chewed: "chewing marks",
@@ -181,7 +181,7 @@ export const SYMPTOM_SYNONYMS = {
   castskins: "cast skins",
   stippling: "speckling",
 
-  //  Fungal signs 
+  // Fungal signs
   mould: "mold",
   mouldy: "mold",
   mildew: "fungus",
@@ -191,7 +191,7 @@ export const SYMPTOM_SYNONYMS = {
   smut: "fungus",
   sclerotia: "sclerotia",
 
-  //  Pest names (plural  canonical singular) 
+  // Pest names (plural canonical singular)
   aphids: "aphid",
   whiteflies: "whitefly",
   mealybugs: "mealybug",
