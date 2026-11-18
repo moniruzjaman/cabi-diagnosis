@@ -16,6 +16,7 @@ import {
   STATUS_LABELS_BN,
   OUTCOME_LABELS_BN,
 } from "../../data/cropHealthCases";
+import RiskRadarWidget from "./RiskRadarWidget";
 
 /**
  * CaseManager — Pillar 4 (MONITOR) + Pillar 5 (EVALUATE) surface.
@@ -666,6 +667,9 @@ function CaseDetail({ C, caseId, onBack, onInsightAdded }) {
           ))}
         </div>
       </Card>
+
+      {/* Disease Risk Radar (MONITOR pillar — weather-driven, scouting-first) */}
+      <RiskRadarWidget C={C} case={c} />
 
       {/* EVALUATE summary */}
       <Card C={C} icon="📊" title="তীব্রতার অগ্রগতি (EVALUATE)" accent="#e9d5ff">
