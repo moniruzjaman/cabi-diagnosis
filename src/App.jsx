@@ -25,6 +25,7 @@ import { getRegisteredProducts } from "./data/pesticideRegistry";
 import SixPillarGrid from "./components/dashboard/SixPillarGrid.jsx";
 import CaseManager from "./components/cases/CaseManager.jsx";
 import PreventionPlan from "./components/cases/PreventionPlan.jsx";
+import AboutPanel from "./components/AboutPanel.jsx";
 import {
   getCaseStats,
   getActiveCases,
@@ -7202,6 +7203,7 @@ function SixPillarHomeDashboard({
 export default function UdbhidGoenda() {
   const [activeTab, setActiveTab] = useState("home");
   const [copilotOpen, setCopilotOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [step, setStep] = useState(1);
   // Six-pillar workflow state: pending case seed from a diagnosis result
   // ("Save to Case") and a refresh tick for local-first case data.
@@ -8513,6 +8515,28 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                 }}
               >
                 {darkMode ? "☀️" : "🌙"}
+              </button>
+              {/* System information (About) */}
+              <button
+                onClick={() => setAboutOpen(true)}
+                aria-label="System information"
+                title="সিস্টেম তথ্য"
+                style={{
+                  flexShrink: 0,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  border: `1px solid ${C.border}`,
+                  background: C.bgMuted,
+                  cursor: "pointer",
+                  fontSize: 15,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: C.text,
+                }}
+              >
+                ℹ️
               </button>
               {activeTab !== "home" && (
                 <button
@@ -10834,6 +10858,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               }}
             />
           )}
+          {/* System information modal */}
+          <AboutPanel open={aboutOpen} onClose={() => setAboutOpen(false)} C={C} darkMode={darkMode} />
         </>
       )}
     </div>

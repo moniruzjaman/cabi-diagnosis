@@ -1,6 +1,6 @@
 {
   "name": "cabi-diagnosis",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "description": "উদ্ভিদ গোয়েন্দা (Plant Detective) — AI-powered CABI diagnostic process trainer for Bangladesh farmers, with interactive games, TTS accessibility, and modern mobile-first UI",
   "license": "MIT",
   "keywords": [
@@ -31,7 +31,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/strip-crossorigin.js",
+    "build": "node scripts/generate-build-meta.mjs && vite build && node scripts/strip-crossorigin.js",
     "preview": "vite preview",
     "lint": "eslint src/ api/ --ext .js,.jsx --no-warn-ignored",
     "lint:fix": "eslint src/ api/ --ext .js,.jsx --fix --no-warn-ignored",
