@@ -31,7 +31,11 @@ import {
   getActiveCases,
   getDueReminders,
   getLearningInsights,
+  getCaseById,
 } from "./data/cropHealthCases.js";
+// Phase 5 — copilot case-awareness: appends an active case's context to the
+// copilot system prompt (crop / stage / risk / scouting action / diagnosis).
+import { buildCaseContext } from "./intelligence/copilotContext.js";
 import "./styles/accessibility.css";
 
 /**
@@ -3013,7 +3017,7 @@ function ConfidenceDashboard(props) {
 }
 
 // ─── AI Copilot for Extension Officers ────────────────────────────────────
-function AICopilotTab({ crop, district, weather, locationName: _locationName, signedFetch }) {
+function AICopilotTab({ crop, district, weather, locationName: _locationName, signedFetch, caseObj }) {
   const [query, setQuery] = useState("");
   const [conversation, setConversation] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -3034,7 +3038,11 @@ function AICopilotTab({ crop, district, weather, locationName: _locationName, si
     setLoading(true);
     setQuery("");
     try {
-      const systemPrompt = `You are an AI Copilot for Bangladesh DAE extension officers. Provide expert agronomic advice in simple Bangla with English technical terms in brackets. Be specific to Bangladesh conditions, reference BRRI/BARI/DAE recommendations. Keep responses practical and actionable. Crop context: ${crop || "N/A"}, District: ${district || "N/A"}, Weather: ${weather ? `${weather.temp}°C, ${weather.humidity}% humidity` : "N/A"}.`;
+      const systemPrompt = `You are an AI Copilot for Bangladesh DAE extension officers. Provide expert agronomic advice in simple Bangla with English technical terms in brackets. Be specific to Bangladesh conditions, reference BRRI/BARI/DAE recommendations. Keep responses practical and actionable. Crop context: ${crop || "N/A"}, District: ${district || "N/A"}, Weather: ${weather ? `${weather.temp}°C, ${weather.humidity}% humidity` : "N/A"}.${
+        // Phase 5 — when a crop-health case is open, append its context so the
+        // copilot answers case-aware (risk score, scouting action, diagnosis).
+        buildCaseContext(caseObj) ? `\n\n${buildCaseContext(caseObj)}` : ""
+      }`;
       const res = await signedFetch("/api/diagnose", {
         method: "POST",
         body: JSON.stringify({ systemPrompt, messages: [{ role: "user", content: question }] }),
@@ -10838,6 +10846,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   weather={weather}
                   locationName={locationName}
                   signedFetch={signedFetch}
+                  caseObj={caseViewId ? getCaseById(caseViewId) : null}
                 />
               </div>
             </div>
