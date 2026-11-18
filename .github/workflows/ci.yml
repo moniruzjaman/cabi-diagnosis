@@ -13,7 +13,11 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Node 24 required: the intelligence test suite (plain Node, no
+          # bundler) imports pesticideRegistry.js → agrichem .ts data files,
+          # which needs native type-stripping (Node ≥22.18). Node 20 throws
+          # ERR_UNKNOWN_FILE_EXTENSION '.ts' in registryValidation.test.mjs.
+          node-version: 24
           cache: npm
 
       - name: Install
