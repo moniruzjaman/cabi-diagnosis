@@ -62,6 +62,27 @@
     <script>
       // Register service worker — force update on every page load
       if ('serviceWorker' in navigator) {
+        // PWA auto-update: reload the page when a NEW service worker takes
+        // control, so existing users land on the latest deployment without a
+        // second manual refresh.
+        //
+        // Two cases:
+        //  • Returning user (page already controlled at navigation start):
+        //    every controllerchange mid-session is a real deployment → reload.
+        //  • Fresh user (no controller at load): the FIRST controllerchange is
+        //    this session's own install claiming the page — the shell was just
+        //    fetched, so it is already current → skip it, but reload on any
+        //    subsequent change (a real deployment picked up by the 60s poll).
+        const wasControlledAtLoad = !!navigator.serviceWorker.controller;
+        let firstClaimSkipped = wasControlledAtLoad;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!wasControlledAtLoad && !firstClaimSkipped) {
+            firstClaimSkipped = true;
+            return;
+          }
+          window.location.reload();
+        });
+
         window.addEventListener('load', async () => {
           const registration = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
           // Check for SW updates every time the page loads
