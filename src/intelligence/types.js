@@ -317,4 +317,83 @@
  * @property {OperationWindow[]} scout
  */
 
+// ============================================================
+// Phase 2 — Crop Protection Decision Engine + MoA Stewardship
+// (original design; MoA classification from public-domain
+//  FRAC/IRAC/HRAC resistance-management publications)
+// ============================================================
+
+/** @typedef {'low'|'medium'|'high'} ResistanceRisk */
+/** @typedef {'fungicide'|'insecticide'|'herbicide'|'bactericide'|'biocontrol'|'multi_site'} PesticideClass */
+
+/**
+ * A Mode of Action group (FRAC/IRAC/HRAC classification).
+ * Data is public-domain agronomic science published by the Fungicide
+ * Resistance Action Committee (FRAC), Insecticide Resistance Action
+ * Committee (IRAC), and Herbicide Resistance Action Committee (HRAC).
+ * The `sources` field cites the committee publication or marks "uncited".
+ * @typedef {Object} MoaGroup
+ * @property {string} code - canonical code, e.g. "FRAC_3", "FRAC_M", "IRAC_3"
+ * @property {string} shortCode - display code, e.g. "3", "M", "3A"
+ * @property {string} committee - "FRAC" | "IRAC" | "HRAC"
+ * @property {string} name - full name (English)
+ * @property {string} nameBn - Bangla name
+ * @property {PesticideClass} pesticideClass
+ * @property {ResistanceRisk} resistanceRisk
+ * @property {number} maxAppsPerSeason - FRAC-recommended cap
+ * @property {number} rotationWindowDays - min days between same-group applications
+ * @property {number} phiDays - default pre-harvest interval (days); override per product
+ * @property {string[]} activeIngredients - examples
+ * @property {string[]} targetPathogenClasses - e.g. ["ascomycetes", "oomycetes"]
+ * @property {string[]} sources
+ */
+
+/**
+ * A normalized treatment record for MoA rotation tracking.
+ * Derived from cropHealthCases case.treatments[] entries.
+ * @typedef {Object} TreatmentRecord
+ * @property {string} id
+ * @property {string} date - ISO
+ * @property {'cultural'|'biological'|'chemical'|'mechanical'} type
+ * @property {string} description
+ * @property {string} productName
+ * @property {string} activeIngredient
+ * @property {string} moaCode - canonical MoA code (resolved from free-text moaGroup)
+ * @property {string} moaGroupRaw - original free-text as entered
+ * @property {string} dosage
+ * @property {number|null} cost
+ * @property {string|null} targetDisease - disease id this treatment targets
+ * @property {number} phiDays - pre-harvest interval (from MoA group)
+ */
+
+/**
+ * A single gate in the Crop Protection Decision sequence.
+ * @typedef {Object} ProtectionGate
+ * @property {'diagnosis_confirmed'|'economic_threshold'|'moa_rotation'|'weather_suitable'|'pre_harvest_interval'} id
+ * @property {string} name
+ * @property {string} nameBn
+ * @property {boolean} passed
+ * @property {string} reason - why passed/blocked (Bangla-first)
+ * @property {string} reasonEn
+ * @property {string[]} evidence
+ */
+
+/**
+ * The full Crop Protection Decision — the compliance layer any chemical
+ * treatment must pass before being shown as "approved". `approved` is true
+ * ONLY when all gates pass. This is the engine that makes the Phase 1 spray
+ * recommendation's "follow the Crop Protection Decision Engine" real.
+ * @typedef {Object} ProtectionDecision
+ * @property {boolean} approved
+ * @property {ProtectionGate[]} gates
+ * @property {string|null} blockedReason - Bangla explanation of the first blocker
+ * @property {string|null} blockedReasonEn
+ * @property {string|null} blockedGateId - which gate blocked
+ * @property {{moaCode: string, activeIngredient: string, productName: string}|null} approvedTreatment
+ * @property {string[]} alternativeMoaOptions - rotation alternatives if MoA gate blocked
+ * @property {string[]} complianceNotes - rotation advice, PHI warnings
+ * @property {string[]} modelLimitations
+ * @property {string} evaluatedAt
+ */
+
 export {}; // type-only module
