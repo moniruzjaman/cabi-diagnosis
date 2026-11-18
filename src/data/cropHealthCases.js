@@ -150,9 +150,11 @@ export function createCase(input = {}) {
     monitoring: [],
     evaluation: null,
     // Optional intelligence fields (non-breaking — default null).
-    // Populated by the Disease Risk Radar (src/intelligence/riskRadar.js).
+    // Populated by the Disease Risk Radar (src/intelligence/riskRadar.js)
+    // and the Crop Protection Decision Engine (src/intelligence/protectionDecisionEngine.js).
     riskAssessment: null,
     scoutingAction: null,
+    protectionDecision: null,
   };
   // Baseline observation
   c.observations.push({
@@ -265,6 +267,7 @@ export function addTreatment(caseId, t = {}) {
     dosage: t.dosage || "",
     cost: t.cost ?? null,
     notes: t.notes || "",
+    targetDisease: t.targetDisease || null,
   });
   c.updatedAt = nowIso();
   saveCases(cases);
