@@ -96,18 +96,29 @@ function evaluateDiagnosisGate(caseObj, _diseaseId) {
 }
 
 /**
- * Gate 2: Is disease risk ≥ the economic threshold (50)?
+ * Gate 2: Is the target's risk ≥ the economic threshold (50)?
  * Below 50, scouting continues (Phase 1 scouting-first policy).
+ *
+ * Pest mode: when the target is an insect pest (pestEngine id), the risk
+ * comes from riskRadar.pestForecast — the disease forecast has no entry for
+ * a pest id, so looking there would score 0 and make every pest-mode
+ * decision permanently unapprovable (PR #66 review).
  * @param {object} riskRadar - Phase 1 computeRiskRadar result
- * @param {string} diseaseId
+ * @param {string} targetId - disease id or pest id
+ * @param {boolean} pestMode - true when targetId is a pest id
  * @returns {import('./types.js').ProtectionGate}
  */
-function evaluateEconomicThresholdGate(riskRadar, diseaseId) {
-  const diseaseForecast = riskRadar?.diseaseForecast;
-  const target = diseaseForecast?.diseases?.find((d) => d.disease.id === diseaseId);
+function evaluateEconomicThresholdGate(riskRadar, targetId, pestMode = false) {
+  const forecast = pestMode ? riskRadar?.pestForecast : riskRadar?.diseaseForecast;
+  const target = pestMode
+    ? forecast?.pests?.find((p) => p.pest.id === targetId)
+    : forecast?.diseases?.find((d) => d.disease.id === targetId);
   const riskScore = target?.risk ?? 0;
   const THRESHOLD = 50;
   const passed = riskScore >= THRESHOLD;
+  const label = pestMode ? "পোকার ঝুঁকি" : "রোগের ঝুঁকি";
+  const labelEn = pestMode ? "Pest risk" : "Disease risk";
+  const targetName = pestMode ? target?.pest?.nameBn : target?.disease?.nameBn;
 
   return {
     id: "economic_threshold",
@@ -115,14 +126,14 @@ function evaluateEconomicThresholdGate(riskRadar, diseaseId) {
     nameBn: "অর্থনৈতিক সীমা",
     passed,
     reason: passed
-      ? `রোগের ঝুঁকি ${riskScore}/১০০ (≥${THRESHOLD}) — হস্তক্ষেপ অর্থনৈতিকভাবে যৌক্তিক।`
-      : `রোগের ঝুঁকি ${riskScore}/১০০ (<${THRESHOLD}) — স্কাউটিং চালিয়ে যান, এখনই স্প্রে প্রয়োজন নেই।`,
+      ? `${label} ${riskScore}/১০০ (≥${THRESHOLD}) — হস্তক্ষেপ অর্থনৈতিকভাবে যৌক্তিক।`
+      : `${label} ${riskScore}/১০০ (<${THRESHOLD}) — স্কাউটিং চালিয়ে যান, এখনই স্প্রে প্রয়োজন নেই।`,
     reasonEn: passed
-      ? `Disease risk ${riskScore}/100 (≥${THRESHOLD}) — intervention economically justified.`
-      : `Disease risk ${riskScore}/100 (<${THRESHOLD}) — continue scouting, no spray needed yet.`,
+      ? `${labelEn} ${riskScore}/100 (≥${THRESHOLD}) — intervention economically justified.`
+      : `${labelEn} ${riskScore}/100 (<${THRESHOLD}) — continue scouting, no spray needed yet.`,
     evidence: target
-      ? [`Disease: ${target.disease.nameBn}`, `Risk score: ${riskScore}`]
-      : ["No disease forecast available"],
+      ? [`${pestMode ? "Pest" : "Disease"}: ${targetName}`, `Risk score: ${riskScore}`]
+      : [`No ${pestMode ? "pest" : "disease"} forecast available`],
   };
 }
 
@@ -498,7 +509,7 @@ export function evaluateProtectionDecision({
   const pestMode = targetKind === "pest" || (!targetKind && pestIds.has(diseaseId));
 
   const gate1 = evaluateDiagnosisGate(caseObj, diseaseId);
-  const gate2 = evaluateEconomicThresholdGate(riskRadar, diseaseId);
+  const gate2 = evaluateEconomicThresholdGate(riskRadar, diseaseId, pestMode);
   const moaResult = evaluateMoaRotationGate(caseId, diseaseId, proposedTreatment, pestMode);
   const gate3 = moaResult.gate;
   const gate4 = evaluateWeatherGate(riskRadar);
