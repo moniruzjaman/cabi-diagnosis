@@ -23,6 +23,7 @@ import AgriChemApp from "./agrichem/AgriChemApp";
 import { computeEnsembleScore } from "./data/agronomicEngine";
 import { lookupMoA } from "./data/moaDatabase";
 import { getRegisteredProducts } from "./data/pesticideRegistry";
+import { CROP_REGISTRY as CROPS, CROP_FLAT } from "./data/cropRegistry.js";
 import SixPillarGrid from "./components/dashboard/SixPillarGrid.jsx";
 import CaseManager from "./components/cases/CaseManager.jsx";
 import PreventionPlan from "./components/cases/PreventionPlan.jsx";
@@ -221,6 +222,13 @@ function setThemeTokens(c) {
 }
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
+const PLANT_PARTS = [
+  { id: "leaf", bn: "পাতা", emoji: "🍃", hint: "পাতা ফ্রেমের মাঝে রাখুন" },
+  { id: "stem", bn: "কাণ্ড", emoji: "🌿", hint: "কাণ্ড ফ্রেমের মাঝে রাখুন" },
+  { id: "fruit", bn: "ফল", emoji: "🍅", hint: "ফল ফ্রেমের মাঝে রাখুন" },
+  { id: "root", bn: "মূল", emoji: "🥔", hint: "মূল/শিকড় ফ্রেমের মাঝে রাখুন" },
+  { id: "whole", bn: "পুরো গাছ", emoji: "🌱", hint: "পুরো গাছ ফ্রেমের মাঝে রাখুন" },
+];
 const QUICK_CROPS = [
   { id: "rice", label: "ধান", en: "Rice", emoji: "🌾", color: "#f59e0b" },
   { id: "potato", label: "আলু", en: "Potato", emoji: "🥔", color: "#92400e" },
@@ -231,54 +239,7 @@ const QUICK_CROPS = [
   { id: "mango", label: "আম", en: "Mango", emoji: "🥭", color: "#ea580c" },
   { id: "banana", label: "কলা", en: "Banana", emoji: "🍌", color: "#ca8a04" },
 ];
-const CROPS = {
-  "ধান / Rice": ["ধান (বোরো) / Rice - Boro", "ধান (আমন) / Rice - Aman", "ধান (আউশ) / Rice - Aus"],
-  "গম ও শস্য / Cereals": ["গম / Wheat", "ভুট্টা / Maize", "যব / Barley"],
-  "ডাল / Pulses": [
-    "মসুর / Lentil",
-    "মুগ / Mungbean",
-    "মাষকলাই / Blackgram",
-    "সয়াবিন / Soybean",
-    "শিম / Lablab Bean",
-    "বরবটি / Yard-Long Bean",
-  ],
-  "তেলবীজ / Oilseeds": ["সরিষা / Mustard", "তিল / Sesame", "চিনাবাদাম / Groundnut", "সূর্যমুখী / Sunflower"],
-  "সবজি / Vegetables": [
-    "আলু / Potato",
-    "টমেটো / Tomato",
-    "বেগুন / Brinjal",
-    "মরিচ / Chilli",
-    "শিমলা মরিচ / Capsicum",
-    "লাউ / Bottle Gourd",
-    "কুমড়া / Pumpkin",
-    "তিত করলা / Bitter Gourd",
-    "ঢেঁড়স / Okra",
-    "পালং শাক / Spinach",
-    "মুলা / Radish",
-    "গাজর / Carrot",
-    "বাঁধাকপি / Cabbage",
-    "ফুলকপি / Cauliflower",
-    "পেঁয়াজ / Onion",
-    "রসুন / Garlic",
-    "আদা / Ginger",
-    "হলুদ / Turmeric",
-  ],
-  "ফল / Fruits": [
-    "আম / Mango",
-    "কাঁঠাল / Jackfruit",
-    "কলা / Banana",
-    "পেঁপে / Papaya",
-    "আনারস / Pineapple",
-    "পেয়ারা / Guava",
-    "লিচু / Lychee",
-    "নারিকেল / Coconut",
-    "লেবু / Lemon",
-    "কমলা / Orange",
-    "ড্রাগন ফ্রুট / Dragon Fruit",
-  ],
-  "আঁশ / Fiber": ["পাট / Jute", "তুলা / Cotton"],
-  "মসলা / Spice": ["আখ / Sugarcane", "ধনিয়া / Coriander", "কালোজিরা / Nigella", "পান / Betel Leaf"],
-};
+// CROPS now imported from ./data/cropRegistry.js (200+ crops).
 const DISTRICTS = [
   "ঢাকা / Dhaka",
   "চট্টগ্রাম / Chattogram",
@@ -3465,6 +3426,21 @@ function EnhancedHomeTab({ setActiveTab, history, weather, locationName, coords 
             }}
           >
             {risk.icon} {risk.text}
+            <button
+              onClick={() => setActiveTab("risk")}
+              style={{
+                marginLeft: "auto",
+                background: "none",
+                border: "none",
+                color: "inherit",
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: "pointer",
+                textDecoration: "underline",
+              }}
+            >
+              বিস্তারিত →
+            </button>
           </div>
         )}
         <div
@@ -7139,6 +7115,21 @@ function SixPillarHomeDashboard({
             </button>
           ))}
           <div style={{ fontSize: 10, color: C.textDanger, marginTop: 4 }}>প্রতিরোধ পরিকল্পনা দেখতে ট্যাপ করুন →</div>
+          <button
+            onClick={() => onPillar({ id: "risk" })}
+            style={{
+              display: "block",
+              width: "100%",
+              textAlign: "left",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              marginTop: 6,
+            }}
+          >
+            <span style={{ fontSize: 12, color: C.danger, fontWeight: 700 }}>⚠️ ঝুঁকি রাডার দেখুন →</span>
+          </button>
         </div>
       )}
 
@@ -7225,6 +7216,7 @@ export default function UdbhidGoenda() {
       const saved = JSON.parse(localStorage.getItem("ud-form") || "{}");
       return {
         crop: saved.crop || "",
+        plantPart: saved.plantPart || "leaf",
         district: saved.district || "",
         season: saved.season || getCurrentSeason(),
         growthStage: saved.growthStage || "",
@@ -7235,6 +7227,7 @@ export default function UdbhidGoenda() {
     } catch {
       return {
         crop: "",
+        plantPart: "leaf",
         district: "",
         season: getCurrentSeason(),
         growthStage: "",
@@ -7246,6 +7239,7 @@ export default function UdbhidGoenda() {
   });
   const [diagnosisMode, setDiagnosisMode] = useState("online"); // "online" or "offline"
   const [showMoreCrops, setShowMoreCrops] = useState(false);
+  const [cropSearch, setCropSearch] = useState("");
   const [expandedGroup, setExpandedGroup] = useState(null);
   // Multi-image support (2-4 images)
   const [images, setImages] = useState([]); // array of data URLs for display
@@ -8149,6 +8143,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
     setForm((f) => {
       const next = {
         crop: "",
+        plantPart: "leaf",
         district: f.district || "",
         season: getCurrentSeason(),
         growthStage: "",
@@ -8314,6 +8309,9 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
       case "prevent":
         setActiveTab("prevent");
         break;
+      case "risk":
+        setActiveTab("risk");
+        break;
       case "monitor":
       case "evaluate":
         setCaseSeed(null);
@@ -8381,13 +8379,16 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
   // overlapping or hidden pages. They are now merged into these five.)
   const navTabs = [
     { id: "home", label: "হোম", icon: "🏠" },
-    { id: "calendar", label: "ক্যালেন্ডার", icon: "📅" },
-    { id: "diagnose", label: "নির্ণয়", icon: "🔬" },
+    { id: "risk", label: "ঝুঁকি", icon: "⚠️" },
+    { id: "calendar", label: "মৌসুম", icon: "📅" },
+    { id: "diagnose", label: "শনাক্ত", icon: "🔬" },
     { id: "learn", label: "শিখুন", icon: "📖" },
-    { id: "pesticide", label: "বালাইনাশক", icon: "🌿" },
+    { id: "pesticide", label: "সুরক্ষা", icon: "🛡️" },
   ];
   const feedbackContext =
-    activeTab === "diagnose"
+    activeTab === "risk"
+      ? "Risk Radar"
+      : activeTab === "diagnose"
       ? step === 2
         ? "Diagnosis Report"
         : "Diagnosis Form"
@@ -8647,6 +8648,142 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               )}
 
               {/* ── PREVENT tab — preventive crop-health management (Pillar 3) ── */}
+              {activeTab === "risk" && (
+                <div style={{ animation: "fadeIn .3s ease" }}>
+                  <div
+                    style={{
+                      background: C.bgCard,
+                      borderRadius: 16,
+                      padding: 16,
+                      border: `1px solid ${C.border}`,
+                      marginBottom: 12,
+                      boxShadow: C.shadow,
+                    }}
+                  >
+                    <div style={{ fontSize: 18, fontWeight: 800, color: C.primaryDark, marginBottom: 4 }}>
+                      ⚠️ ঝুঁকি রাডার
+                    </div>
+                    <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 10, lineHeight: 1.5 }}>
+                      riskEngine + assessWeatherRisks দ্বারা চালিত — বর্তমান আবহাওয়া ও মৌসুমভিত্তিক রোগ/পোকা
+                      ঝুঁকি এক জায়গায়।
+                    </div>
+                    {weather
+                      ? (() => {
+                          const allRisks = assessWeatherRisks(weather);
+                          if (!allRisks.length)
+                            return (
+                              <div style={{ fontSize: 12, color: C.success, fontWeight: 600 }}>
+                                🟢 এই মুহূর্তে কোনো উল্লেখযোগ্য ঝুঁকি নেই।
+                              </div>
+                            );
+                          const high = allRisks.filter((r) => r.level === "high").length;
+                          return (
+                            <>
+                              <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 8 }}>
+                                {high > 0 ? `🔴 ${high}টি উচ্চ ঝুঁকি` : "🟡 মাঝারি ঝুঁকি"} · মোট {allRisks.length}টি
+                              </div>
+                              {allRisks.map((r, i) => (
+                                <div
+                                  key={i}
+                                  style={{
+                                    display: "flex",
+                                    gap: 8,
+                                    alignItems: "center",
+                                    padding: "9px 12px",
+                                    borderRadius: 10,
+                                    marginBottom: 6,
+                                    background:
+                                      r.level === "high" ? C.bgDanger : r.level === "medium" ? C.bgWarning : C.bgSuccess,
+                                    border: `1px solid ${
+                                      r.level === "high"
+                                        ? C.borderDanger
+                                        : r.level === "medium"
+                                          ? C.borderWarning
+                                          : C.borderSuccess
+                                    }`,
+                                  }}
+                                >
+                                  <span style={{ fontSize: 16 }}>{r.icon}</span>
+                                  <span
+                                    style={{
+                                      fontSize: 12,
+                                      color:
+                                        r.level === "high"
+                                          ? C.danger
+                                          : r.level === "medium"
+                                            ? C.warning
+                                            : C.success,
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    {r.text}
+                                  </span>
+                                </div>
+                              ))}
+                            </>
+                          );
+                        })()
+                      : (
+                        <div style={{ fontSize: 12, color: C.textMuted }}>
+                          আবহাওয়া তথ্য লোড হচ্ছে… উপরে 🔄 চাপুন।
+                        </div>
+                      )}
+                  </div>
+
+                  {(() => {
+                    const alerts = getCurrentRiskAlerts();
+                    if (!alerts.length) return null;
+                    return (
+                      <div
+                        style={{
+                          background: C.bgCard,
+                          borderRadius: 16,
+                          padding: 16,
+                          border: `1px solid ${C.border}`,
+                          marginBottom: 12,
+                          boxShadow: C.shadow,
+                        }}
+                      >
+                        <div style={{ fontSize: 14, fontWeight: 800, color: C.primaryDark, marginBottom: 8 }}>
+                          📅 মৌসুমভিত্তিক সতর্কতা
+                        </div>
+                        {alerts.map((a, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              fontSize: 12,
+                              color: C.text,
+                              padding: "7px 0",
+                              lineHeight: 1.5,
+                              borderBottom: i < alerts.length - 1 ? `1px solid ${C.border}` : "none",
+                            }}
+                          >
+                            <b>{a.title || a.crop || "সতর্কতা"}:</b> {a.message || a.text || a.risk || ""}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  <button
+                    onClick={() => setActiveTab("prevent")}
+                    style={{
+                      width: "100%",
+                      padding: "12px 16px",
+                      borderRadius: 12,
+                      border: `1px solid ${C.primary}`,
+                      background: C.bgCard,
+                      color: C.primary,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    🛡️ প্রতিরোধ পরিকল্পনা দেখুন →
+                  </button>
+                </div>
+              )}
+
               {activeTab === "prevent" && (
                 <div style={{ animation: "fadeIn .3s ease" }}>
                   <PreventionPlan
@@ -8912,12 +9049,43 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                                     zIndex: 1,
                                   }}
                                 >
-                                  <div style={{ fontSize: 62 }}>🍃</div>
+                                  <div style={{ fontSize: 62 }}>
+                                    {(PLANT_PARTS.find((p) => p.id === form.plantPart) || PLANT_PARTS[0]).emoji}
+                                  </div>
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: 6,
+                                      flexWrap: "wrap",
+                                      justifyContent: "center",
+                                      marginTop: 8,
+                                      maxWidth: 340,
+                                    }}
+                                  >
+                                    {PLANT_PARTS.map((p) => (
+                                      <button
+                                        key={p.id}
+                                        onClick={() => setForm((f) => ({ ...f, plantPart: p.id }))}
+                                        style={{
+                                          padding: "5px 11px",
+                                          borderRadius: 999,
+                                          border: `1px solid ${form.plantPart === p.id ? C.primary : C.border}`,
+                                          background: form.plantPart === p.id ? C.primary : C.bgCard,
+                                          color: form.plantPart === p.id ? "#fff" : C.textMuted,
+                                          fontSize: 11.5,
+                                          fontWeight: 700,
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        {p.emoji} {p.bn}
+                                      </button>
+                                    ))}
+                                  </div>
                                   <div
                                     className="ud-headline"
                                     style={{ fontWeight: 800, fontSize: 22, color: C.primaryDark }}
                                   >
-                                    পাতা ফ্রেমের মাঝে রাখুন
+                                    {(PLANT_PARTS.find((p) => p.id === form.plantPart) || PLANT_PARTS[0]).hint}
                                   </div>
                                   <div style={{ fontSize: 12, color: C.textMuted }}>
                                     ভালো আলো থাকলে ফল বেশি নির্ভুল হয়
@@ -9230,7 +9398,50 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                             >
                               ← ফিরুন
                             </button>
-                            {Object.keys(CROPS).map((group) => (
+                            <input
+                              type="text"
+                              value={cropSearch}
+                              onChange={(e) => setCropSearch(e.target.value)}
+                              placeholder="🔍 ফসল খুঁজুন (২০৫টি)"
+                              style={{
+                                width: "100%",
+                                padding: "9px 12px",
+                                borderRadius: 10,
+                                border: `1px solid ${C.border}`,
+                                fontSize: 13,
+                                marginBottom: 10,
+                                background: C.bgCard,
+                                color: C.text,
+                                boxSizing: "border-box",
+                              }}
+                            />
+                            {cropSearch.trim()
+                              ? CROP_FLAT.filter((c) =>
+                                  c.toLowerCase().includes(cropSearch.trim().toLowerCase()),
+                                )
+                                    .slice(0, 60)
+                                    .map((crop) => (
+                                      <div
+                                        key={crop}
+                                        onClick={() => {
+                                          handleCropQuickSelect(crop);
+                                          setCropSearch("");
+                                        }}
+                                        style={{
+                                          padding: "9px 12px",
+                                          cursor: "pointer",
+                                          fontSize: 12.5,
+                                          color: C.text,
+                                          borderRadius: 8,
+                                          background: C.bgCard,
+                                          border: `1px solid ${C.border}`,
+                                          marginBottom: 5,
+                                        }}
+                                      >
+                                        {crop}
+                                      </div>
+                                    ))
+                              : Object.keys(CROPS).map((group) => (
                               <div key={group} style={{ marginBottom: 7 }}>
                                 <button
                                   onClick={() => setExpandedGroup(expandedGroup === group ? null : group)}
