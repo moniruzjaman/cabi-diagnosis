@@ -1,7 +1,9 @@
 import { useState, useMemo } from "react";
 import { evaluateProtectionDecision } from "../../intelligence/protectionDecisionEngine.js";
 import { getMoaGroup } from "../../intelligence/moaDatabase.js";
-import { addTreatment } from "../../data/cropHealthCases.js";
+import { addTreatment, setConfirmationStatus } from "../../data/cropHealthCases.js";
+import { validateProductForTarget } from "../../intelligence/productValidator.js";
+import { getRegisteredProducts } from "../../data/pesticideRegistry.js";
 
 // ────────────────────────────────────────────────────────────────────────────
 // CropProtectionPanel — renders the 5-gate Crop Protection Decision sequence.
@@ -44,6 +46,20 @@ export default function CropProtectionPanel({ C, caseObj, riskRadar }) {
     return evaluateProtectionDecision({ caseObj, diseaseId, riskRadar });
   }, [caseObj, diseaseId, riskRadar]);
 
+  // R4 — validate the approved treatment's product against the case's crop +
+  // target disease using the DAE registry. A product is only 'verified' when
+  // it is registered for THIS crop + pest — a name/AI/MoA match alone is not.
+  // (This hook MUST run before the early return so hook order stays stable.)
+  const productValidation = useMemo(() => {
+    if (!decision || !decision.approved || !decision.approvedTreatment) return null;
+    const ai = decision.approvedTreatment.activeIngredient;
+    if (!ai) return null;
+    const candidates = getRegisteredProducts({ activeIngredient: ai });
+    const product = candidates[0];
+    if (!product) return { verified: false, noteBn: "নিবন্ধনে পণ্য পাওয়া যায়নি — নিশ্চিত নয়।" };
+    return validateProductForTarget(product, { crop: caseObj.crop, pest: diseaseId });
+  }, [decision, caseObj.crop, diseaseId]);
+
   if (!decision) return null;
 
   const recordApprovedTreatment = () => {
@@ -54,7 +70,10 @@ export default function CropProtectionPanel({ C, caseObj, riskRadar }) {
       description: `ক্রপ প্রোটেকশন ডিসিশন ইঞ্জিন অনুমোদিত: ${group?.nameBn || decision.approvedTreatment.moaCode}`,
       productName: decision.approvedTreatment.productName || "",
       activeIngredient: decision.approvedTreatment.activeIngredient || "",
-      moaGroup: group?.shortCode || decision.approvedTreatment.moaCode,
+      // Record the CANONICAL MoA code (e.g. "FRAC_1") — resolveMoaCode resolves
+      // it via the "frac_1" alias, so the treatment stays visible to rotation /
+      // resistance tracking. Recording group.shortCode ("1") silently drops it.
+      moaGroup: decision.approvedTreatment.moaCode || group?.code || group?.shortCode || "",
       targetDisease: diseaseId,
     });
     setRecorded(true);
@@ -85,6 +104,44 @@ export default function CropProtectionPanel({ C, caseObj, riskRadar }) {
         >
           {decision.approved ? "✓ অনুমোদিত" : "✗ অবরুদ্ধ"}
         </div>
+      </div>
+      {/* R3 — diagnosis confirmation status (unconfirmed blocks chemical) */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 8,
+          padding: "6px 10px",
+          borderRadius: 8,
+          background: caseObj.confirmationStatus === "confirmed" ? "#dcfce7" : "#fef3c7",
+          border: `1px solid ${caseObj.confirmationStatus === "confirmed" ? "#86efac" : "#fcd34d"}`,
+        }}
+      >
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.text }}>
+          {caseObj.confirmationStatus === "confirmed"
+            ? "✓ রোগ নিশ্চিত"
+            : caseObj.confirmationStatus === "rejected"
+              ? "✗ নিশ্চিতকরণ বাতিল"
+              : "⚠ রোগ নিশ্চিত নয় — অনুমোদন বন্ধ"}
+        </div>
+        {caseObj.confirmationStatus !== "confirmed" && (
+          <button
+            onClick={() => setConfirmationStatus(caseObj.id, "confirmed")}
+            style={{
+              padding: "4px 10px",
+              borderRadius: 999,
+              border: "none",
+              background: C.primary,
+              color: "#fff",
+              fontSize: 11,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            রোগ নিশ্চিত করুন
+          </button>
+        )}
       </div>
 
       {/* Blocked reason (if any) */}
@@ -186,6 +243,25 @@ export default function CropProtectionPanel({ C, caseObj, riskRadar }) {
         </div>
       )}
 
+      {/* R4 — product registration validation against the DAE registry */}
+      {decision.approved && productValidation && (
+        <div
+          style={{
+            fontSize: 11,
+            padding: "6px 10px",
+            borderRadius: 8,
+            marginBottom: 6,
+            background: productValidation.verified ? "#dcfce7" : "#fef3c7",
+            border: `1px solid ${productValidation.verified ? "#86efac" : "#fcd34d"}`,
+            color: C.text,
+            lineHeight: 1.4,
+          }}
+        >
+          {productValidation.verified
+            ? "✓ নিবন্ধিত পণ্য — লক্ষ্য ফসল ও রোগ/পোকার জন্য নিবন্ধিত।"
+            : `⚠ পণ্য যাচাই: ${productValidation.noteBn}`}
+        </div>
+      )}
       {/* Record treatment button (explicit consent) */}
       {decision.approved && !recorded && (
         <button
