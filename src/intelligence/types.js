@@ -452,6 +452,55 @@
  * @property {string} remarks
  * @property {string} createdAt - ISO 8601
  * @property {string|null} decidedAt - ISO 8601, set when approved/rejected
+// Phase 4 — Extension Verification
+// (original design; reimplemented from the audit description, not
+//  copied from "Plantation Tracker" which is UNLICENSED)
+// ============================================================
+
+/** @typedef {"officer"|"admin"|"farmer"} OfficerRole */
+
+/**
+ * Local-only officer profile. NO authentication — the profile is
+ * self-declared and persisted in localStorage on this device only. It
+ * exists so verification decisions carry a name + upazila and so the
+ * validation API can run an *advisory* role check.
+ * @typedef {Object} OfficerProfile
+ * @property {string} id
+ * @property {string} nameBn - Bangla display name
+ * @property {OfficerRole} role
+ * @property {string} upazila
+ * @property {string} district
+ * @property {string} createdAt - ISO timestamp
+ */
+
+/**
+ * A validation task created when a farmer asks an extension officer to
+ * verify a crop health case. Lives in localStorage (ud-validation-tasks-v1).
+ * @typedef {Object} ValidationTask
+ * @property {string} id
+ * @property {string} caseId
+ * @property {"pending"|"approved"|"rejected"} status
+ * @property {string|null} assignedOfficer - officer this was routed to at request time
+ * @property {string} upazila - denormalized from the case for area filtering
+ * @property {string} district
+ * @property {string} crop
+ * @property {string} createdAt - ISO
+ * @property {string} [officerId] - officer who decided (approve/reject only)
+ * @property {string} [remarks] - officer's note on the decision
+ * @property {string} [decidedAt] - ISO, set on approve/reject
+ */
+
+/**
+ * Verification state attached to a crop health case (case.verification).
+ * Optional — Phase 3 fields (fieldId, syncStatus) are not yet merged, so
+ * callers MUST use optional chaining (case?.verification?.status).
+ * @typedef {Object} CaseVerification
+ * @property {"pending"|"approved"|"rejected"} status
+ * @property {string} taskId
+ * @property {string} [requestedAt] - ISO, set on request
+ * @property {string} [officerId] - officer who decided
+ * @property {string} [remarks]
+ * @property {string} [decidedAt] - ISO, set on approve/reject
  */
 
 export {}; // type-only module
