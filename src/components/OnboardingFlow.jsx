@@ -22,7 +22,7 @@ const SLIDES = [
     title: "স্বাগতম!",
     subtitle: "Welcome",
     description:
-      "উদ্ভিদ গোয়েন্দা অ্যাপে আপনাকে স্বাগতম। এই অ্যাপ আপনাকে ফসলের রোগ চিনতে, পরামর্শ পেতে এবং কৃষি জ্ঞান বাড়াতে সাহায্য করবে।",
+      "উদ্ভিদ গোয়েন্দা অ্যাপে আপনাকে স্বাগতম। ছবি বা ৫-ধাপের উইজার্ডে রোগ নির্ণয়, IPM ভিত্তিক ব্যবস্থাপনা, ক্ষেতের GPS পাসপোর্ট ও অফলাইন সিঙ্ক, কৃষি কর্মকর্তার যাচাই — সব এক জায়গায়। AI কোপাইলট আপনার সক্রিয় কেস বুঝে পরামর্শ দেবে।",
     bgGradient: "linear-gradient(135deg, #065f46 0%, #059669 50%, #34d399 100%)",
     floatingEmoji: "🍃",
   },
@@ -31,7 +31,7 @@ const SLIDES = [
     title: "ছবি তুলে রোগ চিনুন",
     subtitle: "Diagnose by Photo",
     description:
-      "ফসলের ছবি তুললেই AI রোগ চিহ্নিত করবে। CABI এর ৫-ধাপ প্রোটোকল অনুসারে নির্ণয়, ব্যবস্থাপনা ও প্রতিরোধের পরামর্শ পাবেন।",
+      "ছবি তুলে বা ৫-ধাপের উইজার্ডে লক্ষণ দিয়ে রোগ নির্ণয় করুন। AI রোগ চিহ্নিত করবে, MoA ভিত্তিক ব্যবস্থাপনা ও প্রতিরোধের পরামর্শ পাবেন।",
     bgGradient: "linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #93c5fd 100%)",
     floatingEmoji: "🔍",
   },
@@ -242,6 +242,7 @@ export default function OnboardingFlow({ C: _C, onComplete }) {
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginBottom: 24 }}>
             {[
               { icon: "📷", text: "ছবি তুলুন" },
+              { icon: "🧩", text: "৫-ধাপ উইজার্ড" },
               { icon: "🤖", text: "AI বিশ্লেষণ" },
               { icon: "📋", text: "ফলাফল দেখুন" },
             ].map((step, i) => (
