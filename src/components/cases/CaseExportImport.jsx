@@ -42,6 +42,10 @@ function sanitizeCase(c) {
     // No images or consent state travel with the file.
     thumbnail: null,
     photoConsent: false,
+    // R6 — strip precise GPS + field identity so location does not travel
+    // with the exported file. The case keeps district/upazila for context.
+    fieldLocation: null,
+    fieldId: null,
     observations: (c.observations || []).map((o) => ({ ...o, thumbnail: null })),
     treatments: (c.treatments || []).map((t) => ({ ...t })),
     preventionActions: (c.preventionActions || []).map((p) => ({ ...p })),
@@ -124,22 +128,32 @@ export default function CaseExportImport({ C, caseObj, onImport }) {
         setMessage({ type: "error", text: "ফাইলটি বৈধ কেস নয় — আকৃতি মেলে না।" });
         return;
       }
-      // Fresh id + timestamps; strip any photos that snuck in.
+      // R6 — idempotent import. Preserve the exported case's original id
+      // so re-importing the same file UPDATES the case instead of creating
+      // a duplicate. Strip any photos that snuck in.
       const ts = nowIso();
-      const imported = sanitizeCase({
-        ...raw,
-        id: makeId("case"),
-        createdAt: ts,
-        updatedAt: ts,
-      });
+      const imported = sanitizeCase({ ...raw, updatedAt: ts });
       const cases = loadCases();
-      cases.push(imported);
+      const existingIdx = imported.id ? cases.findIndex((c) => c.id === imported.id) : -1;
+      const wasUpdate = existingIdx >= 0;
+      if (wasUpdate) {
+        imported.id = cases[existingIdx].id;
+        imported.createdAt = cases[existingIdx].createdAt;
+        cases[existingIdx] = imported;
+      } else {
+        if (!imported.id) imported.id = makeId("case");
+        if (!imported.createdAt) imported.createdAt = ts;
+        cases.push(imported);
+      }
       const ok = saveCases(cases);
       if (!ok) {
         setMessage({ type: "error", text: "সংরক্ষণ ব্যর্থ — স্টোরেজ পূর্ণ হতে পারে।" });
         return;
       }
-      setMessage({ type: "success", text: "কেস আমদানি সম্পন্ন হয়েছে।" });
+      setMessage({
+        type: "success",
+        text: wasUpdate ? "কেস হালনাগাদ করা হয়েছে (একই আইডি — সদৃশ নয়)।" : "কেস আমদানি সম্পন্ন হয়েছে।",
+      });
       if (onImport) onImport(imported);
     } catch {
       setMessage({ type: "error", text: "ফাইল পড়া যায়নি — বৈধ JSON নয়।" });
