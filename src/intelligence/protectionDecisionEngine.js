@@ -62,7 +62,11 @@ function evaluateDiagnosisGate(caseObj, _diseaseId) {
   const confirmed = observations.filter(
     (o) => o.severity === "moderate" || o.severity === "severe" || o.severity === "high",
   );
-  const passed = confirmed.length > 0;
+  // R3 — explicit confirmation required. An unconfirmed diagnosis (the
+  // default) blocks chemical approval even when a moderate+ observation
+  // exists. "rejected" (officer overturned) also blocks.
+  const status = caseObj.confirmationStatus || "unconfirmed";
+  const passed = status === "confirmed" && confirmed.length > 0;
 
   return {
     id: "diagnosis_confirmed",

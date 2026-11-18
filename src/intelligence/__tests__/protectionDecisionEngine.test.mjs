@@ -71,6 +71,7 @@ const lowRiskRadar = {
 // A case with a confirmed scouting observation (gate 1 passes)
 const caseWithObs = {
   id: "case-prod",
+  confirmationStatus: "confirmed",
   crop: "rice",
   growthStage: "tillering",
   observations: [{ id: "o1", severity: "moderate", notes: "পাতায় হীরাকৃতি দাগ", date: daysAgo(2) }],
@@ -220,6 +221,31 @@ assert(
   bilingual.gates.every((g) => Array.isArray(g.evidence)),
   "every gate has evidence[]",
 );
+
+// R3 — unconfirmed diagnosis must BLOCK chemical approval at gate 1,
+// even when a moderate observation exists. confirmationStatus is explicit.
+const caseUnconfirmedObs = {
+  id: "case-unconfirmed",
+  crop: "rice",
+  growthStage: "tillering",
+  confirmationStatus: "unconfirmed",
+  observations: [{ id: "o1", severity: "moderate", notes: "পাতায় দাগ", date: daysAgo(2) }],
+  treatments: [],
+  monitoring: [],
+  evaluation: null,
+};
+saveCases([caseUnconfirmedObs]);
+const unconf = evaluateProtectionDecision({
+  caseObj: caseUnconfirmedObs,
+  diseaseId: "rice_blast",
+  riskRadar: highRiskRadar,
+  proposedTreatment: { moaCode: "FRAC_P1", activeIngredient: "Tricyclazole", productName: "Sivic" },
+});
+assert(unconf.gates[0].id === "diagnosis_confirmed", "gate 1 is diagnosis_confirmed");
+assert(unconf.gates[0].passed === false, "unconfirmed diagnosis blocks gate 1");
+assert(unconf.approved === false, "unconfirmed diagnosis → not approved");
+assert(unconf.blockedGateId === "diagnosis_confirmed", "blocked at diagnosis_confirmed");
+assert(unconf.blockedReason !== null, "blockedReason set for unconfirmed");
 
 console.log(`\nprotectionDecisionEngine.test: ${pass} passed, ${fail} failed`);
 if (fail > 0) process.exit(1);

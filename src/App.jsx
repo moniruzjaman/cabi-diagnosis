@@ -27,6 +27,7 @@ import { CROP_REGISTRY as CROPS, CROP_FLAT } from "./data/cropRegistry.js";
 import SixPillarGrid from "./components/dashboard/SixPillarGrid.jsx";
 import CaseManager from "./components/cases/CaseManager.jsx";
 import PreventionPlan from "./components/cases/PreventionPlan.jsx";
+import RiskRadarWidget from "./components/cases/RiskRadarWidget.jsx";
 import AboutPanel from "./components/AboutPanel.jsx";
 import {
   getCaseStats,
@@ -7210,6 +7211,12 @@ export default function UdbhidGoenda() {
   const [caseSeed, setCaseSeed] = useState(null);
   const [caseViewId, setCaseViewId] = useState(null);
   const [caseTick, setCaseTick] = useState(0);
+  void caseTick; // re-render signal when local case data changes
+  // R5 — the active case whose 5-gate Protection decision is surfaced on the
+  // সুরক্ষা tab. Prefer the case the farmer is currently viewing, else the most
+  // recently updated active/monitoring case.
+  const protectionCase =
+    (caseViewId && getCaseById(caseViewId)) || getActiveCases()[0] || null;
   const refreshCaseData = useCallback(() => setCaseTick((t) => t + 1), []);
   const [form, setForm] = useState(() => {
     try {
@@ -10971,7 +10978,23 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               {activeTab === "library" && <SavedReportsView history={history} setHistory={setHistory} C={C} />}
 
               {/* ── PESTICIDE GUIDE (embedded, previously an external link) ── */}
-              {activeTab === "pesticide" && <AgriChemApp />}
+              {activeTab === "pesticide" && (
+                <>
+                  {protectionCase && (
+                    <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: C.primaryDark, marginBottom: 6 }}>
+                        🛡️ সক্রিয় কেসের সুরক্ষা সিদ্ধান্ত (৫-গেট ইঞ্জিন)
+                      </div>
+                      <div style={{ fontSize: 11, color: C.textMuted, marginBottom: 8 }}>
+                        {protectionCase.crop || "ফসল"} · {protectionCase.district || "অবস্থান"} ·{" "}
+                        {protectionCase.confirmationStatus === "confirmed" ? "রোগ নিশ্চিত" : "রোগ নিশ্চিত নয়"}
+                      </div>
+                      <RiskRadarWidget C={C} case={protectionCase} />
+                    </div>
+                  )}
+                  <AgriChemApp />
+                </>
+              )}
 
               {/* ── HISTORY ──────────────────────────────────────────────── */}
 

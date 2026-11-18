@@ -298,6 +298,13 @@ export function resolveMoaCode(raw) {
   for (const [alias, code] of Object.entries(MOA_ALIASES)) {
     if (lower.includes(alias)) return code;
   }
+  // Bare short-code match (e.g. "1", "11", "m", "p1") — handles records
+  // written by older callers that stored group.shortCode instead of the
+  // canonical code. Without this they resolve to null and silently drop out
+  // of rotation/resistance tracking.
+  for (const g of MOA_GROUPS) {
+    if (g.shortCode && g.shortCode.toLowerCase() === lower) return g.code;
+  }
   return null;
 }
 

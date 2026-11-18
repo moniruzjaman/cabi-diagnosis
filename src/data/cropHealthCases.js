@@ -155,6 +155,10 @@ export function createCase(input = {}) {
     riskAssessment: null,
     scoutingAction: null,
     protectionDecision: null,
+    // R3 — explicit diagnosis confirmation status. Default "unconfirmed".
+    // Gate 1 of the protection engine requires "confirmed"; an unconfirmed
+    // diagnosis blocks chemical approval (scouting-first, officer-confirmable).
+    confirmationStatus: input.confirmationStatus || "unconfirmed",
     // Phase 3 — Field Health Passport fields (non-breaking, default null).
     // Populated by the Field Location Picker, sync queue, and verification
     // workflow (src/intelligence/{gpsUtils,syncQueue,auditDb}.js).
@@ -279,6 +283,23 @@ export function addTreatment(caseId, t = {}) {
   c.updatedAt = nowIso();
   saveCases(cases);
   return c;
+}
+
+/**
+ * Set the case's diagnosis confirmation status.
+ * @param {string} caseId
+ * @param {"unconfirmed"|"confirmed"|"rejected"} status
+ * @returns {object|null} the updated case, or null if not found
+ */
+export function setConfirmationStatus(caseId, status) {
+  const cases = loadCases();
+  const idx = cases.findIndex((c) => c.id === caseId);
+  if (idx === -1) return null;
+  if (!["unconfirmed", "confirmed", "rejected"].includes(status)) return null;
+  cases[idx].confirmationStatus = status;
+  cases[idx].updatedAt = nowIso();
+  saveCases(cases);
+  return cases[idx];
 }
 
 // ─── Prevention actions (prevention_actions) ─────────────────────────────────
