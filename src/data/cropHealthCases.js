@@ -149,6 +149,10 @@ export function createCase(input = {}) {
     preventionActions: [],
     monitoring: [],
     evaluation: null,
+    // Optional intelligence fields (non-breaking — default null).
+    // Populated by the Disease Risk Radar (src/intelligence/riskRadar.js).
+    riskAssessment: null,
+    scoutingAction: null,
   };
   // Baseline observation
   c.observations.push({
@@ -307,6 +311,41 @@ export function addMonitoringReminder(caseId, r = {}) {
     status: "pending",
     completedAt: null,
   });
+  c.updatedAt = nowIso();
+  saveCases(cases);
+  return c;
+}
+
+/**
+ * Cache a Disease Risk Radar snapshot on the case (non-breaking optional
+ * field). Called by the RiskRadarWidget after each weather-driven computation.
+ * Stores a slimmed projection — the full result stays in component state.
+ * @param {string} caseId
+ * @param {object} radarResult - output of computeRiskRadar()
+ * @returns {object|null} the updated case
+ */
+export function updateRiskAssessment(caseId, radarResult) {
+  const cases = loadCases();
+  const idx = cases.findIndex((c) => c.id === caseId);
+  if (idx === -1) return null;
+  const c = cases[idx];
+  c.riskAssessment = {
+    riskLevel: radarResult.riskLevel,
+    overallRiskScore: radarResult.overallRiskScore,
+    dataFreshness: radarResult.dataFreshness,
+    topDisease: radarResult.diseaseForecast?.diseases?.[0]?.disease?.id ?? null,
+    topDiseaseNameBn: radarResult.diseaseForecast?.diseases?.[0]?.disease?.nameBn ?? null,
+    modelLimitations: (radarResult.modelLimitations || []).slice(0, 3),
+    computedAt: radarResult.computedAt,
+  };
+  c.scoutingAction = radarResult.scoutingAction
+    ? {
+        priority: radarResult.scoutingAction.priority,
+        title: radarResult.scoutingAction.title,
+        titleBn: radarResult.scoutingAction.titleBn,
+        nextObservationDate: radarResult.scoutingAction.windowEnd,
+      }
+    : null;
   c.updatedAt = nowIso();
   saveCases(cases);
   return c;
