@@ -3,7 +3,7 @@
 > AI-powered CABI diagnostic process trainer for Bangladesh farmers — learn crop problem identification through guided steps, interactive games, and hands-on diagnosis.
 
 ![Smart Agri EcoSystem](https://img.shields.io/badge/Bangladesh-Extension%20Tool-green)
-![Version](https://img.shields.io/badge/version-4.1.0-brightgreen)
+![Version](https://img.shields.io/badge/version-5.0.0-brightgreen)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![Vite](https://img.shields.io/badge/Vite-5-purple)
 ![PWA](https://img.shields.io/badge/PWA-Installable-9cf)
@@ -310,6 +310,13 @@ bash setup-vercel-env.sh
 ---
 
 ## Changelog
+
+### v5.0.0 — Production Hardening: centralized build metadata, cache fix, About panel
+- **Centralized version/build metadata** — `scripts/generate-build-meta.mjs` is the single source of truth (package.json version + git SHA + build timestamp), generating `src/buildMeta.js` (frontend) and `api/_lib/buildInfo.js` (API). The `/api/health` version, the About panel, the HTML shell `<meta name="app-version">` stamps and the PWA manifest version can no longer drift apart.
+- **Root-cause cache fix** — the SPA shell at `/` was served with Vercel's default `public, max-age=0` because `vercel.json` header rules match the *request path* (the `/` request is rewritten to `/index.html` only after matching). Added an explicit `/` rule with the same no-store policy as `/index.html`; hashed `/assets/*` remain `immutable` for a year.
+- **PWA auto-update** — the service-worker registration now reloads the page once when a *new* worker takes control (fresh installs skip their own first claim, so no reload loop). Verified end-to-end: new SW → activation → single reload, no loop.
+- **About/System Information panel** — ℹ️ button in the app header shows app version, commit, build time (bn-BD locale), online status, PWA/browser mode, service-worker state, an update check button and the privacy note. Not on the Home dashboard.
+- **Version stamps in the deployed shell** — `dist/index.html` carries `app-version`/`build-commit`/`build-time` meta tags; `dist/manifest.json` carries `version`/`version_name`. `scripts/verify-cache-headers.mjs` asserts the intended Cache-Control for every critical path.
 
 ### v4.1.0 — Doctoral-Advice Diagnosis Upgrade (crop-doctor port) & On-Device Model Verification
 - **Language normalization layer** (`src/data/bengaliKeywords.js`) — `normalizeSymptomText()` / `tokenizeSymptomText()` lowercase, strip punctuation, and apply word-boundary-safe canonical synonym resolution via the `SYMPTOM_SYNONYMS` doctoral-advice dictionary ported from `crop-doctor`; Bengali input now translates with multi-match symmetry so EN and BN queries produce identical rankings
