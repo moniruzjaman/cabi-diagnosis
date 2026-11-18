@@ -128,5 +128,21 @@ assert(
 // 11. modelLimitations always present
 assert(riskClean.modelLimitations.length > 0, "resistance risk has modelLimitations");
 
+// 12. REGRESSION (PR #66 review): a treatment recorded with the CANONICAL
+//     code (e.g. "IRAC_4A", as the panel writes via
+//     approvedTreatment.moaCode) must count toward rotation checks. Before
+//     the fix, resolveMoaCode("IRAC_4A") → null, the ledger dropped the
+//     MoA, and assessMoaRotation wrongly reported a clean history.
+seedCase("case-canonical", [
+  { id: "tc1", date: daysAgo(5), type: "chemical", moaGroup: "IRAC_4A", productName: "Imidacloprid", description: "" },
+]);
+const canon = assessMoaRotation("case-canonical", "IRAC_4A");
+assert(canon.usesThisSeason === 1, `canonical-code treatment counts (usesThisSeason=${canon.usesThisSeason})`);
+assert(canon.compliant === false, "canonical-code treatment within rotation window → blocked");
+assert(canon.rotationWindowOk === false, "rotationWindowOk false for canonical-code history");
+// And a DIFFERENT group stays compliant (the history is seen, not ignored wholesale)
+const canonOther = assessMoaRotation("case-canonical", "IRAC_28");
+assert(canonOther.compliant === true, "different group unaffected → compliant");
+
 console.log(`\nmoaStewardship.test: ${pass} passed, ${fail} failed`);
 if (fail > 0) process.exit(1);

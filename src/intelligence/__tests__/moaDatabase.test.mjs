@@ -59,6 +59,19 @@ assert(resolveMoaCode("carbendazim") === "FRAC_1", "'carbendazim' → FRAC_1");
 assert(resolveMoaCode("") === null, "empty → null");
 assert(resolveMoaCode("unknown stuff") === null, "unknown → null");
 
+// 6b. REGRESSION (PR #66 review): canonical codes resolve to themselves.
+// The panel stores the canonical code (e.g. approvedTreatment.moaCode =
+// "IRAC_4A") as the treatment's moaGroup; underscore forms have no alias,
+// so without this lookup they resolved to null and silently dropped out of
+// rotation/season-cap tracking. Every canonical code must round-trip in
+// separator/case variants: "IRAC_4A", "irac 4a", "irac-4a".
+for (const g of all) {
+  const variants = [g.code, g.code.toLowerCase(), g.code.replace(/_/g, " "), g.code.toLowerCase().replace(/_/g, "-")];
+  for (const v of variants) {
+    assert(resolveMoaCode(v) === g.code, `canonical round-trip "${v}" → ${g.code}`);
+  }
+}
+
 // 7. Disease → MoA mapping covers all 14 Phase 1 diseases
 const diseases = [
   "rice_blast",
