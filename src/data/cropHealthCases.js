@@ -155,6 +155,13 @@ export function createCase(input = {}) {
     riskAssessment: null,
     scoutingAction: null,
     protectionDecision: null,
+    // Phase 3 — Field Health Passport fields (non-breaking, default null).
+    // Populated by the Field Location Picker, sync queue, and verification
+    // workflow (src/intelligence/{gpsUtils,syncQueue,auditDb}.js).
+    fieldId: null,
+    fieldLocation: null,
+    syncStatus: "pending",
+    verification: null,
   };
   // Baseline observation
   c.observations.push({
@@ -352,6 +359,72 @@ export function updateRiskAssessment(caseId, radarResult) {
   c.updatedAt = nowIso();
   saveCases(cases);
   return c;
+}
+
+// ─── Field Health Passport (Phase 3) ─────────────────────────────────────────
+
+/**
+ * Record a field location on a case. Auto-assigns a stable fieldId the
+ * first time a location is set so the passport has a coherent identity.
+ * Reads loadCases(), finds the case, sets the field, and saves.
+ * @param {string} caseId
+ * @param {{lat: number, lng: number, accuracy: number}} loc
+ * @returns {object|null} the updated case, or null if not found
+ */
+export function setFieldLocation(caseId, loc) {
+  const cases = loadCases();
+  const idx = cases.findIndex((c) => c.id === caseId);
+  if (idx === -1) return null;
+  const c = cases[idx];
+  if (!c.fieldId) c.fieldId = makeId("field");
+  c.fieldLocation = {
+    lat: loc.lat,
+    lng: loc.lng,
+    accuracy: loc.accuracy,
+    recordedAt: nowIso(),
+  };
+  c.updatedAt = nowIso();
+  saveCases(cases);
+  return c;
+}
+
+/**
+ * Set the sync status of a case (pending | syncing | synced | failed).
+ * Mirrors the sync queue so a case's own record reflects sync state.
+ * @param {string} caseId
+ * @param {"pending"|"syncing"|"synced"|"failed"} status
+ * @returns {object|null} the updated case, or null if not found
+ */
+export function setSyncStatus(caseId, status) {
+  const cases = loadCases();
+  const idx = cases.findIndex((c) => c.id === caseId);
+  if (idx === -1) return null;
+  cases[idx].syncStatus = status;
+  cases[idx].updatedAt = nowIso();
+  saveCases(cases);
+  return cases[idx];
+}
+
+/**
+ * Set the verification result on a case (e.g. an officer's approved/rejected
+ * decision from a ValidationTask). Shape: { status, officer, remarks, decidedAt }.
+ * @param {string} caseId
+ * @param {object} verification
+ * @returns {object|null} the updated case, or null if not found
+ */
+export function setVerification(caseId, verification) {
+  const cases = loadCases();
+  const idx = cases.findIndex((c) => c.id === caseId);
+  if (idx === -1) return null;
+  cases[idx].verification = {
+    status: verification?.status || "pending",
+    officer: verification?.officer || "",
+    remarks: verification?.remarks || "",
+    decidedAt: verification?.decidedAt || nowIso(),
+  };
+  cases[idx].updatedAt = nowIso();
+  saveCases(cases);
+  return cases[idx];
 }
 
 /**

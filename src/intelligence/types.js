@@ -396,4 +396,62 @@
  * @property {string} evaluatedAt
  */
 
+// ============================================================
+// Phase 3 — Field Health Passport + Offline Field Intelligence
+// (original design; haversine math, offline-sync state machine, and
+//  audit log are standard engineering patterns. Reimplemented from
+//  audit descriptions — NOT copied from Plantation Tracker, which is
+//  unlicensed.)
+// ============================================================
+
+/**
+ * A recorded field location with GPS accuracy. Stored on a crop health case
+ * as `fieldLocation` and never uploaded without explicit consent.
+ * @typedef {Object} FieldLocation
+ * @property {number} lat
+ * @property {number} lng
+ * @property {number} accuracy - GPS accuracy in metres
+ * @property {string} recordedAt - ISO 8601
+ */
+
+/**
+ * A sync-queue record (see src/intelligence/syncQueue.js). Flows
+ * pending → syncing → synced | failed.
+ * @typedef {Object} SyncRecord
+ * @property {string} id
+ * @property {string} caseId
+ * @property {string} type
+ * @property {object} payload
+ * @property {"pending"|"syncing"|"synced"|"failed"} syncStatus
+ * @property {number} attempts
+ * @property {string|null} lastAttemptAt
+ * @property {string|null} error
+ * @property {string} createdAt
+ */
+
+/**
+ * An append-only audit log entry (see src/intelligence/auditTypes.js).
+ * @typedef {Object} AuditLogEntry
+ * @property {string} id
+ * @property {string} timestamp - ISO 8601
+ * @property {string} actor - who/what made the change
+ * @property {string} action - verb, e.g. "set_field_location"
+ * @property {string} caseId
+ * @property {object|null} before
+ * @property {object|null} after
+ * @property {object} [metadata]
+ */
+
+/**
+ * A field-officer validation task (see src/intelligence/auditTypes.js).
+ * @typedef {Object} ValidationTask
+ * @property {string} id
+ * @property {string} caseId
+ * @property {string} assignedOfficer
+ * @property {"pending"|"approved"|"rejected"} status
+ * @property {string} remarks
+ * @property {string} createdAt - ISO 8601
+ * @property {string|null} decidedAt - ISO 8601, set when approved/rejected
+ */
+
 export {}; // type-only module
