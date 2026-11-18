@@ -457,6 +457,110 @@
  * @typedef {Object} DistrictCoord
  * @property {number} lat
  * @property {number} lng
+// Phase 3 — Field Health Passport + Offline Field Intelligence
+// (original design; haversine math, offline-sync state machine, and
+//  audit log are standard engineering patterns. Reimplemented from
+//  audit descriptions — NOT copied from Plantation Tracker, which is
+//  unlicensed.)
+// ============================================================
+
+/**
+ * A recorded field location with GPS accuracy. Stored on a crop health case
+ * as `fieldLocation` and never uploaded without explicit consent.
+ * @typedef {Object} FieldLocation
+ * @property {number} lat
+ * @property {number} lng
+ * @property {number} accuracy - GPS accuracy in metres
+ * @property {string} recordedAt - ISO 8601
+ */
+
+/**
+ * A sync-queue record (see src/intelligence/syncQueue.js). Flows
+ * pending → syncing → synced | failed.
+ * @typedef {Object} SyncRecord
+ * @property {string} id
+ * @property {string} caseId
+ * @property {string} type
+ * @property {object} payload
+ * @property {"pending"|"syncing"|"synced"|"failed"} syncStatus
+ * @property {number} attempts
+ * @property {string|null} lastAttemptAt
+ * @property {string|null} error
+ * @property {string} createdAt
+ */
+
+/**
+ * An append-only audit log entry (see src/intelligence/auditTypes.js).
+ * @typedef {Object} AuditLogEntry
+ * @property {string} id
+ * @property {string} timestamp - ISO 8601
+ * @property {string} actor - who/what made the change
+ * @property {string} action - verb, e.g. "set_field_location"
+ * @property {string} caseId
+ * @property {object|null} before
+ * @property {object|null} after
+ * @property {object} [metadata]
+ */
+
+/**
+ * A field-officer validation task (see src/intelligence/auditTypes.js).
+ * @typedef {Object} ValidationTask
+ * @property {string} id
+ * @property {string} caseId
+ * @property {string} assignedOfficer
+ * @property {"pending"|"approved"|"rejected"} status
+ * @property {string} remarks
+ * @property {string} createdAt - ISO 8601
+ * @property {string|null} decidedAt - ISO 8601, set when approved/rejected
+// Phase 4 — Extension Verification
+// (original design; reimplemented from the audit description, not
+//  copied from "Plantation Tracker" which is UNLICENSED)
+// ============================================================
+
+/** @typedef {"officer"|"admin"|"farmer"} OfficerRole */
+
+/**
+ * Local-only officer profile. NO authentication — the profile is
+ * self-declared and persisted in localStorage on this device only. It
+ * exists so verification decisions carry a name + upazila and so the
+ * validation API can run an *advisory* role check.
+ * @typedef {Object} OfficerProfile
+ * @property {string} id
+ * @property {string} nameBn - Bangla display name
+ * @property {OfficerRole} role
+ * @property {string} upazila
+ * @property {string} district
+ * @property {string} createdAt - ISO timestamp
+ */
+
+/**
+ * A validation task created when a farmer asks an extension officer to
+ * verify a crop health case. Lives in localStorage (ud-validation-tasks-v1).
+ * @typedef {Object} ValidationTask
+ * @property {string} id
+ * @property {string} caseId
+ * @property {"pending"|"approved"|"rejected"} status
+ * @property {string|null} assignedOfficer - officer this was routed to at request time
+ * @property {string} upazila - denormalized from the case for area filtering
+ * @property {string} district
+ * @property {string} crop
+ * @property {string} createdAt - ISO
+ * @property {string} [officerId] - officer who decided (approve/reject only)
+ * @property {string} [remarks] - officer's note on the decision
+ * @property {string} [decidedAt] - ISO, set on approve/reject
+ */
+
+/**
+ * Verification state attached to a crop health case (case.verification).
+ * Optional — Phase 3 fields (fieldId, syncStatus) are not yet merged, so
+ * callers MUST use optional chaining (case?.verification?.status).
+ * @typedef {Object} CaseVerification
+ * @property {"pending"|"approved"|"rejected"} status
+ * @property {string} taskId
+ * @property {string} [requestedAt] - ISO, set on request
+ * @property {string} [officerId] - officer who decided
+ * @property {string} [remarks]
+ * @property {string} [decidedAt] - ISO, set on approve/reject
  */
 
 export {}; // type-only module
