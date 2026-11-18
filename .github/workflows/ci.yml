@@ -31,6 +31,9 @@ jobs:
       - name: Offline unit tests
         run: node src/offline/test-ensemble.mjs
 
+      - name: Intelligence unit tests (diagnosis, risk, protection, MoA, ledger, cases)
+        run: npm test
+
       - name: Build
         run: npm run build
         env:
