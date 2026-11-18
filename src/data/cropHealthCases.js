@@ -260,7 +260,10 @@ function countThumbnails(c) {
  * @param {string} caseId
  * @param {{date?: string, type?: 'cultural'|'biological'|'chemical'|'mechanical',
  *          description: string, productName?: string, activeIngredient?: string,
- *          moaGroup?: string, dosage?: string, cost?: number|null, notes?: string}} t
+ *          moaGroup?: string, dosage?: string, cost?: number|null, notes?: string,
+ *          // Ported application-context fields (protection intelligence):
+ *          treatedAreaValue?: number|null, treatedAreaUnit?: string|null,
+ *          weatherConditions?: string, operator?: string, followUpDate?: string}} t
  */
 export function addTreatment(caseId, t = {}) {
   const cases = loadCases();
@@ -279,6 +282,14 @@ export function addTreatment(caseId, t = {}) {
     cost: t.cost ?? null,
     notes: t.notes || "",
     targetDisease: t.targetDisease || null,
+    // Ported application-context fields. All optional (legacy records simply
+    // lack them); weatherConditions is a snapshot string captured at record
+    // time, never a fabricated measurement.
+    treatedAreaValue: t.treatedAreaValue ?? null,
+    treatedAreaUnit: t.treatedAreaUnit || null,
+    weatherConditions: t.weatherConditions || null,
+    operator: t.operator || null,
+    followUpDate: t.followUpDate || null,
   });
   c.updatedAt = nowIso();
   saveCases(cases);
@@ -485,7 +496,13 @@ export const OUTCOME_LABELS_BN = {
  * @param {{date?: string, outcome?: 'recovered'|'improved'|'unchanged'|'worsened'|'failed',
  *          beforeSeverityPct?: number|null, afterSeverityPct?: number|null,
  *          recoveryNote?: string, totalCost?: number|null,
- *          lessonsLearned?: string, userVerified?: boolean}} ev
+ *          lessonsLearned?: string, userVerified?: boolean,
+ *          // Ported protection-intelligence outcome fields:
+ *          treatmentId?: string|null,       - link outcome to the specific application
+ *          effectiveness?: 'effective'|'partial'|'ineffective'|'unclear',
+ *          recurrence?: boolean|null,       - did the pest/disease come back?
+ *          suspectedResistance?: boolean    - investigation trigger, NEVER a diagnosis
+ *         }} ev
  */
 export function recordEvaluation(caseId, ev = {}) {
   const cases = loadCases();
@@ -508,6 +525,14 @@ export function recordEvaluation(caseId, ev = {}) {
     // never auto-promotes unverified feedback into authoritative knowledge.
     userVerified: !!ev.userVerified,
     causalityDisclaimer: true,
+    // Ported protection-intelligence outcome fields. suspectedResistance is
+    // an INVESTIGATION TRIGGER only — the app never diagnoses resistance;
+    // the UI tells the farmer to report to the local DAE office for
+    // resistance monitoring when this is set.
+    treatmentId: ev.treatmentId || null,
+    effectiveness: ev.effectiveness || null,
+    recurrence: ev.recurrence ?? null,
+    suspectedResistance: !!ev.suspectedResistance,
   };
   c.status = ev.outcome === "recovered" ? "resolved" : ev.outcome === "failed" ? "closed" : "monitoring";
   c.updatedAt = nowIso();

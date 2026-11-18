@@ -14,6 +14,7 @@
 
 import { computeRiskDashboard } from "./riskEngine.js";
 import { generateDiseaseForecast } from "./diseaseEngine.js";
+import { generatePestForecast } from "./pestEngine.js";
 import { generateRecommendations, SCOUT_RISK_THRESHOLD } from "./recommendationEngine.js";
 import { generateExplanation } from "./explanationEngine.js";
 import { calculateOperationWindows } from "./operationWindows.js";
@@ -49,7 +50,9 @@ function buildScoutingAction(dashboard, forecast, crops) {
     // pass a minimal stub for the description formatter.
     {
       current: { humidity: 0, temperature: 0, windSpeed: 0, precipitation: 0 },
-      agriculturalIndices: { leafWetnessHours: 0 },
+      // soilMoistureDeficit/et0 are required by buildIrrigationRec when an
+      // irrigation risk is present — the old stub crashed on dry weather.
+      agriculturalIndices: { leafWetnessHours: 0, soilMoistureDeficit: 0, et0: 0 },
     },
     crops,
     dashboard,
@@ -77,6 +80,7 @@ export function computeRiskRadar({ weather, activeCrops }) {
       overallRiskScore: null,
       topRisks: [],
       diseaseForecast: null,
+      pestForecast: null,
       explanation: null,
       scoutingAction: null,
       dataFreshness: "unavailable",
@@ -87,6 +91,9 @@ export function computeRiskRadar({ weather, activeCrops }) {
 
   const dashboard = computeRiskDashboard(weather, activeCrops);
   const forecast = generateDiseaseForecast(weather, activeCrops);
+  // Pest forecast (ported protection-intelligence): insect pests are scored
+  // by the opposite weather model (warm nights + dry spells).
+  const pestForecast = generatePestForecast(weather, activeCrops);
   const topRisks = [...dashboard.risks].sort((a, b) => b.score - a.score).slice(0, 5);
   const scoutingAction = buildScoutingAction(dashboard, forecast, activeCrops);
 
@@ -95,14 +102,19 @@ export function computeRiskRadar({ weather, activeCrops }) {
   const topRec = recommendations[0] ?? null;
   const explanation = topRec ? generateExplanation(topRec, weather, forecast.modelLimitations) : null;
 
-  // Merge all model limitations from disease forecast + risk engine.
-  const modelLimitations = [...(forecast.modelLimitations || []), ...(topRisks[0]?.modelLimitations || [])];
+  // Merge all model limitations from disease + pest forecasts + risk engine.
+  const modelLimitations = [
+    ...(forecast.modelLimitations || []),
+    ...(pestForecast?.modelLimitations || []),
+    ...(topRisks[0]?.modelLimitations || []),
+  ];
 
   return {
     riskLevel: dashboard.overallRiskLevel,
     overallRiskScore: dashboard.overallRiskScore,
     topRisks,
     diseaseForecast: forecast,
+    pestForecast,
     explanation,
     scoutingAction,
     recommendations,

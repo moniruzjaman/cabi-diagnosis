@@ -21,6 +21,9 @@ const ok = validateProductForTarget(
     crops: "Rice, Wheat",
     pest: "Rice Blast, Brown Spot",
     moaCode: "FRAC P1",
+    dosage: "15 g/10L water",
+    phiDays: 14,
+    reiHours: 24,
   },
   { crop: "Rice", pest: "Rice Blast" },
 );

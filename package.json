@@ -45,7 +45,10 @@
     "check:models": "node scripts/sync_kaggle_models.mjs --check",
     "test:offline": "node src/offline/test-ensemble.mjs",
     "test:intelligence": "node scripts/run-tests.mjs",
-    "test": "node scripts/run-tests.mjs"
+    "test": "node scripts/run-tests.mjs",
+    "validate:registry": "node scripts/validate_registry.mjs",
+    "validate:registry:check": "node scripts/validate_registry.mjs --check",
+    "extract:alerts": "node scripts/extract_regulatory_alerts.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.17.3",
