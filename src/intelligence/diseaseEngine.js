@@ -30,12 +30,32 @@ function clamp(value, min, max) {
 // marks the threshold as "uncited" (an honest gap, not a fake citation).
 // ────────────────────────────────────────────────────────────
 
+// ────────────────────────────────────────────────────────────
+// Phase 5 enrichment (optional fields, additive — original fields kept):
+//   greenList    — Bangla names of curative treatments safe for this disease
+//   yellowList   — treatments requiring caution (resistance/PHI/toxicity)
+//   similarDiseases — disease ids with overlapping symptoms (differential dx)
+//   causalType   — 'fungal'|'bacterial'|'viral'|'pest'|'abiotic'
+//   districts    — Bangla district names where the disease is prevalent
+//   seasonality  — Bangla months (বৈশাখ..চৈত্র) of peak risk
+// modelLimitations: greenList/yellowList are general Bangladesh agronomic
+//   guidance and do NOT replace the registered-product pesticide registry
+//   (src/data/pesticideRegistry.js) or MoA stewardship (moaStewardship.js).
+//   districts are broad prevalence zones (not exhaustive); seasonality
+//   reflects typical peak-risk months, not a forecast. Unknown values are []
+//   (never fabricated). Content authored from general BRRI/BARI knowledge.
 /** @type {import('./types.js').DiseaseInfo[]} */
 const DISEASES = [
   {
     id: "rice_blast",
     name: "Rice Blast",
     nameBn: "ধানের ব্লাস্ট",
+    greenList: ["ট্রাইসাইক্লাজোল", "আইসোপ্রোথিয়োলেন"],
+    yellowList: ["কার্বেন্ডাজিম"],
+    similarDiseases: ["sheath_blight", "rice_brown_spot"],
+    causalType: "fungal",
+    districts: ["নাটোর", "বগুড়া", "রাজশাহী", "নওগাঁ"],
+    seasonality: ["মাঘ", "ফাল্গুন", "চৈত্র"],
     cropIds: ["rice"],
     affectedStages: ["seedling", "vegetative", "tillering", "heading", "flowering"],
     favorabilityFactors: [
@@ -86,6 +106,12 @@ const DISEASES = [
     id: "bacterial_leaf_blight",
     name: "Bacterial Leaf Blight",
     nameBn: "ব্যাকটেরিয়াল পাতা পোড়া",
+    greenList: ["কপার অক্সিক্লোরাইড", "স্ট্রেপটোসাইক্লিন"],
+    yellowList: ["কপার হাইড্রক্সাইড"],
+    similarDiseases: ["rice_brown_spot", "rice_blast"],
+    causalType: "bacterial",
+    districts: ["কুড়িগ্রাম", "রংপুর", "নীলফামারী", "টাঙ্গাইল"],
+    seasonality: ["আষাঢ়", "ভাদ্র", "আশ্বিন"],
     cropIds: ["rice"],
     affectedStages: ["vegetative", "tillering", "booting", "heading"],
     favorabilityFactors: [
@@ -136,6 +162,12 @@ const DISEASES = [
     id: "sheath_blight",
     name: "Sheath Blight",
     nameBn: "পাতার আবরণ পোড়া",
+    greenList: ["হেক্সাকোনাজোল", "ভ্যালিডামাইসিন"],
+    yellowList: ["কার্বেন্ডাজিম"],
+    similarDiseases: ["rice_blast", "rice_brown_spot"],
+    causalType: "fungal",
+    districts: ["দিনাজপুর", "বগুড়া", "যশোর", "কুমিল্লা"],
+    seasonality: ["ভাদ্র", "আশ্বিন", "কার্তিক"],
     cropIds: ["rice"],
     affectedStages: ["tillering", "stem_elongation", "booting", "heading"],
     favorabilityFactors: [
@@ -186,6 +218,12 @@ const DISEASES = [
     id: "rice_brown_spot",
     name: "Brown Spot",
     nameBn: "বাদামি দাগ",
+    greenList: ["ম্যানকোজেব", "প্রোপিকোনাজোল"],
+    yellowList: ["কার্বেন্ডাজিম"],
+    similarDiseases: ["rice_blast", "sheath_blight"],
+    causalType: "fungal",
+    districts: ["রাজশাহী", "নাটোর", "নওগাঁ", "চাঁপাইনবাবগঞ্জ"],
+    seasonality: ["ভাদ্র", "আশ্বিন", "অগ্রহায়ণ"],
     cropIds: ["rice"],
     affectedStages: ["seedling", "vegetative", "tillering", "grain_filling"],
     favorabilityFactors: [
@@ -232,6 +270,12 @@ const DISEASES = [
     id: "wheat_rust",
     name: "Wheat Rust",
     nameBn: "গমের মরিচা",
+    greenList: ["প্রোপিকোনাজোল", "টেবুকোনাজোল"],
+    yellowList: ["ট্রায়াডিমেফন"],
+    similarDiseases: ["powdery_mildew"],
+    causalType: "fungal",
+    districts: ["দিনাজপুর", "রংপুর", "বগুড়া", "রাজশাহী"],
+    seasonality: ["মাঘ", "ফাল্গুন", "চৈত্র"],
     cropIds: ["wheat"],
     affectedStages: ["vegetative", "stem_elongation", "heading", "flowering", "grain_filling"],
     favorabilityFactors: [
@@ -282,6 +326,12 @@ const DISEASES = [
     id: "powdery_mildew",
     name: "Powdery Mildew",
     nameBn: "ধুলো ছাতা রোগ",
+    greenList: ["সালফার (গন্ধক)", "ডাইনোক্যাপ"],
+    yellowList: ["ট্রায়াডিমেফন", "মাইক্লোবিউটানিল"],
+    similarDiseases: ["wheat_rust", "chili_anthracnose"],
+    causalType: "fungal",
+    districts: ["দিনাজপুর", "বগুড়া", "যশোর", "নওগাঁ"],
+    seasonality: ["মাঘ", "ফাল্গুন", "চৈত্র"],
     cropIds: ["wheat", "chili", "brinjal"],
     affectedStages: ["vegetative", "stem_elongation", "heading", "grain_filling", "flowering"],
     favorabilityFactors: [
@@ -334,6 +384,12 @@ const DISEASES = [
     id: "jute_stem_rot",
     name: "Stem Rot",
     nameBn: "পাটের কাণ্ড পচা",
+    greenList: ["কার্বেন্ডাজিম", "ম্যানকোজেব"],
+    yellowList: ["কপার অক্সিক্লোরাইড"],
+    similarDiseases: ["brinjal_phomopsis"],
+    causalType: "fungal",
+    districts: ["ফরিদপুর", "টাঙ্গাইল", "যশোর", "মানিকগঞ্জ"],
+    seasonality: ["জ্যৈষ্ঠ", "আষাঢ়", "ভাদ্র"],
     cropIds: ["jute"],
     affectedStages: ["vegetative", "stem_elongation"],
     favorabilityFactors: [
@@ -384,6 +440,12 @@ const DISEASES = [
     id: "potato_late_blight",
     name: "Late Blight",
     nameBn: "আলুর লেট ব্লাইট",
+    greenList: ["মেটাল্যাক্সিল+ম্যানকোজেব", "কপার হাইড্রক্সাইড"],
+    yellowList: ["ডাইমেথোমর্ফ"],
+    similarDiseases: ["tomato_early_blight"],
+    causalType: "fungal",
+    districts: ["মুন্সিগঞ্জ", "রংপুর", "বগুড়া", "নীলফামারী"],
+    seasonality: ["অগ্রহায়ণ", "পৌষ", "মাঘ"],
     cropIds: ["potato"],
     affectedStages: ["vegetative", "stem_elongation", "flowering"],
     favorabilityFactors: [
@@ -434,6 +496,12 @@ const DISEASES = [
     id: "tomato_early_blight",
     name: "Early Blight",
     nameBn: "টমেটোর আর্লি ব্লাইট",
+    greenList: ["ম্যানকোজেব", "ক্লোরোথালোনিল", "আইপ্রোডিয়ন"],
+    yellowList: ["কার্বেন্ডাজিম"],
+    similarDiseases: ["potato_late_blight", "mustard_alternaria"],
+    causalType: "fungal",
+    districts: ["বগুড়া", "রংপুর", "যশোর", "কুমিল্লা"],
+    seasonality: ["অগ্রহায়ণ", "পৌষ", "মাঘ", "ফাল্গুন"],
     cropIds: ["tomato"],
     affectedStages: ["vegetative", "stem_elongation", "flowering", "grain_filling"],
     favorabilityFactors: [
@@ -480,6 +548,12 @@ const DISEASES = [
     id: "chili_anthracnose",
     name: "Anthracnose",
     nameBn: "মরিচের অ্যানথ্রাকনোজ",
+    greenList: ["ম্যানকোজেব", "অ্যাজক্সিস্ট্রোবিন", "কার্বেন্ডাজিম"],
+    yellowList: ["কপার অক্সিক্লোরাইড"],
+    similarDiseases: ["powdery_mildew", "tomato_early_blight"],
+    causalType: "fungal",
+    districts: ["বগুড়া", "রংপুর", "নওগাঁ", "রাজশাহী"],
+    seasonality: ["চৈত্র", "বৈশাখ", "জ্যৈষ্ঠ"],
     cropIds: ["chili"],
     affectedStages: ["flowering", "grain_filling"],
     favorabilityFactors: [
@@ -530,6 +604,12 @@ const DISEASES = [
     id: "mustard_alternaria",
     name: "Alternaria Blight",
     nameBn: "সরিষার অল্টারনারিয়া",
+    greenList: ["ম্যানকোজেব", "ক্লোরোথালোনিল"],
+    yellowList: ["কার্বেন্ডাজিম"],
+    similarDiseases: ["tomato_early_blight", "onion_purple_blotch"],
+    causalType: "fungal",
+    districts: ["দিনাজপুর", "বগুড়া", "যশোর", "রাজশাহী"],
+    seasonality: ["মাঘ", "ফাল্গুন", "চৈত্র"],
     cropIds: ["mustard"],
     affectedStages: ["stem_elongation", "flowering", "grain_filling"],
     favorabilityFactors: [
@@ -576,6 +656,12 @@ const DISEASES = [
     id: "onion_purple_blotch",
     name: "Purple Blotch",
     nameBn: "পেঁয়াজের বেগুনি দাগ",
+    greenList: ["ম্যানকোজেব", "ক্লোরোথালোনিল", "আইপ্রোডিয়ন"],
+    yellowList: ["কার্বেন্ডাজিম"],
+    similarDiseases: ["mustard_alternaria", "tomato_early_blight"],
+    causalType: "fungal",
+    districts: ["পাবনা", "যশোর", "রাজশাহী", "ফরিদপুর"],
+    seasonality: ["অগ্রহায়ণ", "পৌষ", "মাঘ"],
     cropIds: ["onion"],
     affectedStages: ["vegetative", "stem_elongation"],
     favorabilityFactors: [
@@ -626,6 +712,12 @@ const DISEASES = [
     id: "maize_downy_mildew",
     name: "Downy Mildew",
     nameBn: "ভুট্টার ডাউনি মিলডিউ",
+    greenList: ["মেটাল্যাক্সিল", "ম্যানকোজেব"],
+    yellowList: ["কার্বেন্ডাজিম"],
+    similarDiseases: ["powdery_mildew"],
+    causalType: "fungal",
+    districts: ["দিনাজপুর", "রংপুর", "বগুড়া", "কুড়িগ্রাম"],
+    seasonality: ["বৈশাখ", "জ্যৈষ্ঠ", "আষাঢ়"],
     cropIds: ["maize"],
     affectedStages: ["seedling", "vegetative", "tillering"],
     favorabilityFactors: [
@@ -671,6 +763,12 @@ const DISEASES = [
     id: "brinjal_phomopsis",
     name: "Phomopsis Blight",
     nameBn: "বেগুনের ফোমোপসিস পচা",
+    greenList: ["কার্বেন্ডাজিম", "ম্যানকোজেব", "কপার অক্সিক্লোরাইড"],
+    yellowList: ["ক্লোরোথালোনিল"],
+    similarDiseases: ["jute_stem_rot", "chili_anthracnose"],
+    causalType: "fungal",
+    districts: ["বগুড়া", "রংপুর", "যশোর", "নওগাঁ"],
+    seasonality: ["বৈশাখ", "জ্যৈষ্ঠ", "আষাঢ়", "ভাদ্র"],
     cropIds: ["brinjal"],
     affectedStages: ["vegetative", "flowering", "grain_filling"],
     favorabilityFactors: [

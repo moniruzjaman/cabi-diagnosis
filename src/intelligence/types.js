@@ -397,6 +397,66 @@
  */
 
 // ============================================================
+// Phase 5 — Bangla Field Copilot Enhancement
+// (structured intake wizard, diagnosis merger, district coords,
+//  crop-disease DB enrichment, copilot case-awareness)
+// Disease DB enrichment fields are additive (authored from general
+// BRRI/BARI knowledge; unknown values are [] — never fabricated).
+// ============================================================
+
+/**
+ * Normalized pathogen class for a disease. Distinct from the host's
+ * free-text `cause` field: `insect` collapses to `pest` here.
+ * @typedef {'fungal'|'bacterial'|'viral'|'pest'|'abiotic'} CausalType
+ */
+
+/**
+ * Phase 5 enrichment fields on a disease object (all optional, additive).
+ * `greenList`/`yellowList` are general Bangladesh agronomic guidance and do
+ * NOT replace the registered-product pesticide registry or MoA stewardship.
+ * @typedef {Object} DiseaseEnrichmentFields
+ * @property {string[]} [greenList] - Bangla names of curative treatments safe for this disease
+ * @property {string[]} [yellowList] - treatments requiring caution (resistance/PHI/toxicity)
+ * @property {string[]} [similarDiseases] - disease ids with overlapping symptoms (differential dx)
+ * @property {CausalType} [causalType] - normalized pathogen class
+ * @property {string[]} [districts] - Bangla district names where the disease is prevalent
+ * @property {string[]} [seasonality] - Bangla months (বৈশাখ..চৈত্র) of peak risk
+ */
+
+/**
+ * A single diagnostic result from one source (ONNX matcher, structured
+ * symptom wizard, or copilot).
+ * @typedef {Object} DiagnosisMatch
+ * @property {string} diseaseId
+ * @property {number} confidence - 0..100
+ * @property {string[]} [evidence]
+ */
+
+/**
+ * A source contributing diagnostic matches to the merger.
+ * @typedef {Object} DiagnosisSource
+ * @property {'onnx'|'symptom_wizard'|'copilot'} source
+ * @property {DiagnosisMatch[]} matches
+ */
+
+/**
+ * The merged diagnostic verdict. `agreement` is a top-disease vote count,
+ * NOT a statistical correlation measure. `confidence` is a weighted average
+ * (author-chosen weights), NOT a calibrated probability.
+ * @typedef {Object} MergedDiagnosis
+ * @property {{diseaseId: string, confidence: number, evidence: string[], sources: string[]}|null} topDisease
+ * @property {{diseaseId: string, confidence: number, sources: string[]}[]} alternatives
+ * @property {number} confidence - 0..100, weighted
+ * @property {string[]} sources - the source ids that contributed
+ * @property {'high'|'medium'|'low'} agreement
+ * @property {string[]} modelLimitations
+ */
+
+/**
+ * Approximate district centroid coordinates (Bangladesh).
+ * @typedef {Object} DistrictCoord
+ * @property {number} lat
+ * @property {number} lng
 // Phase 3 — Field Health Passport + Offline Field Intelligence
 // (original design; haversine math, offline-sync state machine, and
 //  audit log are standard engineering patterns. Reimplemented from
