@@ -456,6 +456,9 @@ const MOA_ALIASES = {
 };
 
 const MOA_BY_CODE = new Map(MOA_GROUPS.map((g) => [g.code, g]));
+// Canonical codes re-keyed lowercase with separators folded to "_" — lets
+// resolveMoaCode accept "IRAC_4A", "irac 4a", "Frac-P1", etc.
+const MOA_BY_NORMALIZED = new Map(MOA_GROUPS.map((g) => [g.code.toLowerCase().replace(/[\s_-]+/g, "_"), g.code]));
 
 /**
  * Resolve a free-text moaGroup string (as stored in cropHealthCases) to a
@@ -469,6 +472,14 @@ export function resolveMoaCode(raw) {
   if (!lower) return null;
   // Exact alias match
   if (MOA_ALIASES[lower]) return MOA_ALIASES[lower];
+  // Canonical-code match, separator/case-insensitive (e.g. "IRAC_4A",
+  // "irac 4a", "Frac-P1"). The panel stores the canonical code
+  // (approvedTreatment.moaCode) as moaGroup, and underscore forms have no
+  // alias — without this they resolve to null, drop out of the treatment
+  // ledger's MoA tracking, and rotation/season-cap checks under-count
+  // applications (PR #66 review).
+  const canonical = MOA_BY_NORMALIZED.get(lower.replace(/[\s_-]+/g, "_"));
+  if (canonical) return canonical;
   // Substring match (handles "FRAC Group 3", "triazole (DMI)", etc.)
   for (const [alias, code] of Object.entries(MOA_ALIASES)) {
     if (lower.includes(alias)) return code;
