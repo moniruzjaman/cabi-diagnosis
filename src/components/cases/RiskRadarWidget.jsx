@@ -204,6 +204,9 @@ export default function RiskRadarWidget({ C, case: caseObj }) {
 
   const colors = RISK_COLORS[radar.riskLevel] || RISK_COLORS.unknown;
   const topDisease = radar.diseaseForecast?.diseases?.[0] || null;
+  // Ported pest forecast: insect-pest pressure (warm nights + dry spells).
+  const topPest = radar.pestForecast?.pests?.[0] || null;
+  const highPest = radar.pestForecast?.pests?.filter((p) => p.risk >= 45) || [];
 
   return (
     <div style={{ background: C.bg, borderRadius: 12, padding: "12px 14px", border: `1px solid ${C.border}` }}>
@@ -275,6 +278,27 @@ export default function RiskRadarWidget({ C, case: caseObj }) {
               বর্তমান আবহাওয়ায় তাৎক্ষণিক রোগের ঝুঁকি কম।
             </div>
           )}
+
+          {/* Ported pest forecast (insect pressure — opposite weather model) */}
+          {topPest && topPest.risk > 0 ? (
+            <div style={{ fontSize: 11, marginBottom: 6, lineHeight: 1.5 }}>
+              <b>🐛 পোকার চাপ:</b> {topPest.pest.nameBn}
+              <span style={{ color: C.textMuted }}> ({topPest.risk}/১০০)</span>
+              {highPest.length > 1 ? (
+                <span style={{ color: C.textMuted, fontSize: 10 }}> +{highPest.length - 1}টি আরও</span>
+              ) : null}
+              {topPest.pest.economicThreshold ? (
+                <div style={{ fontSize: 10, color: C.textMuted, marginTop: 2 }}>
+                  সীমামান: {topPest.pest.economicThreshold}
+                </div>
+              ) : null}
+              {topPest.preventiveActions?.[0] ? (
+                <div style={{ fontSize: 10, color: C.textMuted, marginTop: 2 }}>
+                  প্রতিরোধ: {topPest.preventiveActionsBn?.[0] || topPest.preventiveActions[0]}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           {/* Weather evidence */}
           {radar.topRisks.find((r) => r.category === "disease")?.evidence?.length > 0 && (

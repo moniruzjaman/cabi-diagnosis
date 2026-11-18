@@ -563,4 +563,48 @@
  * @property {string} [decidedAt] - ISO, set on approve/reject
  */
 
+/**
+ * An insect pest profile for the weather-driven pest engine (pestEngine.js).
+ * Pest ecology is dry/warm-favoring — the OPPOSITE of the disease model —
+ * so this is a separate type from DiseaseInfo.
+ * @typedef {Object} PestInfo
+ * @property {string} id
+ * @property {string} name
+ * @property {string} nameBn
+ * @property {string[]} cropIds
+ * @property {string[]} affectedStages
+ * @property {number} minNightTempC - pest activity favored above this min night temperature
+ * @property {number} maxFavorableRainMm - pest favored when rainfall stays below this
+ * @property {string[]} symptoms
+ * @property {string[]} symptomsBn
+ * @property {string[]} preventiveActions
+ * @property {string[]} preventiveActionsBn
+ * @property {string[]} curativeActions
+ * @property {string[]} curativeActionsBn
+ * @property {string} economicThreshold - source string; disclosed, never parsed to a number
+ * @property {string[]} sources
+ */
+
+/**
+ * One pest's forecast assessment.
+ * @typedef {Object} PestRiskAssessment
+ * @property {import('./types.js').PestInfo} pest
+ * @property {number} risk - 0-100
+ * @property {import('./types.js').RiskLevel} level
+ * @property {number} confidence
+ * @property {string[]} contributingFactors
+ * @property {string[]} preventiveActions
+ * @property {string[]} curativeActions
+ */
+
+/**
+ * The pest forecast result from pestEngine.generatePestForecast.
+ * @typedef {Object} PestForecast
+ * @property {PestRiskAssessment[]} pests
+ * @property {number} overallFavorability - 0-100
+ * @property {import('./types.js').RiskLevel} spreadRisk
+ * @property {number} confidence
+ * @property {string[]} modelLimitations
+ */
+
 export {}; // type-only module

@@ -26,6 +26,17 @@ const GATE_ICONS = {
   pre_harvest_interval: "⏳",
 };
 
+// Ported advisory-status colors (7 statuses from the reference decision engine).
+const STATUS_STYLES = {
+  MONITOR: { bg: "#e0f2fe", fg: "#075985" },
+  SCOUT_REQUIRED: { bg: "#fef3c7", fg: "#92400e" },
+  IPM_ACTION: { bg: "#dcfce7", fg: "#166534" },
+  PREVENTIVE_ACTION: { bg: "#d1fae5", fg: "#065f46" },
+  INTERVENTION_CONSIDERATION: { bg: "#ffedd5", fg: "#9a3412" },
+  CONDITIONS_UNSUITABLE: { bg: "#fee2e2", fg: "#991b1b" },
+  INSUFFICIENT_DATA: { bg: "#f1f5f9", fg: "#475569" },
+};
+
 const GATE_ORDER = [
   "diagnosis_confirmed",
   "economic_threshold",
@@ -38,13 +49,20 @@ export default function CropProtectionPanel({ C, caseObj, riskRadar }) {
   const [showLimitations, setShowLimitations] = useState(false);
   const [recorded, setRecorded] = useState(false);
 
-  // Derive the target disease id from the radar's top disease.
-  const diseaseId = riskRadar?.diseaseForecast?.diseases?.[0]?.disease?.id ?? null;
+  // Derive the target from the radar: the top disease, or — when insect-pest
+  // pressure (ported pestEngine) exceeds disease risk — the top PEST, which
+  // routes the decision through the IRAC stewardship path (pest mode).
+  const topDiseaseEntry = riskRadar?.diseaseForecast?.diseases?.[0] ?? null;
+  const topPestEntry = riskRadar?.pestForecast?.pests?.[0] ?? null;
+  const pestWins =
+    topPestEntry && topPestEntry.risk > 0 && (!topDiseaseEntry || topPestEntry.risk > topDiseaseEntry.risk);
+  const diseaseId = pestWins ? topPestEntry.pest.id : (topDiseaseEntry?.disease?.id ?? null);
+  const targetKind = pestWins ? "pest" : "disease";
 
   const decision = useMemo(() => {
     if (!diseaseId || !riskRadar) return null;
-    return evaluateProtectionDecision({ caseObj, diseaseId, riskRadar });
-  }, [caseObj, diseaseId, riskRadar]);
+    return evaluateProtectionDecision({ caseObj, diseaseId, riskRadar, targetKind });
+  }, [caseObj, diseaseId, riskRadar, targetKind]);
 
   // R4 — validate the approved treatment's product against the case's crop +
   // target disease using the DAE registry. A product is only 'verified' when
@@ -89,22 +107,105 @@ export default function CropProtectionPanel({ C, caseObj, riskRadar }) {
         marginTop: 8,
       }}
     >
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+      {/* Header — 5-gate verdict + ported advisory STATUS */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 8,
+          gap: 6,
+          flexWrap: "wrap",
+        }}
+      >
         <div style={{ fontSize: 12, fontWeight: 700, color: C.text }}>🛡️ ক্রপ প্রোটেকশন ডিসিশন</div>
-        <div
-          style={{
-            background: decision.approved ? "#16a34a" : "#ea580c",
-            color: "#fff",
-            padding: "3px 10px",
-            borderRadius: 999,
-            fontSize: 11,
-            fontWeight: 700,
-          }}
-        >
-          {decision.approved ? "✓ অনুমোদিত" : "✗ অবরুদ্ধ"}
+        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          <div
+            style={{
+              background: STATUS_STYLES[decision.status]?.bg || "#f1f5f9",
+              color: STATUS_STYLES[decision.status]?.fg || "#475569",
+              padding: "3px 10px",
+              borderRadius: 999,
+              fontSize: 11,
+              fontWeight: 700,
+            }}
+          >
+            {decision.statusBn || decision.status}
+          </div>
+          <div
+            style={{
+              background: decision.approved ? "#16a34a" : "#ea580c",
+              color: "#fff",
+              padding: "3px 10px",
+              borderRadius: 999,
+              fontSize: 11,
+              fontWeight: 700,
+            }}
+          >
+            {decision.approved ? "✓ অনুমোদিত" : "✗ অবরুদ্ধ"}
+          </div>
         </div>
       </div>
+
+      {/* Ported status explanation — the advisory story around the gates */}
+      <div style={{ fontSize: 11, color: C.text, lineHeight: 1.6, marginBottom: 8 }}>
+        {decision.statusExplanationBn || decision.statusExplanation}
+      </div>
+
+      {/* Ported IPM-ordered actions (preventive → … → chemical) */}
+      {decision.ipmActions?.length > 0 && (
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.textMuted, marginBottom: 4 }}>
+            করণীয় (IPM ক্রমে):
+          </div>
+          <ol style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
+            {decision.ipmActions.map((a, i) => (
+              <li
+                key={i}
+                style={{
+                  fontSize: 10.5,
+                  lineHeight: 1.5,
+                  color: a.chemical ? C.danger : C.text,
+                  fontWeight: a.chemical ? 700 : 400,
+                }}
+              >
+                <span style={{ fontSize: 9, color: C.textMuted, fontFamily: "monospace" }}>T{a.ipmTier}</span>{" "}
+                {a.actionBn || a.action}
+                {a.chemical ? " ⚠️" : ""}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {/* Ported missing-information disclosure */}
+      {decision.missingInformation?.length > 0 && (
+        <div
+          style={{
+            fontSize: 10,
+            color: "#854d0e",
+            background: "#fef9c3",
+            borderRadius: 8,
+            padding: "6px 10px",
+            marginBottom: 8,
+            lineHeight: 1.5,
+          }}
+        >
+          <b>অনুপস্থিত তথ্য:</b>
+          <ul style={{ margin: "4px 0 0 14px", padding: 0 }}>
+            {decision.missingInformation.map((m, i) => (
+              <li key={i}>{m}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Ported reassessment date */}
+      {decision.reassessAfter && (
+        <div style={{ fontSize: 10, color: C.textMuted, marginBottom: 8 }}>
+          🔁 পুনর্মূল্যায়ন: {new Date(decision.reassessAfter).toLocaleDateString("bn-BD")}
+        </div>
+      )}
       {/* R3 — diagnosis confirmation status (unconfirmed blocks chemical) */}
       <div
         style={{

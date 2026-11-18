@@ -240,4 +240,16 @@ fs.writeFileSync(path.join(DEST, 'data', 'upstreamMeta.js'), meta);
 console.log('  wrote src/agrichem/data/upstreamMeta.js');
 
 console.log('\n✅ AgriChem pesticide database synced from upstream commit ' + shortSha);
-console.log('   Next: npm run build (verify), then commit the changed files under src/agrichem/.');
+
+// ── 6. Post-sync validation (ported protection-intelligence pipeline) ─────
+// Re-extract regulatory alerts + revalidate the registry so the committed
+// reports always match the freshly synced data.
+for (const step of [
+  ['extract_regulatory_alerts', 'node', ['scripts/extract_regulatory_alerts.mjs']],
+  ['validate_registry', 'node', ['scripts/validate_registry.mjs']],
+]) {
+  const [label, cmd, args] = step;
+  console.log(`\nRunning ${label}…`);
+  sh(`${cmd} ${args.join(' ')}`);
+}
+console.log('   Next: npm run build (verify), then commit the changed files under src/agrichem/ + src/data/registry*');

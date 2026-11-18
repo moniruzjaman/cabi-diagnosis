@@ -12,7 +12,24 @@
  */
 import { pesticides } from '../agrichem/data/all_pesticides.ts';
 
-export const BANGLADESH_PESTICIDES_REGISTRY = pesticides.map(p => ({
+// Ported protection-integrity fix: the DAE register source contains
+// duplicate registration numbers (14 groups — e.g. AP-3612 listed under two
+// different products). One regNo must map to one product for eligibility
+// gating to mean anything, so dedupe by strongly-normalized regNo
+// (uppercase, collapse whitespace) keeping the FIRST occurrence
+// deterministically. Rows without a regNo are kept (their missing regNo is
+// disclosed by productValidator, never silently passed).
+const normalizeRegKey = (raw) => String(raw || '').trim().toUpperCase().replace(/\s+/g, '');
+const seenRegNos = new Set();
+const uniquePesticides = pesticides.filter((p) => {
+  const key = normalizeRegKey(p.registrationNo);
+  if (!key) return true;
+  if (seenRegNos.has(key)) return false;
+  seenRegNos.add(key);
+  return true;
+});
+
+export const BANGLADESH_PESTICIDES_REGISTRY = uniquePesticides.map(p => ({
   category: p.pesticideType,
   activeIngredient: p.commonName,
   tradeName: p.brandName,

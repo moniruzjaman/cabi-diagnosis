@@ -185,6 +185,144 @@ const MOA_GROUPS = [
     targetPathogenClasses: ["soil-borne pathogens"],
     sources: ["uncited — biocontrol agent; no FRAC resistance classification"],
   },
+  // ── IRAC groups — insecticide MoAs for the pest engine's targets ──────
+  // Ported protection-intelligence scope: the IRAC groups relevant to the
+  // 8 pests in pestEngine.js. Same public-domain source (irac-online.org).
+  {
+    code: "IRAC_4A",
+    shortCode: "4A",
+    committee: "IRAC",
+    name: "Neonicotinoids",
+    nameBn: "নিওনিকোটিনয়েড",
+    pesticideClass: "insecticide",
+    resistanceRisk: "high",
+    maxAppsPerSeason: 2,
+    rotationWindowDays: 21,
+    phiDays: 14,
+    activeIngredients: ["Imidacloprid", "Thiamethoxam", "Acetamiprid"],
+    targetPathogenClasses: ["sucking pests"],
+    sources: ["IRAC Mode of Action Classification 2024 — Group 4A"],
+  },
+  {
+    code: "IRAC_16",
+    shortCode: "16",
+    committee: "IRAC",
+    name: "Feeding disruptors (pyridine azomethine derivatives)",
+    nameBn: "খাদ্য প্রতিরোধক (পাইমেট্রোজিন)",
+    pesticideClass: "insecticide",
+    resistanceRisk: "low",
+    maxAppsPerSeason: 2,
+    rotationWindowDays: 21,
+    phiDays: 7,
+    activeIngredients: ["Pymetrozine", "Flonicamid"],
+    targetPathogenClasses: ["sucking pests"],
+    sources: ["IRAC Mode of Action Classification 2024 — Group 16"],
+  },
+  {
+    code: "IRAC_15",
+    shortCode: "15",
+    committee: "IRAC",
+    name: "Benzoylureas (chitin synthesis inhibitors)",
+    nameBn: "বেনজয়েলউরিয়া (কাইটিন সংশ্লেষণ প্রতিরোধক)",
+    pesticideClass: "insecticide",
+    resistanceRisk: "medium",
+    maxAppsPerSeason: 2,
+    rotationWindowDays: 21,
+    phiDays: 14,
+    activeIngredients: ["Buprofezin", "Diflubenzuron", "Lufenuron"],
+    targetPathogenClasses: ["sucking pests", "mites"],
+    sources: ["IRAC Mode of Action Classification 2024 — Group 15"],
+  },
+  {
+    code: "IRAC_18",
+    shortCode: "18",
+    committee: "IRAC",
+    name: "Ecdysone agonists (diacylhydrazines)",
+    nameBn: "এক্ডাইসোন অ্যাগনিস্ট",
+    pesticideClass: "insecticide",
+    resistanceRisk: "medium",
+    maxAppsPerSeason: 2,
+    rotationWindowDays: 21,
+    phiDays: 14,
+    activeIngredients: ["Tebufenozide", "Methoxyfenozide", "Chromafenozide"],
+    targetPathogenClasses: ["lepidopteran larvae"],
+    sources: ["IRAC Mode of Action Classification 2024 — Group 18"],
+  },
+  {
+    code: "IRAC_28",
+    shortCode: "28",
+    committee: "IRAC",
+    name: "Diamides (ryanodine receptor modulators)",
+    nameBn: "ডায়ামাইড (রায়ানোডিন রিসেপ্টর)",
+    pesticideClass: "insecticide",
+    resistanceRisk: "medium",
+    maxAppsPerSeason: 2,
+    rotationWindowDays: 21,
+    phiDays: 14,
+    activeIngredients: ["Chlorantraniliprole", "Flubendiamide", "Cyantraniliprole"],
+    targetPathogenClasses: ["lepidopteran larvae"],
+    sources: ["IRAC Mode of Action Classification 2024 — Group 28"],
+  },
+  {
+    code: "IRAC_22",
+    shortCode: "22",
+    committee: "IRAC",
+    name: "Voltage-dependent sodium channel blockers (oxadiazines)",
+    nameBn: "সোডিয়াম চ্যানেল ব্লকার (ইনডাক্সাকার্ব)",
+    pesticideClass: "insecticide",
+    resistanceRisk: "medium",
+    maxAppsPerSeason: 2,
+    rotationWindowDays: 21,
+    phiDays: 7,
+    activeIngredients: ["Indoxacarb"],
+    targetPathogenClasses: ["lepidopteran larvae"],
+    sources: ["IRAC Mode of Action Classification 2024 — Group 22"],
+  },
+  {
+    code: "IRAC_5",
+    shortCode: "5",
+    committee: "IRAC",
+    name: "Spinosyns",
+    nameBn: "স্পিনোসিন",
+    pesticideClass: "insecticide",
+    resistanceRisk: "medium",
+    maxAppsPerSeason: 2,
+    rotationWindowDays: 21,
+    phiDays: 3,
+    activeIngredients: ["Spinosad", "Spinetoram"],
+    targetPathogenClasses: ["lepidopteran larvae", "thrips"],
+    sources: ["IRAC Mode of Action Classification 2024 — Group 5"],
+  },
+  {
+    code: "IRAC_14",
+    shortCode: "14",
+    committee: "IRAC",
+    name: "Nicotinic channel allosteric modulators (nereistoxin analogues)",
+    nameBn: "নেরিস্টক্সিন অ্যানালগ (কার্টাপ)",
+    pesticideClass: "insecticide",
+    resistanceRisk: "medium",
+    maxAppsPerSeason: 2,
+    rotationWindowDays: 21,
+    phiDays: 14,
+    activeIngredients: ["Cartap hydrochloride", "Thiocyclam", "Bensultap"],
+    targetPathogenClasses: ["lepidopteran larvae", "sucking pests"],
+    sources: ["IRAC Mode of Action Classification 2024 — Group 14"],
+  },
+  {
+    code: "BIO_BT",
+    shortCode: "Bt",
+    committee: "BIO",
+    name: "Bacillus thuringiensis (microbial)",
+    nameBn: "ব্যাসিলাস থুরিঞ্জিয়েনসিস (জৈবিক)",
+    pesticideClass: "biocontrol",
+    resistanceRisk: "low",
+    maxAppsPerSeason: 4,
+    rotationWindowDays: 7,
+    phiDays: 0,
+    activeIngredients: ["Bacillus thuringiensis (Bt)", "Bt kurstaki"],
+    targetPathogenClasses: ["lepidopteran larvae"],
+    sources: ["IRAC Bio-insecticides group (Bt)"],
+  },
 ];
 
 // ────────────────────────────────────────────────────────────
@@ -209,6 +347,18 @@ const DISEASE_MOA_MAP = {
   onion_purple_blotch: ["FRAC_M", "BACT_COPPER"],
   maize_downy_mildew: ["FRAC_M", "FRAC_4"],
   brinjal_phomopsis: ["FRAC_M", "FRAC_1"],
+};
+
+/** @type {Record<string, string[]>} pestId (pestEngine.js) → preferred MoA codes (best first) */
+const PEST_MOA_MAP = {
+  brown_planthopper: ["IRAC_16", "IRAC_15", "IRAC_4A"],
+  yellow_stemborer: ["IRAC_28", "IRAC_14", "IRAC_18"],
+  rice_leaf_folder: ["IRAC_28", "IRAC_18", "IRAC_14"],
+  rice_hispa: ["IRAC_4A", "IRAC_3"],
+  green_leafhopper: ["IRAC_4A", "IRAC_16"],
+  wheat_aphid: ["IRAC_16", "IRAC_4A"],
+  jute_semilooper: ["IRAC_5", "IRAC_18", "BIO_BT"],
+  jute_stem_weevil: ["IRAC_4A"],
 };
 
 // ────────────────────────────────────────────────────────────
@@ -278,6 +428,31 @@ const MOA_ALIASES = {
   // Biocontrol
   trichoderma: "BIO_TRICHODERMA",
   biocontrol: "BIO_TRICHODERMA",
+  // IRAC insecticide groups
+  "irac 4a": "IRAC_4A",
+  neonicotinoid: "IRAC_4A",
+  imidacloprid: "IRAC_4A",
+  thiamethoxam: "IRAC_4A",
+  acetamiprid: "IRAC_4A",
+  "irac 16": "IRAC_16",
+  pymetrozine: "IRAC_16",
+  flonicamid: "IRAC_16",
+  "irac 15": "IRAC_15",
+  buprofezin: "IRAC_15",
+  "irac 28": "IRAC_28",
+  chlorantraniliprole: "IRAC_28",
+  flubendiamide: "IRAC_28",
+  "irac 18": "IRAC_18",
+  tebufenozide: "IRAC_18",
+  "irac 22": "IRAC_22",
+  indoxacarb: "IRAC_22",
+  "irac 5": "IRAC_5",
+  spinosad: "IRAC_5",
+  "irac 14": "IRAC_14",
+  cartap: "IRAC_14",
+  bt: "BIO_BT",
+  "b.t.": "BIO_BT",
+  "bacillus thuringiensis": "BIO_BT",
 };
 
 const MOA_BY_CODE = new Map(MOA_GROUPS.map((g) => [g.code, g]));
@@ -330,6 +505,32 @@ export function getAllMoaGroups() {
  */
 export function getMoaCodesForDisease(diseaseId) {
   return DISEASE_MOA_MAP[diseaseId] || [];
+}
+
+/**
+ * Preferred MoA codes for an insect pest (pestEngine.js pest id).
+ * @param {string} pestId
+ * @returns {string[]}
+ */
+export function getMoaCodesForPest(pestId) {
+  return PEST_MOA_MAP[pestId] || [];
+}
+
+/**
+ * Recommend the next rotation-compliant MoA group for a pest, given the
+ * codes already used this season (mirrors recommendNextMoa for diseases).
+ * @param {string} pestId
+ * @param {string[]} usedMoaCodes
+ * @returns {{code: string, group: import('./types.js').MoaGroup}|null}
+ */
+export function recommendNextMoaForPest(pestId, usedMoaCodes = []) {
+  const preferred = getMoaCodesForPest(pestId);
+  for (const code of preferred) {
+    if (!usedMoaCodes.includes(code)) {
+      return { code, group: getMoaGroup(code) };
+    }
+  }
+  return null;
 }
 
 /**
