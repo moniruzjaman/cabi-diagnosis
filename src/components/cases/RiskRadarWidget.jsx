@@ -3,6 +3,7 @@ import { fetchWeather } from "../../intelligence/weatherProvider.js";
 import { computeRiskRadar, makeMinimalActiveCrop } from "../../intelligence/riskRadar.js";
 import { updateRiskAssessment } from "../../data/cropHealthCases.js";
 import ScoutingScheduler from "./ScoutingScheduler.jsx";
+import CropProtectionPanel from "./CropProtectionPanel.jsx";
 
 // ────────────────────────────────────────────────────────────────────────────
 // RiskRadarWidget — renders the Disease Risk Radar for an active Crop Health
@@ -333,20 +334,23 @@ export default function RiskRadarWidget({ C, case: caseObj }) {
           {radar.scoutingAction ? (
             <ScoutingScheduler C={C} caseId={c.id} scoutingAction={radar.scoutingAction} />
           ) : radar.overallRiskScore != null && radar.overallRiskScore >= 60 ? (
-            <div
-              style={{
-                fontSize: 10.5,
-                color: C.danger,
-                background: "#fee2e2",
-                borderRadius: 8,
-                padding: "6px 10px",
-                marginTop: 8,
-                lineHeight: 1.5,
-              }}
-            >
-              ⚠️ রোগের ঝুঁকি বেশি (≥৬০)। রাসায়নিক হস্তক্ষেপের আগে রোগ নিশ্চিত করুন এবং ক্রপ প্রোটেকশন ডিসিশন ইঞ্জিনের
-              ধাপ অনুসরণ করুন। আবহাওয়া অনুকূল হওয়া স্প্রে করার অনুমতি নয়।
-            </div>
+            <>
+              <div
+                style={{
+                  fontSize: 10.5,
+                  color: C.danger,
+                  background: "#fee2e2",
+                  borderRadius: 8,
+                  padding: "6px 10px",
+                  marginTop: 8,
+                  lineHeight: 1.5,
+                }}
+              >
+                ⚠️ রোগের ঝুঁকি বেশি (≥৬০)। আবহাওয়া অনুকূল হওয়া স্প্রে করার অনুমতি নয় — নিচের ক্রপ প্রোটেকশন ডিসিশন
+                ইঞ্জিনের ধাপ অনুসরণ করুন।
+              </div>
+              <CropProtectionPanel C={C} caseObj={c} riskRadar={radar} />
+            </>
           ) : (
             <div style={{ fontSize: 10, color: C.textMuted, marginTop: 6 }}>
               ঝুঁকি কম — নিয়মিত পর্যবেক্ষণ চালিয়ে যান।
