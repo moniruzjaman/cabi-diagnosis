@@ -2,6 +2,8 @@
   "id": "/?source=pwa",
   "name": "উদ্ভিদ গোয়েন্দা — Plant Detective",
   "short_name": "উদ্ভিদ গোয়েন্দা",
+  "version": "5.0.0",
+  "version_name": "v5.0.0",
   "description": "CABI Plantwise প্রোটোকল দিয়ে ফসলের রোগ নির্ণয় করুন — বাংলাদেশের কৃষকদের জন্য। ৫,৬২৪+ নিবন্ধিত বালাইনাশক ডাটাবেস, মাত্রা ক্যালকুলেটর, ও অফলাইন ফিল্ড গাইড।",
   "start_url": "/?source=pwa",
   "scope": "/",

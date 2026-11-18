@@ -16,6 +16,7 @@ import { requireSignedRequest, generateRequestToken } from "./_lib/requestSignin
 import { getPolicyUsage } from "./_lib/freeTierPolicy.js";
 import { getTelemetrySnapshot } from "./_lib/observability.js";
 import { authStatus } from "./_lib/userStore.js";
+import { BUILD_INFO } from "./_lib/buildInfo.js";
 
 const startTime = Date.now();
 const metricsLimiter = createRateLimiter({ windowMs: 60_000, maxRequests: 5 });
@@ -85,6 +86,10 @@ export default async function handler(req, res) {
         process.env.OPENROUTER_API_KEY
       ),
     },
-    version: "4.0.0",
+    version: BUILD_INFO.version,
+    build: {
+      commit: BUILD_INFO.commit,
+      buildTime: BUILD_INFO.buildTime,
+    },
   });
 }
