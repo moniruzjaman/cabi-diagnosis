@@ -17,6 +17,10 @@ import {
   OUTCOME_LABELS_BN,
 } from "../../data/cropHealthCases";
 import RiskRadarWidget from "./RiskRadarWidget";
+import FieldLocationPicker from "./FieldLocationPicker";
+import SyncStatusChip from "./SyncStatusChip";
+import VerificationPanel from "./VerificationPanel";
+import CaseExportImport from "./CaseExportImport";
 
 /**
  * CaseManager — Pillar 4 (MONITOR) + Pillar 5 (EVALUATE) surface.
@@ -140,7 +144,7 @@ function Pill({ children, bg, fg }) {
 
 // ─── Case list ───────────────────────────────────────────────────────────────
 
-function CaseList({ C, cases, onOpen, onCreate, insightsCount }) {
+function CaseList({ C, cases, onOpen, onCreate, insightsCount, onRefresh }) {
   const dueCount = getDueReminders().length;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -165,6 +169,9 @@ function CaseList({ C, cases, onOpen, onCreate, insightsCount }) {
         >
           ＋ নতুন কেস খুলুন
         </button>
+        <div style={{ marginTop: 10 }}>
+          <SyncStatusChip C={C} />
+        </div>
         {dueCount > 0 && (
           <div
             style={{
@@ -289,6 +296,8 @@ function CaseList({ C, cases, onOpen, onCreate, insightsCount }) {
           🎓 শেখা কেস-শিক্ষা: {insightsCount}টি — “শিখুন” স্তম্ভে দেখুন
         </div>
       )}
+
+      <VerificationPanel C={C} cases={cases} onRefresh={onRefresh} />
     </div>
   );
 }
@@ -307,23 +316,10 @@ function NewCaseForm({ C, onCreated, onCancel, seed }) {
     photoConsent: false,
     lat: seed?.lat ?? null,
     lon: seed?.lon ?? null,
+    accuracy: seed?.accuracy ?? null,
   });
-  const [geoStatus, setGeoStatus] = useState("");
 
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
-
-  const captureGps = () => {
-    if (!navigator.geolocation) return setGeoStatus("এই ডিভাইসে GPS নেই");
-    setGeoStatus("অবস্থান নেওয়া হচ্ছে…");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setF((p) => ({ ...p, lat: pos.coords.latitude, lon: pos.coords.longitude }));
-        setGeoStatus("✓ অবস্থান সংরক্ষিত");
-      },
-      () => setGeoStatus("অনুমতি প্রয়োজন — GPS বাদ দেওয়া হলো"),
-      { timeout: 8000 },
-    );
-  };
 
   const submit = (e) => {
     e.preventDefault();
@@ -394,26 +390,12 @@ function NewCaseForm({ C, onCreated, onCancel, seed }) {
             placeholder="যেমন: পাতায় মাকু আকৃতির দাগ, ১০% গাছ আক্রান্ত…"
           />
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-          <button
-            type="button"
-            onClick={captureGps}
-            style={{
-              ...inputStyle(C),
-              width: "auto",
-              cursor: "pointer",
-              fontWeight: 700,
-              background: C.bgMuted,
-            }}
-          >
-            📍 GPS যোগ করুন
-          </button>
-          {geoStatus && <span style={{ fontSize: 10.5, color: C.textMuted }}>{geoStatus}</span>}
-          {f.lat != null && (
-            <span style={{ fontSize: 10, color: C.textLight }}>
-              {f.lat.toFixed(3)}, {f.lon?.toFixed(3)}
-            </span>
-          )}
+        <div style={{ marginTop: 10 }}>
+          <FieldLocationPicker
+            C={C}
+            case={{ fieldLocation: f.lat != null ? { lat: f.lat, lng: f.lon, accuracy: f.accuracy } : null }}
+            onLocationSet={(loc) => setF((p) => ({ ...p, lat: loc.lat, lon: loc.lng, accuracy: loc.accuracy }))}
+          />
         </div>
         <label
           style={{
@@ -613,6 +595,9 @@ function CaseDetail({ C, caseId, onBack, onInsightAdded }) {
           {c.upazila ? ` · ${c.upazila}` : ""}
           {c.location ? ` · GPS ${c.location.lat.toFixed(3)}, ${c.location.lon.toFixed(3)}` : ""} · খোলা:{" "}
           {fmtDate(c.createdAt)} · আপডেট: {fmtDate(c.updatedAt)}
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <CaseExportImport C={C} caseObj={c} onImport={() => onBack()} />
         </div>
         {c.diagnosisEvidence && (
           <div
@@ -1382,6 +1367,7 @@ export default function CaseManager({ C, seedCase, openCaseId, onCaseCreated, on
       C={C}
       cases={cases}
       insightsCount={insights.length}
+      onRefresh={refresh}
       onCreate={() => setView("new")}
       onOpen={(id) => {
         setOpenId(id);

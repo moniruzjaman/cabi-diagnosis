@@ -15,6 +15,7 @@ import CropCalendarDashboard from "./components/CropCalendarDashboard";
 import WeatherDecisionSummary from "./components/WeatherDecisionSummary";
 import TodayDecisionView from "./components/TodayDecisionView";
 import OnboardingFlow from "./components/OnboardingFlow";
+import StructuredIntakeWizard from "./components/diagnose/StructuredIntakeWizard.jsx";
 import OutbreakList from "./components/OutbreakList";
 import { HeroStakeholderSection } from "./components/HeroStakeholderSection";
 import UnifiedLearnResourceHub from "./components/UnifiedLearnResourceHub";
@@ -7324,6 +7325,9 @@ export default function UdbhidGoenda() {
   const C = darkMode ? darkThemeFull : lightThemeFull;
   setThemeTokens(C); // sync module-level bridge for child functions
 
+  // Phase 5 — structured intake wizard overlay (Diagnose tab)
+  const [showWizard, setShowWizard] = useState(false);
+
   // Onboarding
   const [showOnboarding, setShowOnboarding] = useState(() => {
     try {
@@ -8692,6 +8696,73 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               {/* ── DIAGNOSE ─────────────────────────────────────────────── */}
               {activeTab === "diagnose" && (
                 <div>
+                  {/* Phase 5 — structured 5-step intake wizard entry */}
+                  <button
+                    onClick={() => setShowWizard(true)}
+                    style={{
+                      width: "100%",
+                      padding: "12px 16px",
+                      borderRadius: 12,
+                      border: `1px solid ${C.primary}`,
+                      background: C.bgCard,
+                      color: C.primary,
+                      fontSize: 13.5,
+                      fontWeight: 800,
+                      cursor: "pointer",
+                      marginBottom: 10,
+                    }}
+                  >
+                    🧩 ৫ ধাপে নির্ণয় করুন →
+                  </button>
+                  {showWizard && (
+                    <div
+                      style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.55)",
+                        zIndex: 9998,
+                        display: "flex",
+                        alignItems: "flex-start",
+                        justifyContent: "center",
+                        padding: 12,
+                        overflow: "auto",
+                      }}
+                      onClick={() => setShowWizard(false)}
+                    >
+                      <div
+                        style={{
+                          background: C.bg,
+                          borderRadius: 16,
+                          maxWidth: 560,
+                          width: "100%",
+                          marginTop: 20,
+                          position: "relative",
+                          border: `1px solid ${C.border}`,
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => setShowWizard(false)}
+                          style={{
+                            position: "absolute",
+                            top: 8,
+                            right: 8,
+                            background: C.bgMuted,
+                            border: "none",
+                            borderRadius: 8,
+                            padding: "4px 10px",
+                            fontSize: 14,
+                            cursor: "pointer",
+                            color: C.text,
+                            zIndex: 1,
+                          }}
+                        >
+                          ✕ বন্ধ
+                        </button>
+                        <StructuredIntakeWizard C={C} onCaseCreated={() => setShowWizard(false)} />
+                      </div>
+                    </div>
+                  )}
                   <WeatherBar
                     weather={weather}
                     weatherLoading={weatherLoading}
