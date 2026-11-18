@@ -13,6 +13,9 @@
 //   8. unconfirmed observation → IPM_ACTION, no chemical actions
 //   9. IPM ladder ordering of actions (tiers ascending, chemical last)
 //  10. pest mode routes through IRAC stewardship
+//  11. REGRESSION (PR #66 review): pest mode uses the PEST forecast for the
+//      economic-threshold gate (disease forecast has no pest entry → Gate 2
+//      would otherwise always score 0 and pest mode could never be approved)
 // ============================================================
 
 import { strict as assert } from "node:assert";
@@ -252,6 +255,49 @@ const caseObsUnconfirmed = {
   ok(VALID.has(s.status), `status in the 7-status enum (got ${s.status})`);
   ok(typeof s.statusBn === "string" && s.statusBn.length > 0, "Bangla status label present");
   ok(s.actions.every((a) => !a.chemical), "no chemical actions without confirmed diagnosis");
+}
+
+// 11. REGRESSION (PR #66 review): pest mode must use the PEST forecast for the
+//     economic-threshold gate — the disease forecast has no entry for a pest
+//     id, so Gate 2 would otherwise always score 0 and pest-mode decisions
+//     could never be approved.
+{
+  // Warm night (25°C) + dry (0mm) + tillering rice → high stemborer pressure,
+  // low disease pressure at 40% humidity.
+  const radar = computeRiskRadar({ weather: makeWeather({ humidity: 40 }), activeCrops: rice });
+  const stemborer = radar.pestForecast.pests.find((p) => p.pest.id === "yellow_stemborer");
+  ok(stemborer.risk >= 50, `fixture stemborer risk ≥ 50 (got ${stemborer.risk})`);
+
+  const d = evaluateProtectionDecision({
+    caseObj: caseObsConfirmed,
+    diseaseId: "yellow_stemborer",
+    riskRadar: radar,
+    proposedTreatment: { moaCode: "IRAC_28", productName: "Ferterra 0.4GR" },
+    targetKind: "pest",
+  });
+  const gate2 = d.gates.find((g) => g.id === "economic_threshold");
+  ok(gate2.passed, `Gate 2 passes on pest risk ${stemborer.risk}/100 in pest mode`);
+  ok(
+    gate2.reasonEn.startsWith("Pest risk"),
+    `Gate 2 reason is pest-labelled (got "${gate2.reasonEn.slice(0, 20)}")`,
+  );
+  ok(d.approved, `pest-mode decision with all gates satisfied is approved (status ${d.status})`);
+  ok(d.status === "INTERVENTION_CONSIDERATION", "approved pest decision → INTERVENTION_CONSIDERATION");
+
+  // Disease mode unchanged: same fixture, disease target still reads the
+  // disease forecast and keeps the disease-labelled reason.
+  const dd = evaluateProtectionDecision({
+    caseObj: caseObsConfirmed,
+    diseaseId: "rice_blast",
+    riskRadar: radar,
+    proposedTreatment: { moaCode: "FRAC_P1", productName: "Sivic 75WP" },
+    targetKind: "disease",
+  });
+  const gate2d = dd.gates.find((g) => g.id === "economic_threshold");
+  ok(
+    gate2d.reasonEn.startsWith("Disease risk"),
+    `disease mode keeps disease-labelled reason (got "${gate2d.reasonEn.slice(0, 20)}")`,
+  );
 }
 
 console.log(`\nprotectionStatusLayer.test: ${passed} passed, ${failed} failed`);
