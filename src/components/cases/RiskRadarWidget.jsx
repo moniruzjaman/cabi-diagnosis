@@ -394,30 +394,15 @@ export default function RiskRadarWidget({ C, case: caseObj }) {
             </div>
           )}
 
-          {/* Scouting action (scouting-first: risk ≥ 25 → scout, not spray) */}
-          {radar.scoutingAction ? (
+          {/* Scouting-first field action; never treats a weather score as spray approval */}
+          {radar.scoutingAction && (
             <ScoutingScheduler C={C} caseId={c.id} scoutingAction={radar.scoutingAction} />
-          ) : radar.overallRiskScore != null && radar.overallRiskScore >= 60 ? (
-            <>
-              <div
-                style={{
-                  fontSize: 10.5,
-                  color: C.danger,
-                  background: "#fee2e2",
-                  borderRadius: 8,
-                  padding: "6px 10px",
-                  marginTop: 8,
-                  lineHeight: 1.5,
-                }}
-              >
-                ⚠️ রোগের ঝুঁকি বেশি (≥৬০)। আবহাওয়া অনুকূল হওয়া স্প্রে করার অনুমতি নয় — নিচের ক্রপ প্রোটেকশন ডিসিশন
-                ইঞ্জিনের ধাপ অনুসরণ করুন।
-              </div>
-              <CropProtectionPanel C={C} caseObj={c} riskRadar={radar} />
-            </>
+          )}
+          {radar.overallRiskScore != null ? (
+            <CropProtectionPanel C={C} caseObj={c} riskRadar={radar} />
           ) : (
             <div style={{ fontSize: 10, color: C.textMuted, marginTop: 6 }}>
-              ঝুঁকি কম — নিয়মিত পর্যবেক্ষণ চালিয়ে যান।
+              ঝুঁকি নির্ণয়ের জন্য পর্যাপ্ত তথ্য নেই — মাঠ পর্যবেক্ষণ ও তথ্য সংগ্রহ চালিয়ে যান।
             </div>
           )}
         </>
