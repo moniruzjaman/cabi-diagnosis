@@ -8384,6 +8384,18 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
   // ─── Simplified navigation: 5 clear destinations for farmers ──────────────
   // (Formerly 10 tabs — home/today/guide/game/apps/history/library were
   // overlapping or hidden pages. They are now merged into these five.)
+  const riskCase =
+    protectionCase ||
+    (form.crop
+      ? {
+          id: `live-risk-preview-${String(form.crop).replace(/[^a-zA-Z0-9_-]/g, "-")}`,
+          crop: form.crop,
+          district: form.district || locationName || "",
+          growthStage: form.growthStage || "vegetative",
+          location: coords ? { lat: coords.lat, lon: coords.lon } : undefined,
+        }
+      : null);
+
   const navTabs = [
     { id: "home", label: "হোম", icon: "🏠" },
     { id: "risk", label: "ঝুঁকি", icon: "⚠️" },
@@ -8656,138 +8668,39 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
 
               {/* ── PREVENT tab — preventive crop-health management (Pillar 3) ── */}
               {activeTab === "risk" && (
-                <div style={{ animation: "fadeIn .3s ease" }}>
-                  <div
-                    style={{
-                      background: C.bgCard,
-                      borderRadius: 16,
-                      padding: 16,
-                      border: `1px solid ${C.border}`,
-                      marginBottom: 12,
-                      boxShadow: C.shadow,
-                    }}
-                  >
-                    <div style={{ fontSize: 18, fontWeight: 800, color: C.primaryDark, marginBottom: 4 }}>
-                      ⚠️ ঝুঁকি রাডার
+                <div style={{ animation: "fadeIn .3s ease", display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ background: C.bgCard, borderRadius: 16, padding: 16, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: C.primaryDark, marginBottom: 4 }}>⚠️ ১৪ শ্রেণির ফসল-ঝুঁকি রাডার</div>
+                    <div style={{ fontSize: 11.5, color: C.textMuted, lineHeight: 1.6 }}>
+                      KrishiAI Weather Intelligence থেকে পোর্ট করা একই ১৪-শ্রেণির risk engine। নির্বাচিত ফসল ও বৃদ্ধির পর্যায় অনুযায়ী আবহাওয়া-ভিত্তিক ঝুঁকি দেখায়।
                     </div>
-                    <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 10, lineHeight: 1.5 }}>
-                      riskEngine + assessWeatherRisks দ্বারা চালিত — বর্তমান আবহাওয়া ও মৌসুমভিত্তিক রোগ/পোকা
-                      ঝুঁকি এক জায়গায়।
-                    </div>
-                    {weather
-                      ? (() => {
-                          const allRisks = assessWeatherRisks(weather);
-                          if (!allRisks.length)
-                            return (
-                              <div style={{ fontSize: 12, color: C.success, fontWeight: 600 }}>
-                                🟢 এই মুহূর্তে কোনো উল্লেখযোগ্য ঝুঁকি নেই।
-                              </div>
-                            );
-                          const high = allRisks.filter((r) => r.level === "high").length;
-                          return (
-                            <>
-                              <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 8 }}>
-                                {high > 0 ? `🔴 ${high}টি উচ্চ ঝুঁকি` : "🟡 মাঝারি ঝুঁকি"} · মোট {allRisks.length}টি
-                              </div>
-                              {allRisks.map((r, i) => (
-                                <div
-                                  key={i}
-                                  style={{
-                                    display: "flex",
-                                    gap: 8,
-                                    alignItems: "center",
-                                    padding: "9px 12px",
-                                    borderRadius: 10,
-                                    marginBottom: 6,
-                                    background:
-                                      r.level === "high" ? C.bgDanger : r.level === "medium" ? C.bgWarning : C.bgSuccess,
-                                    border: `1px solid ${
-                                      r.level === "high"
-                                        ? C.borderDanger
-                                        : r.level === "medium"
-                                          ? C.borderWarning
-                                          : C.borderSuccess
-                                    }`,
-                                  }}
-                                >
-                                  <span style={{ fontSize: 16 }}>{r.icon}</span>
-                                  <span
-                                    style={{
-                                      fontSize: 12,
-                                      color:
-                                        r.level === "high"
-                                          ? C.danger
-                                          : r.level === "medium"
-                                            ? C.warning
-                                            : C.success,
-                                      fontWeight: 600,
-                                    }}
-                                  >
-                                    {r.text}
-                                  </span>
-                                </div>
-                              ))}
-                            </>
-                          );
-                        })()
-                      : (
-                        <div style={{ fontSize: 12, color: C.textMuted }}>
-                          আবহাওয়া তথ্য লোড হচ্ছে… উপরে 🔄 চাপুন।
-                        </div>
-                      )}
                   </div>
-
+                  {riskCase ? (
+                    <RiskRadarWidget C={C} case={riskCase} showAllRisks persist={false} showActions={false} />
+                  ) : (
+                    <div style={{ background: C.bgCard, borderRadius: 14, padding: 16, border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.6, marginBottom: 10 }}>
+                        ঝুঁকি গণনার জন্য আগে ফসল নির্বাচন করুন। নির্ণয় ফর্মে ফসল ও বৃদ্ধির পর্যায় দিন।
+                      </div>
+                      <button onClick={() => setActiveTab("diagnose")} style={{ padding: "9px 13px", borderRadius: 9, border: "none", background: C.primary, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                        ফসল নির্বাচন করুন →
+                      </button>
+                    </div>
+                  )}
                   {(() => {
                     const alerts = getCurrentRiskAlerts();
                     if (!alerts.length) return null;
                     return (
-                      <div
-                        style={{
-                          background: C.bgCard,
-                          borderRadius: 16,
-                          padding: 16,
-                          border: `1px solid ${C.border}`,
-                          marginBottom: 12,
-                          boxShadow: C.shadow,
-                        }}
-                      >
-                        <div style={{ fontSize: 14, fontWeight: 800, color: C.primaryDark, marginBottom: 8 }}>
-                          📅 মৌসুমভিত্তিক সতর্কতা
-                        </div>
+                      <div style={{ background: C.bgCard, borderRadius: 16, padding: 16, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: C.primaryDark, marginBottom: 8 }}>📅 মৌসুমভিত্তিক সতর্কতা</div>
                         {alerts.map((a, i) => (
-                          <div
-                            key={i}
-                            style={{
-                              fontSize: 12,
-                              color: C.text,
-                              padding: "7px 0",
-                              lineHeight: 1.5,
-                              borderBottom: i < alerts.length - 1 ? `1px solid ${C.border}` : "none",
-                            }}
-                          >
+                          <div key={i} style={{ fontSize: 11.5, color: C.text, padding: "7px 0", lineHeight: 1.5, borderBottom: i < alerts.length - 1 ? `1px solid ${C.border}` : "none" }}>
                             <b>{a.title || a.crop || "সতর্কতা"}:</b> {a.message || a.text || a.risk || ""}
                           </div>
                         ))}
                       </div>
                     );
                   })()}
-
-                  <button
-                    onClick={() => setActiveTab("prevent")}
-                    style={{
-                      width: "100%",
-                      padding: "12px 16px",
-                      borderRadius: 12,
-                      border: `1px solid ${C.primary}`,
-                      background: C.bgCard,
-                      color: C.primary,
-                      fontSize: 13,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
-                  >
-                    🛡️ প্রতিরোধ পরিকল্পনা দেখুন →
-                  </button>
                 </div>
               )}
 
@@ -8802,6 +8715,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                         ? `বর্তমান আবহাওয়া: ${Math.round(weather.main.temp)}°C, আর্দ্রতা ${weather.main.humidity}% — ছত্রাক রোগের ঝুঁকি বাড়ে যদি আর্দ্রতা ৮০%+ ও তাপমাত্রা ২০-৩০°C হয়।`
                         : null
                     }
+                    onOpenProtection={() => setActiveTab("pesticide")}
                   />
                 </div>
               )}
