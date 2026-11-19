@@ -25,6 +25,7 @@ import { lookupMoA } from "./data/moaDatabase";
 import { getRegisteredProducts } from "./data/pesticideRegistry";
 import { CROP_REGISTRY as CROPS, CROP_FLAT } from "./data/cropRegistry.js";
 import SixPillarGrid from "./components/dashboard/SixPillarGrid.jsx";
+import JourneyProgress from "./components/JourneyProgress.jsx";
 import CaseManager from "./components/cases/CaseManager.jsx";
 import PreventionPlan from "./components/cases/PreventionPlan.jsx";
 import RiskRadarWidget from "./components/cases/RiskRadarWidget.jsx";
@@ -7204,6 +7205,7 @@ function SixPillarHomeDashboard({
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function UdbhidGoenda() {
   const [activeTab, setActiveTab] = useState("home");
+  const [moreOpen, setMoreOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [step, setStep] = useState(1);
@@ -8383,17 +8385,27 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
   };
 
   // ─── Simplified navigation: 5 clear destinations for farmers ──────────────
-  // (Formerly 10 tabs — home/today/guide/game/apps/history/library were
-  // overlapping or hidden pages. They are now merged into these five.)
+  // Secondary tools stay available from “আরও” so the primary journey remains
+  // easy to scan on small screens.
   const navTabs = [
     { id: "home", label: "হোম", icon: "🏠" },
-    { id: "risk", label: "ঝুঁকি", icon: "⚠️" },
-    { id: "calendar", label: "মৌসুম", icon: "📅" },
     { id: "diagnose", label: "শনাক্ত", icon: "🔬" },
-    { id: "prevent", label: "প্রতিরোধ", icon: "🛡️" },
+    { id: "cases", label: "কেস", icon: "📋" },
     { id: "learn", label: "শিখুন", icon: "📖" },
-    { id: "pesticide", label: "সুরক্ষা", icon: "💊" },
+    { id: "more", label: "আরও", icon: "☰" },
   ];
+  const secondaryTabs = [
+    { id: "calendar", label: "মৌসুম ও আবহাওয়া", icon: "📅", desc: "ফসলের সময়, দাম ও রোগের ঝুঁকি" },
+    { id: "risk", label: "ঝুঁকি রাডার", icon: "⚠️", desc: "আপনার এলাকার ঝুঁকি প্রোফাইল" },
+    { id: "prevent", label: "প্রতিরোধ পরিকল্পনা", icon: "🛡️", desc: "রোগ হওয়ার আগেই পরিকল্পনা করুন" },
+    { id: "pesticide", label: "নিরাপদ বালাইনাশক", icon: "💊", desc: "নিবন্ধিত পণ্য ও নিরাপত্তা" },
+    { id: "history", label: "পুরনো রিপোর্ট", icon: "🕘", desc: "আগের নির্ণয় ও শেখা" },
+  ];
+  const navigateFromJourney = (journeyId) => {
+    const destination = { detect: "diagnose", treat: "prevent", monitor: "cases", learn: "learn" }[journeyId] || "home";
+    setMoreOpen(false);
+    setActiveTab(destination);
+  };
   const feedbackContext =
     activeTab === "risk"
       ? "Risk Radar"
@@ -8618,6 +8630,9 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
             }}
           >
             <div style={{ maxWidth: isDesktop ? 1280 : 1040, margin: "0 auto", width: "100%" }}>
+              {activeTab !== "home" && activeTab !== "today" && (
+                <JourneyProgress C={C} activeTab={activeTab} onNavigate={navigateFromJourney} />
+              )}
               {/* ── HOME tab — daily decisions, market prices & seasonal risk.
                   (The old separate "today" tab was merged here so farmers
                   see one clear home page instead of two similar ones.) ── */}
@@ -10913,12 +10928,19 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               {navTabs.map((t) => {
                 let isActive = activeTab === t.id;
                 if (t.id === "learn") isActive = activeTab === "learn" || activeTab === "guide" || activeTab === "game";
-                if (t.id === "library")
-                  isActive = activeTab === "library" || activeTab === "apps" || activeTab === "history";
+                if (t.id === "cases") isActive = activeTab === "cases";
+                if (t.id === "more") isActive = moreOpen;
                 return (
                   <button
                     key={t.id}
-                    onClick={() => setActiveTab(t.id)}
+                    onClick={() => {
+                      if (t.id === "more") {
+                        setMoreOpen((open) => !open);
+                        return;
+                      }
+                      setMoreOpen(false);
+                      setActiveTab(t.id);
+                    }}
                     className={`bottom-nav-item ${isActive ? "active" : ""}`}
                     aria-label={`${t.label} tab`}
                   >
@@ -10928,6 +10950,64 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                 );
               })}
             </nav>
+          )}
+
+          {moreOpen && !isGameTab && (
+            <>
+              <div
+                onClick={() => setMoreOpen(false)}
+                aria-hidden="true"
+                style={{ position: "fixed", inset: 0, zIndex: 250, background: "rgba(0,0,0,.18)" }}
+              />
+              <section
+                aria-label="আরও টুল"
+                style={{
+                  position: "fixed",
+                  left: 10,
+                  right: 10,
+                  bottom: 68,
+                  zIndex: 260,
+                  padding: 12,
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 18,
+                  background: C.bgCard,
+                  boxShadow: C.shadowLg,
+                  animation: "slideUp .2s ease both",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 14, color: C.text }}>আরও টুল</div>
+                    <div style={{ fontSize: 10.5, color: C.textMuted }}>প্রয়োজন হলে এখান থেকে খুলুন</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setMoreOpen(false)}
+                    aria-label="আরও টুল বন্ধ করুন"
+                    style={{ border: "none", background: C.bgMuted, color: C.textMuted, borderRadius: 10, width: 34, height: 34, cursor: "pointer", fontSize: 16 }}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
+                  {secondaryTabs.map((tool) => (
+                    <button
+                      type="button"
+                      key={tool.id}
+                      onClick={() => {
+                        setMoreOpen(false);
+                        setActiveTab(tool.id);
+                      }}
+                      style={{ textAlign: "left", border: `1px solid ${C.border}`, background: C.bgMuted, color: C.text, borderRadius: 12, padding: "10px 11px", cursor: "pointer", minHeight: 64 }}
+                    >
+                      <div style={{ fontSize: 16, marginBottom: 3 }}>{tool.icon}</div>
+                      <div style={{ fontSize: 11.5, fontWeight: 800 }}>{tool.label}</div>
+                      <div style={{ fontSize: 9.5, color: C.textMuted, lineHeight: 1.3, marginTop: 2 }}>{tool.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            </>
           )}
 
           {/* ══ FLOATING COPILOT FAB ═══════════════════════════════════ */}
