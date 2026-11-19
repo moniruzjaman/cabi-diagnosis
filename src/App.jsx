@@ -28,6 +28,7 @@ import SixPillarGrid from "./components/dashboard/SixPillarGrid.jsx";
 import CaseManager from "./components/cases/CaseManager.jsx";
 import PreventionPlan from "./components/cases/PreventionPlan.jsx";
 import RiskRadarWidget from "./components/cases/RiskRadarWidget.jsx";
+import RiskProfileWorkspace from "./components/cases/RiskProfileWorkspace.jsx";
 import AboutPanel from "./components/AboutPanel.jsx";
 import {
   getCaseStats,
@@ -8384,18 +8385,6 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
   // ─── Simplified navigation: 5 clear destinations for farmers ──────────────
   // (Formerly 10 tabs — home/today/guide/game/apps/history/library were
   // overlapping or hidden pages. They are now merged into these five.)
-  const riskCase =
-    protectionCase ||
-    (form.crop
-      ? {
-          id: `live-risk-preview-${String(form.crop).replace(/[^a-zA-Z0-9_-]/g, "-")}`,
-          crop: form.crop,
-          district: form.district || locationName || "",
-          growthStage: form.growthStage || "vegetative",
-          location: coords ? { lat: coords.lat, lon: coords.lon } : undefined,
-        }
-      : null);
-
   const navTabs = [
     { id: "home", label: "হোম", icon: "🏠" },
     { id: "risk", label: "ঝুঁকি", icon: "⚠️" },
@@ -8668,39 +8657,14 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
 
               {/* ── PREVENT tab — preventive crop-health management (Pillar 3) ── */}
               {activeTab === "risk" && (
-                <div style={{ animation: "fadeIn .3s ease", display: "flex", flexDirection: "column", gap: 12 }}>
-                  <div style={{ background: C.bgCard, borderRadius: 16, padding: 16, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: C.primaryDark, marginBottom: 4 }}>⚠️ ১৪ শ্রেণির ফসল-ঝুঁকি রাডার</div>
-                    <div style={{ fontSize: 11.5, color: C.textMuted, lineHeight: 1.6 }}>
-                      KrishiAI Weather Intelligence থেকে পোর্ট করা একই ১৪-শ্রেণির risk engine। নির্বাচিত ফসল ও বৃদ্ধির পর্যায় অনুযায়ী আবহাওয়া-ভিত্তিক ঝুঁকি দেখায়।
-                    </div>
-                  </div>
-                  {riskCase ? (
-                    <RiskRadarWidget C={C} case={riskCase} showAllRisks persist={false} showActions={false} />
-                  ) : (
-                    <div style={{ background: C.bgCard, borderRadius: 14, padding: 16, border: `1px solid ${C.border}` }}>
-                      <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.6, marginBottom: 10 }}>
-                        ঝুঁকি গণনার জন্য আগে ফসল নির্বাচন করুন। নির্ণয় ফর্মে ফসল ও বৃদ্ধির পর্যায় দিন।
-                      </div>
-                      <button onClick={() => setActiveTab("diagnose")} style={{ padding: "9px 13px", borderRadius: 9, border: "none", background: C.primary, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                        ফসল নির্বাচন করুন →
-                      </button>
-                    </div>
-                  )}
-                  {(() => {
-                    const alerts = getCurrentRiskAlerts();
-                    if (!alerts.length) return null;
-                    return (
-                      <div style={{ background: C.bgCard, borderRadius: 16, padding: 16, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
-                        <div style={{ fontSize: 14, fontWeight: 800, color: C.primaryDark, marginBottom: 8 }}>📅 মৌসুমভিত্তিক সতর্কতা</div>
-                        {alerts.map((a, i) => (
-                          <div key={i} style={{ fontSize: 11.5, color: C.text, padding: "7px 0", lineHeight: 1.5, borderBottom: i < alerts.length - 1 ? `1px solid ${C.border}` : "none" }}>
-                            <b>{a.title || a.crop || "সতর্কতা"}:</b> {a.message || a.text || a.risk || ""}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
+                <div style={{ animation: "fadeIn .3s ease" }}>
+                  <RiskProfileWorkspace
+                    C={C}
+                    key={visitorId || "this-device"}
+                    profileKey={visitorId || "this-device"}
+                    defaultDistrict={form.district || locationName || ""}
+                    defaultCrop={form.crop || ""}
+                  />
                 </div>
               )}
 
@@ -8716,6 +8680,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                         : null
                     }
                     onOpenProtection={() => setActiveTab("pesticide")}
+                    profileKey={visitorId || "this-device"}
                   />
                 </div>
               )}
