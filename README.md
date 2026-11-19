@@ -244,6 +244,8 @@ All sensitive operations are server-side. The frontend has **zero secret env var
 | `OPENROUTER_API_KEY` | Yes* | OpenRouter AI provider |
 | `TURSO_DATABASE_URL` | Recommended | Turso SQLite database URL (enables analytics) |
 | `TURSO_AUTH_TOKEN` | Recommended | Turso auth token |
+| `SUPABASE_URL` | Recommended for sign-in | Supabase project URL for authoritative user profiles |
+| `SUPABASE_SERVICE_ROLE_KEY` | Recommended for sign-in | Server-only Supabase key used by `/api/auth/*` |
 
 \* At least one AI provider key is required for diagnosis to work.
 
@@ -271,6 +273,18 @@ turso db tokens create cabi-diagnosis
 ```
 
 Tables are auto-created on first API call — no manual migrations needed.
+
+### Backend data boundary
+
+Supabase is the authoritative store for authenticated user identity/profile rows
+(`public.app_users`). Only the server-side service-role key may write these rows;
+the key is never exposed to the browser. Turso remains the application-data store
+for diagnoses, analytics, market prices, outbreak reports, feedback, presence and
+the operational intelligence tables. If Supabase is temporarily unavailable,
+authentication falls back to Turso so users are not locked out; sessions retain
+the stable Google subject and automatically resolve back to Supabase when it
+recovers. Crop photos are transient inference inputs and are not stored in either
+database.
 
 ---
 

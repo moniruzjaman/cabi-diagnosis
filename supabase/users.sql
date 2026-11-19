@@ -1,4 +1,5 @@
--- User identity only. Do not store diagnosis photos, reports, or model files.
+-- Authoritative user identity/profile only. Do not store diagnosis photos,
+-- reports, model files, analytics, market data, or shared crop intelligence.
 create table if not exists public.app_users (
   id bigint generated always as identity primary key,
   google_sub text unique not null,
@@ -18,3 +19,7 @@ create policy "users can read own row"
   on public.app_users
   for select
   using (auth.uid()::text = google_sub or auth.role() = 'service_role');
+
+-- The application uses a server-side Google verification flow and the
+-- Supabase service-role key for writes. The service role bypasses RLS; no
+-- browser client should receive permission to insert or update these rows.
