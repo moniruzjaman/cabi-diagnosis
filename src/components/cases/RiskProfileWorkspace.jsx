@@ -13,19 +13,19 @@ const STAGES = [
 ];
 const EMPTY_PROFILE = { name: "", district: "", upazila: "", union: "", crops: [] };
 
-function readProfile(key, defaultDistrict) {
+function readProfile(key, defaultDistrict, defaultCrop) {
   try {
     const saved = JSON.parse(localStorage.getItem(key) || "null");
     if (saved && typeof saved === "object") {
       return { ...EMPTY_PROFILE, ...saved, crops: Array.isArray(saved.crops) ? saved.crops : [] };
     }
   } catch {}
-  return { ...EMPTY_PROFILE, district: defaultDistrict || "" };
+  return { ...EMPTY_PROFILE, district: defaultDistrict || "", crops: defaultCrop ? [{ id: "diagnosis-selected-crop", crop: defaultCrop, growthStage: "vegetative", plantingDate: "" }] : [] };
 }
 
-export default function RiskProfileWorkspace({ C, profileKey = "this-device", defaultDistrict = "", coords = null }) {
+export default function RiskProfileWorkspace({ C, profileKey = "this-device", defaultDistrict = "", defaultCrop = "" }) {
   const storageKey = `ud-risk-profile:${profileKey || "this-device"}`;
-  const [profile, setProfile] = useState(() => readProfile(storageKey, defaultDistrict));
+  const [profile, setProfile] = useState(() => readProfile(storageKey, defaultDistrict, defaultCrop));
   const [view, setView] = useState("personal");
   const [crop, setCrop] = useState(CROPS[0]);
   const [stage, setStage] = useState("vegetative");
@@ -57,12 +57,6 @@ export default function RiskProfileWorkspace({ C, profileKey = "this-device", de
     setPlantingDate("");
   }
 
-  function updateCrop(id, field, value) {
-    setProfile((current) => ({
-      ...current,
-      crops: current.crops.map((item) => item.id === id ? { ...item, [field]: value } : item),
-    }));
-  }
 
   function removeCrop(id) {
     setProfile((current) => ({ ...current, crops: current.crops.filter((item) => item.id !== id) }));
