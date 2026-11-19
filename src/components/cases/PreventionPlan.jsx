@@ -30,15 +30,34 @@ const HYGIENE_KEYWORDS = [
   "বীজ শোধন",
 ];
 const VARIETY_KEYWORDS = ["জাত", "প্রতিরোধী"];
-const CHEMICAL_OR_CURATIVE = /(কীটনাশক|ছত্রাকনাশক|আগাছানাশক|ইমিডাক্লোপ্রিড|বুপ্রোফেজিন|ট্রাইসাইক্লাজোল|আইসোপ্রোথিয়োলেন|হেক্সাকোনাজোল|ভ্যালিডামাইসিন|কার্বেন্ডাজিম|স্ট্রেপটোসাইক্লিন|কপার অক্সি|স্প্রে করুন|spray|insecticide|fungicide|herbicide|pesticide|curative|দমন করতে.*প্রয়োগ)/i;
+const CHEMICAL_OR_CURATIVE =
+  /(কীটনাশক|ছত্রাকনাশক|আগাছানাশক|ইমিডাক্লোপ্রিড|বুপ্রোফেজিন|ট্রাইসাইক্লাজোল|আইসোপ্রোথিয়োলেন|হেক্সাকোনাজোল|ভ্যালিডামাইসিন|কার্বেন্ডাজিম|স্ট্রেপটোসাইক্লিন|কপার অক্সি|স্প্রে করুন|spray|insecticide|fungicide|herbicide|pesticide|curative|দমন করতে.*প্রয়োগ)/i;
 
 const BASELINE_IPM = [
-  ["পরিষ্কার বীজ ও সুস্থ চারা", "বিশ্বস্ত উৎসের মানসম্মত বীজ/চারা নিন; রোপণের আগে চারা ও বীজে রোগ-পোকার লক্ষণ পরীক্ষা করুন।"],
-  ["জমি ও ফসলের পরিচ্ছন্নতা", "আক্রান্ত গাছ/ডাল/ফল আলাদা করে নিরাপদে নষ্ট করুন; আগের ফসলের আক্রান্ত অবশিষ্ট ও আগাছার বিকল্প পোষক নিয়ন্ত্রণ করুন।"],
-  ["সুষম সার ও সঠিক দূরত্ব", "মাটি ও ফসলের চাহিদা অনুযায়ী সুষম সার দিন; অতিরিক্ত নাইট্রোজেন ও অতিঘন রোপণ এড়িয়ে চলুন।"],
-  ["পানি ও নিষ্কাশন ব্যবস্থাপনা", "ফসলের পর্যায় অনুযায়ী সেচ দিন; জলাবদ্ধতা, দীর্ঘক্ষণ পাতাভেজা থাকা ও অপ্রয়োজনীয় ওপরের সেচ কমান।"],
-  ["ফসল পর্যায়ক্রম ও সময়মতো চাষ", "সম্ভব হলে একই জমিতে একই পোষক ফসল বারবার না করে উপযুক্ত ফসল পর্যায়ক্রম অনুসরণ করুন; স্থানীয় বপন/রোপণ সময় মানুন।"],
-  ["উপকারী জীব সংরক্ষণ", "মাকড়সা, লেডিবার্ড, পরজীবী বোলতা ও অন্যান্য প্রাকৃতিক শত্রু রক্ষা করুন; অকারণে বিস্তৃত-বর্ণালী বালাইনাশক ব্যবহার করবেন না।"],
+  [
+    "পরিষ্কার বীজ ও সুস্থ চারা",
+    "বিশ্বস্ত উৎসের মানসম্মত বীজ/চারা নিন; রোপণের আগে চারা ও বীজে রোগ-পোকার লক্ষণ পরীক্ষা করুন।",
+  ],
+  [
+    "জমি ও ফসলের পরিচ্ছন্নতা",
+    "আক্রান্ত গাছ/ডাল/ফল আলাদা করে নিরাপদে নষ্ট করুন; আগের ফসলের আক্রান্ত অবশিষ্ট ও আগাছার বিকল্প পোষক নিয়ন্ত্রণ করুন।",
+  ],
+  [
+    "সুষম সার ও সঠিক দূরত্ব",
+    "মাটি ও ফসলের চাহিদা অনুযায়ী সুষম সার দিন; অতিরিক্ত নাইট্রোজেন ও অতিঘন রোপণ এড়িয়ে চলুন।",
+  ],
+  [
+    "পানি ও নিষ্কাশন ব্যবস্থাপনা",
+    "ফসলের পর্যায় অনুযায়ী সেচ দিন; জলাবদ্ধতা, দীর্ঘক্ষণ পাতাভেজা থাকা ও অপ্রয়োজনীয় ওপরের সেচ কমান।",
+  ],
+  [
+    "ফসল পর্যায়ক্রম ও সময়মতো চাষ",
+    "সম্ভব হলে একই জমিতে একই পোষক ফসল বারবার না করে উপযুক্ত ফসল পর্যায়ক্রম অনুসরণ করুন; স্থানীয় বপন/রোপণ সময় মানুন।",
+  ],
+  [
+    "উপকারী জীব সংরক্ষণ",
+    "মাকড়সা, লেডিবার্ড, পরজীবী বোলতা ও অন্যান্য প্রাকৃতিক শত্রু রক্ষা করুন; অকারণে বিস্তৃত-বর্ণালী বালাইনাশক ব্যবহার করবেন না।",
+  ],
 ];
 
 function getProfileCrop(profileKey) {
@@ -46,7 +65,9 @@ function getProfileCrop(profileKey) {
   try {
     const saved = JSON.parse(localStorage.getItem(`ud-risk-profile:${profileKey || "this-device"}`) || "null");
     return saved?.crops?.[0]?.crop || "";
-  } catch { return ""; }
+  } catch {
+    return "";
+  }
 }
 
 function isChemicalOrCurativeLine(rec) {
@@ -72,7 +93,14 @@ function isVarietyLine(rec) {
   return VARIETY_KEYWORDS.some((k) => r.includes(k));
 }
 
-export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenProtection, profileKey = "this-device" }) {
+export default function PreventionPlan({
+  C,
+  crop,
+  district,
+  weatherRisk,
+  onOpenProtection,
+  profileKey = "this-device",
+}) {
   const workingCrop = crop || getProfileCrop(profileKey);
   const data = useMemo(() => {
     // form.crop may be bilingual ("Rice / ধান") — resolveCropKey maps any
@@ -238,9 +266,14 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
 
       {/* Prevention-first baseline IPM */}
       <Section C={C} icon="🌿" title="প্রতিরোধের ভিত্তি — রাসায়নিকবিহীন IPM" bg="#f0fdf4" border="#bbf7d0">
-        <div style={{ fontSize: 10.5, color: C.textMuted, lineHeight: 1.6, marginBottom: 7 }}>এগুলো প্রতিরোধমূলক মাঠ-ব্যবস্থাপনা; কোনো রোগ/পোকা দমনের রাসায়নিক প্রেসক্রিপশন নয়। ফসল ও স্থানভেদে স্থানীয় DAE পরামর্শ অনুসরণ করুন।</div>
+        <div style={{ fontSize: 10.5, color: C.textMuted, lineHeight: 1.6, marginBottom: 7 }}>
+          এগুলো প্রতিরোধমূলক মাঠ-ব্যবস্থাপনা; কোনো রোগ/পোকা দমনের রাসায়নিক প্রেসক্রিপশন নয়। ফসল ও স্থানভেদে স্থানীয়
+          DAE পরামর্শ অনুসরণ করুন।
+        </div>
         {data.baselineIpm.map(([title, detail]) => (
-          <li key={title} style={{ fontSize: 11.5, color: C.text, lineHeight: 1.65, marginLeft: 16, marginBottom: 4 }}><b>{title}:</b> {detail}</li>
+          <li key={title} style={{ fontSize: 11.5, color: C.text, lineHeight: 1.65, marginLeft: 16, marginBottom: 4 }}>
+            <b>{title}:</b> {detail}
+          </li>
         ))}
       </Section>
 
