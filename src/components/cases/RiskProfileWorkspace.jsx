@@ -175,7 +175,7 @@ export default function RiskProfileWorkspace({ C, profileKey = "this-device", de
 function BAMISPanel({ C, district }) {
   const links = [
     ["জেলা কৃষি আবহাওয়া বুলেটিন", "https://www.bamis.gov.bd/en/bulletin/district/"],
-    ["Agromet Forecast", "https://www.bamis.gov.bd/en/agro-met/"],
+    ["Agromet Forecast", "https://www.bamis.gov.bd/en/agro-met/forecast/"],
     ["জাতীয় ও বিশেষ বুলেটিন", "https://www.bamis.gov.bd/en/bulletin/"],
     ["বন্যা ও নদী পরিস্থিতি", "https://www.bamis.gov.bd/en/bwdb/forecast/"],
   ];
