@@ -57,12 +57,13 @@ const ROTATION_KEYWORDS = ["চষা", "ক্রম", "ফসল পরিব�
 function isPreventionLine(rec) {
   const r = rec || "";
   return (
-    HYGIENE_KEYWORDS.some((k) => r.includes(k)) ||
-    ROTATION_KEYWORDS.some((k) => r.includes(k)) ||
-    r.includes("দূরত্ব") ||
-    r.includes("নিষ্কাশন") ||
-    r.includes("জল") ||
-    r.includes("সেচ")
+    !isChemicalOrCurativeLine(r) &&
+    (HYGIENE_KEYWORDS.some((k) => r.includes(k)) ||
+      ROTATION_KEYWORDS.some((k) => r.includes(k)) ||
+      r.includes("দূরত্ব") ||
+      r.includes("নিষ্কাশন") ||
+      r.includes("জল") ||
+      r.includes("সেচ"))
   );
 }
 
@@ -71,7 +72,8 @@ function isVarietyLine(rec) {
   return VARIETY_KEYWORDS.some((k) => r.includes(k));
 }
 
-export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenProtection, profileKey = "this-device" }) {\n  const workingCrop = crop || getProfileCrop(profileKey);
+export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenProtection, profileKey = "this-device" }) {
+  const workingCrop = crop || getProfileCrop(profileKey);
   const data = useMemo(() => {
     // form.crop may be bilingual ("Rice / ধান") — resolveCropKey maps any
     // format to the CROP_DISEASES key, exactly like the diagnose flow does.
@@ -85,8 +87,8 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
 
     for (const d of CROP_DISEASES[cropKey].diseases || []) {
       for (const rec of d.recommendations || []) {
-        if (isVarietyLine(rec)) varieties.add(rec);
-        else if (ROTATION_KEYWORDS.some((k) => rec.includes(k))) rotation.add(rec);
+        if (isVarietyLine(rec) && !isChemicalOrCurativeLine(rec)) varieties.add(rec);
+        else if (!isChemicalOrCurativeLine(rec) && ROTATION_KEYWORDS.some((k) => rec.includes(k))) rotation.add(rec);
         else if (isPreventionLine(rec)) hygiene.add(rec);
       }
       seasonalDiseases.push({
@@ -233,7 +235,15 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
         </div>
       </div>
 
-      {/* Prevention-first baseline IPM */}\n      <Section C={C} icon="🌿" title="প্রতিরোধের ভিত্তি — রাসায়নিকবিহীন IPM" bg="#f0fdf4" border="#bbf7d0">\n        <div style={{ fontSize: 10.5, color: C.textMuted, lineHeight: 1.6, marginBottom: 7 }}>এগুলো প্রতিরোধমূলক মাঠ-ব্যবস্থাপনা; কোনো রোগ/পোকা দমনের রাসায়নিক প্রেসক্রিপশন নয়। ফসল ও স্থানভেদে স্থানীয় DAE পরামর্শ অনুসরণ করুন।</div>\n        {data.baselineIpm.map(([title, detail]) => (\n          <li key={title} style={{ fontSize: 11.5, color: C.text, lineHeight: 1.65, marginLeft: 16, marginBottom: 4 }}><b>{title}:</b> {detail}</li>\n        ))}\n      </Section>\n\n      {/* Seasonal risk */}
+      {/* Prevention-first baseline IPM */}
+      <Section C={C} icon="🌿" title="প্রতিরোধের ভিত্তি — রাসায়নিকবিহীন IPM" bg="#f0fdf4" border="#bbf7d0">
+        <div style={{ fontSize: 10.5, color: C.textMuted, lineHeight: 1.6, marginBottom: 7 }}>এগুলো প্রতিরোধমূলক মাঠ-ব্যবস্থাপনা; কোনো রোগ/পোকা দমনের রাসায়নিক প্রেসক্রিপশন নয়। ফসল ও স্থানভেদে স্থানীয় DAE পরামর্শ অনুসরণ করুন।</div>
+        {data.baselineIpm.map(([title, detail]) => (
+          <li key={title} style={{ fontSize: 11.5, color: C.text, lineHeight: 1.65, marginLeft: 16, marginBottom: 4 }}><b>{title}:</b> {detail}</li>
+        ))}
+      </Section>
+
+      {/* Seasonal risk */}
       {cropAlert && (
         <div
           style={{
