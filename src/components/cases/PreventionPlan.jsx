@@ -146,6 +146,7 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
     return {
       cropKey,
       cropEn,
+      baselineIpm: BASELINE_IPM,
       varieties: [...varieties],
       hygiene: [...hygiene],
       rotation: [...rotation],
