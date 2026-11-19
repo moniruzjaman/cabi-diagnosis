@@ -8390,7 +8390,6 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
     { id: "calendar", label: "মৌসুম", icon: "📅" },
     { id: "diagnose", label: "শনাক্ত", icon: "🔬" },
     { id: "learn", label: "শিখুন", icon: "📖" },
-    { id: "pesticide", label: "সুরক্ষা", icon: "🧪" },
   ];
   const feedbackContext =
     activeTab === "prevent"
@@ -8679,6 +8678,15 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                     district={protectionCase?.district || form.district || locationName}
                     weatherRisk={weather ? `বর্তমান আবহাওয়া: ${weather.temp}°C, আর্দ্রতা ${weather.humidity}%, ২৪ ঘণ্টার বৃষ্টি ${weather.rain24h} মিমি, বাতাস ${weather.windSpeed} কিমি/ঘণ্টা। এই snapshot পূর্ণ forecast নয়।` : null}
                   />
+                  <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 14, padding: 12 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: C.primaryDark, marginBottom: 3 }}>
+                      🧪 নিবন্ধিত বালাইনাশক ও ব্যবহার যাচাই
+                    </div>
+                    <div style={{ fontSize: 11, color: C.textMuted, lineHeight: 1.5 }}>
+                      IPM, সাংস্কৃতিক ও জৈবিক ব্যবস্থা আগে বিবেচনা করুন। রাসায়নিক কেবল প্রয়োজন হলে এবং নিবন্ধন, লক্ষ্য ফসল, MoA, PHI/REI ও আবহাওয়া যাচাই সাপেক্ষে।
+                    </div>
+                  </div>
+                  <AgriChemApp />
                 </div>
               )}
 
@@ -10854,24 +10862,6 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               {activeTab === "library" && <SavedReportsView history={history} setHistory={setHistory} C={C} />}
 
               {/* ── PESTICIDE GUIDE (embedded, previously an external link) ── */}
-              {activeTab === "pesticide" && (
-                <>
-                  {protectionCase && (
-                    <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.border}` }}>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: C.primaryDark, marginBottom: 6 }}>
-                        🛡️ সক্রিয় কেসের সুরক্ষা সিদ্ধান্ত (৫-গেট ইঞ্জিন)
-                      </div>
-                      <div style={{ fontSize: 11, color: C.textMuted, marginBottom: 8 }}>
-                        {protectionCase.crop || "ফসল"} · {protectionCase.district || "অবস্থান"} ·{" "}
-                        {protectionCase.confirmationStatus === "confirmed" ? "রোগ নিশ্চিত" : "রোগ নিশ্চিত নয়"}
-                      </div>
-                      <RiskRadarWidget C={C} case={protectionCase} />
-                    </div>
-                  )}
-                  <AgriChemApp />
-                </>
-              )}
-
               {/* ── HISTORY ──────────────────────────────────────────────── */}
 
             </div>
