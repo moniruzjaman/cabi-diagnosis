@@ -40,7 +40,7 @@ export default function RiskProfileWorkspace({ C, profileKey = "this-device", de
   }, [profile, storageKey]);
 
   const selectedCrop = useMemo(
-    () => profile.crops.find((item) => item.id === selectedId) || profile.crops[0] || null,
+    () => profile.crops.find((item) => item.id === selectedId) || null,
     [profile.crops, selectedId],
   );
 
