@@ -176,8 +176,8 @@ function BAMISPanel({ C, district }) {
   // Static official links only. No BAMIS API, scraping, proxy, or network
   // request is part of the app runtime; the Risk workspace works independently.
   const links = [
-    ["জেলা কৃষি আবহাওয়া বুলেটিন", "https://www.bamis.gov.bd/bulletin/district/"],
-    ["জাতীয় কৃষি আবহাওয়া বুলেটিন", "https://www.bamis.gov.bd/bulletin/nation/"],
+    ["জেলা কৃষি আবহাওয়া বুলেটিন", "https://www.bamis.gov.bd/en/bulletin/district/"],
+    ["জাতীয় কৃষি আবহাওয়া বুলেটিন", "https://www.bamis.gov.bd/en/bulletin/"],
     ["কৃষি আবহাওয়া পূর্বাভাস", "https://www.bamis.gov.bd/agro-met/forecast/"],
     ["বন্যা ও নদ-নদীর তথ্য", "https://www.bamis.gov.bd/bwdb/river/"],
     ["BAMIS মূল পোর্টাল", "https://www.bamis.gov.bd/en/"],
