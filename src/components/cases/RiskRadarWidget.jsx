@@ -202,7 +202,7 @@ export default function RiskRadarWidget({ C, case: caseObj, showAllRisks = false
       mountedRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [c.id, c.crop, c.growthStage, c.district, c.location?.lat, c.location?.lon, unsupported, cropId]);
+  }, [c.id, c.crop, c.growthStage, c.district, c.location?.lat, c.location?.lon, unsupported, cropId, persist]);
 
   if (unsupported) {
     return (
