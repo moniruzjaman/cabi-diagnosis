@@ -30,6 +30,28 @@ const HYGIENE_KEYWORDS = [
   "বীজ শোধন",
 ];
 const VARIETY_KEYWORDS = ["জাত", "প্রতিরোধী"];
+const CHEMICAL_OR_CURATIVE = /(কীটনাশক|ছত্রাকনাশক|আগাছানাশক|ইমিডাক্লোপ্রিড|বুপ্রোফেজিন|ট্রাইসাইক্লাজোল|আইসোপ্রোথিয়োলেন|হেক্সাকোনাজোল|ভ্যালিডামাইসিন|কার্বেন্ডাজিম|স্ট্রেপটোসাইক্লিন|কপার অক্সি|স্প্রে করুন|spray|insecticide|fungicide|herbicide|pesticide|curative|দমন করতে.*প্রয়োগ)/i;
+
+const BASELINE_IPM = [
+  ["পরিষ্কার বীজ ও সুস্থ চারা", "বিশ্বস্ত উৎসের মানসম্মত বীজ/চারা নিন; রোপণের আগে চারা ও বীজে রোগ-পোকার লক্ষণ পরীক্ষা করুন।"],
+  ["জমি ও ফসলের পরিচ্ছন্নতা", "আক্রান্ত গাছ/ডাল/ফল আলাদা করে নিরাপদে নষ্ট করুন; আগের ফসলের আক্রান্ত অবশিষ্ট ও আগাছার বিকল্প পোষক নিয়ন্ত্রণ করুন।"],
+  ["সুষম সার ও সঠিক দূরত্ব", "মাটি ও ফসলের চাহিদা অনুযায়ী সুষম সার দিন; অতিরিক্ত নাইট্রোজেন ও অতিঘন রোপণ এড়িয়ে চলুন।"],
+  ["পানি ও নিষ্কাশন ব্যবস্থাপনা", "ফসলের পর্যায় অনুযায়ী সেচ দিন; জলাবদ্ধতা, দীর্ঘক্ষণ পাতাভেজা থাকা ও অপ্রয়োজনীয় ওপরের সেচ কমান।"],
+  ["ফসল পর্যায়ক্রম ও সময়মতো চাষ", "সম্ভব হলে একই জমিতে একই পোষক ফসল বারবার না করে উপযুক্ত ফসল পর্যায়ক্রম অনুসরণ করুন; স্থানীয় বপন/রোপণ সময় মানুন।"],
+  ["উপকারী জীব সংরক্ষণ", "মাকড়সা, লেডিবার্ড, পরজীবী বোলতা ও অন্যান্য প্রাকৃতিক শত্রু রক্ষা করুন; অকারণে বিস্তৃত-বর্ণালী বালাইনাশক ব্যবহার করবেন না।"],
+];
+
+function getProfileCrop(profileKey) {
+  if (typeof localStorage === "undefined") return "";
+  try {
+    const saved = JSON.parse(localStorage.getItem(`ud-risk-profile:${profileKey || "this-device"}`) || "null");
+    return saved?.crops?.[0]?.crop || "";
+  } catch { return ""; }
+}
+
+function isChemicalOrCurativeLine(rec) {
+  return CHEMICAL_OR_CURATIVE.test(String(rec || ""));
+}
 const ROTATION_KEYWORDS = ["চষা", "ক্রম", "ফসল পরিবর্তন", "রোটেশন", "পালা", "বর্ষা"];
 
 function isPreventionLine(rec) {
@@ -49,11 +71,11 @@ function isVarietyLine(rec) {
   return VARIETY_KEYWORDS.some((k) => r.includes(k));
 }
 
-export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenProtection }) {
+export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenProtection, profileKey = "this-device" }) {\n  const workingCrop = crop || getProfileCrop(profileKey);
   const data = useMemo(() => {
     // form.crop may be bilingual ("Rice / ধান") — resolveCropKey maps any
     // format to the CROP_DISEASES key, exactly like the diagnose flow does.
-    const cropKey = crop ? (CROP_DISEASES[crop] ? crop : resolveCropKey(crop)) : null;
+    const cropKey = workingCrop ? (CROP_DISEASES[workingCrop] ? workingCrop : resolveCropKey(workingCrop)) : null;
     if (!cropKey || !CROP_DISEASES[cropKey]) return null;
 
     const varieties = new Set();
@@ -134,7 +156,7 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
       pestThresholds,
       calendar: cal || null,
     };
-  }, [crop]);
+  }, [workingCrop]);
 
   const alerts = useMemo(() => {
     try {
@@ -144,9 +166,9 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
     }
   }, []);
 
-  const cropAlert = alerts.find((a) => a.crop === (data?.cropKey || crop));
+  const cropAlert = alerts.find((a) => a.crop === (data?.cropKey || workingCrop));
 
-  if (!crop) {
+  if (!workingCrop) {
     return (
       <div
         style={{
@@ -184,7 +206,7 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
         }}
       >
         <div style={{ fontWeight: 800, fontSize: 14, color: C.primaryDark, marginBottom: 8 }}>
-          🛡️ {crop} — প্রতিরোধ নির্দেশনা
+          🛡️ {workingCrop} — প্রতিরোধ নির্দেশনা
         </div>
         <p style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.7, margin: 0 }}>
           এই ফসলের জন্য ডেটাবেজে নথিভুক্ত প্রতিরোধ তথ্য এখনো নেই। সাধারণ স্বাস্থ্যবিধি মেনে চলুন — আক্রান্ত গাছ অপসারণ,
@@ -211,7 +233,7 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
         </div>
       </div>
 
-      {/* Seasonal risk */}
+      {/* Prevention-first baseline IPM */}\n      <Section C={C} icon="🌿" title="প্রতিরোধের ভিত্তি — রাসায়নিকবিহীন IPM" bg="#f0fdf4" border="#bbf7d0">\n        <div style={{ fontSize: 10.5, color: C.textMuted, lineHeight: 1.6, marginBottom: 7 }}>এগুলো প্রতিরোধমূলক মাঠ-ব্যবস্থাপনা; কোনো রোগ/পোকা দমনের রাসায়নিক প্রেসক্রিপশন নয়। ফসল ও স্থানভেদে স্থানীয় DAE পরামর্শ অনুসরণ করুন।</div>\n        {data.baselineIpm.map(([title, detail]) => (\n          <li key={title} style={{ fontSize: 11.5, color: C.text, lineHeight: 1.65, marginLeft: 16, marginBottom: 4 }}><b>{title}:</b> {detail}</li>\n        ))}\n      </Section>\n\n      {/* Seasonal risk */}
       {cropAlert && (
         <div
           style={{
@@ -391,7 +413,7 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
         }}
       >
         <div style={{ fontSize: 12.5, fontWeight: 800, color: C.textWarning, marginBottom: 5 }}>
-          ⚠️ রাসায়নিক দমন শেষ ধাপ
+          ⚠️ Prevent = প্রতিরোধ, not curative
         </div>
         <div style={{ fontSize: 11.5, color: C.text, lineHeight: 1.6 }}>
           রোগ/পোকা নিশ্চিতকরণ, মাঠ পর্যবেক্ষণ ও অর্থনৈতিক সীমামান অতিক্রম না করে স্প্রে করবেন না। পণ্যটি সংশ্লিষ্ট ফসল ও
