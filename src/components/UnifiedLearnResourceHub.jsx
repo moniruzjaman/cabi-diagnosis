@@ -536,6 +536,7 @@ export default function UnifiedLearnResourceHub({
   // Helper to jump across pillars with targeted context
   const jumpToPillar = (pillarId, subOption = null) => {
     setActivePillar(pillarId);
+    trackPillar(pillarId);
     if (pillarId === "audiovisuals") {
       setMediaSection("video");
       if (subOption) setActiveVideoCategory(subOption);
@@ -995,6 +996,7 @@ export default function UnifiedLearnResourceHub({
               key={p.id}
               onClick={() => {
                 setActivePillar(p.id);
+                trackPillar(p.id);
                 if (p.id === "practice") setActiveGameId(null);
               }}
               style={{
@@ -1296,7 +1298,7 @@ export default function UnifiedLearnResourceHub({
                     cursor: "pointer",
                   }}
                 >
-                  🎬 নির্ণয় ভিডিও
+                  🎬 নির্ণয় ভিডিও
                 </button>
                 <button
                   onClick={() => jumpToPillar("practice", "symptom-spotter")}
@@ -1313,6 +1315,23 @@ export default function UnifiedLearnResourceHub({
                 >
                   🎮 প্র্যাকটিস গেম
                 </button>
+                {setActiveTab && (
+                  <button
+                    onClick={() => setActiveTab("diagnose")}
+                    style={{
+                      background: C.primary,
+                      border: "none",
+                      padding: "6px 12px",
+                      borderRadius: 10,
+                      fontSize: 11.5,
+                      fontWeight: 700,
+                      color: "#fff",
+                      cursor: "pointer",
+                    }}
+                  >
+                    🔬 এখন নিজে নির্ণয় করুন
+                  </button>
+                )}
               </div>
             </div>
 
