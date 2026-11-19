@@ -78,6 +78,14 @@ const PART_KEYS = {
 };
 
 const STEPS = ["ফসল", "অংশ", "লক্ষণ", "ছবি", "ফলাফল"];
+const STEP_ICONS = ["🌾", "🍃", "🔎", "📷", "✅"];
+const STEP_HELP = [
+  "কোন ফসলে সমস্যা হচ্ছে?",
+  "গাছের কোন অংশে আগে লক্ষ করেছেন?",
+  "সবচেয়ে কাছাকাছি লক্ষণটি বেছে নিন।",
+  "ছবি দিলে মিলিয়ে দেখা আরও সহজ হবে।",
+  "সম্ভাব্য কারণ ও পরের পদক্ষেপ দেখুন।",
+];
 
 /**
  * Score a candidate disease against the selected symptom type + part.
@@ -251,7 +259,7 @@ export default function StructuredIntakeWizard({ C, onCaseCreated }) {
         }}
       >
         <div style={{ fontWeight: 800, fontSize: 17 }}>🩺 কাঠামোগত রোগ নির্ণয়</div>
-        <div style={{ fontSize: 11, opacity: 0.9, marginTop: 2 }}>৫ ধাপে ফসলের রোগ শনাক্ত করুন</div>
+        <div style={{ fontSize: 11, opacity: 0.9, marginTop: 2 }}>একবারে একটি প্রশ্ন — ৫ ধাপে সহজে এগোন</div>
         {/* Progress bar */}
         <div style={{ display: "flex", gap: 4, marginTop: 10 }}>
           {STEPS.map((s, i) => {
@@ -278,20 +286,25 @@ export default function StructuredIntakeWizard({ C, onCaseCreated }) {
                     textOverflow: "ellipsis",
                   }}
                 >
-                  {n}. {s}
+                  {STEP_ICONS[i]} {n}. {s}
                 </div>
               </div>
             );
           })}
         </div>
-        <div style={{ fontSize: 10, opacity: 0.85, marginTop: 4 }}>ধাপ {step}/৫</div>
+        <div style={{ fontSize: 10, opacity: 0.85, marginTop: 4 }}>
+          {STEP_HELP[step - 1]} · ধাপ {step}/৫
+        </div>
       </div>
 
       <div style={{ padding: 16 }}>
         {/* STEP 1 — crop */}
         {step === 1 && (
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10, color: T.text }}>১. ফসল নির্বাচন করুন</div>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: T.text }}>১. ফসল নির্বাচন করুন</div>
+            <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 10 }}>
+              যে ফসলে সমস্যা দেখছেন সেটি বেছে নিন।
+            </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(120px,1fr))", gap: 8 }}>
               {CROPS.map((c) => (
                 <button key={c.id} onClick={() => setCropId(c.id)} style={pillStyle(cropId === c.id)}>
@@ -306,8 +319,9 @@ export default function StructuredIntakeWizard({ C, onCaseCreated }) {
         {/* STEP 2 — part */}
         {step === 2 && (
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10, color: T.text }}>
-              ২. কোন অংশ ক্ষতিগ্রস্ত?
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: T.text }}>২. কোন অংশ ক্ষতিগ্রস্ত?</div>
+            <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 10 }}>
+              সবচেয়ে বেশি আক্রান্ত অংশটি আগে বেছে নিন।
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {PARTS.map((p) => (
@@ -322,7 +336,10 @@ export default function StructuredIntakeWizard({ C, onCaseCreated }) {
         {/* STEP 3 — symptom type */}
         {step === 3 && (
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10, color: T.text }}>৩. লক্ষণের ধরন</div>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: T.text }}>৩. লক্ষণের ধরন</div>
+            <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 10 }}>
+              একাধিক লক্ষণ থাকলে প্রধান লক্ষণটি বেছে নিন।
+            </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(140px,1fr))", gap: 8 }}>
               {SYMPTOM_TYPES.map((s) => (
                 <button key={s.id} onClick={() => setSymptomTypeId(s.id)} style={pillStyle(symptomTypeId === s.id)}>
@@ -336,7 +353,7 @@ export default function StructuredIntakeWizard({ C, onCaseCreated }) {
         {/* STEP 4 — photo (optional) */}
         {step === 4 && (
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10, color: T.text }}>৪. ছবি (ঐচ্ছিক)</div>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: T.text }}>৪. ছবি (ঐচ্ছিক)</div>
             <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 10 }}>
               ছবি দিলে নির্ণয় আরও নির্ভুল হতে পারে, তবে বাধ্যতামূলক নয়। ছবি শুধু আপনার ব্রাউজারে থাকে।
             </div>
@@ -347,14 +364,30 @@ export default function StructuredIntakeWizard({ C, onCaseCreated }) {
               onChange={(e) => setPhotoName(e.target.files?.[0]?.name || "")}
               style={{ fontSize: 13, width: "100%" }}
             />
-            {photoName && <div style={{ fontSize: 11, color: T.success, marginTop: 6 }}>✓ {photoName}</div>}
+            {photoName && (
+              <div
+                style={{
+                  fontSize: 11,
+                  color: T.success,
+                  marginTop: 8,
+                  padding: "7px 9px",
+                  background: `${T.success}12`,
+                  borderRadius: 8,
+                }}
+              >
+                ✓ ছবি যোগ হয়েছে: {photoName}
+              </div>
+            )}
           </div>
         )}
 
         {/* STEP 5 — results */}
         {step === 5 && (
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10, color: T.text }}>৫. নির্ণয় ফলাফল</div>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: T.text }}>৫. নির্ণয় ফলাফল</div>
+            <div style={{ fontSize: 12, color: T.textMuted, marginBottom: 10 }}>
+              এটি প্রাথমিক সহায়তা—মাঠে মিলিয়ে দেখে তারপর ব্যবস্থা নিন।
+            </div>
             {!result || !result.top ? (
               <div style={{ fontSize: 13, color: T.textMuted, padding: 12, background: T.bgMuted, borderRadius: 10 }}>
                 এই ফসলের জন্য ডাটাবেসে কোনো রোগ পাওয়া যায়নি। অন্য ফসল চেষ্টা করুন।
