@@ -1,5 +1,11 @@
 import { MoAClassification } from '../types';
 
+// ── Treatment Window Constants (from IRAC MoA Rotation Guide) ────────────
+export const TREATMENT_WINDOW_STANDARD_DAYS = 30;
+export const TREATMENT_WINDOW_SUCKING_PEST_DAYS = 15;
+export const SEASONAL_EXPOSURE_CAP_PCT = 50;
+
+
 export const MOA_DATABASE: MoAClassification[] = [
   // --- IRAC (Insecticides & Acaricides) ---
   {
@@ -13,7 +19,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'High',
     rotationStrategy: 'High risk of target site mutation (AChE). If no alternatives, rotate with 1B where cross-resistance is absent. Successive insect generations MUST NOT be treated with same group.',
     rotationStrategyBn: 'বিকল্প না থাকলে 1B এর সাথে ঘোরান যেখানে ক্রস-প্রতিরোধ নেই। পরপর প্রজন্মের একই গ্রুপ ব্যবহার নিষিদ্ধ।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: false,
   },
   {
     code: 'IRAC 1B',
@@ -26,7 +37,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'High',
     rotationStrategy: 'Rotate outside Group 1 to synthetic pyrethroids (3A), diamides (28), or neonicotinoids (4A). Do not spray sequentially.',
     rotationStrategyBn: 'গ্রুপ ১ এর বাইরে পাইরেথ্রয়েড (3A), ডায়ামাইড (28) বা নিওনিকোটিনয়েড (4A)-এর সাথে পরিবর্তন করুন।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: false,
   },
   {
     code: 'IRAC 2A',
@@ -39,7 +55,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'High',
     rotationStrategy: 'Strictly rotate with different MoA groups. Subject to regulatory restrictions in many sectors.',
     rotationStrategyBn: 'ক্রস-প্রতিরোধ এড়াতে বিভিন্ন MoA গ্রুপের সাথে ঘোরান।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 1,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: false,
   },
   {
     code: 'IRAC 2B',
@@ -52,7 +73,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Medium',
     rotationStrategy: 'Rotate with diamides (28) or nereistoxin analogues (14) for rice borers and hoppers.',
     rotationStrategyBn: 'রাইস বোরার এবং হপারের জন্য ডায়ামাইড (28) বা নেরিস্টক্সিন (14) এর সাথে ঘোরান।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 1,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: false,
   },
   {
     code: 'IRAC 3A',
@@ -65,7 +91,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'High',
     rotationStrategy: 'kdr (knockdown resistance) mutations occur easily. Limit to 1-2 sprays per season. Alternate with MoA 28 (Diamides) or MoA 6 (Avermectins).',
     rotationStrategyBn: 'সহজেই প্রতিরোধ গড়ে ওঠে। প্রতি মৌসুমে ১-২ বারে সীমাবদ্ধ রাখুন। ডায়ামাইড (28) বা অ্যাভারমেকটিন (6) দিয়ে ঘোরান।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'Reproductive',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: false,
   },
   {
     code: 'IRAC 4A',
@@ -78,7 +109,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'High',
     rotationStrategy: 'High cross-resistance within Subgroup 4A. Treat subsequent sucking-pest generations with Pymetrozine (9B), Buprofezin (16), or Spirotetramat (23).',
     rotationStrategyBn: '4A এর মধ্যে উচ্চ ক্রস-প্রতিরোধ। পরবর্তী প্রজন্মের জন্য পাইমেট্রোজিন (9B) বা বুপ্রোফেজিন (16) ব্যবহার করুন।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'Nursery',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: false,
   },
   {
     code: 'IRAC 5',
@@ -91,7 +127,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Medium',
     rotationStrategy: 'Ideal IPM rotation partner with low pollinator persistence once dry. Rotate with MoA 28 or 15.',
     rotationStrategyBn: 'আইপিএম-এর জন্য দারুণ। শুকিয়ে গেলে পরাগায়নকারীর ঝুঁকি কম। মোএ ২৮ বা ১৫ এর সাথে ঘোরান।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'Reproductive',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC 6',
@@ -104,7 +145,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Medium',
     rotationStrategy: 'Do not use consecutive applications for mites or leafminers. Alternate with MoA 10A (Hexythiazox) or 12C (Propargite).',
     rotationStrategyBn: 'মাইট বা লিফমাইনারের জন্য পরপর ব্যবহার করবেন না। মোএ ১০এ বা ১২সি দিয়ে পরিবর্তন করুন।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'Vegetative',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC 9B',
@@ -117,7 +163,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low to Medium',
     rotationStrategy: 'Specialized hopper blocker. Rotate with Neonicotinoids (4A) or Carbamates (1A/1B).',
     rotationStrategyBn: 'বিপিএইচ নিয়ন্ত্রণে বিশেষ। নিওনিকোটিনয়েড বা কার্বামেটের সাথে অল্টারনেট করুন।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Moderate',
+    recommendedCropPhase: 'Reproductive',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC 10A',
@@ -130,7 +181,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Medium',
     rotationStrategy: 'Apply early at mite egg/nymph stage. Rotate with adulticides like Fenazaquin (21A) or Propargite (12C).',
     rotationStrategyBn: 'ডিম ও নিম্ফ দশায় প্রয়োগ করুন। প্রাপ্তবয়স্ক মাইটনাশকের সাথে পর্যায়ক্রমে দিন।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Slow to Moderately Slow',
+    recommendedCropPhase: 'Vegetative',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC 12C',
@@ -143,7 +199,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low to Medium',
     rotationStrategy: 'Broad spectrum contact miticide. Rotate with Sulfur (UN) or Abamectin (6).',
     rotationStrategyBn: 'সালফার বা অ্যাভারমেকটিনের সাথে চক্রাকারে প্রয়োগ করুন।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Moderately Fast',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC 13',
@@ -156,7 +217,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Medium',
     rotationStrategy: 'Excellent resistance breaker for mites and thrips. Alternate with MoA 3A or MoA 6.',
     rotationStrategyBn: 'থ্রিপস ও মাইট প্রতিরোধের বিরুদ্ধে কার্যকর।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'Reproductive',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC 14',
@@ -169,7 +235,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low to Medium',
     rotationStrategy: 'Mainstay for stem borers and leaf folders. Rotate with Diamides (28) and Organophosphates (1B).',
     rotationStrategyBn: 'মাজরা পোকা ও পাতা মোড়ানোর প্রধান প্রতিরোধক। ডায়ামাইড (28) এর সাথে ঘোরান।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC 15',
@@ -182,7 +253,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Medium',
     rotationStrategy: 'Target early instar larvae. Alternate with Spinosyns (5) or Bt biologicals (11A).',
     rotationStrategyBn: 'ছোট লার্ভার সময় দিন। স্পিনোসিন বা বিটির সাথে ঘোরান।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Slow to Moderately Slow',
+    recommendedCropPhase: 'Vegetative',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC 16',
@@ -195,7 +271,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low to Medium',
     rotationStrategy: 'Specific nymph growth inhibitor for BPH and whiteflies. Rotate with adulticides (Pymetrozine 9B).',
     rotationStrategyBn: 'বিপিএইচ ও সাদা মাছির নিম্ফ দমনে সহায়ক। পূর্ণাঙ্গ নাশকের সাথে বদলান।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Slow to Moderately Slow',
+    recommendedCropPhase: 'Vegetative',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC 21A',
@@ -208,7 +289,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Medium',
     rotationStrategy: 'Fast knockdown of spider mites. Do not use sequentially in same season.',
     rotationStrategyBn: 'দ্রুত মাইট দমনে সক্ষম। এক মৌসুমে পরপর ব্যবহার করবেন না।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Moderately Fast',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC 22A',
@@ -221,7 +307,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Medium',
     rotationStrategy: 'Effective for bollworms and caterpillars. Alternate with Diamides (28) or Spinosad (5).',
     rotationStrategyBn: 'লেদা পোকা ও শুঁয়োপোকার জন্য কার্যকর। ডায়ামাইড (28) এর সাথে ঘোরান।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'Reproductive',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: false,
   },
   {
     code: 'IRAC 23',
@@ -234,7 +325,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low to Medium',
     rotationStrategy: 'Excellent on juvenile hidden sucking pests (whiteflies, scales, aphids). Alternate with MoA 4A or 9B.',
     rotationStrategyBn: 'লুকানো শোষণকারী পোকার জন্য উত্তম। মোএ ৪এ বা ৯বি এর সাথে অল্টারনেট করুন।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Moderate',
+    recommendedCropPhase: 'Vegetative',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC 24A',
@@ -247,7 +343,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low',
     rotationStrategy: 'Strictly institutional / restricted use under airtight conditions. Rotate with insect growth regulators.',
     rotationStrategyBn: 'শুধুমাত্র সংরক্ষিত গুদামে প্রাতিষ্ঠানিক ব্যবহার। বায়ুরোধক অবস্থায় প্রয়োগ বাধ্যতামূলক।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Variable',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 1,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC 28',
@@ -260,7 +361,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Medium to High',
     rotationStrategy: 'Do not exceed 2 consecutive applications. Window-based management: rotate to MoA 14 (Cartap) or MoA 5 (Spinosad).',
     rotationStrategyBn: 'পরপর ২ বারের বেশি স্প্রে করবেন না। কার্টাপ (14) বা স্পিনোস্যাড (5) দিয়ে উইন্ডো পরিবর্তন করুন।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'Reproductive',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'IRAC UN',
@@ -273,7 +379,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low',
     rotationStrategy: 'Ideal partner for tank-mixing or rotation due to multi-site activity and low resistance induction.',
     rotationStrategyBn: 'মাল্টি-সাইট ক্রিয়ার কারণে কম প্রতিরোধ ঝুঁকি। ট্যাংক মিক্সে উপযুক্ত।',
-    type: 'IRAC'
+    type: 'IRAC',
+    speedOfAction: 'Variable',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
 
   // --- FRAC (Fungicides) ---
@@ -288,7 +399,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'High',
     rotationStrategy: 'High risk! Target site mutations (E198A/K, F200Y) are widespread. Cross-resistance between all Group 1 fungicides. Rotate with FRAC 3 (DMI), FRAC 11 (QoI), or multi-site FRAC M03 (Mancozeb).',
     rotationStrategyBn: 'উচ্চ ঝুঁকি! গ্রুপের সবার মধ্যে ক্রস-রেজিস্ট্যান্স। ম্যানকোজেব বা ট্রায়াজোলের সাথে ঘোরান।',
-    type: 'FRAC'
+    type: 'FRAC',
+    speedOfAction: 'Moderate',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'FRAC 2',
@@ -314,7 +430,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Medium',
     rotationStrategy: 'Widespread cross-resistance among DMIs. Never apply sub-lethal rates. Rotate with QoIs (FRAC 11), SDHIs (FRAC 7), or multi-site protectors (FRAC M01/M03).',
     rotationStrategyBn: 'ট্রায়াজোলগুলোর মধ্যে ক্রস-প্রতিরোধ বিদ্যমান। কিউওআই (11) বা কপার/ম্যানকোজেবের সাথে ঘুরিয়ে ব্যবহার করুন।',
-    type: 'FRAC'
+    type: 'FRAC',
+    speedOfAction: 'Moderate',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'FRAC 4',
@@ -379,7 +500,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'High',
     rotationStrategy: 'Single G143A mutation confers complete resistance. Limit QoI sprays to 30-33% of total fungicide programs. Must alternate with FRAC 3 (Triazoles) or FRAC M (Multi-site).',
     rotationStrategyBn: 'G143A মিউটেশনের কারণে উচ্চ ঝুঁকি। মোট স্প্রের ১/৩ অংশের বেশি দেবেন না। ট্রায়াজোল বা মাল্টি-সাইটের সাথে ঘোরান।',
-    type: 'FRAC'
+    type: 'FRAC',
+    speedOfAction: 'Fast',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 2,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'FRAC 14',
@@ -470,7 +596,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low',
     rotationStrategy: 'Zero known resistance. Essential tank-mix and multi-site cornerstone for resistance prevention.',
     rotationStrategyBn: 'প্রতিরোধের ঝুঁকি শূন্য। যেকোনো স্প্রে প্রোগ্রামে অপরিহার্য ভিত্তি।',
-    type: 'FRAC'
+    type: 'FRAC',
+    speedOfAction: 'Variable',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 3,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'FRAC M02',
@@ -483,7 +614,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low',
     rotationStrategy: 'Dual fungicide and miticide. Outstanding rotation partner for powdery mildew and red spider mites.',
     rotationStrategyBn: 'ছত্রাক ও মাইট উভয়ের বিরুদ্ধে নিরাপদ মাল্টি-সাইট যোদ্ধা।',
-    type: 'FRAC'
+    type: 'FRAC',
+    speedOfAction: 'Variable',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 3,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'FRAC M03',
@@ -496,7 +632,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low',
     rotationStrategy: 'The bedrock of agricultural disease resistance management. Rotate with or co-apply with single-site DMIs and QoIs.',
     rotationStrategyBn: 'কৃষির সবচেয়ে নির্ভরযোগ্য সুরক্ষা কবচ। সিঙ্গেল-সাইট রাসায়নিকের সাথে মিক্স করুন।',
-    type: 'FRAC'
+    type: 'FRAC',
+    speedOfAction: 'Variable',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 3,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'FRAC M05',
@@ -509,7 +650,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low',
     rotationStrategy: 'Robust protectant for late blight and anthracnose. Low resistance risk.',
     rotationStrategyBn: 'নাবি ধস ও অ্যানথ্রাকনোজের মাল্টি-সাইট প্রতিরক্ষক।',
-    type: 'FRAC'
+    type: 'FRAC',
+    speedOfAction: 'Variable',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 3,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'FRAC P07',
@@ -550,7 +696,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'High',
     rotationStrategy: 'Selective grass killer in broadleaf crops and jute. High resistance risk. Alternate with HRAC 15 (Pretilachlor) or HRAC 2.',
     rotationStrategyBn: 'ঘাসজাতীয় আগাছায় উচ্চ ঝুঁকি। প্রি-ইমার্জেন্স হার্বিসাইডের সাথে চক্রাকারে দিন।',
-    type: 'HRAC'
+    type: 'HRAC',
+    speedOfAction: 'Moderate',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 1,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'HRAC 2',
@@ -563,7 +714,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'High',
     rotationStrategy: 'Extremely active at low dose (10-150 g/ha). Prone to weed resistance. Must alternate with HRAC 15 (Pretilachlor/Butachlor) or HRAC 4 (2,4-D).',
     rotationStrategyBn: 'খুব কম মাত্রায় সক্রিয় হলেও আগাছায় প্রতিরোধ প্রবণ। প্রেটিলাক্লোর বা ২,৪-ডি এর সাথে অল্টারনেট করুন।',
-    type: 'HRAC'
+    type: 'HRAC',
+    speedOfAction: 'Moderate',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 1,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'HRAC 3',
@@ -589,7 +745,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low to Medium',
     rotationStrategy: 'Highly effective against broadleaf dicots and sedges in rice and tea. Rotate with HRAC 2 or HRAC 14.',
     rotationStrategyBn: 'ধান ও চায়ের চওড়া পাতা ও মোথা আগাছায় কার্যকর।',
-    type: 'HRAC'
+    type: 'HRAC',
+    speedOfAction: 'Moderate',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 1,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'HRAC 5',
@@ -615,7 +776,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Medium to High',
     rotationStrategy: 'Non-selective systemic broad-spectrum herbicide for tea plantations and fallow land. Never allow spray drift onto crops. Rotate with Paraquat (HRAC 22) or Glufosinate.',
     rotationStrategyBn: 'চা বাগান ও পতিত জমিতে শিকড়সহ নিধনে ব্যবহৃত। ফসলে স্প্রে বাতাস লাগতে দেবেন না।',
-    type: 'HRAC'
+    type: 'HRAC',
+    speedOfAction: 'Moderate',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 1,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'HRAC 14',
@@ -628,7 +794,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low to Medium',
     rotationStrategy: 'Early post or pre-emergence film layer on water/soil. Alternate with HRAC 15 (Pretilachlor) in rice.',
     rotationStrategyBn: 'পানির উপর ফিল্ম তৈরি করে আগাছা দমন করে। প্রেটিলাক্লোরের সাথে পরিবর্তন করুন।',
-    type: 'HRAC'
+    type: 'HRAC',
+    speedOfAction: 'Moderate',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 1,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'HRAC 15',
@@ -641,7 +812,12 @@ export const MOA_DATABASE: MoAClassification[] = [
     resistanceRisk: 'Low',
     rotationStrategy: 'The gold standard selective pre-emergence herbicide in transplanted rice. Low resistance risk. Excellent base for tank mixes with Pyrazosulfuron (HRAC 2).',
     rotationStrategyBn: 'রোপা ধানের সেরা প্রি-ইমার্জেন্স আগাছানাশক। পাইরাজোসালফিউরনের সাথে মিক্স জনপ্রিয়।',
-    type: 'HRAC'
+    type: 'HRAC',
+    speedOfAction: 'Moderate',
+    recommendedCropPhase: 'All',
+    maxAppsPerWindow: 1,
+    seasonalExposureCapPct: 50,
+    subGroupRotationPermitted: true,
   },
   {
     code: 'HRAC 22',

@@ -25,6 +25,18 @@ export const REGISTRY_VALIDATION_REPORT = {
     missingTargetPests: 3,
     missingDosage: 4,
     missingMoa: 1312,
+  generatedAt: "2026-11-18T22:08:37.303Z",
+  counts: {
+    totalRecords: 9462,
+    duplicateRegNoGroups: 43,
+    duplicateRegNoRows: 44,
+    missingRegistrationNo: 1,
+    invalidRegistrationNo: 16,
+    missingActiveIngredient: 2207,
+    missingCrops: 4685,
+    missingTargetPests: 4013,
+    missingDosage: 4014,
+    missingMoa: 3026,
     importErrors: 0,
   },
   details: {
@@ -68,6 +80,156 @@ export const REGISTRY_VALIDATION_REPORT = {
         regNo: "AP (Bio)-28",
         count: 2,
         tradeNames: ["AT Cuelure '69"],
+      },
+      {
+        regNo: "AP (Bio)-02",
+        count: 2,
+        tradeNames: ["Q-Phero"],
+      },
+      {
+        regNo: "AP (Bio)-03",
+        count: 2,
+        tradeNames: ["Bactro-D"],
+      },
+      {
+        regNo: "AP (Bio)-28",
+        count: 3,
+        tradeNames: ["AT Cuelure '69"],
+      },
+      {
+        regNo: "AP (Bio)-29",
+        count: 2,
+        tradeNames: ["Tabiz Pheromone Trap"],
+      },
+      {
+        regNo: "AP (Bio)-05",
+        count: 2,
+        tradeNames: ["BSFB-Phero"],
+      },
+      {
+        regNo: "AP (Bio)-06",
+        count: 2,
+        tradeNames: ["Spodo-lure"],
+      },
+      {
+        regNo: "AP (Bio)-11",
+        count: 2,
+        tradeNames: ["Fuji Qlure"],
+      },
+      {
+        regNo: "AP (Bio)-42",
+        count: 2,
+        tradeNames: ["Bio-lure"],
+      },
+      {
+        regNo: "AP (Bio)-43",
+        count: 2,
+        tradeNames: ["Cue Magneto"],
+      },
+      {
+        regNo: "AP (Bio)-10",
+        count: 2,
+        tradeNames: ["Ecomec 1.8EC"],
+      },
+      {
+        regNo: "AP (Bio)-33",
+        count: 2,
+        tradeNames: ["Bio-cure Plus 1EC"],
+      },
+      {
+        regNo: "AP (Bio)-14",
+        count: 2,
+        tradeNames: ["Fuji Fruit Lure"],
+      },
+      {
+        regNo: "AP (Bio)-40",
+        count: 2,
+        tradeNames: ["Fruit Magneto"],
+      },
+      {
+        regNo: "AP (Bio) -17",
+        count: 2,
+        tradeNames: ["Archer 75WP"],
+      },
+      {
+        regNo: "AP (Bio) -18",
+        count: 2,
+        tradeNames: ["Achta 1%EC"],
+      },
+      {
+        regNo: "AP (Bio) -22",
+        count: 2,
+        tradeNames: ["Spodo-NPV"],
+      },
+      {
+        regNo: "AP (Bio) -44",
+        count: 2,
+        tradeNames: ["Fawligen (SFNPV)"],
+      },
+      {
+        regNo: "AP (Bio) -23",
+        count: 2,
+        tradeNames: ["Decoprima"],
+      },
+      {
+        regNo: "AP (Bio)-24",
+        count: 2,
+        tradeNames: ["Tricost 1%WP"],
+      },
+      {
+        regNo: "AP (Bio)-25",
+        count: 2,
+        tradeNames: ["Monexe 0.5WP"],
+      },
+      {
+        regNo: "AP (Bio)-27",
+        count: 2,
+        tradeNames: ["BSFB Lure '69"],
+      },
+      {
+        regNo: "AP (Bio)-41",
+        count: 2,
+        tradeNames: ["Haylure Brinjal"],
+      },
+      {
+        regNo: "AP (Bio)-36",
+        count: 2,
+        tradeNames: ["Ratan Pheromone"],
+      },
+      {
+        regNo: "AP (Bio)-37",
+        count: 2,
+        tradeNames: ["Apache"],
+      },
+      {
+        regNo: "AP (Bio)-38",
+        count: 2,
+        tradeNames: ["Orolure"],
+      },
+      {
+        regNo: "AP (Bio)-39",
+        count: 2,
+        tradeNames: ["Supernet"],
+      },
+      {
+        regNo: "AP (Bio)-34",
+        count: 2,
+        tradeNames: ["Biotrin"],
+      },
+      {
+        regNo: "AP (Bio)-35",
+        count: 2,
+        tradeNames: ["K-Mite"],
+      },
+      {
+        regNo: "AP (Bio)-31",
+        count: 2,
+        tradeNames: ["Fall Army-lure"],
+      },
+      {
+        regNo: "AP (Bio)-32",
+        count: 2,
+        tradeNames: ["Hay Lure Army Worm"],
       },
       {
         regNo: "PHP-868",
@@ -120,6 +282,50 @@ export const REGISTRY_VALIDATION_REPORT = {
       {
         regNo: "PHP508",
         trade: "Hit Super Mosquito Coil",
+      },
+      {
+        regNo: "AP--1320",
+        trade: "Seamethrin 10EC",
+      },
+      {
+        regNo: "AP--6628",
+        trade: "Tony 5SG",
+      },
+      {
+        regNo: "AP--6634",
+        trade: "Sinduk 5SG",
+      },
+      {
+        regNo: "3852",
+        trade: "Xu-Long 40 WG",
+      },
+      {
+        regNo: "5816",
+        trade: "Hasclean 72SL",
+      },
+      {
+        regNo: "6183",
+        trade: "Digtal 70WDG",
+      },
+      {
+        regNo: "6474",
+        trade: "MetKlo Mix 20WP",
+      },
+      {
+        regNo: "PHP--803",
+        trade: "Prothik Mosquito Coil",
+      },
+      {
+        regNo: "PHP--1251",
+        trade: "Red  Leaf  Mosquito Coil",
+      },
+      {
+        regNo: "PHP--1252",
+        trade: "Hunter Brand Mosquito Coil",
+      },
+      {
+        regNo: "PHP-",
+        trade: "Afizinon 10G",
       },
     ],
   },

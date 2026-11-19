@@ -4,9 +4,9 @@
  */
 export const AGRICHEM_UPSTREAM = {
   url: 'https://github.com/moniruzjaman/AgriChem-Guide-Pest-Control-Database.git',
-  sha: '18f3e236ab3ab2460f6e2cd5c43e7ad125157034',
-  commitDate: '2026-10-13T07:09:29+06:00',
-  syncedAt: '2026-10-15T13:37:00.763Z',
+  sha: '0f08b11b8f477deea55b6920c3945e4254509b3c',
+  commitDate: '2026-11-19T01:10:28+06:00',
+  syncedAt: '2026-11-18T22:08:31.658Z',
 };
 
 export default AGRICHEM_UPSTREAM;

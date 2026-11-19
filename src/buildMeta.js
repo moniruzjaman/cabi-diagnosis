@@ -5,6 +5,11 @@
 export const APP_VERSION = "5.0.0";
 export const BUILD_COMMIT = "e680a71";
 export const BUILD_TIME = "2026-11-18T19:32:42.166Z";
+// App version 5.0.0, commit 4c581bd, built 2026-11-18T22:09:32.289Z.
+
+export const APP_VERSION = "5.0.0";
+export const BUILD_COMMIT = "4c581bd";
+export const BUILD_TIME = "2026-11-18T22:09:32.289Z";
 
 // Convenience object for About/System Information panels and diagnostics.
 export const BUILD_META = {

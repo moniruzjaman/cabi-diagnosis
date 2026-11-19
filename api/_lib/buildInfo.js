@@ -6,4 +6,10 @@ export const BUILD_INFO = {
   version: "5.0.0",
   commit: "e680a71",
   buildTime: "2026-11-18T19:32:42.166Z",
+// App version 5.0.0, commit 4c581bd, built 2026-11-18T22:09:32.289Z.
+
+export const BUILD_INFO = {
+  version: "5.0.0",
+  commit: "4c581bd",
+  buildTime: "2026-11-18T22:09:32.289Z",
 };
