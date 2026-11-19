@@ -88,7 +88,7 @@ export default function RiskProfileWorkspace({ C, profileKey = "this-device", de
             <input value={profile.union} onChange={(e) => update("union", e.target.value)} placeholder="ইউনিয়ন/গ্রাম" style={fieldStyle} />
           </label>
         </div>
-        <div style={{ fontSize: 9.5, color: saved ? C.success : C.textMuted, marginTop: 7 }}>
+        <div style={{ fontSize: 9.5, color: C.textMuted, marginTop: 7 }}>
           এই ডিভাইসের ব্রাউজারে স্বয়ংক্রিয়ভাবে সংরক্ষিত
         </div>
       </div>
@@ -159,7 +159,7 @@ export default function RiskProfileWorkspace({ C, profileKey = "this-device", de
           </div>
           {!districtReady ? <div style={warningStyle(C)}>এলাকার সাধারণ ঝুঁকি দেখতে জেলা নির্ধারণ করুন।</div> :
             profile.crops.length ? profile.crops.map((item) => (
-              <RiskRadarWidget key={item.id} C={C} case={{ id: `area-${item.id}`, crop: item.crop, district: profile.district, growthStage: item.growthStage, location: coords ? { lat: coords.lat, lon: coords.lon } : undefined }} showAllRisks persist={false} showActions={false} />
+              <RiskRadarWidget key={item.id} C={C} case={{ id: `area-${item.id}`, crop: item.crop, district: profile.district, growthStage: item.growthStage }} showAllRisks persist={false} showActions={false} />
             )) : <div style={warningStyle(C)}>এলাকার সাধারণ ঝুঁকি দেখাতে প্রোফাইলে অন্তত একটি ফসল যোগ করুন।</div>}
         </div>
       )}
