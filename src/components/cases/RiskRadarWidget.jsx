@@ -99,6 +99,23 @@ const DISTRICT_COORDS = {
   ময়মনসিংহ: { lat: 24.7471, lon: 90.4203 },
 };
 
+const RISK_CATEGORY_LABELS = {
+  disease: "রোগ ঝুঁকি / Disease",
+  spray_window: "স্প্রে সময় / Spray window",
+  irrigation: "সেচ / Irrigation",
+  waterlogging: "জলাবদ্ধতা / Waterlogging",
+  flood: "বন্যা / Flood",
+  heat_stress: "তাপ চাপ / Heat stress",
+  cold_stress: "শৈত্য চাপ / Cold stress",
+  wind_damage: "বায়ু ক্ষতি / Wind damage",
+  harvest: "ফসল কাটা / Harvest",
+  lodging: "হেলে পড়া / Lodging",
+  pollination: "পরাগায়ন / Pollination",
+  seedling_stress: "চারা চাপ / Seedling stress",
+  nutrient_loss: "পুষ্টি ক্ষয় / Nutrient loss",
+  field_accessibility: "মাঠে প্রবেশ / Field access",
+};
+
 const RISK_COLORS = {
   low: { bg: "#dcfce7", fg: "#166534", label: "কম" },
   moderate: { bg: "#fef9c3", fg: "#854d0e", label: "মাঝারি" },
@@ -262,6 +279,29 @@ export default function RiskRadarWidget({ C, case: caseObj }) {
             {radar.dataFreshness === "stale" ? (
               <span style={{ marginLeft: 6, color: C.warning, fontSize: 10 }}>⚠ পুরনো তথ্য</span>
             ) : null}
+          </div>
+
+          {/* Complete KWI-aligned 14-category assessment — not only the top five */}
+          <div style={{ margin: "10px 0", padding: 10, borderRadius: 10, background: C.bgCard, border: `1px solid ${C.border}` }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: C.text, marginBottom: 8 }}>
+              ১৪টি আবহাওয়া ঝুঁকি বিভাগ · {radar.allRisks?.length || 0}/১৪
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(138px, 1fr))", gap: 6 }}>
+              {(radar.allRisks || []).map((risk) => {
+                const level = RISK_COLORS[risk.level] || RISK_COLORS.unknown;
+                return (
+                  <div key={risk.category} style={{ padding: "7px 8px", borderRadius: 8, background: level.bg, color: level.fg, border: `1px solid ${C.border}`, minWidth: 0 }}>
+                    <div style={{ fontSize: 9.5, fontWeight: 700, lineHeight: 1.35 }}>{RISK_CATEGORY_LABELS[risk.category] || risk.category}</div>
+                    <div style={{ fontSize: 13, fontWeight: 800, marginTop: 3 }}>{risk.score}/১০০ · {level.label}</div>
+                  </div>
+                );
+              })}
+            </div>
+            {radar.allRisks?.length !== 14 && (
+              <div style={{ fontSize: 10, color: C.warning, marginTop: 6 }}>
+                ⚠️ সব ১৪টি বিভাগ ফেরত আসেনি; এই মূল্যায়ন অসম্পূর্ণ।
+              </div>
+            )}
           </div>
 
           {/* Top disease */}
