@@ -8660,9 +8660,10 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                 <div style={{ animation: "fadeIn .3s ease" }}>
                   <RiskProfileWorkspace
                     C={C}
+                    key={visitorId || "this-device"}
                     profileKey={visitorId || "this-device"}
                     defaultDistrict={form.district || locationName || ""}
-                    coords={coords}
+                    defaultCrop={form.crop || ""}
                   />
                 </div>
               )}
@@ -8679,6 +8680,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                         : null
                     }
                     onOpenProtection={() => setActiveTab("pesticide")}
+                    profileKey={visitorId || "this-device"}
                   />
                 </div>
               )}
