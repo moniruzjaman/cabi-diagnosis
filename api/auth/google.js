@@ -16,7 +16,8 @@
  * Required env vars:
  *   GOOGLE_CLIENT_ID  — OAuth client ID (must match `aud` in the JWT)
  *   SESSION_SECRET    — 32+ random hex chars for signing session JWTs
- *   TURSO_DATABASE_URL, TURSO_AUTH_TOKEN — for the users table
+ *   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY — primary user-profile store
+ *   TURSO_DATABASE_URL, TURSO_AUTH_TOKEN — application data + auth fallback
  */
 
 import { signJWT, isPreviewDeploy } from "../_lib/jwt.js";
@@ -81,7 +82,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: "Token missing required fields" });
   }
 
-  // ── 4. Upsert user identity only (Turso → Supabase users table → preview) ──
+  // ── 4. Upsert user identity only (Supabase → Turso fallback → preview) ──
   let user;
   let backend = "unknown";
   try {
@@ -108,6 +109,7 @@ export default async function handler(req, res) {
   // ── 5. Issue a session JWT (HMAC-SHA256 signed with SESSION_SECRET) ──
   const sessionPayload = {
     uid: user.id,
+    google_sub: payload.sub,
     email: user.email,
     exp: Date.now() + SESSION_MAX_AGE_SECONDS * 1000,
   };

@@ -96,3 +96,15 @@ The six pillars live **inside** the Home dashboard and workflows — no new
 bottom-nav tabs. `handlePillarNavigation` routes: DETECT/TREAT → diagnose
 (TREAT opens the live report when one exists), PREVENT → prevention view,
 MONITOR/EVALUATE → case manager, LEARN → learning hub.
+
+## Backend data boundary
+
+Supabase is the authoritative store for authenticated user identity/profile rows
+in `public.app_users`. The server uses only `SUPABASE_SERVICE_ROLE_KEY` for these
+writes; browser clients never receive that key. Turso remains the application-data
+store for diagnoses, analytics, market prices, outbreak reports, feedback,
+presence and shared crop-health intelligence. Authentication keeps the stable
+Google subject in the signed session so a temporary Supabase outage can fail over
+to Turso without losing the user's identity, then resolve back to Supabase after
+recovery. Crop photos remain transient inference inputs and are not persisted in
+either database.

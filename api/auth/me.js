@@ -62,7 +62,7 @@ export default async function handler(req, res) {
   //   - we can detect deleted/disabled accounts
   let user;
   try {
-    user = await getUserById(payload.uid);
+    user = await getUserById(payload.uid, payload.google_sub || "");
   } catch (e) {
     console.error("[auth/me] DB query failed:", e.message);
     return res.status(200).json({ user: null });
