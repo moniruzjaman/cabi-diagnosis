@@ -99,6 +99,23 @@ const DISTRICT_COORDS = {
   ময়মনসিংহ: { lat: 24.7471, lon: 90.4203 },
 };
 
+const RISK_CATEGORY_LABELS = {
+  disease: "রোগ ঝুঁকি / Disease",
+  spray_window: "স্প্রে সময় / Spray window",
+  irrigation: "সেচ / Irrigation",
+  waterlogging: "জলাবদ্ধতা / Waterlogging",
+  flood: "বন্যা / Flood",
+  heat_stress: "তাপ চাপ / Heat stress",
+  cold_stress: "শৈত্য চাপ / Cold stress",
+  wind_damage: "বায়ু ক্ষতি / Wind damage",
+  harvest: "ফসল কাটা / Harvest",
+  lodging: "হেলে পড়া / Lodging",
+  pollination: "পরাগায়ন / Pollination",
+  seedling_stress: "চারা চাপ / Seedling stress",
+  nutrient_loss: "পুষ্টি ক্ষয় / Nutrient loss",
+  field_accessibility: "মাঠে প্রবেশ / Field access",
+};
+
 const RISK_COLORS = {
   low: { bg: "#dcfce7", fg: "#166534", label: "কম" },
   moderate: { bg: "#fef9c3", fg: "#854d0e", label: "মাঝারি" },
@@ -264,6 +281,29 @@ export default function RiskRadarWidget({ C, case: caseObj }) {
             ) : null}
           </div>
 
+          {/* Complete KWI-aligned 14-category assessment — not only the top five */}
+          <div style={{ margin: "10px 0", padding: 10, borderRadius: 10, background: C.bgCard, border: `1px solid ${C.border}` }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: C.text, marginBottom: 8 }}>
+              ১৪টি আবহাওয়া ঝুঁকি বিভাগ · {radar.allRisks?.length || 0}/১৪
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(138px, 1fr))", gap: 6 }}>
+              {(radar.allRisks || []).map((risk) => {
+                const level = RISK_COLORS[risk.level] || RISK_COLORS.unknown;
+                return (
+                  <div key={risk.category} style={{ padding: "7px 8px", borderRadius: 8, background: level.bg, color: level.fg, border: `1px solid ${C.border}`, minWidth: 0 }}>
+                    <div style={{ fontSize: 9.5, fontWeight: 700, lineHeight: 1.35 }}>{RISK_CATEGORY_LABELS[risk.category] || risk.category}</div>
+                    <div style={{ fontSize: 13, fontWeight: 800, marginTop: 3 }}>{risk.score}/১০০ · {level.label}</div>
+                  </div>
+                );
+              })}
+            </div>
+            {radar.allRisks?.length !== 14 && (
+              <div style={{ fontSize: 10, color: C.warning, marginTop: 6 }}>
+                ⚠️ সব ১৪টি বিভাগ ফেরত আসেনি; এই মূল্যায়ন অসম্পূর্ণ।
+              </div>
+            )}
+          </div>
+
           {/* Top disease */}
           {topDisease && topDisease.risk > 0 ? (
             <div style={{ fontSize: 11, marginBottom: 6, lineHeight: 1.5 }}>
@@ -354,30 +394,15 @@ export default function RiskRadarWidget({ C, case: caseObj }) {
             </div>
           )}
 
-          {/* Scouting action (scouting-first: risk ≥ 25 → scout, not spray) */}
-          {radar.scoutingAction ? (
+          {/* Scouting-first field action; never treats a weather score as spray approval */}
+          {radar.scoutingAction && (
             <ScoutingScheduler C={C} caseId={c.id} scoutingAction={radar.scoutingAction} />
-          ) : radar.overallRiskScore != null && radar.overallRiskScore >= 60 ? (
-            <>
-              <div
-                style={{
-                  fontSize: 10.5,
-                  color: C.danger,
-                  background: "#fee2e2",
-                  borderRadius: 8,
-                  padding: "6px 10px",
-                  marginTop: 8,
-                  lineHeight: 1.5,
-                }}
-              >
-                ⚠️ রোগের ঝুঁকি বেশি (≥৬০)। আবহাওয়া অনুকূল হওয়া স্প্রে করার অনুমতি নয় — নিচের ক্রপ প্রোটেকশন ডিসিশন
-                ইঞ্জিনের ধাপ অনুসরণ করুন।
-              </div>
-              <CropProtectionPanel C={C} caseObj={c} riskRadar={radar} />
-            </>
+          )}
+          {radar.overallRiskScore != null ? (
+            <CropProtectionPanel C={C} caseObj={c} riskRadar={radar} />
           ) : (
             <div style={{ fontSize: 10, color: C.textMuted, marginTop: 6 }}>
-              ঝুঁকি কম — নিয়মিত পর্যবেক্ষণ চালিয়ে যান।
+              ঝুঁকি নির্ণয়ের জন্য পর্যাপ্ত তথ্য নেই — মাঠ পর্যবেক্ষণ ও তথ্য সংগ্রহ চালিয়ে যান।
             </div>
           )}
         </>

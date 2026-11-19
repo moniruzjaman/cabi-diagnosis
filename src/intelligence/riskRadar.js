@@ -84,6 +84,7 @@ export function computeRiskRadar({ weather, activeCrops }) {
       explanation: null,
       scoutingAction: null,
       dataFreshness: "unavailable",
+      allRisks: [],
       modelLimitations: ["আবহাওয়ার তথ্য অনুপস্থিত — ঝুঁকি গণনা করা হয়নি।"],
       computedAt: new Date().toISOString(),
     };
@@ -113,6 +114,7 @@ export function computeRiskRadar({ weather, activeCrops }) {
     riskLevel: dashboard.overallRiskLevel,
     overallRiskScore: dashboard.overallRiskScore,
     topRisks,
+    allRisks: dashboard.risks,
     diseaseForecast: forecast,
     pestForecast,
     explanation,
