@@ -173,17 +173,20 @@ export default function RiskProfileWorkspace({ C, profileKey = "this-device", de
 }
 
 function BAMISPanel({ C, district }) {
+  // Static official links only. No BAMIS API, scraping, proxy, or network
+  // request is part of the app runtime; the Risk workspace works independently.
   const links = [
-    ["জেলা কৃষি আবহাওয়া বুলেটিন", "https://www.bamis.gov.bd/en/bulletin/district/"],
-    ["Agromet Forecast", "https://www.bamis.gov.bd/en/agro-met/forecast/"],
-    ["জাতীয় ও বিশেষ বুলেটিন", "https://www.bamis.gov.bd/en/bulletin/"],
-    ["বন্যা ও নদী পরিস্থিতি", "https://www.bamis.gov.bd/en/bwdb/forecast/"],
+    ["জেলা কৃষি আবহাওয়া বুলেটিন", "https://www.bamis.gov.bd/bulletin/district/"],
+    ["জাতীয় কৃষি আবহাওয়া বুলেটিন", "https://www.bamis.gov.bd/bulletin/nation/"],
+    ["কৃষি আবহাওয়া পূর্বাভাস", "https://www.bamis.gov.bd/agro-met/forecast/"],
+    ["বন্যা ও নদ-নদীর তথ্য", "https://www.bamis.gov.bd/bwdb/river/"],
+    ["BAMIS মূল পোর্টাল", "https://www.bamis.gov.bd/en/"],
   ];
   return (
     <section style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, boxShadow: C.shadow }}>
-      <div style={{ fontSize: 14, fontWeight: 800, color: C.primaryDark }}>🌦️ BAMIS কৃষি আবহাওয়া পূর্বাভাস</div>
+      <div style={{ fontSize: 14, fontWeight: 800, color: C.primaryDark }}>🌦️ BAMIS — সরকারি কৃষি আবহাওয়া তথ্য</div>
       <div style={{ fontSize: 10.5, color: C.textMuted, margin: "4px 0 10px", lineHeight: 1.55 }}>
-        {district ? `${district} জেলার` : "জেলা-ভিত্তিক"} সরকারি কৃষি আবহাওয়া বুলেটিন, পূর্বাভাস ও সতর্কতা BAMIS/DAE পোর্টাল থেকে দেখুন।
+        {district ? `${district} জেলার` : "জেলা-ভিত্তিক"} বুলেটিন ও পূর্বাভাস দেখতে BAMIS-এর মূল পোর্টাল খুলুন। জেলা বুলেটিন পৃষ্ঠায় প্রয়োজনীয় জেলা নির্বাচন করুন।
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(145px,1fr))", gap: 7 }}>
         {links.map(([label, href]) => (
@@ -192,8 +195,8 @@ function BAMISPanel({ C, district }) {
           </a>
         ))}
       </div>
-      <div style={{ fontSize: 9.5, color: C.textMuted, marginTop: 8 }}>
-        BAMIS বুলেটিনে জেলা-ভিত্তিক ৫ দিনের আবহাওয়া ও ফসলভিত্তিক পরামর্শ থাকে। পোর্টালে প্রকাশিত মূল তথ্যই চূড়ান্ত; এখানে কোনো BAMIS forecast অনুলিপি বা অনুমান করে দেখানো হয় না।
+      <div style={{ fontSize: 9.5, color: C.textMuted, marginTop: 8, lineHeight: 1.5 }}>
+        লিংকগুলো সরাসরি সরকারি BAMIS ওয়েবসাইটে যায়। BAMIS API সংযোগ, স্বয়ংক্রিয় ডেটা সংগ্রহ বা এমবেড করা পূর্বাভাস নেই; পোর্টাল সাময়িকভাবে বন্ধ থাকলেও CABI Risk ও অন্যান্য ফিচার স্বাভাবিকভাবে চলবে।
       </div>
     </section>
   );
