@@ -4,6 +4,7 @@ import { computeRiskRadar, makeMinimalActiveCrop } from "../../intelligence/risk
 import { updateRiskAssessment } from "../../data/cropHealthCases.js";
 import ScoutingScheduler from "./ScoutingScheduler.jsx";
 import CropProtectionPanel from "./CropProtectionPanel.jsx";
+import { getDistrictCoord } from "../../intelligence/districtCoords.js";
 
 // ────────────────────────────────────────────────────────────────────────────
 // RiskRadarWidget — renders the Disease Risk Radar for an active Crop Health
@@ -148,9 +149,9 @@ function resolveLocation(c) {
   if (c.location && c.location.lat != null && c.location.lon != null) {
     return { latitude: c.location.lat, longitude: c.location.lon, name: c.district || "field", country: "BD" };
   }
-  if (c.district && DISTRICT_COORDS[c.district]) {
-    const coord = DISTRICT_COORDS[c.district];
-    return { latitude: coord.lat, longitude: coord.lon, name: c.district, country: "BD" };
+  if (c.district) {
+    const coord = getDistrictCoord(c.district) || DISTRICT_COORDS[c.district];
+    if (coord) return { latitude: coord.lat, longitude: coord.lng ?? coord.lon, name: c.district, country: "BD" };
   }
   // Fallback: Dhaka (so the widget still works for cases without a district).
   return { latitude: 23.8103, longitude: 90.4125, name: c.district || "ঢাকা", country: "BD" };
