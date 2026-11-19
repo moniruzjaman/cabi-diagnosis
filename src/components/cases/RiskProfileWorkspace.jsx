@@ -31,14 +31,11 @@ export default function RiskProfileWorkspace({ C, profileKey = "this-device", de
   const [stage, setStage] = useState("vegetative");
   const [plantingDate, setPlantingDate] = useState("");
   const [selectedId, setSelectedId] = useState("");
-  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(profile));
-      setSaved(true);
     } catch {
-      setSaved(false);
     }
   }, [profile, storageKey]);
 
@@ -98,7 +95,7 @@ export default function RiskProfileWorkspace({ C, profileKey = "this-device", de
           </label>
         </div>
         <div style={{ fontSize: 9.5, color: saved ? C.success : C.textMuted, marginTop: 7 }}>
-          {saved ? "✓ এই ডিভাইসে প্রোফাইল সংরক্ষিত" : "প্রোফাইল সংরক্ষণ করা যায়নি"}
+          এই ডিভাইসের ব্রাউজারে স্বয়ংক্রিয়ভাবে সংরক্ষিত
         </div>
       </div>
 
@@ -155,7 +152,7 @@ export default function RiskProfileWorkspace({ C, profileKey = "this-device", de
             ) : <div style={{ fontSize: 11.5, color: C.textMuted }}>ব্যক্তিগত ঝুঁকি দেখতে প্রথমে উপরের ফসল যোগ করুন।</div>}
           </div>
           {!districtReady ? <div style={warningStyle(C)}>ঝুঁকি মূল্যায়নের আগে প্রোফাইলে জেলা লিখুন।</div> :
-            selectedCrop ? <RiskRadarWidget key={selectedCrop.id} C={C} case={{ id: `profile-${selectedCrop.id}`, crop: selectedCrop.crop, district: profile.district, growthStage: selectedCrop.growthStage, location: coords ? { lat: coords.lat, lon: coords.lon } : undefined }} showAllRisks persist={false} showActions={false} /> :
+            selectedCrop ? <RiskRadarWidget key={selectedCrop.id} C={C} case={{ id: `profile-${selectedCrop.id}`, crop: selectedCrop.crop, district: profile.district, growthStage: selectedCrop.growthStage }} showAllRisks persist={false} showActions={false} /> :
             <div style={warningStyle(C)}>ব্যক্তিগত মূল্যায়নের জন্য ফসল নির্বাচন বাধ্যতামূলক।</div>}
         </div>
       ) : (
