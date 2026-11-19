@@ -8390,8 +8390,9 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
     { id: "risk", label: "ঝুঁকি", icon: "⚠️" },
     { id: "calendar", label: "মৌসুম", icon: "📅" },
     { id: "diagnose", label: "শনাক্ত", icon: "🔬" },
+    { id: "prevent", label: "প্রতিরোধ", icon: "🛡️" },
     { id: "learn", label: "শিখুন", icon: "📖" },
-    { id: "pesticide", label: "সুরক্ষা", icon: "🛡️" },
+    { id: "pesticide", label: "সুরক্ষা", icon: "💊" },
   ];
   const feedbackContext =
     activeTab === "risk"
