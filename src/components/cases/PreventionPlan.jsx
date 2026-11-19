@@ -77,12 +77,25 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
     const cal = CROP_CALENDAR.find((c) => c.crop === cropKey);
     const cropEn = CROP_DISEASES[cropKey].en;
     const cropId = ({
-      rice: "rice", wheat: "wheat", jute: "jute", potato: "potato",
-      tomato: "tomato", chili: "chili", chilli: "chili", brinjal: "brinjal",
-      mustard: "mustard", onion: "onion", maize: "maize", corn: "maize",
+      rice: "rice",
+      wheat: "wheat",
+      jute: "jute",
+      potato: "potato",
+      tomato: "tomato",
+      chili: "chili",
+      chilli: "chili",
+      brinjal: "brinjal",
+      mustard: "mustard",
+      onion: "onion",
+      maize: "maize",
+      corn: "maize",
     })[String(cropEn || "").toLowerCase()];
     const pests = cropId ? getPestsByCrop(cropId) : [];
-    const ipmPractices = { cultural: new Set(), mechanical: new Set(), biological: new Set() };
+    const ipmPractices = {
+      cultural: new Set(),
+      mechanical: new Set(),
+      biological: new Set(),
+    };
     for (const pest of pests) {
       for (const action of pest.preventiveActionsBn || pest.preventiveActions || []) {
         const text = String(action || "").trim();
@@ -98,7 +111,10 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
     }
     const pestThresholds = pests
       .filter((pest) => pest.economicThreshold)
-      .map((pest) => ({ name: pest.nameBn || pest.name, threshold: pest.economicThreshold }));
+      .map((pest) => ({
+        name: pest.nameBn || pest.name,
+        threshold: pest.economicThreshold,
+      }));
     return {
       cropKey,
       cropEn,
@@ -281,15 +297,21 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
           ["জৈব ও পরিবেশবান্ধব", data.ipmPractices.biological],
         ].map(([title, items]) => (
           <li key={title} style={{ listStyle: "none", margin: "8px 0 0 0" }}>
-            <div style={{ fontSize: 11.5, fontWeight: 800, color: C.primaryDark, marginBottom: 3 }}>{title}</div>
+            <div style={{ fontSize: 11.5, fontWeight: 800, color: C.primaryDark, marginBottom: 3 }}>
+              {title}
+            </div>
             {items.length > 0 ? (
               <ul style={{ margin: 0, paddingLeft: 18 }}>
                 {items.slice(0, 8).map((item, index) => (
-                  <li key={index} style={{ fontSize: 11.5, color: C.text, lineHeight: 1.65 }}>{item}</li>
+                  <li key={index} style={{ fontSize: 11.5, color: C.text, lineHeight: 1.65 }}>
+                    {item}
+                  </li>
                 ))}
               </ul>
             ) : (
-              <div style={{ fontSize: 10.5, color: C.textMuted }}>এই শ্রেণিতে ফসল-নির্দিষ্ট নথিভুক্ত তথ্য নেই; মাঠ পর্যায়ে DAE-এর পরামর্শ নিন।</div>
+              <div style={{ fontSize: 10.5, color: C.textMuted }}>
+                এই শ্রেণিতে ফসল-নির্দিষ্ট নথিভুক্ত তথ্য নেই; মাঠ পর্যায়ে DAE-এর পরামর্শ নিন।
+              </div>
             )}
           </li>
         ))}
@@ -358,13 +380,36 @@ export default function PreventionPlan({ C, crop, district, weatherRisk, onOpenP
         ))}
       </Section>
 
-      <div style={{ background: C.bgWarning, border: `1px solid ${C.borderWarning}`, borderRadius: 14, padding: 14 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 800, color: C.textWarning, marginBottom: 5 }}>⚠️ রাসায়নিক দমন শেষ ধাপ</div>
+      <div
+        style={{
+          background: C.bgWarning,
+          border: `1px solid ${C.borderWarning}`,
+          borderRadius: 14,
+          padding: 14,
+        }}
+      >
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: C.textWarning, marginBottom: 5 }}>
+          ⚠️ রাসায়নিক দমন শেষ ধাপ
+        </div>
         <div style={{ fontSize: 11.5, color: C.text, lineHeight: 1.6 }}>
-          রোগ/পোকা নিশ্চিতকরণ, মাঠ পর্যবেক্ষণ ও অর্থনৈতিক সীমামান অতিক্রম না করে স্প্রে করবেন না। পণ্যটি সংশ্লিষ্ট ফসল ও বালাইয়ের জন্য DAE-নিবন্ধিত কি না, লেবেল, মাত্রা, PPE এবং PHI যাচাই করুন।
+          রোগ/পোকা নিশ্চিতকরণ, মাঠ পর্যবেক্ষণ ও অর্থনৈতিক সীমামান অতিক্রম না করে স্প্রে করবেন না। পণ্যটি সংশ্লিষ্ট ফসল ও
+          বালাইয়ের জন্য DAE-নিবন্ধিত কি না, লেবেল, মাত্রা, PPE এবং PHI যাচাই করুন।
         </div>
         {onOpenProtection && (
-          <button onClick={onOpenProtection} style={{ marginTop: 9, padding: "8px 12px", borderRadius: 9, border: "none", background: C.primary, color: "#fff", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
+          <button
+            onClick={onOpenProtection}
+            style={{
+              marginTop: 9,
+              padding: "8px 12px",
+              borderRadius: 9,
+              border: "none",
+              background: C.primary,
+              color: "#fff",
+              fontSize: 11.5,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
             সুরক্ষা ও পণ্য যাচাই দেখুন →
           </button>
         )}
