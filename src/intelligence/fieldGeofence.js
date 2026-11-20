@@ -19,11 +19,7 @@ export function isValidFieldPolygon(polygon) {
 }
 
 export function pointInPolygon(point, polygon) {
-  if (
-    !Number.isFinite(point?.lat) ||
-    !Number.isFinite(point?.lng) ||
-    !isValidFieldPolygon(polygon)
-  ) {
+  if (!Number.isFinite(point?.lat) || !Number.isFinite(point?.lng) || !isValidFieldPolygon(polygon)) {
     return false;
   }
 
