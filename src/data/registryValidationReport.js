@@ -13,6 +13,18 @@
 /** @type {RegistryValidationReport} */
 export const REGISTRY_VALIDATION_REPORT = {
   schemaVersion: 1,
+  generatedAt: "2026-11-18T19:29:36.587Z",
+  counts: {
+    totalRecords: 5452,
+    duplicateRegNoGroups: 14,
+    duplicateRegNoRows: 14,
+    missingRegistrationNo: 1,
+    invalidRegistrationNo: 5,
+    missingActiveIngredient: 0,
+    missingCrops: 675,
+    missingTargetPests: 3,
+    missingDosage: 4,
+    missingMoa: 1312,
   generatedAt: "2026-11-18T22:08:37.303Z",
   counts: {
     totalRecords: 9462,
@@ -63,6 +75,11 @@ export const REGISTRY_VALIDATION_REPORT = {
         regNo: "AP-4793",
         count: 2,
         tradeNames: ["L-Sate 71SG"],
+      },
+      {
+        regNo: "AP (Bio)-28",
+        count: 2,
+        tradeNames: ["AT Cuelure '69"],
       },
       {
         regNo: "AP (Bio)-02",

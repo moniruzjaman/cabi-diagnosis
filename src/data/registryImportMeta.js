@@ -12,6 +12,28 @@
 /** @type {RegistryImportMeta} */
 export const REGISTRY_IMPORT_META = {
   schemaVersion: 1,
+  generatedAt: "2026-11-18T19:29:36.587Z",
+  upstream: {
+    url: "https://github.com/moniruzjaman/AgriChem-Guide-Pest-Control-Database.git",
+    sha: "18f3e236ab3ab2460f6e2cd5c43e7ad125157034",
+    commitDate: "2026-10-13T07:09:29+06:00",
+    syncedAt: "2026-10-15T13:37:00.763Z",
+  },
+  registry: {
+    records: 5452,
+    sha256: "a5c0e7f4c6943accc3156fb014b3b598e0f8325ebb2a1b5d42012133215f0fea",
+  },
+  validationCounts: {
+    totalRecords: 5452,
+    duplicateRegNoGroups: 14,
+    duplicateRegNoRows: 14,
+    missingRegistrationNo: 1,
+    invalidRegistrationNo: 5,
+    missingActiveIngredient: 0,
+    missingCrops: 675,
+    missingTargetPests: 3,
+    missingDosage: 4,
+    missingMoa: 1312,
   generatedAt: "2026-11-18T22:08:37.303Z",
   upstream: {
     url: "https://github.com/moniruzjaman/AgriChem-Guide-Pest-Control-Database.git",
