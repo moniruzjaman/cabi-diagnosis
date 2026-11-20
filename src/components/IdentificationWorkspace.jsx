@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import VisualDiagnosisLibrary from "./VisualDiagnosisLibrary.jsx";
 import { getAccuracyTier, shouldRejectReading, tierLabelBn } from "../intelligence/gpsPrecision.js";
 import { formatLatLon } from "../intelligence/gpsUtils.js";
