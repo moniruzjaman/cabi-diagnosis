@@ -2,9 +2,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import VisualDiagnosisLibrary from "./VisualDiagnosisLibrary.jsx";
 import { getAccuracyTier, shouldRejectReading, tierLabelBn } from "../intelligence/gpsPrecision.js";
 import { formatLatLon } from "../intelligence/gpsUtils.js";
+import { pointInPolygon } from "../intelligence/fieldGeofence.js";
 
 const STORAGE_KEY = "cabi-identification-fields-v1";
 const NOMINATIM_CACHE_KEY = "cabi-identification-geocode-v1";
+let lastNominatimRequestAt = 0;
 const LEAFLET_CSS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
 const LEAFLET_JS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
 
@@ -18,20 +20,6 @@ function readJson(key, fallback) {
   }
 }
 
-function pointInPolygon(point, polygon) {
-  if (!point || !Array.isArray(polygon) || polygon.length < 3) return false;
-  const { lat, lng } = point;
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const a = polygon[i];
-    const b = polygon[j];
-    const intersects =
-      a.lng > lng !== b.lng > lng &&
-      lat < ((b.lat - a.lat) * (lng - a.lng)) / (b.lng - a.lng || Number.EPSILON) + a.lat;
-    if (intersects) inside = !inside;
-  }
-  return inside;
-}
 
 function loadLeaflet() {
   if (window.L) return Promise.resolve(window.L);
@@ -87,7 +75,6 @@ export default function IdentificationWorkspace({ C }) {
   const mapInstanceRef = useRef(null);
   const polygonLayerRef = useRef(null);
   const markerLayerRef = useRef(null);
-  const savedLayersRef = useRef([]);
 
   const activeField = useMemo(() => fields.find((f) => f.id === activeFieldId) || null, [fields, activeFieldId]);
   const geofenceResult = useMemo(
@@ -113,6 +100,9 @@ export default function IdentificationWorkspace({ C }) {
     }
     setGeoStatus("নিকটবর্তী এলাকার নাম খোঁজা হচ্ছে…");
     try {
+      const waitMs = Math.max(0, 1100 - (Date.now() - lastNominatimRequestAt));
+      if (waitMs) await new Promise((resolve) => setTimeout(resolve, waitMs));
+      lastNominatimRequestAt = Date.now();
       const url = new URL("https://nominatim.openstreetmap.org/reverse");
       url.search = new URLSearchParams({
         format: "jsonv2",
@@ -204,7 +194,6 @@ export default function IdentificationWorkspace({ C }) {
       L.marker([gps.lat, gps.lng]).bindPopup("আপনার বর্তমান GPS অবস্থান").addTo(markerLayerRef.current);
       map.setView([gps.lat, gps.lng], Math.max(map.getZoom(), 15));
     }
-    savedLayersRef.current = [];
   }, [gps]);
 
   const captureGps = () => {
