@@ -27,6 +27,7 @@ import { CROP_REGISTRY as CROPS, CROP_FLAT } from "./data/cropRegistry.js";
 import SixPillarGrid from "./components/dashboard/SixPillarGrid.jsx";
 import JourneyProgress from "./components/JourneyProgress.jsx";
 import CaseManager from "./components/cases/CaseManager.jsx";
+import IdentificationWorkspace from "./components/IdentificationWorkspace.jsx";
 import PreventionPlan from "./components/cases/PreventionPlan.jsx";
 import RiskRadarWidget from "./components/cases/RiskRadarWidget.jsx";
 import RiskProfileWorkspace from "./components/cases/RiskProfileWorkspace.jsx";
@@ -8399,6 +8400,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
     { id: "risk", label: "ঝুঁকি রাডার", icon: "⚠️", desc: "আপনার এলাকার ঝুঁকি প্রোফাইল" },
     { id: "prevent", label: "প্রতিরোধ পরিকল্পনা", icon: "🛡️", desc: "রোগ হওয়ার আগেই পরিকল্পনা করুন" },
     { id: "pesticide", label: "নিরাপদ বালাইনাশক", icon: "💊", desc: "নিবন্ধিত পণ্য ও নিরাপত্তা" },
+    { id: "identification", label: "চিত্র ও মাঠ শনাক্তকরণ", icon: "🧭", desc: "ছবি দেখে শিখুন, OSM মানচিত্রে ক্ষেত চিহ্নিত করুন" },
     { id: "history", label: "পুরনো রিপোর্ট", icon: "🕘", desc: "আগের নির্ণয় ও শেখা" },
   ];
   const navigateFromJourney = (journeyId) => {
@@ -8700,6 +8702,9 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   />
                 </div>
               )}
+
+              {/* ── IDENTIFICATION — Bangla-first visual trainer + OSM field geofence ── */}
+              {activeTab === "identification" && <IdentificationWorkspace C={C} />}
 
               {/* ── CALENDAR tab (Crop Calendar + Weather + Price) ──────────── */}
               {activeTab === "calendar" && (
