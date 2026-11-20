@@ -10,7 +10,6 @@ let lastNominatimRequestAt = 0;
 const LEAFLET_CSS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
 const LEAFLET_JS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
 
-const bn = (value) => (value == null ? "" : String(value));
 
 function readJson(key, fallback) {
   try {
@@ -62,7 +61,10 @@ const baseButton = {
 
 export default function IdentificationWorkspace({ C }) {
   const [mode, setMode] = useState("visual");
-  const [fields, setFields] = useState(() => readJson(STORAGE_KEY, []));
+  const [fields, setFields] = useState(() => {
+    const stored = readJson(STORAGE_KEY, []);
+    return Array.isArray(stored) ? stored : [];
+  });
   const [fieldName, setFieldName] = useState("");
   const [crop, setCrop] = useState("ধান");
   const [vertices, setVertices] = useState([]);
@@ -86,8 +88,10 @@ export default function IdentificationWorkspace({ C }) {
     setFields(next);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return true;
     } catch {
       setGeoStatus("ডিভাইসের স্টোরেজ পূর্ণ — ক্ষেত সংরক্ষণ করা যায়নি।");
+      return false;
     }
   }, []);
 
@@ -236,10 +240,12 @@ export default function IdentificationWorkspace({ C }) {
       placeName: placeName || "",
       createdAt: new Date().toISOString(),
     };
-    persistFields([field, ...fields]);
-    setActiveFieldId(field.id);
-    setVertices([]);
-    setGeoStatus("ক্ষেতের সীমানা এই ডিভাইসে সংরক্ষিত হয়েছে।");
+    const saved = persistFields([field, ...fields]);
+    if (saved) {
+      setActiveFieldId(field.id);
+      setVertices([]);
+      setGeoStatus("ক্ষেতের সীমানা এই ডিভাইসে সংরক্ষিত হয়েছে।");
+    }
   };
 
   const removeField = (id) => {
