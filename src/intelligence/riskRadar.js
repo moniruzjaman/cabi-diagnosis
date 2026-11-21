@@ -113,6 +113,7 @@ export function computeRiskRadar({ weather, activeCrops }) {
   return {
     riskLevel: dashboard.overallRiskLevel,
     overallRiskScore: dashboard.overallRiskScore,
+    risks: dashboard.risks,
     topRisks,
     allRisks: dashboard.risks,
     diseaseForecast: forecast,

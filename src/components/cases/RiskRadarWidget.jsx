@@ -4,6 +4,7 @@ import { computeRiskRadar, makeMinimalActiveCrop } from "../../intelligence/risk
 import { updateRiskAssessment } from "../../data/cropHealthCases.js";
 import ScoutingScheduler from "./ScoutingScheduler.jsx";
 import CropProtectionPanel from "./CropProtectionPanel.jsx";
+import { getDistrictCoord } from "../../intelligence/districtCoords.js";
 
 // ────────────────────────────────────────────────────────────────────────────
 // RiskRadarWidget — renders the Disease Risk Radar for an active Crop Health
@@ -124,10 +125,35 @@ const RISK_COLORS = {
   unknown: { bg: "#f1f5f9", fg: "#475569", label: "অজানা" },
 };
 
+const RISK_CATEGORY_LABELS = {
+  disease: "রোগের অনুকূল আবহাওয়া",
+  spray_window: "স্প্রে করার আবহাওয়া",
+  irrigation: "সেচের প্রয়োজন",
+  waterlogging: "জলাবদ্ধতা",
+  flood: "বন্যা",
+  heat_stress: "তাপজনিত চাপ",
+  cold_stress: "শীতজনিত চাপ",
+  wind_damage: "বাতাসে ক্ষতি",
+  harvest: "ফসল কাটার ঝুঁকি",
+  lodging: "গাছ হেলে পড়া",
+  pollination: "পরাগায়ন",
+  seedling_stress: "চারা পর্যায়ের চাপ",
+  nutrient_loss: "পুষ্টি/সার ক্ষয়",
+  field_accessibility: "মাঠে প্রবেশযোগ্যতা",
+};
+
 function resolveCropId(cropName) {
   if (!cropName) return null;
   const key = String(cropName).trim();
-  return CROP_NAME_TO_ID[key] || null;
+  const candidates = key
+    .split(/[\\/|,]/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  for (const candidate of candidates) {
+    const match = CROP_NAME_TO_ID[candidate] || CROP_NAME_TO_ID[candidate.toLowerCase()];
+    if (match) return match;
+  }
+  return CROP_NAME_TO_ID[key] || CROP_NAME_TO_ID[key.toLowerCase()] || null;
 }
 
 function resolveStageId(stage) {
@@ -140,15 +166,21 @@ function resolveLocation(c) {
   if (c.location && c.location.lat != null && c.location.lon != null) {
     return { latitude: c.location.lat, longitude: c.location.lon, name: c.district || "field", country: "BD" };
   }
-  if (c.district && DISTRICT_COORDS[c.district]) {
-    const coord = DISTRICT_COORDS[c.district];
-    return { latitude: coord.lat, longitude: coord.lon, name: c.district, country: "BD" };
+  if (c.district) {
+    const coord = getDistrictCoord(c.district) || DISTRICT_COORDS[c.district];
+    if (coord) return { latitude: coord.lat, longitude: coord.lng ?? coord.lon, name: c.district, country: "BD" };
   }
   // Fallback: Dhaka (so the widget still works for cases without a district).
   return { latitude: 23.8103, longitude: 90.4125, name: c.district || "ঢাকা", country: "BD" };
 }
 
-export default function RiskRadarWidget({ C, case: caseObj }) {
+export default function RiskRadarWidget({
+  C,
+  case: caseObj,
+  showAllRisks = false,
+  persist = true,
+  showActions = true,
+}) {
   const [radar, setRadar] = useState(null);
   const [error, setError] = useState(null);
   const [showLimitations, setShowLimitations] = useState(false);
@@ -172,11 +204,13 @@ export default function RiskRadarWidget({ C, case: caseObj }) {
         if (!mountedRef.current) return;
         const result = computeRiskRadar({ weather, activeCrops: [activeCrop] });
         setRadar(result);
-        // Cache the snapshot on the case (non-breaking optional field).
-        try {
-          updateRiskAssessment(c.id, result);
-        } catch {
-          // updateRiskAssessment may not be available in older case stores — ignore.
+        // Persist only for a real saved case. The standalone Risk tab is read-only.
+        if (persist) {
+          try {
+            updateRiskAssessment(c.id, result);
+          } catch {
+            // updateRiskAssessment may not be available in older case stores — ignore.
+          }
         }
       })
       .catch((err) => {
@@ -195,7 +229,7 @@ export default function RiskRadarWidget({ C, case: caseObj }) {
       mountedRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [c.id, c.crop, c.growthStage, c.district, c.location?.lat, c.location?.lon, unsupported, cropId]);
+  }, [c.id, c.crop, c.growthStage, c.district, c.location?.lat, c.location?.lon, unsupported, cropId, persist]);
 
   if (unsupported) {
     return (
@@ -303,6 +337,80 @@ export default function RiskRadarWidget({ C, case: caseObj }) {
               </div>
             )}
           </div>
+          {showAllRisks && Array.isArray(radar.risks) && (
+            <div
+              style={{
+                margin: "12px 0",
+                padding: 12,
+                borderRadius: 12,
+                background: C.bgCard,
+                border: `1px solid ${C.border}`,
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 800, color: C.primaryDark, marginBottom: 4 }}>
+                ১৪ শ্রেণির ফসল-ঝুঁকি মূল্যায়ন
+              </div>
+              <div style={{ fontSize: 10, color: C.textMuted, lineHeight: 1.5, marginBottom: 10 }}>
+                প্রতিটি স্কোর ০–১০০ সূচক; এটি রোগ হওয়ার সম্ভাবনার শতাংশ নয়। তথ্যের ঘাটতি ও মডেলের সীমাবদ্ধতা বিবেচনা
+                করুন।
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(145px,1fr))",
+                  gap: 8,
+                }}
+              >
+                {radar.risks.map((risk) => {
+                  const level = RISK_COLORS[risk.level] || RISK_COLORS.unknown;
+                  return (
+                    <div
+                      key={risk.category}
+                      style={{
+                        background: level.bg,
+                        border: `1px solid ${level.fg}33`,
+                        borderRadius: 10,
+                        padding: 9,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          gap: 6,
+                        }}
+                      >
+                        <b style={{ fontSize: 10.5, lineHeight: 1.4, color: C.text }}>
+                          {RISK_CATEGORY_LABELS[risk.category] || risk.category}
+                        </b>
+                        <span style={{ color: level.fg, fontSize: 9, fontWeight: 800, whiteSpace: "nowrap" }}>
+                          {level.label}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: level.fg, marginTop: 4 }}>
+                        {risk.score}
+                        <span style={{ fontSize: 9, fontWeight: 500 }}>/১০০</span>
+                      </div>
+                      <div style={{ fontSize: 9.5, color: C.text, lineHeight: 1.45, marginTop: 3 }}>
+                        {risk.explanationBn || risk.explanation}
+                      </div>
+                      {risk.evidence?.length > 0 && (
+                        <div style={{ fontSize: 9, color: C.textMuted, lineHeight: 1.4, marginTop: 5 }}>
+                          <b>তথ্য:</b> {risk.evidence.slice(0, 2).join(" · ")}
+                        </div>
+                      )}
+                      {risk.mitigationActionsBn?.length > 0 && (
+                        <div style={{ fontSize: 9, color: C.text, lineHeight: 1.4, marginTop: 5 }}>
+                          <b>করণীয়:</b> {risk.mitigationActionsBn.slice(0, 2).join(" · ")}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Top disease */}
           {topDisease && topDisease.risk > 0 ? (
@@ -404,6 +512,35 @@ export default function RiskRadarWidget({ C, case: caseObj }) {
             <div style={{ fontSize: 10, color: C.textMuted, marginTop: 6 }}>
               ঝুঁকি নির্ণয়ের জন্য পর্যাপ্ত তথ্য নেই — মাঠ পর্যবেক্ষণ ও তথ্য সংগ্রহ চালিয়ে যান।
             </div>
+          {showActions && (
+            <>
+              {/* Scouting action (scouting-first: risk ≥ 25 → scout, not spray) */}
+              {radar.scoutingAction ? (
+                <ScoutingScheduler C={C} caseId={c.id} scoutingAction={radar.scoutingAction} />
+              ) : radar.overallRiskScore != null && radar.overallRiskScore >= 60 ? (
+                <>
+                  <div
+                    style={{
+                      fontSize: 10.5,
+                      color: C.danger,
+                      background: "#fee2e2",
+                      borderRadius: 8,
+                      padding: "6px 10px",
+                      marginTop: 8,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    ⚠️ রোগের ঝুঁকি বেশি (≥৬০)। আবহাওয়া অনুকূল হওয়া স্প্রে করার অনুমতি নয় — নিচের ক্রপ প্রোটেকশন
+                    ডিসিশন ইঞ্জিনের ধাপ অনুসরণ করুন।
+                  </div>
+                  <CropProtectionPanel C={C} caseObj={c} riskRadar={radar} />
+                </>
+              ) : (
+                <div style={{ fontSize: 10, color: C.textMuted, marginTop: 6 }}>
+                  ঝুঁকি কম — নিয়মিত পর্যবেক্ষণ চালিয়ে যান।
+                </div>
+              )}
+            </>
           )}
         </>
       )}
