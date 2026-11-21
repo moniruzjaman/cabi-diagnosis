@@ -3431,7 +3431,7 @@ function EnhancedHomeTab({ setActiveTab, history, weather, locationName, coords 
           >
             {risk.icon} {risk.text}
             <button
-              onClick={() => setActiveTab("risk")}
+              onClick={() => setActiveTab("prevent")}
               style={{
                 marginLeft: "auto",
                 background: "none",
@@ -7120,7 +7120,7 @@ function SixPillarHomeDashboard({
           ))}
           <div style={{ fontSize: 10, color: C.textDanger, marginTop: 4 }}>প্রতিরোধ পরিকল্পনা দেখতে ট্যাপ করুন →</div>
           <button
-            onClick={() => onPillar({ id: "risk" })}
+            onClick={() => onPillar({ id: "prevent" })}
             style={{
               display: "block",
               width: "100%",
@@ -8321,7 +8321,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
         setActiveTab("prevent");
         break;
       case "risk":
-        setActiveTab("risk");
+        setActiveTab("prevent");
         break;
       case "monitor":
       case "evaluate":
@@ -8390,6 +8390,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
   // easy to scan on small screens.
   const navTabs = [
     { id: "home", label: "হোম", icon: "🏠" },
+    { id: "prevent", label: "প্রতিরোধ", icon: "🛡️" },
+    { id: "calendar", label: "মৌসুম", icon: "📅" },
     { id: "diagnose", label: "শনাক্ত", icon: "🔬" },
     { id: "cases", label: "কেস", icon: "📋" },
     { id: "learn", label: "শিখুন", icon: "📖" },
@@ -8409,8 +8411,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
     setActiveTab(destination);
   };
   const feedbackContext =
-    activeTab === "risk"
-      ? "Risk Radar"
+    activeTab === "prevent"
+      ? "Prevention, 14-category Risk & IPM"
       : activeTab === "diagnose"
       ? step === 2
         ? "Diagnosis Report"
@@ -8674,6 +8676,29 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               )}
 
               {/* ── PREVENT tab — preventive crop-health management (Pillar 3) ── */}
+              {activeTab === "prevent" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, animation: "fadeIn .3s ease" }}>
+                  <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 14, padding: 14 }}>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: C.primaryDark, marginBottom: 4 }}>
+                      🛡️ প্রতিরোধ, আবহাওয়া ঝুঁকি ও IPM
+                    </div>
+                    <div style={{ fontSize: 11, color: C.textMuted, lineHeight: 1.6 }}>
+                      ১৪টি আবহাওয়া-ঝুঁকি বিভাগ, রোগ-পোকার পূর্বাভাস, মাঠ পর্যবেক্ষণ এবং IPM-প্রথম ব্যবস্থাপনা একই কর্মপ্রবাহে।
+                      ঝুঁকি স্কোর সম্ভাবনা নয়; মাঠে যাচাই আবশ্যক।
+                    </div>
+                  </div>
+                  {protectionCase ? (
+                    <RiskRadarWidget key={protectionCase.id} C={C} case={protectionCase} />
+                  ) : (
+                    <div style={{ background: C.bgMuted, border: `1px solid ${C.border}`, borderRadius: 12, padding: 12, fontSize: 12, color: C.textMuted, lineHeight: 1.6 }}>
+                      পূর্ণ ১৪-বিভাগের মাঠভিত্তিক ঝুঁকি মূল্যায়নের জন্য আগে শনাক্তকরণ থেকে একটি ফসলের কেস সংরক্ষণ করুন। কোনো কেস না থাকলে ঝুঁকির স্কোর অনুমান করে দেখানো হবে না।
+                    </div>
+                  )}
+                  <PreventionPlan
+                    C={C}
+                    crop={protectionCase?.crop || form.crop}
+                    district={protectionCase?.district || form.district || locationName}
+                    weatherRisk={weather ? `বর্তমান আবহাওয়া: ${weather.temp}°C, আর্দ্রতা ${weather.humidity}%, ২৪ ঘণ্টার বৃষ্টি ${weather.rain24h} মিমি, বাতাস ${weather.windSpeed} কিমি/ঘণ্টা। এই snapshot পূর্ণ forecast নয়।` : null}
               {activeTab === "risk" && (
                 <div style={{ animation: "fadeIn .3s ease" }}>
                   <RiskProfileWorkspace
@@ -8700,6 +8725,15 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                     onOpenProtection={() => setActiveTab("pesticide")}
                     profileKey={visitorId || "this-device"}
                   />
+                  <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 14, padding: 12 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: C.primaryDark, marginBottom: 3 }}>
+                      🧪 নিবন্ধিত বালাইনাশক ও ব্যবহার যাচাই
+                    </div>
+                    <div style={{ fontSize: 11, color: C.textMuted, lineHeight: 1.5 }}>
+                      IPM, সাংস্কৃতিক ও জৈবিক ব্যবস্থা আগে বিবেচনা করুন। রাসায়নিক কেবল প্রয়োজন হলে এবং নিবন্ধন, লক্ষ্য ফসল, MoA, PHI/REI ও আবহাওয়া যাচাই সাপেক্ষে।
+                    </div>
+                  </div>
+                  <AgriChemApp />
                 </div>
               )}
 
@@ -10878,24 +10912,6 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
               {activeTab === "library" && <SavedReportsView history={history} setHistory={setHistory} C={C} />}
 
               {/* ── PESTICIDE GUIDE (embedded, previously an external link) ── */}
-              {activeTab === "pesticide" && (
-                <>
-                  {protectionCase && (
-                    <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.border}` }}>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: C.primaryDark, marginBottom: 6 }}>
-                        🛡️ সক্রিয় কেসের সুরক্ষা সিদ্ধান্ত (৫-গেট ইঞ্জিন)
-                      </div>
-                      <div style={{ fontSize: 11, color: C.textMuted, marginBottom: 8 }}>
-                        {protectionCase.crop || "ফসল"} · {protectionCase.district || "অবস্থান"} ·{" "}
-                        {protectionCase.confirmationStatus === "confirmed" ? "রোগ নিশ্চিত" : "রোগ নিশ্চিত নয়"}
-                      </div>
-                      <RiskRadarWidget C={C} case={protectionCase} />
-                    </div>
-                  )}
-                  <AgriChemApp />
-                </>
-              )}
-
               {/* ── HISTORY ──────────────────────────────────────────────── */}
 
             </div>
