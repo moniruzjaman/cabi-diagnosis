@@ -268,7 +268,9 @@ export default function IdentificationWorkspace({ C }) {
           setGeoStatus("GPS পাওয়া গেছে। ইন্টারনেট না থাকায় এলাকার নাম নেওয়া যায়নি।");
         }
         if (addBoundaryPoint) {
-          setGeoStatus(`GPS বিন্দু যোগ হয়েছে (±${point.accuracy} মিটার)। সীমানার পরবর্তী স্থানে গিয়ে আবার যোগ করুন।`);
+          setGeoStatus(
+            `GPS বিন্দু যোগ হয়েছে (±${point.accuracy} মিটার)। সীমানার পরবর্তী স্থানে গিয়ে আবার যোগ করুন।`,
+          );
         }
       },
       (error) =>
