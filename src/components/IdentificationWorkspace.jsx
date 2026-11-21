@@ -262,9 +262,9 @@ export default function IdentificationWorkspace({ C }) {
         if (addBoundaryPoint) {
           setVertices((current) => [...current, { lat: point.lat, lng: point.lng }]);
         }
-        if (navigator.onLine) {
+        if (!addBoundaryPoint && navigator.onLine) {
           await reverseGeocode(point);
-        } else {
+        } else if (!navigator.onLine) {
           setGeoStatus("GPS পাওয়া গেছে। ইন্টারনেট না থাকায় এলাকার নাম নেওয়া যায়নি।");
         }
         if (addBoundaryPoint) {
