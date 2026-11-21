@@ -22,6 +22,14 @@ The app is production-hardened with zero-trust API security, HMAC request signin
 
 ---
 
+## KrishiAI learning ecosystem
+
+- **Operational diagnosis and field identification (this app):** canonical workspace for diagnosis, IPM, risk/protection and field geofence workflows.
+- **[Diagnostic Field Guide](https://github.com/moniruzjaman/diagnostic-field-guide):** Bangla offline reading/listening reference; original translated book content and photographs remain in that repository under its documented CC BY-NC terms.
+- **[Diagnosis Assistant](https://github.com/moniruzjaman/diagnosis-assistant):** separate guided visual training and practice surface. Its heuristic/AI output is educational and is not merged automatically into operational diagnosis records.
+
+The Identification workspace uses locally bundled visual references and locally saved field polygons. Map tiles and reverse geocoding are online services; GPS point capture and geofence checks can still be used offline when device location is available. See [offline field QA](docs/IDENTIFICATION_OFFLINE_QA.md).
+
 ## Key Features
 
 ### Learning-Focused Design
