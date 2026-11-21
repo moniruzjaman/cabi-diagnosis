@@ -442,10 +442,17 @@ export default function IdentificationWorkspace({ C }) {
               <button onClick={captureGps} style={{ ...baseButton, background: "#e8f5ed" }}>
                 ◎ আমার GPS নিন
               </button>
-              <button onClick={() => captureGps({ addBoundaryPoint: true })} style={{ ...baseButton, background: "#e8f5ed" }}>
+              <button
+                onClick={() => captureGps({ addBoundaryPoint: true })}
+                style={{ ...baseButton, background: "#e8f5ed" }}
+              >
                 📍 GPS থেকে সীমানার বিন্দু যোগ করুন
               </button>
-              <button onClick={() => setVertices((current) => current.slice(0, -1))} disabled={vertices.length === 0} style={baseButton}>
+              <button
+                onClick={() => setVertices((current) => current.slice(0, -1))}
+                disabled={vertices.length === 0}
+                style={baseButton}
+              >
                 ↶ শেষ বিন্দু বাদ
               </button>
               <button onClick={() => setVertices([])} style={baseButton}>
