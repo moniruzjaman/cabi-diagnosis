@@ -238,11 +238,12 @@ export default function IdentificationWorkspace({ C }) {
     }
   }, [gps, mapReady]);
 
-  const captureGps = () => {
+  const captureGps = (options = {}) => {
     if (!navigator.geolocation) {
       setGeoStatus("এই ডিভাইসে GPS সুবিধা নেই।");
       return;
     }
+    const addBoundaryPoint = options.addBoundaryPoint === true;
     setGeoStatus("GPS অবস্থান নেওয়া হচ্ছে…");
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -258,7 +259,17 @@ export default function IdentificationWorkspace({ C }) {
         setGps(point);
         const map = mapInstanceRef.current;
         if (map) map.setView([point.lat, point.lng], 16);
-        await reverseGeocode(point);
+        if (addBoundaryPoint) {
+          setVertices((current) => [...current, { lat: point.lat, lng: point.lng }]);
+        }
+        if (navigator.onLine) {
+          await reverseGeocode(point);
+        } else {
+          setGeoStatus("GPS পাওয়া গেছে। ইন্টারনেট না থাকায় এলাকার নাম নেওয়া যায়নি।");
+        }
+        if (addBoundaryPoint) {
+          setGeoStatus(`GPS বিন্দু যোগ হয়েছে (±${point.accuracy} মিটার)। সীমানার পরবর্তী স্থানে গিয়ে আবার যোগ করুন।`);
+        }
       },
       (error) =>
         setGeoStatus(
@@ -423,12 +434,22 @@ export default function IdentificationWorkspace({ C }) {
             <div style={{ fontSize: 10.5, color: "#64746b", margin: "6px 0 10px" }}>
               {mapStatus} · মানচিত্র: © OpenStreetMap contributors
             </div>
+            <p style={{ fontSize: 11, lineHeight: 1.65, color: "#52645a", margin: "0 0 9px" }}>
+              মানচিত্র বা ইন্টারনেট না থাকলেও GPS চালু থাকলে ক্ষেতের চারপাশে হাঁটুন এবং প্রতিটি কোণ/বাঁকে
+              “GPS থেকে সীমানার বিন্দু যোগ করুন” চাপুন। অন্তত ৩টি নির্ভুল বিন্দু নিয়ে ক্ষেত সংরক্ষণ করা যাবে।
+            </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
               <button onClick={captureGps} style={{ ...baseButton, background: "#e8f5ed" }}>
                 ◎ আমার GPS নিন
               </button>
+              <button onClick={() => captureGps({ addBoundaryPoint: true })} style={{ ...baseButton, background: "#e8f5ed" }}>
+                📍 GPS থেকে সীমানার বিন্দু যোগ করুন
+              </button>
+              <button onClick={() => setVertices((current) => current.slice(0, -1))} disabled={vertices.length === 0} style={baseButton}>
+                ↶ শেষ বিন্দু বাদ
+              </button>
               <button onClick={() => setVertices([])} style={baseButton}>
-                ↶ বিন্দু মুছুন
+                সব বিন্দু মুছুন
               </button>
               <button onClick={saveField} style={{ ...baseButton, background: "#006a4e", color: "#fff" }}>
                 ক্ষেত সংরক্ষণ করুন
