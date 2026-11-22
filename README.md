@@ -71,6 +71,7 @@ The app is production-hardened with zero-trust API security, HMAC request signin
 - **Social Sharing** — Share diagnoses via Facebook, LinkedIn, and more
 - **Visitor Analytics** — Usage tracking for improvement insights
 - **Feedback System** — User feedback collection with email notification via MailChannels
+- **Offline-First Case Sync** — crop-health case metadata syncs to the Turso `crop_health_cases` table when online; photos and precise GPS coordinates never leave the device (client + server whitelists)
 
 ---
 

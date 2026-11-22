@@ -23,8 +23,20 @@
 
 import crypto from "crypto";
 import { handleCORSPreflight, setCORSHeaders } from "./_lib/cors.js";
-import { createRateLimiter, feedbackLimiter, analyticsLimiter, presenceLimiter } from "./_lib/rateLimit.js";
-import { parseBody, validateVisitorId, validateSection, validateFeedback } from "./_lib/validation.js";
+import {
+  createRateLimiter,
+  feedbackLimiter,
+  analyticsLimiter,
+  presenceLimiter,
+  casesLimiter,
+} from "./_lib/rateLimit.js";
+import {
+  parseBody,
+  validateVisitorId,
+  validateSection,
+  validateFeedback,
+  validateCaseSyncRecord,
+} from "./_lib/validation.js";
 import { escapeHtml, escapeHtmlWithBr, sanitizeEmail } from "./_lib/htmlEscape.js";
 import { requireSignedRequest, verifyRequestToken } from "./_lib/requestSigning.js";
 import {
@@ -42,6 +54,7 @@ import {
   cleanupStalePresence,
   getDiseaseStats,
   hasTurso,
+  saveCaseRecord,
 } from "./_lib/turso.js";
 
 const RESOURCE_HANDLERS = {
@@ -50,6 +63,7 @@ const RESOURCE_HANDLERS = {
   presence: presenceResource,
   diagnoses: diagnosesResource,
   analytics: analyticsResource,
+  cases: casesResource,
 };
 
 export default async function handler(req, res) {
@@ -603,4 +617,54 @@ async function handleAnalyticsGet(req, res) {
     console.error("Analytics GET error:", err.message);
     return res.status(500).json({ error: "Failed to fetch analytics" });
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// cases — POST /api/cases (crop-health case metadata sync)
+//
+// Local-first cases flush metadata-only sync records here (the offline
+// queue lives in src/intelligence/syncQueue.js). Photos, thumbnails and
+// precise GPS coordinates NEVER reach this handler — the client whitelist
+// (syncQueue.sanitizePayload) and the server whitelist
+// (validation.validateCaseSyncRecord) both enforce metadata-only payloads.
+// Idempotent by client_record_id, so offline retries never duplicate rows.
+// ═══════════════════════════════════════════════════════════════════
+
+async function casesResource(req, res) {
+  if (handleCORSPreflight(req, res, "POST, OPTIONS")) return;
+  setCORSHeaders(req, res, "POST, OPTIONS");
+
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
+  if (!hasTurso()) {
+    return res.status(503).json({ error: "Database not configured", persistence: "none" });
+  }
+
+  if (requireSignedRequest(req, res)) return;
+  if (casesLimiter(req, res)) return;
+
+  const body = parseBody(req);
+  if (!body || typeof body !== "object") {
+    return res.status(400).json({ error: "Invalid JSON body" });
+  }
+
+  const { record, error } = validateCaseSyncRecord(body);
+  if (error) return res.status(400).json({ error });
+
+  // Identity stays hashed — same privacy pattern as outbreak reporter_hash.
+  const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.headers["x-real-ip"] || "unknown";
+  const visitorHash = crypto.createHash("sha256").update(ip).digest("hex").slice(0, 16);
+
+  const result = await saveCaseRecord({ ...record, visitorHash });
+  if (result.reason === "database-error") {
+    return res.status(500).json({ error: "Failed to save case record" });
+  }
+
+  return res.status(200).json({
+    ok: true,
+    recordId: record.recordId,
+    saved: result.saved,
+    duplicate: result.duplicate,
+    persistence: "turso",
+  });
 }

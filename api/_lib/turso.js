@@ -213,6 +213,34 @@ export async function ensureSchema() {
       CREATE INDEX IF NOT EXISTS idx_users_google_sub ON users(google_sub)
     `);
 
+    // ─── Crop health case metadata sync ─────────────────────────────
+    // Local-first cases (src/data/cropHealthCases.js) flush metadata-only
+    // sync records here via POST /api/community?resource=cases. Photos,
+    // thumbnails and precise GPS coordinates are NEVER sent — the client
+    // whitelist (syncQueue.sanitizePayload) and the server whitelist
+    // (validation.validateCaseSyncRecord) both enforce that. Idempotent by
+    // client_record_id so offline retries never create duplicates.
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS crop_health_cases (
+        client_record_id TEXT PRIMARY KEY,
+        case_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        crop TEXT DEFAULT '',
+        district TEXT DEFAULT '',
+        status TEXT DEFAULT '',
+        payload TEXT DEFAULT '{}',
+        visitor_hash TEXT DEFAULT '',
+        client_created_at TEXT,
+        synced_at TEXT DEFAULT (datetime('now'))
+      )
+    `);
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_chc_case_id ON crop_health_cases(case_id)
+    `);
+    await db.execute(`
+      CREATE INDEX IF NOT EXISTS idx_chc_type ON crop_health_cases(type)
+    `);
+
     // Ensure analytics row exists
     await db.execute(`
       INSERT OR IGNORE INTO analytics_state (id) VALUES ('main')
@@ -675,6 +703,51 @@ export async function getOutbreaks(filters = {}) {
   } catch (err) {
     console.error("Turso getOutbreaks error:", err.message);
     return [];
+  }
+}
+
+// ─── Crop health case metadata sync ─────────────────────────────
+
+/**
+ * Store one metadata-only crop-health case sync record.
+ * Idempotent: re-posting the same client_record_id is a no-op (duplicate),
+ * so the client's offline retry queue can never create duplicate rows.
+ * @param {{recordId: string, caseId: string, type: string, crop?: string,
+ *          district?: string, status?: string, payload?: object,
+ *          visitorHash?: string, createdAt?: string|null}} entry
+ * @returns {Promise<{saved: boolean, duplicate: boolean, reason?: string}>}
+ */
+export async function saveCaseRecord(entry) {
+  const db = getTursoClient();
+  if (!db) return { saved: false, duplicate: false, reason: "no-database" };
+
+  try {
+    await ensureSchema();
+    // Extracted query columns are derived from the (server-whitelisted)
+    // payload so hot queries never need to JSON-parse the payload column.
+    const payload = entry.payload || {};
+    const result = await db.execute({
+      sql: `INSERT INTO crop_health_cases
+              (client_record_id, case_id, type, crop, district, status, payload, visitor_hash, client_created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(client_record_id) DO NOTHING`,
+      args: [
+        entry.recordId,
+        entry.caseId,
+        entry.type,
+        typeof payload.crop === "string" ? payload.crop : "",
+        typeof payload.district === "string" ? payload.district : "",
+        typeof payload.status === "string" ? payload.status : "",
+        JSON.stringify(payload),
+        entry.visitorHash || "",
+        entry.createdAt || null,
+      ],
+    });
+    const saved = Number(result.rowsAffected) > 0;
+    return { saved, duplicate: !saved };
+  } catch (err) {
+    console.error("Turso saveCaseRecord error:", err.message);
+    return { saved: false, duplicate: false, reason: "database-error" };
   }
 }
 

@@ -46,6 +46,28 @@ try {
   const rs = await db.execute("SELECT 1 AS ok, sqlite_version() AS version");
   const row = rs.rows[0];
   console.log(`\n✓ Client created and connected. SELECT 1 → ${row.ok}, sqlite_version() → ${row.version}`);
+
+  // Read-only schema inventory — reports which expected tables exist.
+  // ensureSchema() (api/_lib/turso.js) creates these lazily on first API
+  // call, so "missing" here is a heads-up to run scripts/init-turso.mjs,
+  // not an error.
+  const EXPECTED_TABLES = [
+    "analytics_state",
+    "market_prices",
+    "feedback_entries",
+    "presence_log",
+    "diagnoses",
+    "outbreak_reports",
+    "users",
+    "crop_health_cases",
+  ];
+  const tables = await db.execute("SELECT name FROM sqlite_master WHERE type = 'table'");
+  const existing = new Set(tables.rows.map((r) => r.name));
+  const missing = EXPECTED_TABLES.filter((t) => !existing.has(t));
+  console.log(`  Expected tables present: ${EXPECTED_TABLES.length - missing.length}/${EXPECTED_TABLES.length}`);
+  if (missing.length > 0) {
+    console.log(`  Not created yet (ensureSchema()/init-turso.mjs will add them): ${missing.join(", ")}`);
+  }
   console.log("  The existing Turso/libsql configuration is functional.");
   process.exit(0);
 } catch (err) {
