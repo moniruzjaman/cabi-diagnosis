@@ -59,7 +59,7 @@
 
 ## 6. Database changes
 
-**None required** (local-first cases; documented decision). If server sync is later wanted, the path is: extend `community.js` with a `cases` resource (no new function needed) and add a `crop_health_cases` table in `ensureSchema()`. Documented in `docs/six-pillar-architecture.md`.
+Cases remain **local-first** — the device copy is always the source of truth and works fully offline. Metadata-only sync to the server is now **implemented** (was "none required / documented decision"): the offline sync queue (`src/intelligence/syncQueue.js`) flushes records to a `cases` resource inside the existing `community.js` function (no new serverless function — Hobby cap respected), which writes an idempotent (`client_record_id` primary key) row into a new `crop_health_cases` table created by `ensureSchema()`. Photos, thumbnails and precise GPS coordinates are never synced — enforced client-side (`syncQueue.sanitizePayload`) and server-side (`validateCaseSyncRecord` whitelist). Covered by `src/intelligence/__tests__/caseSyncApi.test.mjs` (real handler + real SQLite via libsql `file:` URL).
 
 ## 7. Technical risks & dependencies
 

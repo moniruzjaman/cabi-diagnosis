@@ -7,11 +7,14 @@
 // (delay = 2^attempts seconds), up to MAX_ATTEMPTS (5) before it is
 // marked terminally 'failed'. retryFailed() re-queues failed records.
 //
-// SCAFFOLD NOTE: there is no backend yet, so processQueue() marks every
-// pending record synced after a 100 ms mock delay. This keeps the offline
-// contract honest: data is captured locally first, and the queue tracks
-// sync state so a real backend can be dropped in later without changing
-// the component contract.
+// Backend integration: processQueue() flushes pending records to
+// POST /api/community?resource=cases (rewritten from /api/cases), which
+// stores them in the Turso `crop_health_cases` table (idempotent by
+// client_record_id). The transport carries METADATA ONLY — photos,
+// thumbnails and precise GPS coordinates never leave the device
+// (sanitizePayload whitelist below; the server re-whitelists).
+// A transport can be injected via setSyncTransport() for tests or
+// alternative backends without changing the component contract.
 //
 // Original design. Offline-sync state machine + exponential backoff are
 // standard engineering patterns. No code ported from any repository.
@@ -21,11 +24,26 @@ import "./auditTypes.js"; // pull in JSDoc typedefs for tooling
 
 const SYNC_QUEUE_KEY = "udh-sync-queue-v1";
 const MAX_ATTEMPTS = 5;
-const MOCK_DELAY_MS = 100; // scaffold only — see SCAFFOLD NOTE above
+const MAX_QUEUE = 500; // unbounded localStorage growth guard
+const CASES_ENDPOINT = "/api/community?resource=cases";
+
+// Metadata-only whitelist — mirrors validateCaseSyncRecord() on the server.
+// Anything not listed here (photos, thumbnails, lat/lon, …) never syncs.
+export const PAYLOAD_WHITELIST = [
+  "crop",
+  "variety",
+  "district",
+  "upazila",
+  "growthStage",
+  "status",
+  "severity",
+  "symptomSummary",
+];
 
 const SYNC_LIMITATIONS = [
-  "এখনও কোনো ব্যাকএন্ড নেই — সিঙ্ক সফল হয়েছে হিসাবে স্ক্যাফোল্ড দেখানো হচ্ছে।",
+  "সিঙ্ক কেবল মেটাডেটা — ছবি, থাম্বনেইল বা সঠিক GPS কো-অর্ডিনেট কখনও আপলোড হয় না।",
   "ব্যাকঅফ কেবল ক্লায়েন্ট-সাইডে — সার্ভারের সত্যিকারের লোড বা রেট-লিমিট বিবেচনা করে না।",
+  "সার্ভার অ্যাক্সেসযোগ্য না হলে রেকর্ড ডিভাইসেই থাকে — MAX_ATTEMPTS পার হলে 'failed' হয় এবং ম্যানুয়াল সিঙ্ক দিয়ে আবার চেষ্টা করা যায়।",
 ];
 
 // ─── IDs & storage ───────────────────────────────────────────────────────────
@@ -70,10 +88,106 @@ export function computeBackoffDelay(attempts) {
   return 2 ** n;
 }
 
+// ─── Payload sanitisation (privacy) ──────────────────────────────────────────
+
+/**
+ * Copies only whitelisted scalar metadata fields from a payload.
+ * Photos, thumbnails, base64 blobs and precise GPS coordinates are never
+ * copied, and strings are hard-capped at 300 chars. This runs on every
+ * record BEFORE it is handed to the transport — the server applies the
+ * same whitelist again (defence in depth).
+ * @param {object} payload
+ * @returns {object} metadata-only payload
+ */
+export function sanitizePayload(payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return {};
+  const out = {};
+  for (const key of PAYLOAD_WHITELIST) {
+    const value = payload[key];
+    if (value === undefined || value === null) continue;
+    if (typeof value === "string") {
+      out[key] = value.slice(0, 300);
+    } else if (typeof value === "number" && Number.isFinite(value)) {
+      out[key] = value;
+    } else if (typeof value === "boolean") {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+// ─── Transport (real backend; injectable for tests) ──────────────────────────
+
+let transport = null; // when set, used instead of defaultTransport
+
+/**
+ * Inject a custom sync transport (used by tests to avoid network I/O).
+ * @param {((record: object) => Promise<object>) | null} fn
+ */
+export function setSyncTransport(fn) {
+  transport = typeof fn === "function" ? fn : null;
+}
+
+// Signing token — same mechanism as postJson()/signedFetch() in App.jsx:
+// GET /api/signing-token → X-Request-Signature header. Best-effort; in
+// development the API accepts unsigned POSTs, and in production a failed
+// token fetch simply surfaces as a retriable markFailed().
+let _signingToken = null;
+let _signingTokenPromise = null;
+
+async function getSigningToken() {
+  if (_signingToken) return _signingToken;
+  if (_signingTokenPromise) return _signingTokenPromise;
+  _signingTokenPromise = (async () => {
+    try {
+      const res = await fetch("/api/signing-token");
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.token) {
+          _signingToken = data.token;
+          return _signingToken;
+        }
+      }
+    } catch {
+      /* best-effort — retried on the next queue flush */
+    }
+    return null;
+  })();
+  const promise = _signingTokenPromise;
+  promise.finally(() => {
+    _signingTokenPromise = null;
+  });
+  return promise;
+}
+
+async function defaultTransport(record) {
+  const token = await getSigningToken();
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers["X-Request-Signature"] = token;
+
+  const res = await fetch(CASES_ENDPOINT, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      recordId: record.id,
+      caseId: record.caseId,
+      type: record.type,
+      // Idempotent second pass — processQueue already sanitised; kept here
+      // as defence in depth (the server whitelists a third time).
+      payload: sanitizePayload(record.payload),
+      createdAt: record.createdAt,
+    }),
+  });
+  if (!res.ok) throw new Error(`sync HTTP ${res.status}`);
+  return res.json().catch(() => ({}));
+}
+
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
  * Enqueue a sync record. Assigns an id + initial state if missing.
+ * The queue is capped at MAX_QUEUE records — when full, the oldest
+ * already-synced record is dropped first, otherwise the oldest record.
  * @param {{id?: string, caseId: string, type: string, payload: object}} record
  * @returns {import('./auditTypes.js').AuditLogEntry & {syncStatus: string}} the stored record
  */
@@ -91,6 +205,10 @@ export function enqueue(record) {
     createdAt: nowIso(),
   };
   q.push(entry);
+  while (q.length > MAX_QUEUE) {
+    const syncedIdx = q.findIndex((r) => r.syncStatus === "synced");
+    q.splice(syncedIdx !== -1 ? syncedIdx : 0, 1);
+  }
   writeQueue(q);
   return entry;
 }
@@ -101,6 +219,15 @@ export function enqueue(record) {
  */
 export function getPending() {
   return readQueue().filter((r) => r.syncStatus === "pending");
+}
+
+/**
+ * A read-only copy of the whole queue (all statuses). Used to reconcile
+ * per-case sync status after a flush (see cropHealthCases.flushCaseSync).
+ * @returns {object[]}
+ */
+export function getQueue() {
+  return readQueue();
 }
 
 /**
@@ -197,23 +324,33 @@ export function retryFailed() {
 }
 
 /**
- * SCFFOLD: process the pending queue. With no backend, each pending record
- * is marked syncing then synced after a 100 ms mock delay. Returns the count
- * of records processed. Replace the mock delay with a real network call when
- * a backend exists.
- * @returns {Promise<number>}
+ * Process the pending queue against the real backend: each pending record
+ * is handed to the transport (injected or default POST /api/cases), then
+ * marked synced on success or failed-with-backoff on error. Records are
+ * processed one at a time (sequential awaits are intentional). A flush is
+ * skipped entirely while the browser reports navigator.online === false,
+ * so going offline never burns retry attempts.
+ * @returns {Promise<number>} records processed (0 when offline)
  */
 export async function processQueue() {
+  if (typeof navigator !== "undefined" && navigator.online === false) return 0;
   const pending = getPending();
+  let processed = 0;
   for (const r of pending) {
     markSyncing(r.id);
-    // Scaffold mock delay (no real backend). Sequential awaits are
-    // intentional — each record is processed one at a time.
-    await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
-    markSynced(r.id);
+    try {
+      const send = transport || defaultTransport;
+      // Privacy: sanitise at the QUEUE level so every transport — injected
+      // or default — only ever receives metadata (no photos/GPS).
+      await send({ ...r, payload: sanitizePayload(r.payload) });
+      markSynced(r.id);
+    } catch (err) {
+      markFailed(r.id, err?.message ? String(err.message).slice(0, 200) : "sync failed");
+    }
+    processed += 1;
   }
-  return pending.length;
+  return processed;
 }
 
 export const SYNC_MODEL_LIMITATIONS = SYNC_LIMITATIONS;
-export { MAX_ATTEMPTS };
+export { MAX_ATTEMPTS, MAX_QUEUE };

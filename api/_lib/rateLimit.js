@@ -113,3 +113,4 @@ export const diagnoseLimiter = createRateLimiter({ windowMs: 60_000, maxRequests
 export const feedbackLimiter = createRateLimiter({ windowMs: 60_000, maxRequests: 5 });
 export const analyticsLimiter = createRateLimiter({ windowMs: 60_000, maxRequests: 30 });
 export const presenceLimiter = createRateLimiter({ windowMs: 60_000, maxRequests: 30 });
+export const casesLimiter = createRateLimiter({ windowMs: 60_000, maxRequests: 20 });

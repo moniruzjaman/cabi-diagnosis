@@ -4,6 +4,7 @@
  */
 
 import { sanitizeInput, detectPromptInjection, validateSymptoms } from "../../src/utils/security.js";
+import { escapeHtml } from "./htmlEscape.js";
 
 /**
  * Safely parses a request body (handles string or object).
@@ -135,4 +136,71 @@ export function validateFeedback(body) {
     summary: String(body.summary || "").slice(0, 2000),
     visitorId: String(body.visitorId || "").slice(0, 120),
   };
+}
+
+/**
+ * Case-sync record validation for POST /api/community?resource=cases.
+ *
+ * Crop-health cases are LOCAL-FIRST: photos, thumbnails and precise GPS
+ * coordinates must never reach the server. This validator therefore copies
+ * ONLY whitelisted scalar metadata fields into the stored record — anything
+ * else in the payload (including media and location keys) is silently
+ * dropped, and strings are hard-capped at 300 chars so no base64 image can
+ * smuggle through.
+ *
+ * @param {object} body - parsed request body
+ * @returns {{record?: object, error?: string}}
+ */
+const CASE_SYNC_TYPES = ["case_created", "observation", "treatment", "evaluation"];
+const CASE_SYNC_PAYLOAD_KEYS = [
+  "crop",
+  "variety",
+  "district",
+  "upazila",
+  "growthStage",
+  "status",
+  "severity",
+  "symptomSummary",
+];
+const CASE_SYNC_ID_RE = /^[\w:.-]+$/;
+
+export function validateCaseSyncRecord(body) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return { error: "Invalid body" };
+  }
+
+  const recordId = typeof body.recordId === "string" ? body.recordId.trim() : "";
+  if (!recordId || recordId.length > 64 || !CASE_SYNC_ID_RE.test(recordId)) {
+    return { error: "Invalid recordId" };
+  }
+
+  const caseId = typeof body.caseId === "string" ? body.caseId.trim() : "";
+  if (!caseId || caseId.length > 64 || !CASE_SYNC_ID_RE.test(caseId)) {
+    return { error: "Invalid caseId" };
+  }
+
+  const type = typeof body.type === "string" ? body.type.trim() : "";
+  if (!CASE_SYNC_TYPES.includes(type)) {
+    return { error: "Invalid type" };
+  }
+
+  const rawPayload =
+    body.payload && typeof body.payload === "object" && !Array.isArray(body.payload) ? body.payload : {};
+  const payload = {};
+  for (const key of CASE_SYNC_PAYLOAD_KEYS) {
+    const value = rawPayload[key];
+    if (value === undefined || value === null) continue;
+    if (typeof value === "string") {
+      payload[key] = escapeHtml(value.slice(0, 300));
+    } else if (typeof value === "number" && Number.isFinite(value)) {
+      payload[key] = value;
+    } else if (typeof value === "boolean") {
+      payload[key] = value;
+    }
+    // Objects/arrays are never copied — metadata only.
+  }
+
+  const createdAt = typeof body.createdAt === "string" && body.createdAt.length <= 40 ? body.createdAt : null;
+
+  return { record: { recordId, caseId, type, payload, createdAt } };
 }

@@ -36,6 +36,10 @@
       "destination": "/api/community?resource=analytics"
     },
     {
+      "source": "/api/cases",
+      "destination": "/api/community?resource=cases"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

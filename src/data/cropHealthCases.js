@@ -21,10 +21,14 @@
  *       evaluation_results  → case.evaluation
  *       learning_insights   → module-level learning insights registry
  *
- * If server sync is added later, extend api/community.js with a "cases"
- * resource and add a crop_health_cases table in ensureSchema() — do NOT
- * create a new serverless function (Vercel Hobby 12-function cap).
+ * Server sync: case METADATA (never photos/GPS) is flushed by the offline
+ * sync queue to POST /api/cases → api/community.js "cases" resource →
+ * Turso crop_health_cases table (idempotent by client_record_id). This
+ * extends the existing serverless function — no new deploy target
+ * (Vercel Hobby 12-function cap).
  */
+
+import { enqueue, getQueue, processQueue } from "../intelligence/syncQueue.js";
 
 const UDH_CASES_KEY = "udh-crop-cases-v1";
 const UDH_INSIGHTS_KEY = "udh-learning-insights-v1";
@@ -51,6 +55,73 @@ function safeParse(json, fallback) {
   } catch {
     return fallback;
   }
+}
+
+// ─── Case metadata sync (local-first; metadata only) ─────────────────────────
+
+/**
+ * Metadata-only sync payload for a case. Deliberately EXCLUDES location
+ * (precise GPS) and any image data — those never leave the device; the
+ * sync queue's sanitizePayload whitelist and the server validator enforce
+ * the same contract again.
+ */
+function caseSyncPayload(c) {
+  return {
+    crop: c.crop || "",
+    variety: c.variety || "",
+    district: c.district || "",
+    upazila: c.upazila || "",
+    growthStage: c.growthStage || "",
+    status: c.status || "",
+    severity: c.observations?.length ? c.observations[c.observations.length - 1].severity : "",
+    symptomSummary: (c.diagnosisEvidence?.keySymptoms || []).slice(0, 5).join(", "),
+  };
+}
+
+/** Enqueue a metadata sync record + mark the case as queued. Never throws. */
+function queueCaseSync(caseObj, type) {
+  try {
+    enqueue({ caseId: caseObj.id, type, payload: caseSyncPayload(caseObj) });
+    setSyncStatus(caseObj.id, "pending");
+  } catch {
+    // Sync bookkeeping must never block a local save (offline-first).
+  }
+}
+
+const CASE_STATUS_FROM_QUEUE = { pending: "pending", syncing: "pending", synced: "synced", failed: "failed" };
+
+/**
+ * Flush the offline sync queue to the backend and reconcile each case's
+ * own syncStatus with the queue's ground truth. Safe to call offline —
+ * processQueue() no-ops while navigator.online is false.
+ * @returns {Promise<number>} records processed (0 when offline)
+ */
+export async function flushCaseSync() {
+  let processed = 0;
+  try {
+    processed = await processQueue();
+  } catch {
+    return 0;
+  }
+
+  const latest = new Map();
+  for (const record of getQueue()) {
+    if (record.caseId) latest.set(record.caseId, record.syncStatus);
+  }
+
+  const cases = loadCases();
+  let changed = false;
+  for (const c of cases) {
+    const queueStatus = latest.get(c.id);
+    if (!queueStatus) continue;
+    const mapped = CASE_STATUS_FROM_QUEUE[queueStatus] || "pending";
+    if (mapped !== c.syncStatus) {
+      c.syncStatus = mapped;
+      changed = true;
+    }
+  }
+  if (changed) saveCases(cases);
+  return processed;
 }
 
 export function loadCases() {
@@ -179,6 +250,8 @@ export function createCase(input = {}) {
   });
   cases.push(c);
   saveCases(cases);
+  // Sync producer — metadata only (photos and precise GPS stay local).
+  queueCaseSync(c, "case_created");
   return { case: c, cases };
 }
 
@@ -245,6 +318,7 @@ export function addObservation(caseId, obs = {}) {
     c.status = "monitoring";
   }
   saveCases(cases);
+  queueCaseSync(c, "observation");
   return c;
 }
 
@@ -293,6 +367,7 @@ export function addTreatment(caseId, t = {}) {
   });
   c.updatedAt = nowIso();
   saveCases(cases);
+  queueCaseSync(c, "treatment");
   return c;
 }
 
@@ -537,6 +612,7 @@ export function recordEvaluation(caseId, ev = {}) {
   c.status = ev.outcome === "recovered" ? "resolved" : ev.outcome === "failed" ? "closed" : "monitoring";
   c.updatedAt = nowIso();
   saveCases(cases);
+  queueCaseSync(c, "evaluation");
   return c;
 }
 

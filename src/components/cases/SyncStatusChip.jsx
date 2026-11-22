@@ -1,14 +1,17 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { getStats, retryFailed } from "../../intelligence/syncQueue.js";
+import { flushCaseSync } from "../../data/cropHealthCases.js";
 
 // ────────────────────────────────────────────────────────────────────────────
 // SyncStatusChip — a compact offline-sync status indicator.
 //
 // Reads syncQueue.getStats() and shows pending / synced / failed counts as
-// colour-coded chips. A "ম্যানুয়াল সিঙ্ক" button re-queues failed records
-// via retryFailed() and refreshes the counts. Stats are read once on mount
-// (lazy useState initialiser) and refreshed from the click handler — no
-// setState-in-effect, so no cascading renders.
+// colour-coded chips. The queue is flushed to the real backend
+// (POST /api/cases → Turso crop_health_cases) on mount, on window 'online'
+// events, and from the "ম্যানুয়াল সিঙ্ক" button (which also re-queues
+// failed records via retryFailed()). Stats are read once on mount (lazy
+// useState initialiser) and refreshed from event handlers only — no
+// setState-in-render, so no cascading renders.
 // ────────────────────────────────────────────────────────────────────────────
 
 const CHIP_STYLE = {
@@ -35,13 +38,35 @@ function readStats() {
 export default function SyncStatusChip({ C }) {
   const [stats, setStats] = useState(readStats);
 
+  // Flush once on mount and whenever connectivity returns. flushCaseSync
+  // is offline-safe (processQueue no-ops while navigator.online is false)
+  // and reconciles each case's syncStatus after the flush.
+  useEffect(() => {
+    let alive = true;
+    const flush = () => {
+      flushCaseSync()
+        .catch(() => {})
+        .finally(() => {
+          if (alive) setStats(readStats());
+        });
+    };
+    flush();
+    window.addEventListener("online", flush);
+    return () => {
+      alive = false;
+      window.removeEventListener("online", flush);
+    };
+  }, []);
+
   const handleManualSync = useCallback(() => {
     try {
       retryFailed();
     } catch {
-      // ignore — refresh still runs
+      // ignore — flush still runs
     }
-    setStats(readStats());
+    flushCaseSync()
+      .catch(() => {})
+      .finally(() => setStats(readStats()));
   }, []);
 
   const { pending, synced, failed } = stats;
@@ -72,17 +97,17 @@ export default function SyncStatusChip({ C }) {
 
       <button
         onClick={handleManualSync}
-        disabled={failed === 0}
+        disabled={failed === 0 && pending === 0}
         style={{
           fontSize: 10,
-          color: failed > 0 ? C.primary : C.textMuted,
+          color: failed > 0 || pending > 0 ? C.primary : C.textMuted,
           background: "none",
           border: "none",
-          cursor: failed > 0 ? "pointer" : "default",
+          cursor: failed > 0 || pending > 0 ? "pointer" : "default",
           padding: 0,
-          textDecoration: failed > 0 ? "underline" : "none",
+          textDecoration: failed > 0 || pending > 0 ? "underline" : "none",
         }}
-        title="ব্যর্থ রেকর্ড আবার সারিতে যোগ করুন"
+        title="ব্যর্থ বা অপেক্ষমাণ রেকর্ড এখনই সিঙ্ক করুন"
       >
         ম্যানুয়াল সিঙ্ক
       </button>
