@@ -21,8 +21,14 @@ import path from "path";
 // ─── Singleton Turso client ────────────────────────────────────
 let _tursoClient = null;
 
+export function getTursoUrl() {
+  // Vercel's Turso integration exposes TURSO_DB_URL; keep the documented
+  // TURSO_DATABASE_URL name supported for local and CI environments too.
+  return process.env.TURSO_DATABASE_URL || process.env.TURSO_DB_URL || "";
+}
+
 export function hasTurso() {
-  return !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN);
+  return !!(getTursoUrl() && process.env.TURSO_AUTH_TOKEN);
 }
 
 export function getTursoClient() {
@@ -30,7 +36,7 @@ export function getTursoClient() {
   if (!hasTurso()) return null;
 
   _tursoClient = createClient({
-    url: process.env.TURSO_DATABASE_URL,
+    url: getTursoUrl(),
     authToken: process.env.TURSO_AUTH_TOKEN,
   });
 
