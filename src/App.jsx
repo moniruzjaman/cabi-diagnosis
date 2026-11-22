@@ -26,6 +26,9 @@ import { getRegisteredProducts } from "./data/pesticideRegistry";
 import { CROP_REGISTRY as CROPS, CROP_FLAT } from "./data/cropRegistry.js";
 import SixPillarGrid from "./components/dashboard/SixPillarGrid.jsx";
 import JourneyProgress from "./components/JourneyProgress.jsx";
+// Atomic UI kit (UI/UX Enhancement Plan Phase 2) — aliased to avoid any
+// collision with this file's own SeverityBadge helper.
+import { ActionBlock as NextActionBlock, Badge as TokenBadge, OfflineBanner } from "./components/ui/index.js";
 import CaseManager from "./components/cases/CaseManager.jsx";
 import IdentificationWorkspace from "./components/IdentificationWorkspace.jsx";
 import PreventionPlan from "./components/cases/PreventionPlan.jsx";
@@ -85,10 +88,10 @@ import { initPerformanceMonitoring } from "./utils/performanceTelemetry";
 const GLOBAL_STYLE = `
   /* Fonts loaded via <link> in index.html for faster rendering */
   :root {
-    --c-primary: #006A4E;
-    --c-primary-light: #1a8a5e;
-    --c-primary-dark: #00553d;
-    --c-primary-x-dark: #002109;
+    --c-primary: #046A1A;
+    --c-primary-light: #2D9D14;
+    --c-primary-dark: #023E11;
+    --c-primary-x-dark: #011a08;
     --c-accent: #f59e0b;
     --c-accent-light: #fbbf24;
     --c-accent-dark: #d97706;
@@ -104,7 +107,7 @@ const GLOBAL_STYLE = `
     --c-border-focus: #1a8a5e;
     --c-success: #16a34a;
     --c-warning: #d97706;
-    --c-danger: #F42A41;
+    --c-danger: #E6010A;
     --c-blue: #2563eb;
     --c-shadow: 0 2px 8px rgba(0,0,0,0.06);
     --c-shadow-md: 0 4px 16px rgba(0,0,0,0.08);
@@ -159,65 +162,12 @@ if (typeof document !== "undefined" && !document.getElementById("ud-gs")) {
 }
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-// NOTE: C is now dynamic — set inside the main component based on darkMode state.
-// Static references to C outside the component (like SECTION_META) use the light theme defaults.
-const C_LIGHT = {
-  primary: "#006A4E",
-  primaryLight: "#1a8a5e",
-  primaryDark: "#00553d",
-  primaryXDark: "#002109",
-  accent: "#f59e0b",
-  accentLight: "#fbbf24",
-  accentDark: "#d97706",
-  bg: "#f4f6f8",
-  bgCard: "#ffffff",
-  bgMuted: "#f0f2f5",
-  bgHeader: "#ffffff",
-  bgNav: "#f0f2f5",
-  text: "#1a1d21",
-  textMuted: "#5f6672",
-  textLight: "#8e95a2",
-  border: "#e2e5ea",
-  borderFocus: "#1a8a5e",
-  success: "#16a34a",
-  warning: "#d97706",
-  danger: "#F42A41",
-  blue: "#2563eb",
-  shadow: "0 2px 8px rgba(0,0,0,0.06)",
-  shadowMd: "0 4px 16px rgba(0,0,0,0.08)",
-  shadowLg: "0 8px 32px rgba(0,0,0,0.12)",
-  heroGradient: "linear-gradient(135deg, #006A4E 0%, #0a8c54 50%, #16a34a 100%)",
-  game1: "#7c3aed",
-  game2: "#0891b2",
-  game3: "#ea580c",
-  // Tinted backgrounds — dark-mode compatible
-  bgDanger: "#fef2f2",
-  bgSuccess: "#f0fdf4",
-  bgWarning: "#fffbeb",
-  bgInfo: "#eff6ff",
-  bgBlue: "#f0f9ff",
-  bgPurple: "#faf5ff",
-  bgTeal: "#ecfeff",
-  bgOrange: "#fff7ed",
-  borderDanger: "#fecaca",
-  borderSuccess: "#bbf7d0",
-  borderWarning: "#fcd34d",
-  borderInfo: "#bfdbfe",
-  borderBlue: "#bae6fd",
-  borderPurple: "#e9d5ff",
-  borderTeal: "#a5f3fc",
-  borderOrange: "#fed7aa",
-  badgeSuccess: "#dcfce7",
-  badgeWarning: "#fef3c7",
-  textSuccess: "#14532d",
-  textDanger: "#991b1b",
-  textWarning: "#92400e",
-  textInfo: "#1e40af",
-  textBlue: "#0369a1",
-  textPurple: "#6b21a8",
-  textTeal: "#155e75",
-  textOrange: "#9a3412",
-};
+// C_LIGHT is derived from the single-source token module (data/themes.js)
+// so the static references (SECTION_META etc.) can never drift from the
+// runtime theme again — previously both files declared their own copies of
+// the palette and they had diverged (#006A4E vs #046A1A). C is still dynamic:
+// set inside the main component based on darkMode state.
+const C_LIGHT = { ...lightThemeFull };
 // Dynamic theme bridge — main component updates C on every render
 // so renderTokens, SectionCard, InfoRow etc. automatically get the correct theme.
 let C = C_LIGHT;
@@ -2196,6 +2146,16 @@ function VoiceDiagnosis({ onResult, activeCrop: _activeCrop }) {
 // ─── Sprint 1: Structured Result Dashboard ────────────────────────────────────
 // Replaces the old 7-field ConfidenceDashboard with a full clinical result card.
 
+// Bangla next-action guidance per urgency level (plan §7.3 item 5:
+// "Immediate action" directly under the result state).
+const URGENCY_ACTION_BN = {
+  immediate: "আজই ব্যবস্থা নিন — প্রথমে নিরাপদ (সবুজ তালিকা) ব্যবস্থা; প্রয়োজনে নিবন্ধিত পণ্য, নিরাপত্তা মেনে।",
+  within_3_days: "৩ দিনের মধ্যে ব্যবস্থা নিন এবং কেস হিসেবে সংরক্ষণ করে প্রতিদিন পর্যবেক্ষণ করুন।",
+  within_week: "এই সপ্তাহে মাঠ পর্যবেক্ষণ করুন; লক্ষণ বাড়লে নিরাপদ ব্যবস্থা থেকে শুরু করুন।",
+  monitor: "এখনই ব্যবস্থার দরকার নেই — নিয়মিত পর্যবেক্ষণ চালিয়ে যান এবং পরিবর্তন খেয়াল করুন।",
+};
+const URGENCY_TONES = { immediate: "danger", within_3_days: "warning", within_week: "warning", monitor: "success" };
+
 function UrgencyBanner({ urgency, actionRequired, etlExceeded }) {
   const cfg = {
     immediate: {
@@ -2788,6 +2748,23 @@ function DiagnosisResultDashboard({ structuredResult, cropKey, weather, symptomM
 
       {/* Differential diagnosis */}
       <DifferentialCandidates candidates={candidates} />
+
+      {/* Low-confidence uncertainty note (plan §7.3 item 3) */}
+      {confPct < 40 && (
+        <div style={{ marginBottom: 10 }}>
+          <TokenBadge C={C} tone="warning" icon="⚠️">
+            নিশ্চয়তা কম — মাঠে লক্ষণ মিলিয়ে যাচাই করে সিদ্ধান্ত নিন
+          </TokenBadge>
+        </div>
+      )}
+
+      {/* One dominant next action (plan §7.3 item 5) */}
+      <NextActionBlock
+        C={C}
+        tone={URGENCY_TONES[structuredResult.urgency || "monitor"]}
+        titleBn="এখন যা করবেন"
+        bodyBn={URGENCY_ACTION_BN[structuredResult.urgency || "monitor"]}
+      />
 
       {/* Expandable detail panels */}
       {hasRichData && (
@@ -6887,12 +6864,55 @@ function MarketPriceTicker({ C }) {
   );
 }
 
+// ─── Home urgent strip (plan §7.1 item 3) ─────────────────────────────────────
+// One glanceable "what needs me now" banner right under the greeting.
+// Icon + Bangla text (never color-only); tapping goes to the most urgent
+// target: a due follow-up case when one exists, otherwise the MONITOR pillar.
+function HomeUrgentStrip({ C, dueCount, activeCount, firstDueCaseId, onOpenCase, onPillar }) {
+  const urgent = dueCount > 0;
+  const bg = urgent ? C.bgDanger : C.bgWarning;
+  const border = urgent ? C.borderDanger : C.borderWarning;
+  const fg = urgent ? C.textDanger : C.textWarning;
+  const label = urgent
+    ? `এখন প্রয়োজন: ${dueCount}টি ফলো-আপ রিমাইন্ডার সময় হয়েছে`
+    : `এখন প্রয়োজন: ${activeCount}টি চলমান কেস পর্যবেক্ষণ করুন`;
+  return (
+    <button
+      type="button"
+      onClick={() => (urgent && firstDueCaseId ? onOpenCase(firstDueCaseId) : onPillar({ id: "monitor" }))}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        width: "100%",
+        textAlign: "left",
+        background: bg,
+        border: `1px solid ${border}`,
+        borderRadius: 14,
+        padding: "12px 14px",
+        cursor: "pointer",
+        color: fg,
+        minHeight: 44,
+      }}
+    >
+      <span aria-hidden="true" style={{ fontSize: 20 }}>
+        {urgent ? "🚨" : "👁️"}
+      </span>
+      <span style={{ flex: 1, fontSize: 12.5, fontWeight: 800, lineHeight: 1.5 }}>{label}</span>
+      <span aria-hidden="true" style={{ fontSize: 14 }}>→</span>
+    </button>
+  );
+}
+
 // ─── Six-Pillar Home Dashboard ────────────────────────────────────────────────
 // The redesigned Home tab: branded welcome context, the six-pillar workflow
 // grid, a prominent Scan & Diagnose action, active crop-health cases,
 // follow-up reminders, recent diagnoses, seasonal risk and learning picks.
 // Composes existing widgets (TodayDecisionView, MarketPriceTicker) instead
 // of duplicating them.
+// Section order follows plan §7.1: greeting/context → primary CTA → urgent
+// alert → today's decision → six pillars → weather/seasonal risk → recent
+// cases → recommended learning → market info.
 function SixPillarHomeDashboard({
   C,
   coords,
@@ -6983,10 +7003,68 @@ function SixPillarHomeDashboard({
         </button>
       </div>
 
-      {/* C — six-pillar navigation grid */}
+      {/* 3 — urgent case / alert strip (plan §7.1 item 3) */}
+      {(dueReminders.length > 0 || activeCases.length > 0) && (
+        <HomeUrgentStrip
+          C={C}
+          dueCount={dueReminders.length}
+          activeCount={activeCases.length}
+          firstDueCaseId={dueReminders[0]?.case?.id || null}
+          onOpenCase={onOpenCase}
+          onPillar={onPillar}
+        />
+      )}
+
+      {/* 4 — today's decision card (plan §7.1 item 4) */}
+      <TodayDecisionView C={C} coords={coords} locationName={locationName} history={history} />
+
+      {/* 5 — six-pillar workflow summary (plan §7.1 item 5) */}
       <SixPillarGrid C={C} onPillar={onPillar} caseStats={caseStats} />
 
-      {/* F — follow-up reminders */}
+      {/* 6 — weather & seasonal disease risk (plan §7.1 item 6) */}
+      {alerts.length > 0 && (
+        <div
+          style={{
+            background: C.bgDanger,
+            borderRadius: 14,
+            padding: 14,
+            border: `1px solid ${C.borderDanger}`,
+          }}
+        >
+          <div style={{ fontWeight: 700, fontSize: 13, color: C.danger, marginBottom: 6 }}>
+            ⚠️ এই মৌসুমে ঝুঁকি (PREVENT)
+          </div>
+          {alerts.map((a, i) => (
+            <button
+              key={i}
+              onClick={() => onPillar({ id: "prevent" })}
+              style={{ display: "block", width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", padding: 0, marginBottom: 3 }}
+            >
+              <span style={{ fontSize: 12, color: C.text }}>
+                {a.icon} {a.crop}: {a.keyDiseases.join(", ")}
+              </span>
+            </button>
+          ))}
+          <div style={{ fontSize: 10, color: C.textDanger, marginTop: 4 }}>প্রতিরোধ পরিকল্পনা দেখতে ট্যাপ করুন →</div>
+          <button
+            onClick={() => onPillar({ id: "risk" })}
+            style={{
+              display: "block",
+              width: "100%",
+              textAlign: "left",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              marginTop: 6,
+            }}
+          >
+            <span style={{ fontSize: 12, color: C.danger, fontWeight: 700 }}>⚠️ ঝুঁকি রাডার দেখুন →</span>
+          </button>
+        </div>
+      )}
+
+      {/* 7 — follow-up reminders + active cases + recent diagnoses */}
       {dueReminders.length > 0 && (
         <div
           style={{
@@ -7029,7 +7107,6 @@ function SixPillarHomeDashboard({
         </div>
       )}
 
-      {/* E — active crop health cases */}
       <div
         style={{
           background: C.bgCard,
@@ -7094,50 +7171,6 @@ function SixPillarHomeDashboard({
         )}
       </div>
 
-      {/* H — seasonal disease risk & outbreak alerts */}
-      {alerts.length > 0 && (
-        <div
-          style={{
-            background: C.bgDanger,
-            borderRadius: 14,
-            padding: 14,
-            border: `1px solid ${C.borderDanger}`,
-          }}
-        >
-          <div style={{ fontWeight: 700, fontSize: 13, color: C.danger, marginBottom: 6 }}>
-            ⚠️ এই মৌসুমে ঝুঁকি (PREVENT)
-          </div>
-          {alerts.map((a, i) => (
-            <button
-              key={i}
-              onClick={() => onPillar({ id: "prevent" })}
-              style={{ display: "block", width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", padding: 0, marginBottom: 3 }}
-            >
-              <span style={{ fontSize: 12, color: C.text }}>
-                {a.icon} {a.crop}: {a.keyDiseases.join(", ")}
-              </span>
-            </button>
-          ))}
-          <div style={{ fontSize: 10, color: C.textDanger, marginTop: 4 }}>প্রতিরোধ পরিকল্পনা দেখতে ট্যাপ করুন →</div>
-          <button
-            onClick={() => onPillar({ id: "risk" })}
-            style={{
-              display: "block",
-              width: "100%",
-              textAlign: "left",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-              marginTop: 6,
-            }}
-          >
-            <span style={{ fontSize: 12, color: C.danger, fontWeight: 700 }}>⚠️ ঝুঁকি রাডার দেখুন →</span>
-          </button>
-        </div>
-      )}
-
-      {/* G — recent diagnosis history */}
       {recentHistory.length > 0 && (
         <div
           style={{
@@ -7163,7 +7196,7 @@ function SixPillarHomeDashboard({
         </div>
       )}
 
-      {/* I — recommended learning resources */}
+      {/* 8 — recommended learning resources (plan §7.1 item 8) */}
       <div
         style={{
           background: C.bgCard,
@@ -7196,8 +7229,7 @@ function SixPillarHomeDashboard({
         )}
       </div>
 
-      {/* existing daily-decision + market widgets remain part of the dashboard */}
-      <TodayDecisionView C={C} coords={coords} locationName={locationName} history={history} />
+      {/* 9 — supporting market information (plan §7.1 item 9) */}
       <MarketPriceTicker C={C} />
     </div>
   );
@@ -8395,14 +8427,25 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
     { id: "learn", label: "শিখুন", icon: "📖" },
     { id: "more", label: "আরও", icon: "☰" },
   ];
+  // Secondary tools grouped for scannability (plan §7.5 "better grouped
+  // secondary tools"). Groups preserve first-appearance order.
   const secondaryTabs = [
-    { id: "calendar", label: "মৌসুম ও আবহাওয়া", icon: "📅", desc: "ফসলের সময়, দাম ও রোগের ঝুঁকি" },
-    { id: "risk", label: "ঝুঁকি রাডার", icon: "⚠️", desc: "আপনার এলাকার ঝুঁকি প্রোফাইল" },
-    { id: "prevent", label: "প্রতিরোধ পরিকল্পনা", icon: "🛡️", desc: "রোগ হওয়ার আগেই পরিকল্পনা করুন" },
-    { id: "pesticide", label: "নিরাপদ বালাইনাশক", icon: "💊", desc: "নিবন্ধিত পণ্য ও নিরাপত্তা" },
-    { id: "identification", label: "চিত্র ও মাঠ শনাক্তকরণ", icon: "🧭", desc: "ছবি দেখে শিখুন, OSM মানচিত্রে ক্ষেত চিহ্নিত করুন" },
-    { id: "history", label: "পুরনো রিপোর্ট", icon: "🕘", desc: "আগের নির্ণয় ও শেখা" },
+    { id: "calendar", label: "মৌসুম ও আবহাওয়া", icon: "📅", desc: "ফসলের সময়, দাম ও রোগের ঝুঁকি", group: "পরিকল্পনা ও ঝুঁকি" },
+    { id: "risk", label: "ঝুঁকি রাডার", icon: "⚠️", desc: "আপনার এলাকার ঝুঁকি প্রোফাইল", group: "পরিকল্পনা ও ঝুঁকি" },
+    { id: "prevent", label: "প্রতিরোধ পরিকল্পনা", icon: "🛡️", desc: "রোগ হওয়ার আগেই পরিকল্পনা করুন", group: "পরিকল্পনা ও ঝুঁকি" },
+    { id: "pesticide", label: "নিরাপদ বালাইনাশক", icon: "💊", desc: "নিবন্ধিত পণ্য ও নিরাপত্তা", group: "শনাক্তকরণ ও নিরাপদ প্রয়োগ" },
+    { id: "identification", label: "চিত্র ও মাঠ শনাক্তকরণ", icon: "🧭", desc: "ছবি দেখে শিখুন, OSM মানচিত্রে ক্ষেত চিহ্নিত করুন", group: "শনাক্তকরণ ও নিরাপদ প্রয়োগ" },
+    { id: "history", label: "পুরনো রিপোর্ট", icon: "🕘", desc: "আগের নির্ণয় ও শেখা", group: "ইতিহাস ও শেখা" },
   ];
+  const toolGroups = secondaryTabs.reduce((acc, t) => {
+    let g = acc.find((x) => x.label === t.group);
+    if (!g) {
+      g = { label: t.group, tools: [] };
+      acc.push(g);
+    }
+    g.tools.push(t);
+    return acc;
+  }, []);
   const navigateFromJourney = (journeyId) => {
     const destination = { detect: "diagnose", treat: "prevent", monitor: "cases", learn: "learn" }[journeyId] || "home";
     setMoreOpen(false);
@@ -8632,6 +8675,8 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
             }}
           >
             <div style={{ maxWidth: isDesktop ? 1280 : 1040, margin: "0 auto", width: "100%" }}>
+              {/* Global offline state (plan §4 obj. 6 / §9) — shown on every tab */}
+              <OfflineBanner C={C} />
               {activeTab !== "home" && activeTab !== "today" && (
                 <JourneyProgress C={C} activeTab={activeTab} onNavigate={navigateFromJourney} />
               )}
@@ -10994,23 +11039,50 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                     ✕
                   </button>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
-                  {secondaryTabs.map((tool) => (
-                    <button
-                      type="button"
-                      key={tool.id}
-                      onClick={() => {
-                        setMoreOpen(false);
-                        setActiveTab(tool.id);
-                      }}
-                      style={{ textAlign: "left", border: `1px solid ${C.border}`, background: C.bgMuted, color: C.text, borderRadius: 12, padding: "10px 11px", cursor: "pointer", minHeight: 64 }}
-                    >
-                      <div style={{ fontSize: 16, marginBottom: 3 }}>{tool.icon}</div>
-                      <div style={{ fontSize: 11.5, fontWeight: 800 }}>{tool.label}</div>
-                      <div style={{ fontSize: 9.5, color: C.textMuted, lineHeight: 1.3, marginTop: 2 }}>{tool.desc}</div>
-                    </button>
-                  ))}
-                </div>
+                {toolGroups.map((g) => (
+                  <div
+                    key={g.label}
+                    style={{ marginBottom: g.label === toolGroups[toolGroups.length - 1].label ? 0 : 10 }}
+                  >
+                    <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 0.7, color: C.textLight, margin: "0 0 6px" }}>
+                      {g.label}
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
+                      {g.tools.map((tool) => {
+                        // Selected-state clarity beyond color alone (plan §7.5).
+                        const isOpen = activeTab === tool.id;
+                        return (
+                          <button
+                            type="button"
+                            key={tool.id}
+                            aria-current={isOpen ? "page" : undefined}
+                            onClick={() => {
+                              setMoreOpen(false);
+                              setActiveTab(tool.id);
+                            }}
+                            style={{
+                              textAlign: "left",
+                              border: `1.5px solid ${isOpen ? C.primary : C.border}`,
+                              background: isOpen ? C.bgCard : C.bgMuted,
+                              color: C.text,
+                              borderRadius: 12,
+                              padding: "10px 11px",
+                              cursor: "pointer",
+                              minHeight: 64,
+                            }}
+                          >
+                            <div style={{ fontSize: 16, marginBottom: 3 }}>{tool.icon}</div>
+                            <div style={{ fontSize: 11.5, fontWeight: 800 }}>{tool.label}</div>
+                            <div style={{ fontSize: 9.5, color: C.textMuted, lineHeight: 1.3, marginTop: 2 }}>{tool.desc}</div>
+                            {isOpen && (
+                              <div style={{ fontSize: 9, color: C.primary, fontWeight: 800, marginTop: 4 }}>✓ এখন খোলা</div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </section>
             </>
           )}

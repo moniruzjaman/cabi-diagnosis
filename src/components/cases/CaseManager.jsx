@@ -21,6 +21,8 @@ import FieldLocationPicker from "./FieldLocationPicker";
 import SyncStatusChip from "./SyncStatusChip";
 import VerificationPanel from "./VerificationPanel";
 import CaseExportImport from "./CaseExportImport";
+// Atomic UI kit (UI/UX Enhancement Plan Phase 2).
+import { Badge, StatusBadge, SeverityBadge, EmptyState } from "../ui/index.js";
 
 /**
  * CaseManager — Pillar 4 (MONITOR) + Pillar 5 (EVALUATE) surface.
@@ -191,16 +193,17 @@ function CaseList({ C, cases, onOpen, onCreate, insightsCount, onRefresh }) {
       </Card>
 
       {cases.length === 0 && (
-        <Card C={C} icon="🌱" title="এখনো কোনো কেস নেই">
-          <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.7 }}>
-            প্রথম কেস তৈরি করুন এবং <b>DETECT → TREAT → PREVENT → MONITOR → EVALUATE → LEARN</b> পূর্ণ কর্মপ্রবাহ অনুসরণ
-            করুন। রোগ নির্ণয়ের পর রিপোর্ট থেকে সরাসরি কেস খোলা যায়।
-          </div>
-        </Card>
+        <EmptyState
+          C={C}
+          icon="🌱"
+          titleBn="এখনো কোনো কেস নেই"
+          bodyBn="প্রথম কেস তৈরি করুন এবং DETECT → TREAT → PREVENT → MONITOR → EVALUATE → LEARN পূর্ণ কর্মপ্রবাহ অনুসরণ করুন। রোগ নির্ণয়ের পর রিপোর্ট থেকে সরাসরি কেস খোলা যায়।"
+          actionLabelBn="নতুন কেস খুলুন"
+          onAction={onCreate}
+        />
       )}
 
       {cases.map((c) => {
-        const st = STATUS_STYLE[c.status] || STATUS_STYLE.active;
         const sev = latestSeverity(c);
         const ev = c.evaluation;
         return (
@@ -248,9 +251,7 @@ function CaseList({ C, cases, onOpen, onCreate, insightsCount, onRefresh }) {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                 <span style={{ fontWeight: 800, fontSize: 14, color: C.text }}>{c.crop || "ফসল"}</span>
-                <Pill bg={st.bg} fg={st.fg}>
-                  {st.icon} {STATUS_LABELS_BN[c.status] || c.status}
-                </Pill>
+                <StatusBadge C={C} status={c.status} label={STATUS_LABELS_BN[c.status] || c.status} />
                 {c.diagnosisEvidence?.diseaseNameBn && (
                   <Pill bg={C.bgMuted} fg={C.textMuted}>
                     {c.diagnosisEvidence.diseaseNameBn}
@@ -262,10 +263,8 @@ function CaseList({ C, cases, onOpen, onCreate, insightsCount, onRefresh }) {
                 {fmtDate(c.updatedAt)} আপডেট · {c.observations?.length || 0}টি পর্যবেক্ষণ
                 {c.treatments?.length ? ` · ${c.treatments.length}টি চিকিৎসা` : ""}
               </div>
-              <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-                <Pill bg={C.bgMuted} fg={C.text}>
-                  তীব্রতা: {sev.pct != null ? `${sev.pct}%` : sev.label}
-                </Pill>
+              <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap", alignItems: "center" }}>
+                <SeverityBadge C={C} severity={sev.label} pct={sev.pct} />
                 {ev && (
                   <Pill
                     bg={
@@ -281,9 +280,9 @@ function CaseList({ C, cases, onOpen, onCreate, insightsCount, onRefresh }) {
                   </Pill>
                 )}
                 {(c.monitoring || []).some((m) => m.status === "pending") && (
-                  <Pill bg="#fffbeb" fg="#92400e">
-                    ⏰ ফলো-আপ বাকি
-                  </Pill>
+                  <Badge C={C} tone="warning" icon="⏰">
+                    ফলো-আপ বাকি
+                  </Badge>
                 )}
               </div>
             </div>
