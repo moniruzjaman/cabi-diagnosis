@@ -560,11 +560,7 @@ async function analyticsResource(req, res) {
       visitor: store.visitors[visitorId],
       telemetryStats: store.telemetryStats || null,
       updatedAt: store.updatedAt,
-      persistence: hasTurso()
-        ? "turso"
-        : process.env.VERCEL
-          ? "temporary-instance-storage"
-          : "local-file-storage",
+      persistence: hasTurso() ? "turso" : process.env.VERCEL ? "temporary-instance-storage" : "local-file-storage",
     });
   } catch (err) {
     console.error("Analytics POST error:", err.message);
