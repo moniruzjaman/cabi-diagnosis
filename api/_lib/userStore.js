@@ -12,7 +12,7 @@
  *   3. In-memory     — local preview/CI only when neither database is configured
  */
 
-import { getTursoClient, ensureSchema } from "./turso.js";
+import { getTursoClient, ensureSchema, hasTurso } from "./turso.js";
 
 const PREVIEW_USERS = new Map();
 
@@ -228,7 +228,7 @@ export async function getUserById(id, googleSub = "") {
 
 export function authStatus() {
   return {
-    turso: !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN),
+    turso: hasTurso(),
     supabase: hasSupabase(),
     google: !!process.env.GOOGLE_CLIENT_ID,
     session: !!process.env.SESSION_SECRET,
