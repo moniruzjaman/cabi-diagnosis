@@ -378,9 +378,13 @@ bash setup-vercel-env.sh
 
 ## Credits
 
-**Supported by:** CABI Plantwise · DAE Bangladesh · BRRI · BARI
+**Supported by:** CABI Plantwise · BNP Media Cell · DAE Bangladesh · BRRI · BARI
 **Built with:** React · Vite · Turso SQLite · Gemini AI · Google Fonts
-**YouTube:** [@AgriWisdomBd](https://youtube.com/@AgriWisdomBd)
+
+**Social media:**
+- YouTube: [@AgriWisdomBd](https://youtube.com/@AgriWisdomBd) — agricultural learning videos
+- Facebook (BNP Media Cell): [@bnpbd78](https://www.facebook.com/bnpbd78)
+- X / Twitter (BNP Media Cell): [@BNPBdMediaCell](https://x.com/BNPBdMediaCell)
 
 ---
 
