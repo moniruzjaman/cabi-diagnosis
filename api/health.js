@@ -17,6 +17,7 @@ import { getPolicyUsage } from "./_lib/freeTierPolicy.js";
 import { getTelemetrySnapshot } from "./_lib/observability.js";
 import { authStatus } from "./_lib/userStore.js";
 import { BUILD_INFO } from "./_lib/buildInfo.js";
+import { hasTurso } from "./_lib/turso.js";
 
 const startTime = Date.now();
 const metricsLimiter = createRateLimiter({ windowMs: 60_000, maxRequests: 5 });
@@ -77,7 +78,7 @@ export default async function handler(req, res) {
     uptime: `${uptimeSeconds}s`,
     env: {
       VERCEL: !!process.env.VERCEL,
-      TURSO: !!(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN),
+      TURSO: hasTurso(),
       AUTH: authStatus(),
       // Only report whether keys exist, never their values or partial content
       AI_PROVIDERS_CONFIGURED: !!(
