@@ -7,11 +7,9 @@
 // (delay = 2^attempts seconds), up to MAX_ATTEMPTS (5) before it is
 // marked terminally 'failed'. retryFailed() re-queues failed records.
 //
-// SCAFFOLD NOTE: there is no backend yet, so processQueue() marks every
-// pending record synced after a 100 ms mock delay. This keeps the offline
-// contract honest: data is captured locally first, and the queue tracks
-// sync state so a real backend can be dropped in later without changing
-// the component contract.
+// IMPORTANT: this queue is local-only. No case-sync API is connected yet.
+// Never mark a record synced until an authenticated server confirms durable
+// persistence. Offline capture remains available while records stay pending.
 //
 // Original design. Offline-sync state machine + exponential backoff are
 // standard engineering patterns. No code ported from any repository.
@@ -21,11 +19,9 @@ import "./auditTypes.js"; // pull in JSDoc typedefs for tooling
 
 const SYNC_QUEUE_KEY = "udh-sync-queue-v1";
 const MAX_ATTEMPTS = 5;
-const MOCK_DELAY_MS = 100; // scaffold only — see SCAFFOLD NOTE above
-
 const SYNC_LIMITATIONS = [
-  "এখনও কোনো ব্যাকএন্ড নেই — সিঙ্ক সফল হয়েছে হিসাবে স্ক্যাফোল্ড দেখানো হচ্ছে।",
-  "ব্যাকঅফ কেবল ক্লায়েন্ট-সাইডে — সার্ভারের সত্যিকারের লোড বা রেট-লিমিট বিবেচনা করে না।",
+  "কেস সিঙ্ক API এখনো সংযুক্ত নয় — রেকর্ড শুধু এই ডিভাইসে সংরক্ষিত।",
+  "সার্ভারের নিশ্চিত সফল লেখার প্রমাণ ছাড়া কোনো রেকর্ডকে সিঙ্কড দেখানো হয় না।",
 ];
 
 // ─── IDs & storage ───────────────────────────────────────────────────────────
@@ -197,22 +193,29 @@ export function retryFailed() {
 }
 
 /**
- * SCFFOLD: process the pending queue. With no backend, each pending record
- * is marked syncing then synced after a 100 ms mock delay. Returns the count
- * of records processed. Replace the mock delay with a real network call when
- * a backend exists.
- * @returns {Promise<number>}
+ * Process pending records only when a real persistence adapter is supplied.
+ * This repository does not yet provide an authenticated case-sync adapter;
+ * therefore the default call safely leaves every record pending.
+ *
+ * @param {{persist?: (record: object) => Promise<unknown>}} [options]
+ * @returns {Promise<number>} number of records durably persisted
  */
-export async function processQueue() {
+export async function processQueue({ persist } = {}) {
+  if (typeof persist !== "function") return 0;
+
   const pending = getPending();
-  for (const r of pending) {
-    markSyncing(r.id);
-    // Scaffold mock delay (no real backend). Sequential awaits are
-    // intentional — each record is processed one at a time.
-    await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
-    markSynced(r.id);
+  let persisted = 0;
+  for (const record of pending) {
+    markSyncing(record.id);
+    try {
+      await persist(record);
+      markSynced(record.id);
+      persisted += 1;
+    } catch (error) {
+      markFailed(record.id, error?.message || "Persistence failed");
+    }
   }
-  return pending.length;
+  return persisted;
 }
 
 export const SYNC_MODEL_LIMITATIONS = SYNC_LIMITATIONS;
