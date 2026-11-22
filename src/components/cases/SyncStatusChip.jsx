@@ -1,14 +1,11 @@
-import { useState, useCallback } from "react";
-import { getStats, retryFailed } from "../../intelligence/syncQueue.js";
+import { useState } from "react";
+import { getStats } from "../../intelligence/syncQueue.js";
 
 // ────────────────────────────────────────────────────────────────────────────
 // SyncStatusChip — a compact offline-sync status indicator.
 //
-// Reads syncQueue.getStats() and shows pending / synced / failed counts as
-// colour-coded chips. A "ম্যানুয়াল সিঙ্ক" button re-queues failed records
-// via retryFailed() and refreshes the counts. Stats are read once on mount
-// (lazy useState initialiser) and refreshed from the click handler — no
-// setState-in-effect, so no cascading renders.
+// Shows local queue counts without claiming that server sync is connected.
+// Only a future authenticated persistence adapter may report a record synced.
 // ────────────────────────────────────────────────────────────────────────────
 
 const CHIP_STYLE = {
@@ -33,19 +30,10 @@ function readStats() {
 }
 
 export default function SyncStatusChip({ C }) {
-  const [stats, setStats] = useState(readStats);
+  const [stats] = useState(readStats);
 
-  const handleManualSync = useCallback(() => {
-    try {
-      retryFailed();
-    } catch {
-      // ignore — refresh still runs
-    }
-    setStats(readStats());
-  }, []);
-
-  const { pending, synced, failed } = stats;
-  const hasActivity = pending > 0 || synced > 0 || failed > 0;
+  const { pending, failed } = stats;
+  const hasActivity = pending > 0 || failed > 0;
 
   return (
     <div
@@ -62,30 +50,11 @@ export default function SyncStatusChip({ C }) {
       {pending > 0 ? (
         <span style={{ ...CHIP_STYLE, background: "#ffedd5", color: C.warning }}>⏳ {pending} অপেক্ষমাণ</span>
       ) : null}
-      {synced > 0 ? (
-        <span style={{ ...CHIP_STYLE, background: "#dcfce7", color: C.success }}>✓ {synced} সিঙ্কড</span>
-      ) : null}
       {failed > 0 ? (
         <span style={{ ...CHIP_STYLE, background: "#fee2e2", color: C.danger }}>✗ {failed} ব্যর্থ</span>
       ) : null}
       {!hasActivity ? <span style={{ fontSize: 10, color: C.textMuted }}>সিঙ্ক সারি খালি</span> : null}
-
-      <button
-        onClick={handleManualSync}
-        disabled={failed === 0}
-        style={{
-          fontSize: 10,
-          color: failed > 0 ? C.primary : C.textMuted,
-          background: "none",
-          border: "none",
-          cursor: failed > 0 ? "pointer" : "default",
-          padding: 0,
-          textDecoration: failed > 0 ? "underline" : "none",
-        }}
-        title="ব্যর্থ রেকর্ড আবার সারিতে যোগ করুন"
-      >
-        ম্যানুয়াল সিঙ্ক
-      </button>
+      <span style={{ fontSize: 10, color: C.textMuted }}>সার্ভার সিঙ্ক এখনো সংযুক্ত নয়</span>
     </div>
   );
 }
