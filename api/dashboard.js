@@ -48,7 +48,7 @@ export default async function handler(req, res) {
           visits: v.visits,
         })),
         updatedAt: store.updatedAt,
-        persistence: process.env.TURSO_DATABASE_URL
+        persistence: hasTurso()
           ? "turso"
           : process.env.VERCEL
             ? "vercel-tmp-storage"
