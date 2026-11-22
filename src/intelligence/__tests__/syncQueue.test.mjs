@@ -110,8 +110,8 @@ const persisted = await processQueue({ persist: async () => ({ ok: true }) });
 assert(persisted === pendingBeforeNoAdapter, "processQueue counts confirmed persistence callbacks");
 assert(getStats().pending === 0, "confirmed persistence marks records synced");
 assert(
-  SYNC_MODEL_LIMITATIONS.some((l) => l.includes("ক্লায়েন্ট-সাইড")),
-  "modelLimitations notes client-side backoff",
+  SYNC_MODEL_LIMITATIONS.some((l) => l.includes("নিশ্চিত সফল লেখার প্রমাণ")),
+  "modelLimitations requires confirmed server persistence",
 );
 
 console.log(`\nsyncQueue.test: ${pass} passed, ${fail} failed`);
