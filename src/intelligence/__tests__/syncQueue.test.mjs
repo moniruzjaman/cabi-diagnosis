@@ -25,6 +25,7 @@ const {
   computeBackoffDelay,
   MAX_ATTEMPTS,
   SYNC_MODEL_LIMITATIONS,
+  processQueue,
 } = await import("../syncQueue.js");
 
 let pass = 0,
@@ -98,12 +99,19 @@ assert(computeBackoffDelay(4) === 16, "backoff 2^4 = 16s");
 // 11. modelLimitations present + honest about scaffold backend
 assert(SYNC_MODEL_LIMITATIONS.length > 0, "syncQueue exposes modelLimitations");
 assert(
-  SYNC_MODEL_LIMITATIONS.some((l) => l.includes("স্ক্যাফোল্ড")),
-  "modelLimitations notes scaffold backend",
+  SYNC_MODEL_LIMITATIONS.some((l) => l.includes("API এখনো সংযুক্ত নয়")),
+  "modelLimitations says server sync is not connected",
 );
+const pendingBeforeNoAdapter = getStats().pending;
+assert(await processQueue() === 0, "processQueue without adapter persists nothing");
+assert(getStats().pending === pendingBeforeNoAdapter, "no adapter never marks records synced");
+
+const persisted = await processQueue({ persist: async () => ({ ok: true }) });
+assert(persisted === pendingBeforeNoAdapter, "processQueue counts confirmed persistence callbacks");
+assert(getStats().pending === 0, "confirmed persistence marks records synced");
 assert(
-  SYNC_MODEL_LIMITATIONS.some((l) => l.includes("ক্লায়েন্ট-সাইড")),
-  "modelLimitations notes client-side backoff",
+  SYNC_MODEL_LIMITATIONS.some((l) => l.includes("নিশ্চিত সফল লেখার প্রমাণ")),
+  "modelLimitations requires confirmed server persistence",
 );
 
 console.log(`\nsyncQueue.test: ${pass} passed, ${fail} failed`);

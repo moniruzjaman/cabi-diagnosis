@@ -18,6 +18,7 @@
  */
 
 import crypto from "crypto";
+import { getTursoUrl } from "./turso.js";
 
 // Cached signing secret — derived once per cold start, then reused
 let _cachedSecret = null;
@@ -32,7 +33,7 @@ function getSigningSecret() {
   if (_cachedSecret) return _cachedSecret;
 
   // Primary: derive from Turso credentials
-  const tursoUrl = process.env.TURSO_DATABASE_URL || "";
+  const tursoUrl = getTursoUrl();
   const tursoToken = process.env.TURSO_AUTH_TOKEN || "";
 
   if (tursoUrl && tursoToken) {

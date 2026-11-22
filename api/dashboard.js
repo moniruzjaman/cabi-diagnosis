@@ -48,11 +48,7 @@ export default async function handler(req, res) {
           visits: v.visits,
         })),
         updatedAt: store.updatedAt,
-        persistence: process.env.TURSO_DATABASE_URL
-          ? "turso"
-          : process.env.VERCEL
-            ? "vercel-tmp-storage"
-            : "local-file",
+        persistence: hasTurso() ? "turso" : process.env.VERCEL ? "vercel-tmp-storage" : "local-file",
       });
     } catch (err) {
       console.error("Dashboard JSON error:", err.message);

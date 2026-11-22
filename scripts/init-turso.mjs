@@ -62,7 +62,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`[turso] Connecting to ${process.env.TURSO_DATABASE_URL}`);
+  console.log(`[turso] Connecting to ${process.env.TURSO_DATABASE_URL || process.env.TURSO_DB_URL}`);
   console.log(`[turso] TURSO_AUTH_TOKEN=${maskKey("TURSO_AUTH_TOKEN")}`);
 
   const { ensureSchema, hasTurso, getTursoClient } = await import(

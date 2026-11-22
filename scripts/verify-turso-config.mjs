@@ -16,7 +16,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { createClient } from "@libsql/client";
 
-const url = process.env.TURSO_DATABASE_URL;
+const url = process.env.TURSO_DATABASE_URL || process.env.TURSO_DB_URL;
 const token = process.env.TURSO_AUTH_TOKEN;
 
 function mask(value) {
@@ -26,11 +26,11 @@ function mask(value) {
 }
 
 console.log("Turso configuration check");
-console.log(`  TURSO_DATABASE_URL : ${url || "(not set)"}`);
+console.log(`  Turso database URL : ${url || "(not set)"}`);
 console.log(`  TURSO_AUTH_TOKEN   : ${mask(token)}`);
 
 if (!url) {
-  console.log("\n→ No TURSO_DATABASE_URL set. That is the documented offline mode:");
+  console.log("\n→ Neither TURSO_DATABASE_URL nor TURSO_DB_URL is set. That is the documented offline mode:");
   console.log("  api/_lib/turso.js hasTurso() returns false and API routes fall back");
   console.log("  to local JSON file storage. Nothing to verify over the wire.");
   process.exit(0);
