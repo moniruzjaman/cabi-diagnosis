@@ -114,7 +114,7 @@ async function feedbackResource(req, res) {
   return res.status(200).json({
     ok: true,
     count: Array.isArray(store.feedback) ? store.feedback.length : null,
-    persistence: process.env.TURSO_DATABASE_URL
+    persistence: hasTurso()
       ? "turso"
       : process.env.VERCEL
         ? "temporary-instance-storage"
@@ -564,7 +564,7 @@ async function analyticsResource(req, res) {
       visitor: store.visitors[visitorId],
       telemetryStats: store.telemetryStats || null,
       updatedAt: store.updatedAt,
-      persistence: process.env.TURSO_DATABASE_URL
+      persistence: hasTurso()
         ? "turso"
         : process.env.VERCEL
           ? "temporary-instance-storage"
