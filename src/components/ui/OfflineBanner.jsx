@@ -36,7 +36,7 @@ export default function OfflineBanner({ C = lightThemeFull }) {
       <span aria-hidden="true" style={{ fontSize: 16 }}>
         📴
       </span>
-      <span>অফলাইনে আছেন — নির্ণয় ও কেস ব্যবস্থাপনা চালু থাকবে; সিঙ্ক পরে হবে।</span>
+      <span>অফলাইনে আছেন — নির্ণয় ও কেস ব্যবস্থাপনা চালু থাকবে। কেসের তথ্য এই ডিভাইসের ব্রাউজারেই সংরক্ষিত থাকে; অন্য ডিভাইসে স্বয়ংক্রিয়ভাবে সিঙ্ক হয় না।</span>
     </div>
   );
 }
