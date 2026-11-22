@@ -1,7 +1,7 @@
 # Database Integration Audit and Remediation Plan
 
 **Repository:** `moniruzjaman/cabi-diagnosis`
-**Audit baseline:** current `main` at 2026-11-23
+**Audit baseline:** current `main` at 2026-11-23; remediation PR #81
 **Scope:** tab-to-tab data flow, persistence, authentication, offline synchronization, and deployment configuration.
 
 ## Executive finding
