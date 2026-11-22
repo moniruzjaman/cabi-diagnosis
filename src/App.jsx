@@ -6927,8 +6927,12 @@ function SixPillarHomeDashboard({
 }) {
   void caseTick; // re-render signal when local case data changes
   const caseStats = getCaseStats();
-  const activeCases = getActiveCases().slice(0, 3);
-  const dueReminders = getDueReminders().slice(0, 3);
+  const allActiveCases = getActiveCases();
+  const allDueReminders = getDueReminders();
+  const activeCaseCount = allActiveCases.length;
+  const dueReminderCount = allDueReminders.length;
+  const activeCases = allActiveCases.slice(0, 3);
+  const dueReminders = allDueReminders.slice(0, 3);
   const insights = getLearningInsights().slice(0, 2);
   const alerts = getCurrentRiskAlerts().slice(0, 3);
   const recentHistory = [...(history || [])].slice(-3).reverse();
@@ -7004,11 +7008,11 @@ function SixPillarHomeDashboard({
       </div>
 
       {/* 3 — urgent case / alert strip (plan §7.1 item 3) */}
-      {(dueReminders.length > 0 || activeCases.length > 0) && (
+      {(dueReminderCount > 0 || activeCaseCount > 0) && (
         <HomeUrgentStrip
           C={C}
-          dueCount={dueReminders.length}
-          activeCount={activeCases.length}
+          dueCount={dueReminderCount}
+          activeCount={activeCaseCount}
           firstDueCaseId={dueReminders[0]?.case?.id || null}
           onOpenCase={onOpenCase}
           onPillar={onPillar}
