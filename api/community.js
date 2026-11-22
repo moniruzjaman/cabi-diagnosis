@@ -114,11 +114,7 @@ async function feedbackResource(req, res) {
   return res.status(200).json({
     ok: true,
     count: Array.isArray(store.feedback) ? store.feedback.length : null,
-    persistence: hasTurso()
-      ? "turso"
-      : process.env.VERCEL
-        ? "temporary-instance-storage"
-        : "local-file-storage",
+    persistence: hasTurso() ? "turso" : process.env.VERCEL ? "temporary-instance-storage" : "local-file-storage",
   });
 }
 
