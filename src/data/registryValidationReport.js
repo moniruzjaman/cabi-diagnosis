@@ -13,7 +13,7 @@
 /** @type {RegistryValidationReport} */
 export const REGISTRY_VALIDATION_REPORT = {
   schemaVersion: 1,
-  generatedAt: "2026-11-18T22:08:37.303Z",
+  generatedAt: "2026-11-23T11:58:22.063Z",
   counts: {
     totalRecords: 9462,
     duplicateRegNoGroups: 43,

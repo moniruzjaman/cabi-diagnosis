@@ -12,12 +12,12 @@
 /** @type {RegistryImportMeta} */
 export const REGISTRY_IMPORT_META = {
   schemaVersion: 1,
-  generatedAt: "2026-11-18T22:08:37.303Z",
+  generatedAt: "2026-11-23T11:58:22.063Z",
   upstream: {
     url: "https://github.com/moniruzjaman/AgriChem-Guide-Pest-Control-Database.git",
-    sha: "0f08b11b8f477deea55b6920c3945e4254509b3c",
-    commitDate: "2026-11-19T01:10:28+06:00",
-    syncedAt: "2026-11-18T22:08:31.658Z",
+    sha: "bab8872336536df079585a2816ecfba35a93cb90",
+    commitDate: "2026-11-22T22:18:22Z",
+    syncedAt: "2026-11-23T11:58:11.260Z",
   },
   registry: {
     records: 9462,
