@@ -1,5 +1,3 @@
-import React from "react";
-
 const APP_URL = "https://pesticide.krishiai.live/";
 
 /**
@@ -115,8 +113,17 @@ export default function PesticideNextPortal({ onBack }) {
           }}
         />
       </div>
-      <p style={{ margin: 0, padding: "0 4px", color: "var(--c-text-muted, #5f6672)", fontSize: 11, lineHeight: 1.6 }}>
-        এম্বেড করা অ্যাপ লোড না হলে “নতুন ট্যাবে খুলুন” ব্যবহার করুন। CABI-তে ফিরতে উপরের সবুজ বাটনটি চাপুন।
+      <p
+        style={{
+          margin: 0,
+          padding: "0 4px",
+          color: "var(--c-text-muted, #5f6672)",
+          fontSize: 11,
+          lineHeight: 1.6,
+        }}
+      >
+        এম্বেড করা অ্যাপ লোড না হলে “নতুন ট্যাবে খুলুন” ব্যবহার করুন। CABI-তে ফিরতে উপরের সবুজ
+        বাটনটি চাপুন।
       </p>
     </section>
   );
