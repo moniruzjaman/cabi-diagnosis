@@ -1,6 +1,6 @@
 import "./PesticideNextPortal.css";
 
-const APP_URL = "https://pesticide.krishiai.live/";
+const APP_URL = "https://pest-next.krishiai.live/";
 const FRAME_PERMISSIONS = "camera; microphone; geolocation; clipboard-read; clipboard-write";
 const PORTAL_HINT = "এম্বেড করা অ্যাপ লোড না হলে নতুন ট্যাবে খুলুন। CABI-তে ফিরতে উপরের সবুজ বাটনটি চাপুন।";
 

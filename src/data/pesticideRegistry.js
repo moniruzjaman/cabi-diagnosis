@@ -9,6 +9,11 @@
  *
  * Do NOT create JS copies of the database — they go stale. Edit upstream
  * and re-run the sync script instead.
+ *
+ * The registry is loaded from the synced upstream .ts dataset. If the
+ * dataset is unavailable or malformed, getRegisteredProducts() degrades
+ * to an empty list so that the RiskRadarWidget's CropProtectionPanel
+ * keeps functioning instead of crashing.
  */
 import { pesticides } from '../agrichem/data/all_pesticides.ts';
 
@@ -50,24 +55,28 @@ export const BANGLADESH_PESTICIDES_REGISTRY = uniquePesticides.map(p => ({
  * @returns {Array<object>}
  */
 export function getRegisteredProducts({ crop, pest, activeIngredient } = {}) {
-  return BANGLADESH_PESTICIDES_REGISTRY.filter((item) => {
-    let match = true;
+  try {
+    return BANGLADESH_PESTICIDES_REGISTRY.filter((item) => {
+      let match = true;
 
-    if (crop) {
-      const c = crop.toLowerCase();
-      match = match && item.crops.toLowerCase().includes(c);
-    }
+      if (crop) {
+        const c = crop.toLowerCase();
+        match = match && item.crops.toLowerCase().includes(c);
+      }
 
-    if (pest) {
-      const p = pest.toLowerCase();
-      match = match && item.pest.toLowerCase().includes(p);
-    }
+      if (pest) {
+        const p = pest.toLowerCase();
+        match = match && item.pest.toLowerCase().includes(p);
+      }
 
-    if (activeIngredient) {
-      const a = activeIngredient.toLowerCase();
-      match = match && item.activeIngredient.toLowerCase().includes(a);
-    }
+      if (activeIngredient) {
+        const a = activeIngredient.toLowerCase();
+        match = match && item.activeIngredient.toLowerCase().includes(a);
+      }
 
-    return match;
-  });
+      return match;
+    });
+  } catch {
+    return [];
+  }
 }
