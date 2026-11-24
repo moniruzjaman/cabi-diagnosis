@@ -1,6 +1,10 @@
 import "./PesticideNextPortal.css";
 
 const APP_URL = "https://pesticide.krishiai.live/";
+const FRAME_PERMISSIONS =
+  "camera; microphone; geolocation; clipboard-read; clipboard-write";
+const PORTAL_HINT =
+  "এম্বেড করা অ্যাপ লোড না হলে নতুন ট্যাবে খুলুন। CABI-তে ফিরতে উপরের সবুজ বাটনটি চাপুন।";
 
 export default function PesticideNextPortal({ onBack }) {
   return (
@@ -16,7 +20,7 @@ export default function PesticideNextPortal({ onBack }) {
           aria-label="Back to CABI Diagnosis home"
         >
           <span aria-hidden="true">←</span>
-          CABI Diagnosis-এ ফিরুন
+          <span>CABI Diagnosis-এ ফিরুন</span>
         </button>
 
         <div className="pesticide-portal__identity">
@@ -36,19 +40,16 @@ export default function PesticideNextPortal({ onBack }) {
 
       <div className="pesticide-portal__frame">
         <iframe
-          title="PesticideNext — বালাইনাশক ব্যবস্থাপনা"
+          title="PesticideNext"
           src={APP_URL}
           loading="eager"
           referrerPolicy="strict-origin-when-cross-origin"
-          allow="camera; microphone; geolocation; clipboard-read; clipboard-write"
+          allow={FRAME_PERMISSIONS}
           allowFullScreen
         />
       </div>
 
-      <p className="pesticide-portal__hint">
-        এম্বেড করা অ্যাপ লোড না হলে “নতুন ট্যাবে খুলুন” ব্যবহার করুন। CABI-তে
-        ফিরতে উপরের সবুজ বাটনটি চাপুন।
-      </p>
+      <p className="pesticide-portal__hint">{PORTAL_HINT}</p>
     </section>
   );
 }
