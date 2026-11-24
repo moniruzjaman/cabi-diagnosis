@@ -19,7 +19,7 @@ import StructuredIntakeWizard from "./components/diagnose/StructuredIntakeWizard
 import OutbreakList from "./components/OutbreakList";
 import { HeroStakeholderSection } from "./components/HeroStakeholderSection";
 import UnifiedLearnResourceHub from "./components/UnifiedLearnResourceHub";
-import AgriChemApp from "./agrichem/AgriChemApp";
+import PesticideNextPortal from "./components/PesticideNextPortal.jsx";
 import { computeEnsembleScore } from "./data/agronomicEngine";
 import { lookupMoA } from "./data/moaDatabase";
 import { getRegisteredProducts } from "./data/pesticideRegistry";
@@ -10926,7 +10926,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                   so this tab simply keeps the farmer's own report history.) */}
               {activeTab === "library" && <SavedReportsView history={history} setHistory={setHistory} C={C} />}
 
-              {/* ── PESTICIDE GUIDE (embedded, previously an external link) ── */}
+              {/* ── PESTICIDE NEXT — standalone source-of-truth app in a returnable portal ── */}
               {activeTab === "pesticide" && (
                 <>
                   {protectionCase && (
@@ -10941,7 +10941,7 @@ ${offlineResult.ipmRecommendations.prevention.map((item, idx) => `${idx + 1}. ${
                       <RiskRadarWidget C={C} case={protectionCase} />
                     </div>
                   )}
-                  <AgriChemApp />
+                  <PesticideNextPortal onBack={() => setActiveTab("home")} />
                 </>
               )}
 
