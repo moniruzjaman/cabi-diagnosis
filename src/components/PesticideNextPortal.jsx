@@ -4,7 +4,10 @@ const APP_URL = "https://pesticide.krishiai.live/";
 
 export default function PesticideNextPortal({ onBack }) {
   return (
-    <section className="pesticide-portal" aria-label="PesticideNext application">
+    <section
+      className="pesticide-portal"
+      aria-label="PesticideNext application"
+    >
       <header className="pesticide-portal__header">
         <button
           className="pesticide-portal__back"
