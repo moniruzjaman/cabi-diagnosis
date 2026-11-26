@@ -138,3 +138,44 @@ Diagnosis Assistant owns training content and learning progress local to the app
 - [ ] Phase 1–3 agents explicitly acknowledge the approved contract version.
 
 **Important:** This is an evidence-based audit and draft contract. Do not treat unreviewed mappings or proposed URL examples as production-ready identifiers/routes.
+
+
+## 9. Supplemental crop-source and vision-model reconciliation (2026-11-26)
+
+The audit was extended after reviewing the supplied `crops_export.csv` and `moniruzjaman/kaggle-dataset`.
+
+### Crop-source findings
+
+- The supplied CSV export was reported as 923 rows, 147 distinct crop-name/category pairs, 11 categories and 556 distinct IDs.
+- The export is useful as a candidate Bangladesh crop/variety source, but it contains repeated IDs/records and inconsistent English-name fields. It must be cleaned and provenance-preserved before it is treated as a normalized master.
+- Do not treat each CSV row or variety as a separate crop identity.
+- The original CSV IDs are source identifiers, not automatically canonical cross-app IDs.
+
+### Pepper identity resolution
+
+Keep these identities distinct:
+
+| Canonical ID | Source/display name | Meaning |
+|---|---|---|
+| `capsicum_bell` | মিষ্টি মরিচ | Bell/sweet pepper |
+| `chili` | মরিচ | Chilli pepper |
+| `ornamental_pepper` | অর্নামেন্টাল মরিচ | Ornamental pepper |
+| `black_pepper` | গোলমরিচ | Black pepper |
+
+Do not use bare `pepper` as a universal alias. If an incoming label says only "pepper" without context, treat it as ambiguous rather than silently mapping it.
+
+### Kaggle/PlantVillage model evidence
+
+Inspected the source repository's three PlantVillage `class_names.json` files, `predict.py`, `train_model.py`, `download_pretrained_model.py` and `dataset_paths.py`.
+
+- The three PlantVillage label files contain the same ordered 15 classes.
+- The output classes cover bell pepper (2), potato (3) and tomato (10).
+- The exact pepper labels are `Pepper__bell___Bacterial_spot` and `Pepper__bell___healthy`; they support bell pepper only.
+- The source repo's ViT entry has no confirmed ordered 13-class label map in the inspected evidence. Its crop mapping must remain unverified until the exact model artifact and labels are recovered and checked.
+- Model-reported/sample evaluation is not evidence of Bangladesh field accuracy.
+
+The machine-readable evidence map is `model-coverage-v1.json`. The crop identity list is `crop-registry-v1.json`.
+
+### Runtime correction boundary
+
+Phase 0 records the evidence and defines the required fail-closed behaviour. Phase 1 must implement and test the runtime routing correction in CABI. Until then, do not claim that current runtime routing has already been fixed.
