@@ -2,142 +2,87 @@
   "registry": "krishiai-crop-registry",
   "version": "1.0.0-draft",
   "status": "draft-owner-review-required",
-  "description": "Initial cross-app crop IDs and aliases. Not an exhaustive export of the CABI crop selector and not a declaration of ML model support.",
+  "description": "Source-aligned starter crop registry extracted from the attached Bangladesh Crop Database application. The source application generates 5–7 examples per category through Gemini; its examples are not a complete national crop inventory.",
   "canonicalOwner": "cabi-diagnosis",
-  "normalization": "lowercase ASCII IDs; Bengali and English display names remain aliases, not identifiers.",
-  "crops": [
+  "normalization": "Stable lowercase ASCII IDs. The attached source's English example names are retained as source-backed aliases. No unverified Bangla translations or agronomic synonyms are added.",
+  "source": {
+    "name": "Bangladesh Crop Database",
+    "uploadedArchive": "Bangladesh Crop Database",
+    "filesInspected": [
+      "types.ts",
+      "constants.ts",
+      "services/geminiService.ts"
+    ],
+    "categoryDefinitions": "constants.ts",
+    "cropExamples": "services/geminiService.ts exampleCrops",
+    "extractionNote": "The service prompt asks Gemini for 5–7 crops per category. Only the explicitly hard-coded example names are included here; generated results are dynamic and were not available as a fixed source dataset."
+  },
+  "categories": [
     {
-      "id": "rice",
-      "labelEn": "Rice",
-      "labelBn": "ধান",
-      "aliases": [
-        "ধান",
-        "rice",
-        "paddy",
-        "boro rice",
-        "aman rice",
-        "aus rice"
-      ],
-      "seasonVariants": [
-        "boro",
-        "aman",
-        "aus"
-      ]
+      "id": "grains",
+      "sourceLabel": "Grains",
+      "cropIds": ["rice", "wheat", "maize"]
     },
     {
-      "id": "wheat",
-      "labelEn": "Wheat",
-      "labelBn": "গম",
-      "aliases": [
-        "গম",
-        "wheat"
-      ]
+      "id": "oils",
+      "sourceLabel": "Oils",
+      "cropIds": ["mustard", "soybean", "sesame"]
     },
     {
-      "id": "maize",
-      "labelEn": "Maize",
-      "labelBn": "ভুট্টা",
-      "aliases": [
-        "ভুট্টা",
-        "maize",
-        "corn",
-        "sweet corn"
-      ]
+      "id": "spices",
+      "sourceLabel": "Spices",
+      "cropIds": ["chili", "turmeric", "ginger"]
     },
     {
-      "id": "potato",
-      "labelEn": "Potato",
-      "labelBn": "আলু",
-      "aliases": [
-        "আলু",
-        "potato"
-      ]
+      "id": "pulses",
+      "sourceLabel": "Pulses",
+      "cropIds": ["lentil", "chickpea", "black_gram"]
     },
     {
-      "id": "tomato",
-      "labelEn": "Tomato",
-      "labelBn": "টমেটো",
-      "aliases": [
-        "টমেটো",
-        "tomato"
-      ]
+      "id": "fruits",
+      "sourceLabel": "Fruits",
+      "cropIds": ["mango", "jackfruit", "litchi"]
     },
     {
-      "id": "brinjal",
-      "labelEn": "Brinjal",
-      "labelBn": "বেগুন",
-      "aliases": [
-        "বেগুন",
-        "brinjal",
-        "eggplant",
-        "aubergine"
-      ]
+      "id": "vegetables",
+      "sourceLabel": "Vegetables",
+      "cropIds": ["potato", "brinjal", "cabbage"]
     },
     {
-      "id": "chilli",
-      "labelEn": "Chilli",
-      "labelBn": "মরিচ",
-      "aliases": [
-        "মরিচ",
-        "chilli",
-        "chili"
-      ]
-    },
-    {
-      "id": "capsicum",
-      "labelEn": "Capsicum",
-      "labelBn": "ক্যাপসিকাম",
-      "aliases": [
-        "ক্যাপসিকাম",
-        "capsicum",
-        "pepper",
-        "bell pepper"
-      ]
-    },
-    {
-      "id": "jute",
-      "labelEn": "Jute",
-      "labelBn": "পাট",
-      "aliases": [
-        "পাট",
-        "jute"
-      ]
-    },
-    {
-      "id": "mustard",
-      "labelEn": "Mustard",
-      "labelBn": "সরিষা",
-      "aliases": [
-        "সরিষা",
-        "mustard",
-        "rapeseed"
-      ]
-    },
-    {
-      "id": "banana",
-      "labelEn": "Banana",
-      "labelBn": "কলা",
-      "aliases": [
-        "কলা",
-        "banana",
-        "plantain"
-      ]
-    },
-    {
-      "id": "mango",
-      "labelEn": "Mango",
-      "labelBn": "আম",
-      "aliases": [
-        "আম",
-        "mango"
-      ]
+      "id": "high_value_crops",
+      "sourceLabel": "High Value Crops",
+      "cropIds": ["cotton", "tea", "tobacco"]
     }
   ],
-  "modelCoverageNote": "CABI public/models/manifest.json currently declares PlantVillage MobileNet crop coverage as tomato/potato/pepper and ViT coverage as rice/wheat/corn/potato. Registry membership does not imply model eligibility. Validate model classes and crop compatibility separately.",
+  "crops": [
+    { "id": "rice", "labelEn": "Rice", "aliases": ["Rice"], "sourceCategoryId": "grains" },
+    { "id": "wheat", "labelEn": "Wheat", "aliases": ["Wheat"], "sourceCategoryId": "grains" },
+    { "id": "maize", "labelEn": "Maize", "aliases": ["Maize"], "sourceCategoryId": "grains" },
+    { "id": "mustard", "labelEn": "Mustard", "aliases": ["Mustard"], "sourceCategoryId": "oils" },
+    { "id": "soybean", "labelEn": "Soybean", "aliases": ["Soybean"], "sourceCategoryId": "oils" },
+    { "id": "sesame", "labelEn": "Sesame", "aliases": ["Sesame"], "sourceCategoryId": "oils" },
+    { "id": "chili", "labelEn": "Chili", "aliases": ["Chili"], "sourceCategoryId": "spices" },
+    { "id": "turmeric", "labelEn": "Turmeric", "aliases": ["Turmeric"], "sourceCategoryId": "spices" },
+    { "id": "ginger", "labelEn": "Ginger", "aliases": ["Ginger"], "sourceCategoryId": "spices" },
+    { "id": "lentil", "labelEn": "Lentil", "aliases": ["Lentil"], "sourceCategoryId": "pulses" },
+    { "id": "chickpea", "labelEn": "Chickpea", "aliases": ["Chickpea"], "sourceCategoryId": "pulses" },
+    { "id": "black_gram", "labelEn": "Black gram", "aliases": ["Black gram"], "sourceCategoryId": "pulses" },
+    { "id": "mango", "labelEn": "Mango", "aliases": ["Mango"], "sourceCategoryId": "fruits" },
+    { "id": "jackfruit", "labelEn": "Jackfruit", "aliases": ["Jackfruit"], "sourceCategoryId": "fruits" },
+    { "id": "litchi", "labelEn": "Litchi", "aliases": ["Litchi"], "sourceCategoryId": "fruits" },
+    { "id": "potato", "labelEn": "Potato", "aliases": ["Potato"], "sourceCategoryId": "vegetables" },
+    { "id": "brinjal", "labelEn": "Brinjal", "aliases": ["Brinjal"], "sourceCategoryId": "vegetables" },
+    { "id": "cabbage", "labelEn": "Cabbage", "aliases": ["Cabbage"], "sourceCategoryId": "vegetables" },
+    { "id": "cotton", "labelEn": "Cotton", "aliases": ["Cotton"], "sourceCategoryId": "high_value_crops" },
+    { "id": "tea", "labelEn": "Tea", "aliases": ["Tea"], "sourceCategoryId": "high_value_crops" },
+    { "id": "tobacco", "labelEn": "Tobacco", "aliases": ["Tobacco"], "sourceCategoryId": "high_value_crops", "advisoryNote": "Included because it is explicitly present in the source application's example prompt; its inclusion is not an agronomic recommendation or endorsement." }
+  ],
+  "modelCoverageNote": "Registry membership does not imply eligibility for any CABI ML model. Check public/models/manifest.json and actual class metadata independently before routing a crop to a model.",
   "reviewNotes": [
-    "Confirm aliases against the full CABI crop selector and all companion datasets before freezing.",
-    "Decide whether pepper and capsicum are one canonical crop or distinct horticultural crop IDs in the Bangladesh context.",
-    "Keep rice seasons as attributes, not separate crop IDs, unless a downstream dataset requires distinct agronomic entities.",
-    "Do not silently map unknown crop labels."
+    "This is a 21-crop starter list taken only from hard-coded examples in the attached app, not the dynamically generated Gemini responses and not a complete Bangladesh crop inventory.",
+    "The attached app contains no crop-specific Bangla names or bilingual alias table; add Bangla labels only after a separately reviewed authoritative mapping is supplied.",
+    "Do not reintroduce crops or synonyms absent from the attached source as if they came from it.",
+    "Do not silently map unknown crop labels.",
+    "Confirm crop identity and alias equivalence against CABI and Bangladesh crop datasets before freezing the registry."
   ]
 }
