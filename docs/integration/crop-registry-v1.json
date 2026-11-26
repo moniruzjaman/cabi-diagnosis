@@ -1,0 +1,143 @@
+{
+  "registry": "krishiai-crop-registry",
+  "version": "1.0.0-draft",
+  "status": "draft-owner-review-required",
+  "description": "Initial cross-app crop IDs and aliases. Not an exhaustive export of the CABI crop selector and not a declaration of ML model support.",
+  "canonicalOwner": "cabi-diagnosis",
+  "normalization": "lowercase ASCII IDs; Bengali and English display names remain aliases, not identifiers.",
+  "crops": [
+    {
+      "id": "rice",
+      "labelEn": "Rice",
+      "labelBn": "ধান",
+      "aliases": [
+        "ধান",
+        "rice",
+        "paddy",
+        "boro rice",
+        "aman rice",
+        "aus rice"
+      ],
+      "seasonVariants": [
+        "boro",
+        "aman",
+        "aus"
+      ]
+    },
+    {
+      "id": "wheat",
+      "labelEn": "Wheat",
+      "labelBn": "গম",
+      "aliases": [
+        "গম",
+        "wheat"
+      ]
+    },
+    {
+      "id": "maize",
+      "labelEn": "Maize",
+      "labelBn": "ভুট্টা",
+      "aliases": [
+        "ভুট্টা",
+        "maize",
+        "corn",
+        "sweet corn"
+      ]
+    },
+    {
+      "id": "potato",
+      "labelEn": "Potato",
+      "labelBn": "আলু",
+      "aliases": [
+        "আলু",
+        "potato"
+      ]
+    },
+    {
+      "id": "tomato",
+      "labelEn": "Tomato",
+      "labelBn": "টমেটো",
+      "aliases": [
+        "টমেটো",
+        "tomato"
+      ]
+    },
+    {
+      "id": "brinjal",
+      "labelEn": "Brinjal",
+      "labelBn": "বেগুন",
+      "aliases": [
+        "বেগুন",
+        "brinjal",
+        "eggplant",
+        "aubergine"
+      ]
+    },
+    {
+      "id": "chilli",
+      "labelEn": "Chilli",
+      "labelBn": "মরিচ",
+      "aliases": [
+        "মরিচ",
+        "chilli",
+        "chili"
+      ]
+    },
+    {
+      "id": "capsicum",
+      "labelEn": "Capsicum",
+      "labelBn": "ক্যাপসিকাম",
+      "aliases": [
+        "ক্যাপসিকাম",
+        "capsicum",
+        "pepper",
+        "bell pepper"
+      ]
+    },
+    {
+      "id": "jute",
+      "labelEn": "Jute",
+      "labelBn": "পাট",
+      "aliases": [
+        "পাট",
+        "jute"
+      ]
+    },
+    {
+      "id": "mustard",
+      "labelEn": "Mustard",
+      "labelBn": "সরিষা",
+      "aliases": [
+        "সরিষা",
+        "mustard",
+        "rapeseed"
+      ]
+    },
+    {
+      "id": "banana",
+      "labelEn": "Banana",
+      "labelBn": "কলা",
+      "aliases": [
+        "কলা",
+        "banana",
+        "plantain"
+      ]
+    },
+    {
+      "id": "mango",
+      "labelEn": "Mango",
+      "labelBn": "আম",
+      "aliases": [
+        "আম",
+        "mango"
+      ]
+    }
+  ],
+  "modelCoverageNote": "CABI public/models/manifest.json currently declares PlantVillage MobileNet crop coverage as tomato/potato/pepper and ViT coverage as rice/wheat/corn/potato. Registry membership does not imply model eligibility. Validate model classes and crop compatibility separately.",
+  "reviewNotes": [
+    "Confirm aliases against the full CABI crop selector and all companion datasets before freezing.",
+    "Decide whether pepper and capsicum are one canonical crop or distinct horticultural crop IDs in the Bangladesh context.",
+    "Keep rice seasons as attributes, not separate crop IDs, unless a downstream dataset requires distinct agronomic entities.",
+    "Do not silently map unknown crop labels."
+  ]
+}
