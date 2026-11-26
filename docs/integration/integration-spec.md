@@ -127,3 +127,16 @@ If a later workflow requires transmitting additional data, it needs a separate e
 - Whether crop-season variants (e.g. Boro/Aman/Aus) should remain attributes of `rice` or become separate crop IDs. Current recommendation: keep `rice` as crop ID and season as a separate optional attribute.
 - Whether the Field Guide's six cause groups should be mapped to a shared cause-group registry without changing their existing local IDs. Current recommendation: preserve the existing IDs and add aliases only where required.
 - Whether to publish the full CABI disease registry in v1 or keep disease IDs as CABI-local opaque references for the first integration release. Current recommendation: keep them opaque initially.
+
+
+## 10. Evidence-based model coverage
+
+See `model-coverage-v1.json` for the source-backed crop-to-model-to-class mapping.
+
+- Crop registry membership never implies ML eligibility.
+- PlantVillage pepper labels refer to bell pepper only; canonical ID is `capsicum_bell`.
+- Chilli (`chili`), ornamental pepper, black pepper and brinjal must not route to the PlantVillage bell-pepper classes.
+- The ViT entry remains unverified until its exact ordered output labels and artifact provenance are inspected.
+- Unsupported crops must continue through the non-ML/manual diagnostic workflow with an explicit unavailable state.
+
+The Phase 1 implementation requirements are in `phase-1-execution-brief.md`.
