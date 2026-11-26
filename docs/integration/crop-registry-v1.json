@@ -1,8 +1,8 @@
 {
   "registry": "krishiai-crop-registry",
-  "version": "1.0.0-draft",
+  "version": "1.1.0-draft",
   "status": "draft-owner-review-required",
-  "description": "Source-aligned starter crop registry extracted from the attached Bangladesh Crop Database application. The source application generates 5–7 examples per category through Gemini; its examples are not a complete national crop inventory.",
+  "description": "Draft crop identity registry reconciled against the Bangladesh Crop Database app examples and the supplied crops_export.csv. This is a source-indexed candidate registry, not a complete or independently authoritative national master.",
   "canonicalOwner": "cabi-diagnosis",
   "normalization": "Stable lowercase ASCII IDs. The attached source's English example names are retained as source-backed aliases. No unverified Bangla translations or agronomic synonyms are added.",
   "source": {
@@ -21,68 +21,343 @@
     {
       "id": "grains",
       "sourceLabel": "Grains",
-      "cropIds": ["rice", "wheat", "maize"]
+      "cropIds": [
+        "rice",
+        "wheat",
+        "maize"
+      ]
     },
     {
       "id": "oils",
       "sourceLabel": "Oils",
-      "cropIds": ["mustard", "soybean", "sesame"]
+      "cropIds": [
+        "mustard",
+        "soybean",
+        "sesame"
+      ]
     },
     {
       "id": "spices",
       "sourceLabel": "Spices",
-      "cropIds": ["chili", "turmeric", "ginger"]
+      "cropIds": [
+        "chili",
+        "turmeric",
+        "ginger"
+      ]
     },
     {
       "id": "pulses",
       "sourceLabel": "Pulses",
-      "cropIds": ["lentil", "chickpea", "black_gram"]
+      "cropIds": [
+        "lentil",
+        "chickpea",
+        "black_gram"
+      ]
     },
     {
       "id": "fruits",
       "sourceLabel": "Fruits",
-      "cropIds": ["mango", "jackfruit", "litchi"]
+      "cropIds": [
+        "mango",
+        "jackfruit",
+        "litchi"
+      ]
     },
     {
       "id": "vegetables",
       "sourceLabel": "Vegetables",
-      "cropIds": ["potato", "brinjal", "cabbage"]
+      "cropIds": [
+        "potato",
+        "brinjal",
+        "cabbage"
+      ]
     },
     {
       "id": "high_value_crops",
       "sourceLabel": "High Value Crops",
-      "cropIds": ["cotton", "tea", "tobacco"]
+      "cropIds": [
+        "cotton",
+        "tea",
+        "tobacco"
+      ]
+    },
+    {
+      "id": "bangladesh_vegetables",
+      "sourceLabel": "সবজি ফসল (crops_export.csv)",
+      "cropIds": [
+        "capsicum_bell"
+      ]
+    },
+    {
+      "id": "bangladesh_spices",
+      "sourceLabel": "মসলা (crops_export.csv)",
+      "cropIds": [
+        "chili",
+        "ornamental_pepper",
+        "black_pepper"
+      ]
     }
   ],
   "crops": [
-    { "id": "rice", "labelEn": "Rice", "aliases": ["Rice"], "sourceCategoryId": "grains" },
-    { "id": "wheat", "labelEn": "Wheat", "aliases": ["Wheat"], "sourceCategoryId": "grains" },
-    { "id": "maize", "labelEn": "Maize", "aliases": ["Maize"], "sourceCategoryId": "grains" },
-    { "id": "mustard", "labelEn": "Mustard", "aliases": ["Mustard"], "sourceCategoryId": "oils" },
-    { "id": "soybean", "labelEn": "Soybean", "aliases": ["Soybean"], "sourceCategoryId": "oils" },
-    { "id": "sesame", "labelEn": "Sesame", "aliases": ["Sesame"], "sourceCategoryId": "oils" },
-    { "id": "chili", "labelEn": "Chili", "aliases": ["Chili"], "sourceCategoryId": "spices" },
-    { "id": "turmeric", "labelEn": "Turmeric", "aliases": ["Turmeric"], "sourceCategoryId": "spices" },
-    { "id": "ginger", "labelEn": "Ginger", "aliases": ["Ginger"], "sourceCategoryId": "spices" },
-    { "id": "lentil", "labelEn": "Lentil", "aliases": ["Lentil"], "sourceCategoryId": "pulses" },
-    { "id": "chickpea", "labelEn": "Chickpea", "aliases": ["Chickpea"], "sourceCategoryId": "pulses" },
-    { "id": "black_gram", "labelEn": "Black gram", "aliases": ["Black gram"], "sourceCategoryId": "pulses" },
-    { "id": "mango", "labelEn": "Mango", "aliases": ["Mango"], "sourceCategoryId": "fruits" },
-    { "id": "jackfruit", "labelEn": "Jackfruit", "aliases": ["Jackfruit"], "sourceCategoryId": "fruits" },
-    { "id": "litchi", "labelEn": "Litchi", "aliases": ["Litchi"], "sourceCategoryId": "fruits" },
-    { "id": "potato", "labelEn": "Potato", "aliases": ["Potato"], "sourceCategoryId": "vegetables" },
-    { "id": "brinjal", "labelEn": "Brinjal", "aliases": ["Brinjal"], "sourceCategoryId": "vegetables" },
-    { "id": "cabbage", "labelEn": "Cabbage", "aliases": ["Cabbage"], "sourceCategoryId": "vegetables" },
-    { "id": "cotton", "labelEn": "Cotton", "aliases": ["Cotton"], "sourceCategoryId": "high_value_crops" },
-    { "id": "tea", "labelEn": "Tea", "aliases": ["Tea"], "sourceCategoryId": "high_value_crops" },
-    { "id": "tobacco", "labelEn": "Tobacco", "aliases": ["Tobacco"], "sourceCategoryId": "high_value_crops", "advisoryNote": "Included because it is explicitly present in the source application's example prompt; its inclusion is not an agronomic recommendation or endorsement." }
+    {
+      "id": "rice",
+      "labelEn": "Rice",
+      "aliases": [
+        "Rice"
+      ],
+      "sourceCategoryId": "grains"
+    },
+    {
+      "id": "wheat",
+      "labelEn": "Wheat",
+      "aliases": [
+        "Wheat"
+      ],
+      "sourceCategoryId": "grains"
+    },
+    {
+      "id": "maize",
+      "labelEn": "Maize",
+      "aliases": [
+        "Maize"
+      ],
+      "sourceCategoryId": "grains"
+    },
+    {
+      "id": "mustard",
+      "labelEn": "Mustard",
+      "aliases": [
+        "Mustard"
+      ],
+      "sourceCategoryId": "oils"
+    },
+    {
+      "id": "soybean",
+      "labelEn": "Soybean",
+      "aliases": [
+        "Soybean"
+      ],
+      "sourceCategoryId": "oils"
+    },
+    {
+      "id": "sesame",
+      "labelEn": "Sesame",
+      "aliases": [
+        "Sesame"
+      ],
+      "sourceCategoryId": "oils"
+    },
+    {
+      "id": "chili",
+      "labelEn": "Chili",
+      "aliases": [
+        "chili",
+        "chilli",
+        "hot pepper",
+        "মরিচ"
+      ],
+      "sourceCategoryId": "bangladesh_spices",
+      "labelBn": "মরিচ",
+      "sourceName": "মরিচ",
+      "modelCoverageRef": null
+    },
+    {
+      "id": "turmeric",
+      "labelEn": "Turmeric",
+      "aliases": [
+        "Turmeric"
+      ],
+      "sourceCategoryId": "spices"
+    },
+    {
+      "id": "ginger",
+      "labelEn": "Ginger",
+      "aliases": [
+        "Ginger"
+      ],
+      "sourceCategoryId": "spices"
+    },
+    {
+      "id": "lentil",
+      "labelEn": "Lentil",
+      "aliases": [
+        "Lentil"
+      ],
+      "sourceCategoryId": "pulses"
+    },
+    {
+      "id": "chickpea",
+      "labelEn": "Chickpea",
+      "aliases": [
+        "Chickpea"
+      ],
+      "sourceCategoryId": "pulses"
+    },
+    {
+      "id": "black_gram",
+      "labelEn": "Black gram",
+      "aliases": [
+        "Black gram"
+      ],
+      "sourceCategoryId": "pulses"
+    },
+    {
+      "id": "mango",
+      "labelEn": "Mango",
+      "aliases": [
+        "Mango"
+      ],
+      "sourceCategoryId": "fruits"
+    },
+    {
+      "id": "jackfruit",
+      "labelEn": "Jackfruit",
+      "aliases": [
+        "Jackfruit"
+      ],
+      "sourceCategoryId": "fruits"
+    },
+    {
+      "id": "litchi",
+      "labelEn": "Litchi",
+      "aliases": [
+        "Litchi"
+      ],
+      "sourceCategoryId": "fruits"
+    },
+    {
+      "id": "potato",
+      "labelEn": "Potato",
+      "aliases": [
+        "Potato"
+      ],
+      "sourceCategoryId": "vegetables"
+    },
+    {
+      "id": "brinjal",
+      "labelEn": "Brinjal",
+      "aliases": [
+        "Brinjal"
+      ],
+      "sourceCategoryId": "vegetables"
+    },
+    {
+      "id": "cabbage",
+      "labelEn": "Cabbage",
+      "aliases": [
+        "Cabbage"
+      ],
+      "sourceCategoryId": "vegetables"
+    },
+    {
+      "id": "cotton",
+      "labelEn": "Cotton",
+      "aliases": [
+        "Cotton"
+      ],
+      "sourceCategoryId": "high_value_crops"
+    },
+    {
+      "id": "tea",
+      "labelEn": "Tea",
+      "aliases": [
+        "Tea"
+      ],
+      "sourceCategoryId": "high_value_crops"
+    },
+    {
+      "id": "tobacco",
+      "labelEn": "Tobacco",
+      "aliases": [
+        "Tobacco"
+      ],
+      "sourceCategoryId": "high_value_crops",
+      "advisoryNote": "Included because it is explicitly present in the source application's example prompt; its inclusion is not an agronomic recommendation or endorsement."
+    },
+    {
+      "id": "capsicum_bell",
+      "labelEn": "Bell pepper",
+      "labelBn": "মিষ্টি মরিচ",
+      "aliases": [
+        "bell pepper",
+        "sweet pepper",
+        "capsicum",
+        "Capsicum annuum (bell type)",
+        "মিষ্টি মরিচ"
+      ],
+      "sourceCategoryId": "bangladesh_vegetables",
+      "sourceName": "মিষ্টি মরিচ",
+      "modelCoverageRef": "plantvillage-mobilenetv3-light"
+    },
+    {
+      "id": "ornamental_pepper",
+      "labelEn": "Ornamental pepper",
+      "labelBn": "অর্নামেন্টাল মরিচ",
+      "aliases": [
+        "ornamental pepper",
+        "ornamental chilli",
+        "অর্নামেন্টাল মরিচ"
+      ],
+      "sourceCategoryId": "bangladesh_spices",
+      "sourceName": "অর্নামেন্টাল মরিচ",
+      "modelCoverageRef": null
+    },
+    {
+      "id": "black_pepper",
+      "labelEn": "Black pepper",
+      "labelBn": "গোলমরিচ",
+      "aliases": [
+        "black pepper",
+        "গোলমরিচ"
+      ],
+      "sourceCategoryId": "bangladesh_spices",
+      "sourceName": "গোলমরিচ",
+      "modelCoverageRef": null
+    }
   ],
-  "modelCoverageNote": "Registry membership does not imply eligibility for any CABI ML model. Check public/models/manifest.json and actual class metadata independently before routing a crop to a model.",
+  "modelCoverageNote": "Crop identity is not model eligibility. See model-coverage-v1.json. PlantVillage's Pepper__bell labels map only to capsicum_bell. Generic pepper, chilli, black pepper, ornamental pepper and brinjal must not be routed to that model. The ViT model remains unverified until the exact 13 output labels and model artifact are inspected.",
   "reviewNotes": [
     "This is a 21-crop starter list taken only from hard-coded examples in the attached app, not the dynamically generated Gemini responses and not a complete Bangladesh crop inventory.",
     "The attached app contains no crop-specific Bangla names or bilingual alias table; add Bangla labels only after a separately reviewed authoritative mapping is supplied.",
     "Do not reintroduce crops or synonyms absent from the attached source as if they came from it.",
     "Do not silently map unknown crop labels.",
-    "Confirm crop identity and alias equivalence against CABI and Bangladesh crop datasets before freezing the registry."
+    "Confirm crop identity and alias equivalence against CABI and Bangladesh crop datasets before freezing the registry.",
+    "Pepper identities are distinct: capsicum_bell (মিষ্টি মরিচ), chili (মরিচ), ornamental_pepper (অর্নামেন্টাল মরিচ) and black_pepper (গোলমরিচ). Do not use the ambiguous alias 'pepper' as a canonical mapping.",
+    "The supplied crops_export.csv is a broad candidate source but has duplicate IDs/rows and inconsistent English-name fields. A normalized national master requires a separate data-cleaning and authority review.",
+    "PlantVillage model support is determined by exact model output labels, not by family membership or router token matches."
+  ],
+  "additionalSources": [
+    {
+      "name": "Bangladesh Crop Database CSV export",
+      "file": "crops_export.csv",
+      "observedShape": {
+        "rows": 923,
+        "distinctCropNameCategoryPairs": 147,
+        "categories": 11,
+        "distinctIds": 556
+      },
+      "use": "Candidate source for Bangla/English crop names, categories and variety relationships.",
+      "qualityNotes": [
+        "The export contains repeated IDs and repeated full records; deduplicate using reviewed crop identity and variety relationships, not row count alone.",
+        "Some English-name fields contain Bangla text; do not assume the English column is clean.",
+        "Preserve original source IDs as provenance fields; do not reuse them as canonical crop IDs without collision and meaning review.",
+        "Crop varieties must not be promoted to separate species/crop identities without an explicit reason."
+      ],
+      "sourceInspectedInConversation": true
+    },
+    {
+      "name": "moniruzjaman/kaggle-dataset",
+      "repository": "https://github.com/moniruzjaman/kaggle-dataset",
+      "filesInspected": [
+        "models/plantvillage_mobilenetv3/class_names.json",
+        "models/plantvillage_mobilenetv3_light/class_names.json",
+        "models/plantvillage_trained/class_names.json",
+        "predict.py",
+        "train_model.py",
+        "download_pretrained_model.py",
+        "dataset_paths.py"
+      ],
+      "use": "Model class labels and inference/training provenance only; not a Bangladesh national crop list."
+    }
   ]
 }
