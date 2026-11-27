@@ -1,6 +1,17 @@
 # CABI Inbound Context Adapter — Phase 1 implementation notes
 
 **Status:** Implemented as a validated pure module; UI auto-wiring intentionally deferred until the draft contract is approved by the owner.
+
+> **Limitation (Phase 1 review, documented explicitly):** the inbound context
+> PARSER ships and is fully tested, but it is **NOT wired into any UI or app
+> startup path** in Phase 1. No code reads query parameters on launch, so an
+> inbound deep link currently has **no automatic effect** on the diagnose form.
+> This separation is deliberate — the contract is a draft (`1.0.0`) and the
+> owner has not approved the wiring semantics. Enforcement: a CI regression
+> guard (`inboundContext.test.mjs` §9) fails if `src/main.jsx`, `src/App.jsx`
+> or `index.html` ever reference the adapter before approval. Intended wiring
+> after approval is specified in §3 below.
+
 **Contract:** Diagnostic Context Contract v1 (`1.0.0`, draft — owner review required)
 **Snapshots pinned:** `docs/integration/crop-registry-v1.json` (1.1.0-draft), `docs/integration/symptom-registry-v1.json` (1.0.0-draft)
 **Module:** `src/integration/inboundContext.js` (+ `src/integration/contractSnapshot.js`)
