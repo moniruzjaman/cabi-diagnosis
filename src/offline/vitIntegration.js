@@ -29,20 +29,28 @@ const CANONICAL_TO_DB_KEY = {
  * cropEn through the canonical crop layer and falls back to resolveCropKey
  * only for unambiguous identities. Pepper-family crops never resolve to the
  * chilli (মরিচ) disease section.
+ *
+ * Exported (Phase 1 review fix): diagnosticEngine.js Step 3b shares this
+ * exact guard so a bell-pepper vision prediction cannot corroborate a chilli
+ * disease through the legacy resolveCropKey map ("Pepper"/"Capsicum"/
+ * "bell pepper" all substring-match to মরিচ there).
  */
-function cropKeyForVisionEntry(vitEntry) {
+export function cropKeyForVisionEntry(vitEntry) {
   if (!vitEntry) return null;
   // 1) canonical path (PlantVillage labels carry canonicalCropId since Phase 1)
   if (vitEntry.canonicalCropId) {
     return CANONICAL_TO_DB_KEY[vitEntry.canonicalCropId] || null;
   }
-  // 2) legacy entries: resolve via canonical identity first
-  const resolved = resolveCanonicalCrop(vitEntry.cropEn);
+  // 2) legacy entries: resolve via canonical identity first.
+  //    Accept `crop` as an alias of `cropEn` (diagnoseOffline vision snapshots
+  //    carry `crop`, not `cropEn`).
+  const cropName = vitEntry.cropEn ?? vitEntry.crop;
+  const resolved = resolveCanonicalCrop(cropName);
   if (resolved.ok) return CANONICAL_TO_DB_KEY[resolved.cropId] || null;
   // 3) last resort for legacy inputs — but never for pepper-family names,
   //    which historically aliased to মরিচ (chilli) and caused cross-crop boosts.
-  if (/pepper|capsicum/i.test(String(vitEntry.cropEn || ""))) return null;
-  return resolveCropKey(vitEntry.cropEn);
+  if (/pepper|capsicum|মরিচ/i.test(String(cropName || ""))) return null;
+  return resolveCropKey(cropName);
 }
 
 // ─── Disease name normalization ──────────────────────────────────────────────

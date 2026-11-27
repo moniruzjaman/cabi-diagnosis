@@ -93,7 +93,14 @@ export async function classifyLeafSmart(imageDataUrl, opts = {}) {
   }
 
   const route = resolveVisionRoute(opts.cropHint);
-  const preferred = opts.engine === "plantvillage" ? "plantvillage" : pickVisionEngine(opts.cropHint);
+  const autoEngine = pickVisionEngine(opts.cropHint);
+  // Phase 1 review fix: an explicit engine option can only CONFIRM the
+  // canonical eligibility decided by pickVisionEngine — it can never widen it.
+  // Before this fix, `engine:"plantvillage"` on chilli/brinjal/black pepper/
+  // ornamental pepper bypassed the eligibility check and ran the
+  // bell-pepper-capable model anyway. Now the automatic outcome
+  // (unavailable/ambiguous) is returned fail-closed for ineligible crops.
+  const preferred = opts.engine === "plantvillage" && autoEngine === "plantvillage" ? "plantvillage" : autoEngine;
 
   // Fail closed for unsupported/ambiguous crops — no model run, truthful state.
   if (preferred === "unavailable") return unsupportedResult(route, "CROP_NOT_SUPPORTED");
