@@ -520,6 +520,59 @@ export default function StructuredIntakeWizard({ C, onCaseCreated }) {
                   <span style={{ fontSize: 11, color: T.textLight }}>· {result.candidatesCount}টি রোগ যাচাই</span>
                 </div>
 
+                {/* Candidate-status note: never a confirmed diagnosis (Phase 1) */}
+                {result.merged.statusNoteBn && (
+                  <div style={{ marginBottom: 10 }}>
+                    <Badge C={T} tone="info" icon="🔍">
+                      {result.merged.statusNoteBn}
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Uncertainty (Phase 1): level + Bangla reasons */}
+                {result.merged.uncertainty && (
+                  <div
+                    style={{ marginBottom: 10, padding: 8, background: T.bgMuted, borderRadius: 8, lineHeight: 1.5 }}
+                  >
+                    <div style={{ fontSize: 11, fontWeight: 700, color: T.text }}>
+                      অনিশ্চয়তা:{" "}
+                      {result.merged.uncertainty.level === "high"
+                        ? "উচ্চ"
+                        : result.merged.uncertainty.level === "medium"
+                          ? "মাঝারি"
+                          : "কম"}
+                    </div>
+                    <ul style={{ margin: "4px 0 0", paddingLeft: 16, fontSize: 11, color: T.textMuted }}>
+                      {(result.merged.uncertainty.reasons || []).map((r, i) => (
+                        <li key={i}>{r}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Contradictory evidence, when any source provided it */}
+                {result.merged.topDisease?.evidenceAgainst?.length > 0 && (
+                  <div style={{ marginBottom: 10 }}>
+                    <Badge C={T} tone="warning" icon="⚠️">
+                      বিরোধী লক্ষণ: {result.merged.topDisease.evidenceAgainst.join(" · ")}
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Next verification steps (Phase 1, Bangla-first) */}
+                {Array.isArray(result.merged.verificationSteps) && result.merged.verificationSteps.length > 0 && (
+                  <div style={{ marginBottom: 10, padding: 8, background: T.bgMuted, borderRadius: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: T.text, marginBottom: 4 }}>
+                      পরবর্তী যাচাই ধাপ
+                    </div>
+                    <ol style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: T.textMuted, lineHeight: 1.6 }}>
+                      {result.merged.verificationSteps.map((s, i) => (
+                        <li key={i}>{s}</li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
                 {/* Low-confidence uncertainty warning (plan §7.3) */}
                 {(result.merged.confidence < 40 || result.merged.agreement === "low") && (
                   <div style={{ marginBottom: 10 }}>
