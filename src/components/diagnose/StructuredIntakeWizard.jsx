@@ -550,6 +550,20 @@ export default function StructuredIntakeWizard({ C, onCaseCreated }) {
                   </div>
                 )}
 
+                {/* Supporting evidence, aggregated by the merger (Phase 1 review: must be visible) */}
+                {result.merged.topDisease?.evidence?.length > 0 && (
+                  <div style={{ marginBottom: 10, padding: 8, background: T.bgMuted, borderRadius: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: T.text, marginBottom: 4 }}>
+                      সমর্থনকারী প্রমাণ
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: T.textMuted, lineHeight: 1.6 }}>
+                      {result.merged.topDisease.evidence.map((s, i) => (
+                        <li key={i}>{s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 {/* Contradictory evidence, when any source provided it */}
                 {result.merged.topDisease?.evidenceAgainst?.length > 0 && (
                   <div style={{ marginBottom: 10 }}>
