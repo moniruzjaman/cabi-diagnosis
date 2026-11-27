@@ -11,6 +11,12 @@
 //   - "🔊 সব শুনুন" top-K summary button in the card header
 //   - Honors prefers-reduced-motion via useSyncExternalStore
 //   - Theme-aware colors via the theme prop
+//
+// Phase 1 (diagnostic engine): the underlying ensemble is evidence-based
+// now (see leafEnsemble.js/visionRouter.js). Crops without a validated
+// engine get a truthful "Vision Not Available" card (CROP_NOT_SUPPORTED /
+// CROP_AMBIGUOUS codes) instead of a wrong-model prediction, and the
+// caption no longer advertises the unverified ViT engine.
 
 import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { classifyLeafSmart, preloadLeafModels, isLeafModelReady } from "./leafEnsemble";
@@ -210,7 +216,7 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
         const result = await classifyLeafSmart(src, { topK: 3, timeoutMs: 45000, cropHint });
         if (cancelledRef.current) return;
         if (!result.ok) {
-          setState({ status: "error", error: result.error, code: result.code });
+          setState({ status: "error", error: result.error, code: result.code, reasonBn: result.reasonBn });
           return;
         }
         setState({ status: "ready", topK: result.topK, inferenceMs: result.inferenceMs });
@@ -251,7 +257,7 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
       <div style={cardStyle}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
           <span style={badgeStyle}>🛰️ Local AI Vision</span>
-          <span style={{ fontSize: 11, color: "#0f766e", fontWeight: 600 }}>Offline · MobileNet + ViT</span>
+          <span style={{ fontSize: 11, color: "#0f766e", fontWeight: 600 }}>Offline · PlantVillage</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {!reducedMotion && (
@@ -271,6 +277,24 @@ export default function VitSuggestions({ imageDataUrl, onApply, theme, autoRun =
           </span>
         </div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  // ── Crop not supported / ambiguous (fail-closed, truthful state) ────────
+  if (state.status === "error" && (state.code === "CROP_NOT_SUPPORTED" || state.code === "CROP_AMBIGUOUS")) {
+    const isAmbiguous = state.code === "CROP_AMBIGUOUS";
+    return (
+      <div style={{ ...cardStyle, background: "#fffbeb", borderColor: "#fde68a" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ ...badgeStyle, background: "#b45309" }}>ℹ️ Vision Not Available</span>
+        </div>
+        <div style={{ fontSize: 12, color: "#92400e", marginTop: 6, lineHeight: 1.5 }}>
+          {state.reasonBn ||
+            (isAmbiguous
+              ? "ফসলের নাম অস্পষ্ট — আগে সঠিক ফসল বেছে নিন।"
+              : "এই ফসলের জন্য এখনো কোনো যাচাইকৃত ছবি-মডেল নেই — লক্ষণ লিখে ম্যানুয়াল ডায়াগনোসিস চালিয়ে যান।")}
+        </div>
       </div>
     );
   }

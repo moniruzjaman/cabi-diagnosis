@@ -2,10 +2,17 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ort from "onnxruntime-web";
-import { pickVisionEngine } from "./visionRouter.js";
-import { PLANTVILLAGE_LABELS, entryFromLabel, PLANTVILLAGE_MODEL_PRESETS } from "./plantVillageLabels.js";
+import { pickVisionEngine, resolveVisionRoute } from "./visionRouter.js";
+import {
+  PLANTVILLAGE_LABELS,
+  entryFromLabel,
+  PLANTVILLAGE_MODEL_PRESETS,
+  validatePlantVillageLabels,
+  PLANTVILLAGE_CROP_CLASS_MAP,
+} from "./plantVillageLabels.js";
 import { findCropDiseaseForVitPrediction, computeVitBoost, applyVitBoostToMatches } from "./vitIntegration.js";
 import { resolveCropKey, CROP_DISEASES } from "../data/cropDiseases.js";
+import { resolveCanonicalCrop } from "../data/canonicalCrops.js";
 import { softmax } from "./onnxRuntime.js";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -14,18 +21,98 @@ function assert(cond, msg) {
   if (!cond) throw new Error(msg);
 }
 
-assert(pickVisionEngine("Rice") === "vit", "rice -> vit");
-assert(pickVisionEngine("ধান") === "vit", "bangla rice -> vit");
-assert(pickVisionEngine("Tomato") === "plantvillage", "tomato -> plantvillage");
-assert(pickVisionEngine("আলু") === "plantvillage", "potato -> plantvillage");
-assert(pickVisionEngine("Pepper") === "plantvillage", "pepper -> plantvillage");
+// ── Phase 1 routing matrix (evidence-based; model-coverage-v1.json) ─────
+// Validated PlantVillage crops: capsicum_bell, potato, tomato ONLY.
+assert(pickVisionEngine("টমাটো / Tomato") === "plantvillage", "tomato -> plantvillage");
+assert(pickVisionEngine("Tomato") === "plantvillage", "tomato en -> plantvillage");
+assert(pickVisionEngine("আলু / Potato") === "plantvillage", "potato -> plantvillage");
+assert(pickVisionEngine("আলু") === "plantvillage", "potato bn -> plantvillage");
+assert(pickVisionEngine("বাটি মরিচ / Bell Pepper") === "plantvillage", "bell pepper -> plantvillage");
+assert(pickVisionEngine("শিমলা মরিচ / Capsicum") === "plantvillage", "capsicum -> plantvillage");
+assert(pickVisionEngine("capsicum_bell") === "plantvillage", "capsicum_bell id -> plantvillage");
+
+// Pepper-family and other unsupported crops must NEVER select a vision model.
+assert(pickVisionEngine("মরিচ / Chilli") === "unavailable", "chilli -> unavailable (never plantvillage)");
+assert(pickVisionEngine("chilli") === "unavailable", "chilli en -> unavailable");
+assert(pickVisionEngine("গোলমরিচ / Black Pepper") === "unavailable", "black pepper -> unavailable");
+assert(pickVisionEngine("বেগুন / Brinjal") === "unavailable", "brinjal -> unavailable (was plantvillage before)");
+assert(pickVisionEngine("ধান (বোরো) / Rice - Boro") === "unavailable", "rice boro -> unavailable (was vit before)");
+assert(pickVisionEngine("ধান / Rice") === "unavailable", "rice -> unavailable (was vit before)");
+assert(pickVisionEngine("ধান") === "unavailable", "bangla rice -> unavailable");
+assert(pickVisionEngine("Rice") === "unavailable", "rice en -> unavailable");
+assert(pickVisionEngine("গম / Wheat") === "unavailable", "wheat -> unavailable");
+assert(pickVisionEngine("ভুট্টা / Maize") === "unavailable", "maize -> unavailable");
+
+// Bare "pepper" is deliberately ambiguous — never auto-routed.
+assert(pickVisionEngine("Pepper") === "ambiguous", "bare pepper -> ambiguous");
+assert(pickVisionEngine("pepper") === "ambiguous", "bare pepper lc -> ambiguous");
+assert(resolveCanonicalCrop("pepper").reason === "ambiguous", "pepper resolves as ambiguous");
+
+// No crop hint → auto (validated model may classify by its own labels).
 assert(pickVisionEngine("") === "auto", "empty -> auto");
+
+// pickVisionEngine must never return the unverified engine for ANY selector crop.
+const { CROP_FLAT } = await import("../data/cropRegistry.js");
+for (const display of CROP_FLAT) {
+  const engine = pickVisionEngine(display);
+  assert(engine !== "vit", `no selector crop may route to vit (${display})`);
+  assert(
+    ["plantvillage", "unavailable", "ambiguous", "auto"].includes(engine),
+    `engine value valid for ${display}: ${engine}`,
+  );
+}
+const route = resolveVisionRoute("মরিচ / Chilli");
+assert(route.engine === "unavailable" && route.cropId === "chili", "chilli route detail");
+assert(route.reasonBn && route.reasonBn.length > 0, "bangla reason present for unsupported crops");
 
 assert(PLANTVILLAGE_LABELS.length === 15, "15 plantvillage classes");
 assert(entryFromLabel(6, 0.9).diseaseEn === "Early Blight", "tomato early blight label");
 assert(entryFromLabel(12, 0.8).category === "viral", "tylcv is viral");
-assert(resolveCropKey("Pepper") === "মরিচ", "pepper crop key");
+assert(entryFromLabel(0, 0.7).canonicalCropId === "capsicum_bell", "pepper bacterial spot -> capsicum_bell");
+assert(entryFromLabel(1, 0.7).cropBn === "মিষ্টি মরিচ", "bell pepper healthy displayed as মিষ্টি মরিচ (not মরিচ)");
+assert(entryFromLabel(4, 0.7).canonicalCropId === "potato", "potato healthy -> potato");
+
+// Label-table consistency + fail-closed behavior.
+const labelCheck = validatePlantVillageLabels();
+assert(labelCheck.ok, "bundled label table passes validation: " + (labelCheck.errors || []).join("; "));
+const corrupted = PLANTVILLAGE_LABELS.map((l, i) => (i === 0 ? { ...l, canonicalCropId: "chili" } : l));
+const corruptCheck = validatePlantVillageLabels(corrupted);
+assert(!corruptCheck.ok, "pepper class mis-mapped to chili must fail validation");
+const shortCheck = validatePlantVillageLabels(PLANTVILLAGE_LABELS.slice(0, 14));
+assert(!shortCheck.ok, "wrong class count must fail validation");
+assert(PLANTVILLAGE_CROP_CLASS_MAP["capsicum_bell"].length === 2, "2 capsicum_bell classes");
+assert(PLANTVILLAGE_CROP_CLASS_MAP["potato"].length === 3, "3 potato classes");
+assert(PLANTVILLAGE_CROP_CLASS_MAP["tomato"].length === 10, "10 tomato classes");
+// Legacy general-flow crop-key map is unchanged (documented Phase 1 open item:
+// CROP_NAME_MAP still aliases Capsicum/Pepper to মরিচ — owner decision needed
+// because CROP_DISEASES has no bell-pepper section). The VISION path is
+// guarded, below.
+assert(resolveCropKey("Pepper") === "মরিচ", "pepper crop key (legacy map unchanged)");
 assert(resolveCropKey("Tomato") === "টমেটো", "tomato crop key");
+
+// Vision→DB identity guard: bell pepper output must NEVER match the chilli DB.
+const bellPepperEntry = {
+  canonicalCropId: "capsicum_bell",
+  cropEn: "Bell pepper",
+  cropBn: "মিষ্টি মরিচ",
+  diseaseEn: "Bacterial Spot",
+  diseaseBn: "ব্যাকটেরিয়াল স্পট",
+  confidence: 0.9,
+  category: "bacterial",
+  isHealthy: false,
+};
+assert(findCropDiseaseForVitPrediction(bellPepperEntry) === null, "bell pepper prediction gets NO chilli DB match");
+const legacyPepperEntry = { ...bellPepperEntry, canonicalCropId: undefined, cropEn: "Pepper" };
+assert(findCropDiseaseForVitPrediction(legacyPepperEntry) === null, "legacy Pepper entry also guarded");
+const brinjalBoostProbe = findCropDiseaseForVitPrediction({
+  canonicalCropId: "brinjal",
+  cropEn: "Brinjal",
+  diseaseEn: "Bacterial Spot",
+  confidence: 0.9,
+  category: "bacterial",
+  isHealthy: false,
+});
+assert(brinjalBoostProbe === null || brinjalBoostProbe.cropKey === "বেগুন", "brinjal never resolves to মরিচ");
 assert(
   CROP_DISEASES.টমেটো.diseases.some((d) => d.name === "Septoria Leaf Spot"),
   "septoria in tomato db",

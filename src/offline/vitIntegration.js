@@ -9,6 +9,41 @@
 // they're easy to unit-test.
 
 import { CROP_DISEASES, resolveCropKey } from "../data/cropDiseases.js";
+import { resolveCanonicalCrop } from "../data/canonicalCrops.js";
+
+// Canonical crop ID -> CROP_DISEASES section key. Only identity-TRUE mappings
+// are listed. There is deliberately NO capsicum_bell entry: the Bangladesh
+// disease database has no verified bell-pepper section, and mapping bell
+// pepper to the chilli section (মরিচ) would be a silent cross-identity
+// diagnosis. Pepper-family model output therefore yields "no database match"
+// and is surfaced as a hint only.
+const CANONICAL_TO_DB_KEY = {
+  potato: "আলু",
+  tomato: "টমেটো",
+  brinjal: "বেগুন",
+};
+
+/**
+ * Identity-safe crop-key resolution for vision model output (Phase 1).
+ * Uses the label's canonicalCropId when present; otherwise resolves the
+ * cropEn through the canonical crop layer and falls back to resolveCropKey
+ * only for unambiguous identities. Pepper-family crops never resolve to the
+ * chilli (মরিচ) disease section.
+ */
+function cropKeyForVisionEntry(vitEntry) {
+  if (!vitEntry) return null;
+  // 1) canonical path (PlantVillage labels carry canonicalCropId since Phase 1)
+  if (vitEntry.canonicalCropId) {
+    return CANONICAL_TO_DB_KEY[vitEntry.canonicalCropId] || null;
+  }
+  // 2) legacy entries: resolve via canonical identity first
+  const resolved = resolveCanonicalCrop(vitEntry.cropEn);
+  if (resolved.ok) return CANONICAL_TO_DB_KEY[resolved.cropId] || null;
+  // 3) last resort for legacy inputs — but never for pepper-family names,
+  //    which historically aliased to মরিচ (chilli) and caused cross-crop boosts.
+  if (/pepper|capsicum/i.test(String(vitEntry.cropEn || ""))) return null;
+  return resolveCropKey(vitEntry.cropEn);
+}
 
 // ─── Disease name normalization ──────────────────────────────────────────────
 // ViT label suffix → stripped form. e.g. "Rice___Brown_Spot" → "Brown Spot".
@@ -54,7 +89,7 @@ function normalizeDiseaseName(diseaseEn) {
   return DISEASE_ALIASES[diseaseEn] || DISEASE_ALIASES[diseaseEn.replace(/_/g, " ")] || diseaseEn;
 }
 
-// ─── Public API ──────────────────────────────────────────────────────────────
+// ─── Public API ──────────────────────────────────────────────────────
 
 /**
  * Find the CROP_DISEASES record that best matches a ViT prediction.
@@ -67,13 +102,12 @@ function normalizeDiseaseName(diseaseEn) {
  */
 export function findCropDiseaseForVitPrediction(vitEntry) {
   if (!vitEntry || !vitEntry.cropEn || vitEntry.category === "invalid") return null;
+  const cropKey = cropKeyForVisionEntry(vitEntry);
   if (vitEntry.isHealthy) {
     // Still useful to know which crop is healthy.
-    const cropKey = resolveCropKey(vitEntry.cropEn);
     if (!cropKey) return null;
     return { cropKey, disease: null, matchType: "healthy", score: 1 };
   }
-  const cropKey = resolveCropKey(vitEntry.cropEn);
   if (!cropKey || !CROP_DISEASES[cropKey]) return null;
   const diseases = CROP_DISEASES[cropKey].diseases;
   const stripped = stripCropPrefix(vitEntry.diseaseEn, vitEntry.cropEn);
@@ -96,9 +130,14 @@ export function findCropDiseaseForVitPrediction(vitEntry) {
 }
 
 /**
- * Compute a matchRatio boost for the disease that matches the ViT
+ * Compute a matchRatio boost for the disease that matches the vision model
  * prediction. The boost is multiplicative: capped at 0.95 so it never
  * fully overrules human-entered symptom text.
+ *
+ * NOTE (Phase 1): the confidence input is a raw model score, NOT a calibrated
+ * field confidence (model-coverage-v1.json). Identity safety: bell pepper and
+ * other pepper-family entries resolve to no database section, so they can
+ * never boost chilli diseases.
  *
  * Boost formula:
  *   boost = confidence * weightByMatchType * 0.5
