@@ -11,6 +11,7 @@ import {
   CROP_DISEASES,
 } from "../data/cropDiseases.js";
 import { formatChemicalAdviceWithMoA } from "../data/moaDatabase.js";
+import { cropKeyForVisionEntry } from "./vitIntegration.js";
 
 /**
  * Splits a raw symptom field into individual symptom phrases.
@@ -730,8 +731,14 @@ function diagnoseOffline(inputData) {
   let visionCandidate = null;
   let visionAgreement = 0;
   if (vision && (vision.disease || vision.diseaseBn)) {
-    const visionCropKey = resolveCropKey(vision.crop) || cropKey;
-    if (cropKey && visionCropKey === cropKey) {
+    // Phase 1 review fix (identity guard): resolve the vision crop through the
+    // SAME canonical identity guard used by the vitIntegration boost path —
+    // NOT the legacy resolveCropKey map, which substring-matches "Pepper" /
+    // "Capsicum" / "bell pepper" to the chilli section (মরিচ). Before this
+    // fix, a bell-pepper prediction could corroborate a chilli disease when
+    // the farmer had selected chilli in the form.
+    const visionCropKey = cropKeyForVisionEntry(vision);
+    if (cropKey && visionCropKey && visionCropKey === cropKey) {
       const visionConf = Math.min(Math.max(Number(vision.confidence) || 0, 0), 0.97);
       const visionTokensEn = new Set(tokenizeSymptomText(normalizeSymptomText(String(vision.disease || ""))));
       const visionTokensBn = new Set(
