@@ -1,0 +1,117 @@
+{
+  "registry": "krishiai-visual-symptom-registry",
+  "version": "1.0.0-draft",
+  "status": "draft-owner-review-required",
+  "canonicalOwner": "cabi-diagnosis",
+  "description": "Normalised identifiers for the ten visual symptom categories currently used by Diagnosis Assistant. These are symptom-pattern classes, not disease IDs or causal-agent confirmations.",
+  "symptoms": [
+    {
+      "id": "wilt",
+      "labelEn": "Wilt",
+      "labelBn": "ঢলে পড়া",
+      "aliases": [
+        "wilt",
+        "wilting"
+      ]
+    },
+    {
+      "id": "leaf_spot",
+      "labelEn": "Leaf spot",
+      "labelBn": "পাতার দাগ",
+      "aliases": [
+        "leaf spot",
+        "leaf spots",
+        "spot"
+      ]
+    },
+    {
+      "id": "witches_broom",
+      "labelEn": "Witches' broom",
+      "labelBn": "ঝাড়ু আকৃতির বৃদ্ধি",
+      "aliases": [
+        "witches' broom",
+        "witches broom"
+      ]
+    },
+    {
+      "id": "canker",
+      "labelEn": "Canker",
+      "labelBn": "ক্যান্কার",
+      "aliases": [
+        "canker"
+      ]
+    },
+    {
+      "id": "mosaic",
+      "labelEn": "Mosaic",
+      "labelBn": "মোজাইক",
+      "aliases": [
+        "mosaic"
+      ]
+    },
+    {
+      "id": "yellowing",
+      "labelEn": "Yellowing of leaves",
+      "labelBn": "পাতা হলুদ হওয়া",
+      "aliases": [
+        "yellowing",
+        "chlorosis"
+      ]
+    },
+    {
+      "id": "distortion",
+      "labelEn": "Distortion of leaves",
+      "labelBn": "পাতার বিকৃতি",
+      "aliases": [
+        "distortion",
+        "leaf distortion",
+        "curling"
+      ]
+    },
+    {
+      "id": "little_leaf",
+      "labelEn": "Little leaf",
+      "labelBn": "ক্ষুদ্র পাতা",
+      "aliases": [
+        "little leaf"
+      ]
+    },
+    {
+      "id": "galls",
+      "labelEn": "Galls",
+      "labelBn": "গল",
+      "aliases": [
+        "galls",
+        "gall"
+      ]
+    },
+    {
+      "id": "drying_necrosis_blight",
+      "labelEn": "Drying / necrosis / blight",
+      "labelBn": "শুকিয়ে যাওয়া / নেক্রোসিস / ব্লাইট",
+      "aliases": [
+        "drying",
+        "necrosis",
+        "blight",
+        "drying/necrosis/blight"
+      ]
+    }
+  ],
+  "causeGroupNamespace": {
+    "owner": "diagnostic-field-guide",
+    "existingIds": [
+      "pest",
+      "fungal",
+      "bacterial",
+      "viral",
+      "nutrition",
+      "water"
+    ],
+    "note": "These cause-group IDs are not symptoms and must remain a separate field in the context contract."
+  },
+  "reviewNotes": [
+    "Validate exact Bangla labels and aliases with CABI and Field Guide maintainers.",
+    "Keep symptom IDs distinct from disease-engine IDs and broad cause-group IDs.",
+    "A symptom match must never be presented as confirmed disease identification."
+  ]
+}

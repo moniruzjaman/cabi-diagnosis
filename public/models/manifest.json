@@ -1,7 +1,13 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "source": "https://github.com/moniruzjaman/kaggle-dataset",
-  "updated": "2026-10-28",
+  "updated": "2026-11-27",
+  "coveragePolicy": {
+    "registry": "krishiai-vision-model-coverage",
+    "version": "1.0.0-draft",
+    "pinnedFrom": "docs/integration/model-coverage-v1.json",
+    "note": "crops[] lists canonical crop IDs a model is VERIFIED for (validatedCropIds + class map). Crops not listed must NOT be routed to the model; unknown-crop or ambiguous tokens (e.g. bare 'pepper') fail closed in src/offline/visionRouter.js."
+  },
   "engines": [
     {
       "id": "plantvillage-mobilenetv3-light",
@@ -11,7 +17,8 @@
       "input": 224,
       "classes": 15,
       "sizeMb": 4.4,
-      "crops": ["tomato", "potato", "pepper"],
+      "crops": ["capsicum_bell", "potato", "tomato"],
+      "coverage": "verified",
       "default": true,
       "mobile": true
     },
@@ -23,7 +30,8 @@
       "input": 128,
       "classes": 15,
       "sizeMb": 2.3,
-      "crops": ["tomato", "potato", "pepper"],
+      "crops": ["capsicum_bell", "potato", "tomato"],
+      "coverage": "verified",
       "mobile": true
     },
     {
@@ -33,7 +41,15 @@
       "input": 224,
       "classes": 13,
       "sizeMb": 22.3,
-      "crops": ["rice", "wheat", "corn", "potato"],
+      "crops": [],
+      "coverage": "unverified",
+      "status": "unverified-disabled-for-crop-specific-routing",
+      "unverifiedReasons": [
+        "exact ordered 13-class labels not confirmed",
+        "model artifact provenance/hash not verified",
+        "output-to-crop mapping missing",
+        "evaluation evidence not tied to this artifact"
+      ],
       "precache": false
     }
   ]

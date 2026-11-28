@@ -7946,7 +7946,7 @@ export default function UdbhidGoenda() {
         // Convert offline result to format compatible with existing result display
         const banglaText = `
 ---BANGLA_SECTION---
-## ১. CABI বর্জন পদ্ধতি অনুযায়ী বিশ্লেষণ
+${offlineResult.cropIdentityDisclosure ? `> ⚠️ ${offlineResult.cropIdentityDisclosure}\n` : ""}## ১. CABI বর্জন পদ্ধতি অনুযায়ী বিশ্লেষণ
 **অ্যাবায়োটিক নাকি বায়োটিক:** ${offlineResult.abioticBiotic === "abiotic" ? "অবায়টিক (পরিবেশজ)" : offlineResult.abioticBiotic === "biotic" ? "বায়োটিক (জীবজিৎ)" : "নিশ্চিত নয়"}
 **বর্জন গেট ফলাফল:** ${offlineResult.excluded.length > 0 ? offlineResult.excluded.join(", ") : "কোনো কারণ বাদ দেয়নি"} || ${offlineResult.suspects.length > 0 ? offlineResult.suspects.join(", ") : "কোনোসন্দেহ নেই"}
 

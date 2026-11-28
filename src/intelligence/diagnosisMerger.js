@@ -35,7 +35,8 @@ export const SOURCE_WEIGHTS = {
  * @typedef {Object} DiagnosisMatch
  * @property {string} diseaseId
  * @property {number} confidence — 0..100
- * @property {string[]} [evidence] — human-readable evidence lines
+ * @property {string[]} [evidence] — human-readable evidence lines FOR the disease
+ * @property {string[]} [contradicts] — human-readable evidence AGAINST the disease
  */
 
 /**
@@ -46,12 +47,19 @@ export const SOURCE_WEIGHTS = {
 
 /**
  * @typedef {Object} MergedDiagnosis
- * @property {{diseaseId: string, confidence: number, evidence: string[], sources: string[]}|null} topDisease
+ * @property {{diseaseId: string, confidence: number, evidence: string[],
+ *   evidenceAgainst: string[], sources: string[]}|null} topDisease
  * @property {{diseaseId: string, confidence: number, sources: string[]}[]} alternatives
  * @property {number} confidence — 0..100, weighted
  * @property {string[]} sources — the source ids that contributed
  * @property {'high'|'medium'|'low'} agreement
  * @property {string[]} modelLimitations
+ * @property {'candidate'} diagnosisStatus — output is NEVER a confirmed
+ *   diagnosis; a symptom match or a model label is always only a candidate
+ *   that requires field verification.
+ * @property {string} statusNoteBn — Bangla-first status note for the UI.
+ * @property {{level: 'low'|'medium'|'high', reasons: string[]}} uncertainty
+ * @property {string[]} verificationSteps — Bangla-first next verification steps.
  */
 
 /**
@@ -74,7 +82,47 @@ export function mergeDiagnoses(sources) {
     "merger is a weighted heuristic, not a calibrated ensemble",
     "source weights are author-chosen defaults",
     "agreement is a top-disease vote count, not a correlation measure",
+    "a symptom match or a model label is never a confirmed diagnosis",
   ];
+
+  const verificationStepsBase = [
+    "চূড়ান্ত সিদ্ধান্তের আগে স্থানীয় কৃষি সম্প্রসারণ কর্মকর্তা বা উপজেলা কৃষি অফিসের সাথে রোগ শনাক্তকরণ যাচাই করুন।",
+  ];
+
+  function buildVerificationSteps(top, srcIds, alternativesCount) {
+    const steps = [];
+    if (srcIds.includes("onnx")) {
+      steps.push("মডেলের প্রস্তাব মাঠের লক্ষণের সাথে মিলিয়ে দেখুন — ছবি-শনাক্তকরণ শুধুই ইঙ্গিত, প্রমাণ নয়।");
+    }
+    if (srcIds.includes("symptom_wizard")) {
+      steps.push("বাছাই করা লক্ষণগুলো আরও একবার যাচাই করুন (দাগের আকৃতি, অবস্থান ও বিস্তার)।");
+    }
+    if (srcIds.includes("copilot")) {
+      steps.push("এআই পরামর্শটি কৃষি কর্মকর্তার সাথে অবশ্যই যাচাই করুন।");
+    }
+    if (alternativesCount > 0) {
+      steps.push("বিকল্প রোগগুলোর লক্ষণও মিলিয়ে দেখুন — একই লক্ষণে একাধিক রোগ মেলে।");
+    }
+    steps.push(...verificationStepsBase);
+    return steps;
+  }
+
+  function buildUncertainty(top, agreement, hasContradictory) {
+    const reasons = [];
+    let level = "low";
+    if (!top) {
+      return { level: "high", reasons: ["কোনো প্রার্থী রোগ পাওয়া যায়নি — সিদ্ধান্তে যাওয়া যাবে না।"] };
+    }
+    if (hasContradictory) reasons.push("বিরোধী লক্ষণ পাওয়া গেছে — প্রার্থী রোগের বিপরীতে প্রমাণ আছে।");
+    if (agreement === "low") reasons.push("শুধুমাত্র একটি উৎস এই রোগকে প্রার্থী হিসেবে দিয়েছে।");
+    if (top.confidence < 40) reasons.push("সামগ্রিক আস্থা ৪০% এর নিচে।");
+    else if (top.confidence < 70) reasons.push("সামগ্রিক আস্থা মাঝারি (৭০% এর নিচে)।");
+    if (hasContradictory) level = "high";
+    else if (agreement === "low" || top.confidence < 40) level = "high";
+    else if (agreement === "medium" || top.confidence < 70) level = "medium";
+    if (reasons.length === 0) reasons.push("একাধিক উৎস একমত; তবুও মাঠ পর্যায়ে যাচাই প্রয়োজন।");
+    return { level, reasons };
+  }
 
   // Empty / no usable input → honest "unknown" verdict (never fabricate).
   const usable = Array.isArray(sources)
@@ -88,6 +136,10 @@ export function mergeDiagnoses(sources) {
       sources: [],
       agreement: "low",
       modelLimitations,
+      diagnosisStatus: "candidate",
+      statusNoteBn: "কোনো প্রার্থী রোগ নিশ্চিত করা যায়নি — ম্যানুয়াল যাচাই প্রয়োজন।",
+      uncertainty: buildUncertainty(null, "low", false),
+      verificationSteps: verificationStepsBase,
     };
   }
 
@@ -107,12 +159,14 @@ export function mergeDiagnoses(sources) {
         sources: new Set(),
         topVotes: 0,
         evidence: [],
+        evidenceAgainst: [],
       };
       entry.sumWeightedConf += weight * conf * 100;
       entry.totalWeight += weight;
       entry.sources.add(s.source);
       if (i === 0) entry.topVotes += 1; // this source's top pick
       if (Array.isArray(m.evidence)) entry.evidence.push(...m.evidence);
+      if (Array.isArray(m.contradicts)) entry.evidenceAgainst.push(...m.contradicts);
       tally.set(m.diseaseId, entry);
     }
   }
@@ -125,6 +179,10 @@ export function mergeDiagnoses(sources) {
       sources: usable.map((s) => s.source),
       agreement: "low",
       modelLimitations,
+      diagnosisStatus: "candidate",
+      statusNoteBn: "কোনো প্রার্থী রোগ নিশ্চিত করা যায়নি — ম্যানুয়াল যাচাই প্রয়োজন।",
+      uncertainty: buildUncertainty(null, "low", false),
+      verificationSteps: verificationStepsBase,
     };
   }
 
@@ -138,6 +196,7 @@ export function mergeDiagnoses(sources) {
       sources: Array.from(e.sources),
       topVotes: e.topVotes,
       evidence: Array.from(new Set(e.evidence)),
+      evidenceAgainst: Array.from(new Set(e.evidenceAgainst)),
     });
   }
   // Sort: confidence desc, then topVotes desc, then source-count desc.
@@ -162,6 +221,8 @@ export function mergeDiagnoses(sources) {
       diseaseId: top.diseaseId,
       confidence: top.confidence,
       evidence: top.evidence,
+      evidenceAgainst: top.evidenceAgainst,
+      hasContradictoryEvidence: top.evidenceAgainst.length > 0,
       sources: top.sources,
     },
     alternatives: candidates.slice(1).map((c) => ({
@@ -173,6 +234,14 @@ export function mergeDiagnoses(sources) {
     sources: Array.from(new Set(usable.map((s) => s.source))),
     agreement,
     modelLimitations,
+    diagnosisStatus: "candidate",
+    statusNoteBn: "এটি প্রার্থী রোগ — নিশ্চিত শনাক্তকরণ নয়; মাঠ পর্যায়ে যাচাই প্রয়োজন।",
+    uncertainty: buildUncertainty(top, agreement, top.evidenceAgainst.length > 0),
+    verificationSteps: buildVerificationSteps(
+      top,
+      Array.from(new Set(usable.map((s) => s.source))),
+      candidates.length - 1,
+    ),
   };
 }
 

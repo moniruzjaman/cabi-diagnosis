@@ -1,0 +1,127 @@
+{
+  "registry": "krishiai-vision-model-coverage",
+  "version": "1.0.0-draft",
+  "status": "evidence-reviewed-not-runtime-authoritative",
+  "purpose": "Separate crop identity from verified image-model eligibility. A crop is supported only when its exact model class labels and model artifact are available and validated.",
+  "sourceRepository": "https://github.com/moniruzjaman/kaggle-dataset",
+  "models": [
+    {
+      "id": "plantvillage-mobilenetv3-light",
+      "artifact": "CABI public/models/plantvillage/mobilenetv3-light/model.onnx",
+      "sourceClassFile": "models/plantvillage_mobilenetv3_light/class_names.json",
+      "inputSize": 224,
+      "classCount": 15,
+      "validatedCropIds": [
+        "capsicum_bell",
+        "potato",
+        "tomato"
+      ],
+      "classes": [
+        "Pepper__bell___Bacterial_spot",
+        "Pepper__bell___healthy",
+        "Potato___Early_blight",
+        "Potato___Late_blight",
+        "Potato___healthy",
+        "Tomato_Bacterial_spot",
+        "Tomato_Early_blight",
+        "Tomato_Late_blight",
+        "Tomato_Leaf_Mold",
+        "Tomato_Septoria_leaf_spot",
+        "Tomato_Spider_mites_Two_spotted_spider_mite",
+        "Tomato__Target_Spot",
+        "Tomato__Tomato_YellowLeaf__Curl_Virus",
+        "Tomato__Tomato_mosaic_virus",
+        "Tomato_healthy"
+      ],
+      "cropClassMap": {
+        "capsicum_bell": [
+          "Pepper__bell___Bacterial_spot",
+          "Pepper__bell___healthy"
+        ],
+        "potato": [
+          "Potato___Early_blight",
+          "Potato___Late_blight",
+          "Potato___healthy"
+        ],
+        "tomato": [
+          "Tomato_Bacterial_spot",
+          "Tomato_Early_blight",
+          "Tomato_Late_blight",
+          "Tomato_Leaf_Mold",
+          "Tomato_Septoria_leaf_spot",
+          "Tomato_Spider_mites_Two_spotted_spider_mite",
+          "Tomato__Target_Spot",
+          "Tomato__Tomato_YellowLeaf__Curl_Virus",
+          "Tomato__Tomato_mosaic_virus",
+          "Tomato_healthy"
+        ]
+      },
+      "notes": [
+        "Pepper__bell means bell/sweet pepper only.",
+        "This model does not support generic chilli, ornamental pepper, black pepper or brinjal.",
+        "Class support does not establish field accuracy or Bangladesh field validation."
+      ]
+    },
+    {
+      "id": "plantvillage-trained-128",
+      "artifact": "CABI public/models/plantvillage/trained-128/model.onnx",
+      "sourceClassFile": "models/plantvillage_trained/class_names.json",
+      "inputSize": 128,
+      "classCount": 15,
+      "validatedCropIds": [
+        "capsicum_bell",
+        "potato",
+        "tomato"
+      ],
+      "classesSameAs": "plantvillage-mobilenetv3-light",
+      "notes": [
+        "Repository class_names.json contains the same 15 ordered labels.",
+        "Verify the deployed CABI label file matches before enabling this engine."
+      ]
+    },
+    {
+      "id": "plantvillage-mobilenetv3",
+      "artifact": "Kaggle repository default model; CABI standard model path must be confirmed",
+      "sourceClassFile": "models/plantvillage_mobilenetv3/class_names.json",
+      "classCount": 15,
+      "validatedCropIds": [
+        "capsicum_bell",
+        "potato",
+        "tomato"
+      ],
+      "classesSameAs": "plantvillage-mobilenetv3-light",
+      "notes": [
+        "Repository class_names.json contains the same 15 ordered labels."
+      ]
+    },
+    {
+      "id": "crop-leaf-diseases-vit",
+      "artifact": "CABI public/models/crop_leaf_diseases_vit.onnx",
+      "declaredCropIds": [
+        "rice",
+        "wheat",
+        "corn",
+        "potato"
+      ],
+      "validatedCropIds": [],
+      "status": "unverified-disabled-for-crop-specific-routing",
+      "classCountDeclared": 13,
+      "missingEvidence": [
+        "Exact ordered 13-class labels",
+        "Verified model artifact provenance/hash",
+        "Output-to-crop mapping",
+        "Evaluation evidence tied to this exact artifact"
+      ],
+      "notes": [
+        "Do not route rice, wheat, maize/corn or potato to this engine as a confirmed crop-specific classifier until evidence is recovered."
+      ]
+    }
+  ],
+  "routingRules": [
+    "Resolve aliases to canonical crop IDs before selecting a model.",
+    "Select a model only when the canonical crop ID is listed in validatedCropIds and a matching class map exists.",
+    "Never route generic pepper, chilli, ornamental pepper, black pepper or brinjal to PlantVillage bell-pepper classes.",
+    "Do not treat a model confidence score as calibrated field confidence.",
+    "If no validated engine exists, return an explicit unsupported/not-available state and continue with non-ML diagnostic workflow."
+  ]
+}

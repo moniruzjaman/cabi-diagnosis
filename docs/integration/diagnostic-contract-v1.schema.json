@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/moniruzjaman/cabi-diagnosis/blob/main/docs/integration/diagnostic-contract-v1.schema.json",
+  "title": "KrishiAI Diagnostic Context Contract v1",
+  "description": "Minimal, privacy-preserving navigation context shared by independently deployed KrishiAI diagnostic applications. Draft schema; owner approval required before runtime use.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "sourceApp",
+    "destinationApp",
+    "context"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "sourceApp": {
+      "enum": [
+        "cabi-diagnosis",
+        "diagnostic-field-guide",
+        "diagnosis-assistant"
+      ]
+    },
+    "destinationApp": {
+      "enum": [
+        "cabi-diagnosis",
+        "diagnostic-field-guide",
+        "diagnosis-assistant"
+      ]
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "returnTo": {
+      "enum": [
+        "cabi-diagnosis",
+        "diagnostic-field-guide",
+        "diagnosis-assistant"
+      ]
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cropId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{1,63}$"
+        },
+        "plantPartId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{1,63}$"
+        },
+        "symptomIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{1,63}$"
+          }
+        },
+        "causeGroupIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{1,63}$"
+          }
+        },
+        "guideReference": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "guideId",
+            "page"
+          ],
+          "properties": {
+            "guideId": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{1,63}$"
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "chapterId": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{1,63}$"
+            }
+          }
+        },
+        "trainingTopicId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{1,63}$"
+        }
+      }
+    }
+  }
+}

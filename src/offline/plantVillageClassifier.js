@@ -1,8 +1,25 @@
 import { recordTelemetry } from "../utils/performanceTelemetry.js";
 import { createOnnxSession, imageToTensor, loadImage, softmax } from "./onnxRuntime.js";
-import { PLANTVILLAGE_LABELS, PLANTVILLAGE_MODEL_PRESETS, entryFromLabel } from "./plantVillageLabels.js";
+import {
+  PLANTVILLAGE_LABELS,
+  PLANTVILLAGE_MODEL_PRESETS,
+  entryFromLabel,
+  validatePlantVillageLabels,
+} from "./plantVillageLabels.js";
 
 const TOP_K_DEFAULT = 3;
+
+// Fail-closed label-table validation (Phase 1, brief B7): the bundled label
+// table is checked once at module load. A mismatch (count, ordering, canonical
+// crop mapping, Pepper__bell identity) disables the engine result path —
+// leafEnsemble returns LABEL_VALIDATION_FAILED and the app continues through
+// the existing manual/structured workflow instead of risking wrong-crop
+// predictions.
+const _labelValidation = validatePlantVillageLabels();
+
+export function isPlantVillageLabelTableValid() {
+  return _labelValidation;
+}
 
 let _activePresetId = "light";
 const _sessions = {
@@ -69,6 +86,17 @@ export async function classifyPlantVillage(imageDataUrl, opts = {}) {
   const topK = Math.max(1, Math.min(opts.topK ?? TOP_K_DEFAULT, PLANTVILLAGE_LABELS.length));
   const timeoutMs = opts.timeoutMs ?? 25000;
 
+  if (!_labelValidation.ok) {
+    return {
+      ok: false,
+      engine: "plantvillage",
+      modelId: preset.id,
+      code: "LABEL_VALIDATION_FAILED",
+      errors: _labelValidation.errors,
+      error: "bundled label table failed validation: " + _labelValidation.errors.join("; "),
+    };
+  }
+
   if (!imageDataUrl || typeof imageDataUrl !== "string") {
     return { ok: false, code: "BAD_INPUT", error: "imageDataUrl is required" };
   }
@@ -113,6 +141,7 @@ export async function classifyPlantVillage(imageDataUrl, opts = {}) {
       ok: true,
       engine: "plantvillage",
       modelId: preset.id,
+      labelsValidated: _labelValidation.ok,
       topK: topKResults,
       allScores,
       inferenceMs: durationMs,
