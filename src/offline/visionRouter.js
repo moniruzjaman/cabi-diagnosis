@@ -97,8 +97,7 @@ export function resolveVisionRoute(cropHint) {
         cropId: null,
         coverage: "ambiguous",
         reason: `ambiguous crop token; distinct identities: ${resolved.candidates.join(", ")}`,
-        reasonBn:
-          '"মরিচ" শব্দটি একাধিক ভিন্ন ফসল বোঝাতে পারে (মিষ্টি মরিচ, লঙ্কা/মরিচ, অর্নামেন্টাল মরিচ, গোলমরিচ) — আগে সঠিক ফসল বেছে নিন।',
+        reasonBn: `"${String(cropHint).trim()}" নামটি একাধিক ভিন্ন ফসল বোঝাতে পারে (মিষ্টি মরিচ, লঙ্কা/মরিচ, অর্নামেন্টাল মরিচ, গোলমরিচ) — আগে সঠিক ফসল বেছে নিন।`,
       };
     }
     return {

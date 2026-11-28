@@ -12,6 +12,7 @@ import {
 } from "../data/cropDiseases.js";
 import { formatChemicalAdviceWithMoA } from "../data/moaDatabase.js";
 import { cropKeyForVisionEntry } from "./vitIntegration.js";
+import { resolveCanonicalCrop } from "../data/canonicalCrops.js";
 
 /**
  * Splits a raw symptom field into individual symptom phrases.
@@ -653,6 +654,32 @@ function generateIPMRecommendations(diagnosis) {
 }
 
 /**
+ * F2 (acceptance review): honest disclosure for the non-vision symptom path.
+ *
+ * The legacy `resolveCropKey` map substring-matches pepper-family display
+ * strings ("Bell pepper", "Capsicum", "শিমলা মরিচ", "বাটি মরিচ") to the
+ * chilli section (মরিচ) because CROP_DISEASES has no bell-pepper section.
+ * That is a SILENT cross-crop map for a selectable crop. Rather than block
+ * the diagnosis, we surface a one-line Bangla disclosure so the farmer knows
+ * the list is a nearby-crop reference, not a bell-pepper-specific list.
+ *
+ * Returns a Bangla string when the selected crop's canonical identity differs
+ * from the resolved disease section's identity, otherwise null.
+ *
+ * @param {string} crop - the selected crop display/id string
+ * @param {string|null} cropKey - the resolved CROP_DISEASES section key
+ * @returns {string|null}
+ */
+function computeCropIdentityDisclosure(crop, cropKey) {
+  if (!crop || !cropKey || !CROP_DISEASES[cropKey]) return null;
+  const selected = resolveCanonicalCrop(crop);
+  const section = resolveCanonicalCrop(cropKey);
+  if (!selected.ok || !section.ok) return null;
+  if (selected.cropId === section.cropId) return null;
+  return `নির্বাচিত ফসল (${selected.labelBn || selected.labelEn}) এবং রোগ তালিকার ফসল (${section.labelBn || section.labelEn}) ভিন্ন — এই ফসলের জন্য আলাদা রোগ তালিকা এখনো নেই, তাই কাছাকাছি ফসলের তালিকা রেফারেন্স হিসেবে দেখানো হচ্ছে।`;
+}
+
+/**
  * Main diagnostic function that orchestrates the offline diagnosis process.
  * Now supports Bengali symptom input and crop-specific disease matching.
  * @param {Object} inputData - Contains symptoms, host info, pathogen info, env info, crop
@@ -883,6 +910,10 @@ function diagnoseOffline(inputData) {
     confidenceScore: evidenceScore,
     visionCandidate,
     visionAgreement,
+    // F2 — non-silent disclosure when the symptom path aliases a crop to a
+    // different crop's disease section (e.g. bell pepper → মরিচ). Null when
+    // the selected crop and the disease section share a canonical identity.
+    cropIdentityDisclosure: computeCropIdentityDisclosure(crop, cropKey),
     diseaseTriangle: triangle,
     fieldConfirmation: fieldMethods,
     ipmRecommendations: ipmRecommendations,

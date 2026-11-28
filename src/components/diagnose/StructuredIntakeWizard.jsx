@@ -29,144 +29,23 @@
 // ============================================================
 
 import { useState, useRef, useEffect } from "react";
-import { getDiseasesByCrop } from "../../intelligence/diseaseEngine.js";
-import { mergeDiagnoses } from "../../intelligence/diagnosisMerger.js";
 import { createCase } from "../../data/cropHealthCases.js";
+import { resolveCanonicalCrop } from "../../data/canonicalCrops.js";
 import { Button, Badge, EmptyState, ActionBlock } from "../ui/index.js";
-
-// Crops offered in Step 1. ids match diseaseEngine.js cropIds.
-const CROPS = [
-  { id: "rice", bn: "ধান", emoji: "🌾" },
-  { id: "potato", bn: "আলু", emoji: "🥔" },
-  { id: "tomato", bn: "টমেটো", emoji: "🍅" },
-  { id: "brinjal", bn: "বেগুন", emoji: "🍆" },
-  { id: "chili", bn: "মরিচ", emoji: "🌶️" },
-  { id: "mustard", bn: "সরিষা", emoji: "🌼" },
-  { id: "jute", bn: "পাট", emoji: "🌿" },
-  { id: "wheat", bn: "গম", emoji: "🌾" },
-  { id: "onion", bn: "পেঁয়াজ", emoji: "🧅" },
-  { id: "maize", bn: "ভুট্টা", emoji: "🌽" },
-];
-
-// Step 2 — affected plant part.
-const PARTS = [
-  { id: "leaf", bn: "পাতা" },
-  { id: "stem", bn: "কাণ্ড" },
-  { id: "fruit", bn: "ফল" },
-  { id: "root", bn: "মূল" },
-  { id: "whole", bn: "পুরো গাছ" },
-];
-
-// Step 3 — 8-way symptom taxonomy. Keywords match against diseaseEngine
-// symptomsBn/symptoms text. Authored for Bangla symptom phrasing.
-const SYMPTOM_TYPES = [
-  { id: "discolor", bn: "বিবর্ণতা", keys: ["হলুদ", "বিবর্ণ", "পোড়া", "সাদা", "কমলা", "লাল-বাদামি", "পাতা হলুদ"] },
-  {
-    id: "spots",
-    bn: "দাগ",
-    keys: ["দাগ", "গোলাকার", "মাকু", "বেগুনি", "কালো দাগ", "পাউডার", "গুঁড়া", "মরিচা", "মরচে"],
-  },
-  { id: "rot", bn: "পচন", keys: ["পচা", "পচে", "পচন", "ঘাড়", "শিথ", "গোড়া পচে", "কাণ্ড পচা", "স্টেম এন্ড"] },
-  {
-    id: "wilt",
-    bn: "কুঁচকানো",
-    keys: ["কুঁচক", "কুঁকড়ি", "বাঁকিয়ে", "নেতিয়ে", "শুকিয়ে", "ঝরে", "মরছে", "শুকিয়ে যাওয়া"],
-  },
-  { id: "deform", bn: "বিকৃতি", keys: ["বিকৃত", "মোজেইক", "মালফরমেশন", "ঘন", "গুচ্ছ", "বাঁকিয়ে যাচ্ছে"] },
-  { id: "pest_damage", bn: "পোকার ক্ষতি", keys: ["পোকা", "ছিদ্র", "পাতাফড়িং", "বোরার", "মাকড়", "ছিদ্রকারী"] },
-  { id: "growth", bn: "বৃদ্ধি সমস্যা", keys: ["বামন", "ছোট", "ফল ধারণ", "শীষ চিটা", "দানা ছোট", "ফল ছোট", "ছোট হয়ে"] },
-  { id: "not_sure", bn: "নিশ্চিত নই", keys: [] },
-];
-
-// Part → keyword hints for part-aware scoring.
-const PART_KEYS = {
-  leaf: ["পাতা", "পাতায়", "পাতার"],
-  stem: ["কাণ্ড", "কান্ড", "গোড়া", "শিথ", "ঘাড়", "ডগা", "আগা", "কাণ্ডের"],
-  fruit: ["ফল", "শীষ", "দানা", "ফলে", "ফুল"],
-  root: ["শিকড়", "মূল", "শেকড়"],
-  whole: ["গাছ", "পুরো"],
-};
-
-const STEPS = ["ফসল", "অংশ", "লক্ষণ", "ছবি", "ফলাফল"];
-const STEP_ICONS = ["🌾", "🍃", "🔎", "📷", "✅"];
-// Which steps block "পরবর্তী" until a selection is made.
-const STEP_REQUIRED = [true, true, true, false, false];
-const STEP_HELP = [
-  "কোন ফসলে সমস্যা হচ্ছে?",
-  "গাছের কোন অংশে আগে লক্ষ করেছেন?",
-  "সবচেয়ে কাছাকাছি লক্ষণটি বেছে নিন।",
-  "ছবি দিলে মিলিয়ে দেখা আরও সহজ হবে।",
-  "সম্ভাব্য কারণ ও পরের পদক্ষেপ দেখুন।",
-];
-// One-sentence "why this matters" per step (plan §7.2).
-const STEP_WHY = [
-  "ফসল জানা থাকলে শুধু সেই ফসলের রোগের তালিকা মিলানো হয় — ভুল ধরার সম্ভাবনা কমে।",
-  "একই রোগ পাতা ও শিকড়ে ভিন্নভাবে দেখা যায়; অংশ জানলে মিল বেশি নির্ভুল হয়।",
-  "লক্ষণের ধরনই নির্ণয়ের মূল সূত্র — এটি সঠিক হলে ফলাফল বেশি আস্থার যোগ্য হয়।",
-  "ছবি বাধ্যতামূলক নয়; দিলে মাঠ যাচাইয়ে তুলনা সহজ হয়। ছবি ব্রাউজারেই থাকে।",
-  "এটি প্রাথমিক পরামর্শ — মাঠে মিলিয়ে নিশ্চিত করে তবেই ব্যবস্থা নিন।",
-];
-// Inline validation messages (plan §7.2).
-const STEP_ERROR_BN = {
-  1: "অনুগ্রহ করে ফসল নির্বাচন করুন।",
-  2: "ক্ষতিগ্রস্ত অংশটি নির্বাচন করুন।",
-  3: "লক্ষণের ধরন নির্বাচন করুন।",
-};
-
-/**
- * Score a candidate disease against the selected symptom type + part.
- * Returns confidence 40..85. This is a symptom-rules heuristic, NOT a
- * calibrated model — see modelLimitations in the merger output.
- */
-function scoreDisease(disease, symptomTypeId, partId) {
-  const st = SYMPTOM_TYPES.find((s) => s.id === symptomTypeId);
-  const pool = [...(disease.symptomsBn || []), ...(disease.symptoms || [])];
-  const text = pool.join(" ");
-
-  // not_sure → flat low confidence for all candidates.
-  if (!st || st.keys.length === 0) return 40;
-
-  let typeHits = 0;
-  for (const k of st.keys) if (text.includes(k)) typeHits += 1;
-  let partHits = 0;
-  const pk = PART_KEYS[partId] || [];
-  for (const k of pk) if (text.includes(k)) partHits += 1;
-
-  const conf = 40 + typeHits * 12 + partHits * 6;
-  return Math.max(40, Math.min(85, conf));
-}
-
-/**
- * Build a ranked diagnosis from the structured inputs, then merge via
- * the Phase 5 diagnosisMerger (single symptom_wizard source → the merger
- * still dedups + assigns agreement + modelLimitations).
- */
-function diagnose({ cropId, partId, symptomTypeId }) {
-  const candidates = getDiseasesByCrop(cropId);
-  const matches = candidates
-    .map((d) => {
-      const confidence = scoreDisease(d, symptomTypeId, partId);
-      return {
-        diseaseId: d.id,
-        confidence,
-        evidence: [
-          `${d.nameBn} — ${SYMPTOM_TYPES.find((s) => s.id === symptomTypeId)?.bn || "লক্ষণ"}`,
-          `ক্ষতিগ্রস্ত অংশ: ${PARTS.find((p) => p.id === partId)?.bn || ""}`,
-        ],
-      };
-    })
-    .sort((a, b) => b.confidence - a.confidence);
-
-  const merged = mergeDiagnoses([{ source: "symptom_wizard", matches }]);
-  // Attach the full disease objects to each result for the UI.
-  const byId = new Map(candidates.map((d) => [d.id, d]));
-  const top = merged.topDisease ? byId.get(merged.topDisease.diseaseId) : null;
-  const alternatives = merged.alternatives
-    .map((a) => byId.get(a.diseaseId))
-    .filter(Boolean)
-    .slice(0, 2);
-  return { merged, top, alternatives, candidatesCount: candidates.length };
-}
+import {
+  CROPS,
+  PARTS,
+  SYMPTOM_TYPES,
+  STEPS,
+  STEP_ICONS,
+  STEP_REQUIRED,
+  STEP_HELP,
+  STEP_WHY,
+  STEP_ERROR_BN,
+  nextNav,
+  backNav,
+  diagnose,
+} from "./wizardLogic.js";
 
 /**
  * @param {Object} props
@@ -204,24 +83,12 @@ export default function StructuredIntakeWizard({ C, onCaseCreated }) {
     accent: theme.accent || "#F0B90B",
   };
 
-  const canNext = () => {
-    if (step === 1) return !!cropId;
-    if (step === 2) return !!partId;
-    if (step === 3) return !!symptomTypeId;
-    if (step === 4) return true; // photo optional
-    return false;
-  };
-
   const next = () => {
-    if (step < 5 && !canNext()) {
-      // Inline validation instead of a silently disabled button.
-      setShowError(true);
-      return;
-    }
-    setShowError(false);
-    if (step === 4) {
+    const s = nextNav({ step, cropId, partId, symptomTypeId, showError });
+    if (s.pendingAnalysis) {
       // Meaningful loading state (plan §7.2): the rule-based match runs
       // fully offline; the short delay communicates what is happening.
+      setShowError(false);
       setAnalyzing(true);
       analyzeTimer.current = setTimeout(() => {
         setResult(diagnose({ cropId, partId, symptomTypeId }));
@@ -230,17 +97,27 @@ export default function StructuredIntakeWizard({ C, onCaseCreated }) {
       }, 650);
       return;
     }
-    if (step < 5) setStep(step + 1);
+    setShowError(s.showError);
+    if (s.step !== step) setStep(s.step);
   };
   const back = () => {
-    setShowError(false);
-    if (step > 1) setStep(step - 1);
+    const s = backNav({ step, showError });
+    setShowError(s.showError);
+    if (s.step !== step) setStep(s.step);
   };
 
   const saveCase = () => {
     if (!result || !result.top) return;
     const top = result.top;
     const cropBn = CROPS.find((c) => c.id === cropId)?.bn || cropId;
+    // A2 identity chain — resolve the selected crop to its canonical id once
+    // at save time so the persisted case carries a stable identity (not only
+    // a display string). Additive/optional: resolution failure never blocks
+    // the save; the case simply stores null and existing fields are untouched.
+    const canonical = resolveCanonicalCrop(cropBn);
+    const canonicalCropId = canonical.ok ? canonical.cropId : null;
+    const cropSeason = canonical.ok ? canonical.season || null : null;
+    const cropVariant = canonical.ok ? canonical.variant || null : null;
     const { case: created } = createCase({
       crop: cropBn,
       diagnosisEvidence: {
@@ -258,6 +135,10 @@ export default function StructuredIntakeWizard({ C, onCaseCreated }) {
         ].filter(Boolean),
         // Phase 5 merger field — read by copilotContext.buildCaseContext.
         topDisease: top.id,
+        // A2 identity chain — stable canonical crop id (+ season/variant).
+        canonicalCropId,
+        cropSeason,
+        cropVariant,
       },
     });
     setSavedCaseId(created?.id || null);

@@ -175,7 +175,7 @@ export const STATUS_LABELS_BN = {
  * @param {number} [input.lon]
  * @param {object} [input.diagnosisEvidence] - { diseaseName, diseaseNameBn, cause,
  *   confidence, confidencePct, provider, source: 'ai'|'offline'|'manual',
- *   alternatives: [], keySymptoms: [] }
+ *   alternatives: [], keySymptoms: [], canonicalCropId, cropSeason, cropVariant }
  * @param {string} [input.thumbnail] - small data-URL (user-consented)
  * @param {boolean} [input.photoConsent] - explicit consent to keep thumbnails
  * @returns {{case: object, cases: object[]}}
@@ -209,6 +209,17 @@ export function createCase(input = {}) {
           source: input.diagnosisEvidence.source || "manual",
           alternatives: input.diagnosisEvidence.alternatives || [],
           keySymptoms: input.diagnosisEvidence.keySymptoms || [],
+          // Phase 5 merger top-disease id — set by the wizard and read by
+          // copilotContext.buildCaseContext; persisted so the field-copilot
+          // chain survives save → reopen (was previously dropped here).
+          topDisease: input.diagnosisEvidence.topDisease || null,
+          // A2 identity chain — the canonical crop id (and optional
+          // season/variant) resolved once at save time so a saved case is
+          // traceable to a stable identity, not just a display string.
+          // Additive + optional: existing cases without these stay valid.
+          canonicalCropId: input.diagnosisEvidence.canonicalCropId || null,
+          cropSeason: input.diagnosisEvidence.cropSeason || null,
+          cropVariant: input.diagnosisEvidence.cropVariant || null,
           recordedAt: ts,
         }
       : null,
